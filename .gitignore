@@ -1,0 +1,41 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+var.env
+
+# Firebase
+.firebase/
+**/GoogleService-Info.plist
+**/google-services.json
+.fvm/flutter_sdk
+.fvm/fvm_config.json
+**/firebase_app_id_file.json
+**/firebase_options.dart
+firestore.indexes.json
+firestore.rules
+storage.rules
+service-account.json
+rootasjey-firebase-adminsdk-8wlfd-515559bdf4.json
+
+.wrangler
