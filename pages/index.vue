@@ -1,12 +1,14 @@
 // pages/index.vue
 <template>
-  <div class="w-[600px] rounded-xl p-8 flex flex-col transition-all duration-500 overflow-y-auto"
+  <div class="flex flex-col justify-center 
+    overflow-auto
+    min-h-screen w-full rounded-xl md:p-8 transition-all duration-500"
       @drop.prevent="handleDrop"
       @dragenter.prevent="isDragging = true"
       @dragover.prevent
       @dragleave.prevent="handleDragLeave"
   >
-    
+
     <!-- Overlay for drag state -->
     <div v-if="isDragging" 
          class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50"
@@ -22,7 +24,6 @@
         zima blue
       </h1>
 
-      <!-- Greeting -->
       <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 text-12px opacity-50">
         <div :class="timeIcon" class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
           @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
@@ -35,38 +36,138 @@
           }) }}
         </h2>
 
-        <span v-if="loggedIn">• {{ username }}</span>
-        <button v-if="loggedIn" @click="clear">• logout</button>
-      </div>
-    </header>
-
-    <!-- Add the images grid -->
-    <div class="grid grid-cols-3 gap-4 mt-8 justify-items-center">
-      <div v-for="image in images" 
-        :key="image.pathname" 
-          class="group relative w-full aspect-square overflow-hidden rounded-lg">
-        <img 
-          :src="image.pathname" 
-          :alt="image.pathname"
-          class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-        />
-
         <UDropdownMenu 
-          :items="projectMenuItems(Object.assign(image))" 
+          v-if="loggedIn"
+          :items="userMenuItems" 
           size="xs" 
-          menu-label="" 
+          menu-label=""
           :_dropdown-menu-content="{
             class: 'w-52',
             align: 'end',
             side: 'bottom',
           }" 
           :_dropdown-menu-trigger="{
-            icon: true,
-            square: true,
-            class: 'absolute top-1 right-1 p-1 invisible group-hover:visible w-auto h-auto hover:bg-transparent hover:scale-110 active:scale-99 transition',
-            label: 'i-lucide-ellipsis-vertical',
+            icon: false,
+            square: false,
+            class: 'ring-transparent p-0 hover:bg-transparent hover:scale-105 active:scale-99 transition',
+            label: `• ${username}`,
           }" 
         />
+      </div>
+    </header>
+
+    <div v-if="!layout.length" 
+        class="flex flex-col justify-center gap-4 items-center">
+      <div class="flex gap-4">
+        <div v-for="n in 3" 
+          :key="n"
+          @click="triggerFileUpload"
+          class="w-24 h-24 border-2 
+            group
+            hover:scale-105 active:scale-95
+            border-dashed border-gray-300 dark:border-gray-700 
+            rounded-lg cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 
+            transition duration-200 
+            flex flex-col items-center justify-center">
+          
+            <div class="i-ph-image-square-duotone group-hover:opacity-0 group-hover:scale-0 text-2xl text-gray-400 dark:text-gray-600 transition-all duration-300" />
+            <div class="i-lucide-plus absolute opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 text-gray-400 dark:text-gray-600 transition-all duration-300" />
+        </div>
+      </div>
+      <h2 class="font-size-4 font-mono font-600 text-gray-500 dark:text-gray-600">
+        Upload your first image 
+        <span class="i-ph:hand-pointing-bold"></span> 
+      </h2>
+    </div>
+
+    <input
+      type="file"
+      ref="fileInput"
+      class="hidden"
+      accept="image/*"
+      multiple
+      @change="handleFileSelect"
+    />
+
+    <GridLayout
+      v-model:layout="layout"
+      :col-num="colNum"
+      :row-height="rowHeight"
+      :is-draggable="isDraggable"
+      :is-resizable="isResizable"
+      vertical-compact
+      use-css-transforms
+      v-show="showGrid"
+      class="transition-all duration-100 w-200% sm:w-auto md:w-auto"
+      :class="showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+      :responsive="false"
+      @layout-ready="layoutReady"
+      @layout-updated="layoutUpdated"
+    >
+      <GridItem
+        v-for="item in layout"
+        :key="item.i"
+        :x="item.x"
+        :y="item.y"
+        :w="item.w"
+        :h="item.h"
+        :i="item.i"
+        class="rounded-lg"
+      >
+        <div 
+          class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
+          >
+          <NuxtImg 
+            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
+            width="200"
+            height="200"
+            :src="item.pathname" 
+            :alt="item.pathname"
+            class="nuxt-img object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+            :style="`view-transition-name: shared-image-${item.id}`"
+            @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
+            @click.self="(event: MouseEvent) => openImage(item, event)"
+          />
+
+          <div class="absolute h-32px w-32px 
+            bottom-1 right-1 rounded-lg backdrop-blur-md
+            bg-white/20 dark:bg-black/60 hover:bg-white/40 dark:hover:bg-black/80 
+            invisible group-hover:visible flex justify-center items-center">
+            <span class="vgl-item__resizer 
+            i-ph-arrow-down-right-duotone
+            invisible group-hover:visible z-2
+            hover:scale-110 active:scale-99 transition"></span>
+          </div>
+
+          <UDropdownMenu 
+            :items="projectMenuItems(Object.assign(item))" 
+            size="xs" 
+            menu-label="" 
+            :_dropdown-menu-content="{
+              class: 'w-52',
+              align: 'end',
+              side: 'bottom',
+            }" 
+            :_dropdown-menu-trigger="{
+              icon: true,
+              square: true,
+              class: DROPDOWN_MENU_TRIGGER_CLASS,
+              label: 'i-lucide-ellipsis-vertical',
+            }" 
+          />
+        </div>
+      </GridItem>
+    </GridLayout>
+
+    <div v-if="loggedIn" class="fixed bottom-6 left-0 right-0 flex justify-center items-center">
+      <div class="backdrop-blur-md bg-white/20 dark:bg-black/20 shadow-lg rounded-full flex justify-center items-center gap-4">
+        <UButton 
+          icon
+          rounded="full"
+          btn="ghost"
+          label="i-ph-plus-bold"
+          @click="triggerFileUpload"
+          />
       </div>
     </div>
 
@@ -78,17 +179,64 @@
 </template>
 
 <script lang="ts" setup>
-const { loggedIn, user, fetch: refreshSession, clear } = useUserSession()
-import type { BlobObject } from '@nuxthub/core'
-// const navigation = useNavigation({ projects: 0, posts: 0, experiments: 0 })
+const { loggedIn, user, clear } = useUserSession()
+import type { Image } from '~/types/image'
+import { GridLayout, GridItem } from 'grid-layout-plus'
+import { useGridStore } from '@/stores/useGridStore'
+
+const gridStore = useGridStore()
+const layout = computed(() => gridStore.layout)
+
+const router = useRouter()
+
+const { toast } = useToast()
+
 const isDragging = ref(false)
 let dragCounter = 0
+
+const showGrid = ref(false)
+const showGridOpacity = ref(false)
+const isDraggable = computed(() => loggedIn.value)
+const isResizable = computed(() => loggedIn.value)
 
 // @ts-ignore
 const username = computed(() => user.value?.name ?? "")
 
-// Make the images reactive by using ref
-const { data: images, refresh } = await useFetch('/api/images')
+gridStore.fetchGrid()
+
+const colNum = ref(14)
+const rowHeight = ref(37)
+
+const dragStartPos = ref({ x: 0, y: 0 })
+const DRAG_THRESHOLD = 5 // pixels
+
+const DROPDOWN_MENU_TRIGGER_CLASS = `
+  menu-trigger 
+  color-white 
+  absolute top-1 right-1 p-1
+  ring-0 invisible group-hover:visible rounded-lg backdrop-blur-md
+  bg-white/20 dark:bg-black/60 
+  hover:bg-white/40 dark:hover:bg-black/80 hover:scale-110 active:scale-99 transition b-0
+  `
+
+const updateRowHeight = () => {
+  const windowWidth = window.innerWidth
+  if (windowWidth < 640) { rowHeight.value = 24; return; } // mobile
+  if (windowWidth < 860) { rowHeight.value = 16; return; } // tablet
+  if (windowWidth < 1024) { rowHeight.value = 24; return; }
+  rowHeight.value = 37 // desktop
+}
+
+// Add window resize listener
+onMounted(() => {
+  updateRowHeight()
+  window.addEventListener('resize', updateRowHeight)
+})
+
+// Clean up the event listener
+onUnmounted(() => {
+  window.removeEventListener('resize', updateRowHeight)
+})
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -108,6 +256,41 @@ const timeIcon = computed(() => {
   return 'i-line-md:moon-rising-twotone-loop'
 })
 
+function openImage(item: Image, event: MouseEvent) {
+  const moveDistance = Math.sqrt(
+    Math.pow(event.clientX - dragStartPos.value.x, 2) + 
+    Math.pow(event.clientY - dragStartPos.value.y, 2)
+  )
+
+  if (moveDistance > DRAG_THRESHOLD) {
+    return
+  }
+
+  gridStore.selectedImage = item
+  gridStore.prefetchAdjacentImages(item.id)
+
+  if (!document.startViewTransition) {
+    router.push({
+      path: `/illustrations/${item.id}`,
+      state: {
+        imageData: JSON.parse(JSON.stringify(item)),
+        previousPath: router.currentRoute.value.fullPath
+      }
+    })
+    return
+  }
+
+  document.startViewTransition(async () => {
+    await router.push({
+      path: `/illustrations/${item.id}`,
+      state: {
+        imageData: JSON.parse(JSON.stringify(item)),
+        previousPath: router.currentRoute.value.fullPath
+      }
+    })
+  })
+}
+
 function handleDragLeave(e: DragEvent) {
   dragCounter--
   if (dragCounter === 0) {
@@ -125,34 +308,33 @@ async function handleDrop(e: DragEvent) {
   dragCounter = 0
 
   if (!e.dataTransfer) return
-  const files = [...e.dataTransfer.files]
+  const files = [...e.dataTransfer.files].filter(file => file.type.startsWith('image/'))
+  const uploadResults = await gridStore.uploadImages(files)
+  
+  // Handle successful and failed uploads
+  const successful = uploadResults
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
 
-  for (const file of files) {
-    if (!file.type.startsWith('image/')) continue
+  const failed = uploadResults
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('fileName', file.name)
-    formData.append('type', file.type)
+  toast({
+    title: failed.length > 0 ? 'Upload Results' : 'Upload Success',
+    description: failed.length > 0 
+      ? `${successful.length} uploaded, ${failed.length} failed` 
+      : `Successfully uploaded ${successful.length} images`,
+    duration: 5000,
+    showProgress: true,
+    toast: failed.length > 0 ? 'soft-warning' : 'soft-success'
+  })
 
-    try {
-      const response = await $fetch('/api/images/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        // Refresh the images data after successful upload
-        await refresh()
-      }
-    } catch (error) {
-      console.error('Upload failed:', error)
-    }
-  }
+  layoutUpdated(layout.value)
 }
 
-const projectMenuItems = (image: BlobObject) => {
-  const items = [
+const projectMenuItems = (image: Image) => {
+  const items: Array<{ label: string, onClick?: () => void } | {}> = [
     {
       label: 'Download',
       onClick: () => {
@@ -160,26 +342,146 @@ const projectMenuItems = (image: BlobObject) => {
         link.href = image.pathname
         link.download = image.pathname
         link.click()
-      }
+      },
     },
-    {}, // to add a separator between items (label or items should be null).
-    {
-      label: 'Delete',
-      onClick: () => {
-        $fetch(`/api/${image.pathname}`, {
-          method: 'DELETE'
-        })
-          .then(() => {
-            refresh()
-          })
-          .catch((error) => {
-            console.error('Error deleting image:', error)
-          })
-      }
-    }
   ]
+
+  if (loggedIn.value) {
+    items.splice(items.length, 0, 
+      {}, // to add a separator between items (label or items should be null).
+      {
+        label: 'Delete',
+        onClick: () => gridStore.deleteImage(image.id),
+      },
+    )
+  }
 
   return items
 }
 
+const userMenuItems = [
+  {
+    label: 'Logout',
+    onClick: () => {
+      clear()
+    },
+  },
+]
+
+function layoutUpdated(newLayout: any) {
+  gridStore.saveLayout(newLayout)
+}
+
+function layoutReady(layout: any) {
+  showGrid.value = true
+  setTimeout(() => {
+    showGridOpacity.value = true
+  }, 250);
+}
+
+const fileInput = ref<HTMLInputElement>()
+
+function triggerFileUpload() {
+  fileInput.value?.click()
+}
+
+async function handleFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+
+  const files = Array.from(input.files)
+  const uploadResults = await gridStore.uploadImages(files)
+  layoutUpdated(layout.value)
+
+  // Reuse existing upload success/error handling
+  const successful = uploadResults
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+
+  const failed = uploadResults
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+
+  console.log(`handleFileSelect: `, successful, failed)
+  toast({
+    title: failed.length > 0 ? 'Upload Results' : 'Upload Success',
+    description: failed.length > 0 
+      ? `${successful.length} uploaded, ${failed.length} failed` 
+      : `Successfully uploaded ${successful.length} images`,
+    duration: 5000,
+    showProgress: true,
+    toast: failed.length > 0 ? 'soft-warning' : 'soft-success'
+  })
+
+  input.value = '' // Reset input
+}
+
 </script>
+
+<style scoped>
+.i-ph-sun-horizon,
+.i-line-md\:moon-to-sunny-outline-loop-transition {
+  animation: fadeScale 0.3s ease-in-out;
+}
+
+@keyframes fadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+:deep(.vgl-item) {
+  box-shadow: rgba(149, 157, 165, 0.4) 0px 8px 24px;
+  transition: all 0.2s ease-in-out;
+
+  .dark & {
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 8px 24px;
+  }
+
+  &:hover {
+    box-shadow: rgba(149, 157, 165, 0.8) 0px 8px 24px;
+
+    .dark & {
+      box-shadow: rgba(0, 0, 0, 0.8) 0px 8px 24px;
+    }
+  }
+
+  &:active {
+    box-shadow: rgba(0, 0, 0, 0) 0px 8px 24px;
+    .dark & {
+      box-shadow: rgba(0, 0, 0, 0.0) 0px 8px 24px;
+    }
+  }
+}
+
+:deep(.vgl-item > .vgl-item__resizer) {
+  display: none;
+}
+
+:deep(.vgl-item__resizer) {
+  height: 24px;
+  width: 24px;
+  position: relative;
+}
+
+.vgl-item__resizer {
+  animation: colorPulse 6s infinite;
+}
+
+@keyframes colorPulse {
+  0% { color: rgb(244 114 182); }  /* pink-400 */
+  33% { color: rgb(134 239 172); }  /* green-300 */
+  66% { color: rgb(129 140 248); }  /* indigo-400 */
+  100% { color: rgb(244 114 182); }  /* back to pink-400 */
+}
+
+:deep(.menu-trigger[data-state="open"]) {
+  visibility: visible;
+}
+
+</style>
