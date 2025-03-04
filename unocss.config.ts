@@ -6,6 +6,7 @@ import {
   presetAttributify,
   presetIcons,
   presetUno,
+  presetWebFonts,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
@@ -19,6 +20,18 @@ export default {
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
+      },
+    }),
+    presetWebFonts({
+      provider: 'fontshare',
+      fonts: {
+        title: 'Montserrat',
+        text: 'Satoshi',
+        body: 'Chillax',
+        mono: 'Pally',
+        sans: 'General Sans',
+        serif: 'Boska',
+        cursive: 'Sharpie',
       },
     }),
     presetUna(),
