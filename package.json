@@ -13,10 +13,14 @@
     "@iconify-json/icon-park-outline": "^1.2.2",
     "@iconify-json/line-md": "^1.2.5",
     "@iconify-json/ph": "^1.2.2",
+    "@nuxt/image": "^1.9.0",
     "@nuxthub/core": "^0.8.15",
+    "@pinia/nuxt": "^0.10.1",
     "@una-ui/nuxt": "^0.35.0-beta.1",
+    "grid-layout-plus": "^1.0.6",
     "nuxt": "^3.15.3",
     "nuxt-auth-utils": "^0.5.9",
+    "pinia": "^3.0.1",
     "wrangler": "^3.106.0"
   }
 }

@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { presetWebFonts } from 'unocss'
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-01-27",
   devtools: { enabled: true },
@@ -8,10 +10,10 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
-      title: "rootasjey.dev",
+      title: "zima blue",
       meta: [
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "description", content: "Exploring the intersection of code & creativity" },
+        { name: "description", content: "Borderless artistic space" },
       ],
       link: [
         { rel: "icon", type: "image/png", href: "/favicon.ico" },
@@ -21,9 +23,31 @@ export default defineNuxtConfig({
 
   hub: {
     blob: true,
+    database: true,
+    kv: true,
   },
 
-  modules: ["@nuxthub/core", "@una-ui/nuxt", "nuxt-auth-utils"],
+  image: {
+    providers: {
+      hubblob: {
+        name: 'hubblob',
+        provider: '~/providers/hubblob.ts',
+        options: {
+          baseURL: process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000'
+            : 'https://zimablue.nuxt.dev',
+        },
+      },
+    },
+  },
+
+  modules: [
+    "@nuxthub/core",
+    "@una-ui/nuxt",
+    "nuxt-auth-utils",
+    "@nuxt/image",
+    "@pinia/nuxt",
+  ],
   unocss: {
     preflight: true,
     icons: {
