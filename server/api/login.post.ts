@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     // this server util is auto-imported by the auth-utils module
     await setUserSession(event, {
       user: {
-        name: 'John Doe'
+        name: 'rootasjey'
       }
     })
     return {}
