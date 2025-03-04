@@ -67,7 +67,7 @@ const handleSubmit = async () => {
       
       await refreshSession()
       await navigateTo('/')
-    } catch {
+    } catch (e) {
       alert('Bad credentials')
       error.value = e.message
     }
