@@ -6,10 +6,10 @@ import { z } from 'zod'
  * This function retrieves an image from blob storage, 
  * applies any requested transformations (e.g. resizing, format conversion), 
  * and returns the transformed image.
- * The result is cached for 1 hour.
  * If the requested image is not found in blob storage, a 404 error is thrown.
  */
-export default cachedEventHandler(async (event) => {
+export default eventHandler(async (event) => {
+  const dateStart = Date.now()
   const { pathname } = await getValidatedRouterParams(event, z.object({
     pathname: z.string().min(1)
   }).parse)
@@ -20,7 +20,7 @@ export default cachedEventHandler(async (event) => {
   const format = query.format ? query.format as string : undefined
   const fit = query.fit ? query.fit as keyof Sharp.FitEnum : undefined
   const quality = query.quality ? parseInt(query.quality as string) : 100
-  
+
   // Get image from blob storage
   const imagePathname = `images/${pathname}`
   const blob = await hubBlob().get(imagePathname)
@@ -48,13 +48,10 @@ export default cachedEventHandler(async (event) => {
 
   const transformedImage = await pipeline.toBuffer()
   const imgExt = format ?? pathname.split('.').pop()
-
+  
+  const dateEnd = Date.now()
+  console.log(`(server) ${pathname} took ${dateEnd - dateStart}ms`)
+  setHeader(event, 'Cache-Control', 'public, max-age=1800')
   setHeader(event, 'Content-Type', `image/${imgExt || 'jpeg'}`)
   return transformedImage
-}, {
-  getKey: (event) => {
-    const { pathname } = getRouterParams(event)
-    return `images:${pathname}`
-  },
-  maxAge: 60 * 60 * 1, // 1 hour
 })
