@@ -119,7 +119,6 @@
           >
           <NuxtImg 
             :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            width="200"
             height="200"
             :src="item.pathname" 
             :alt="item.pathname"
@@ -221,19 +220,21 @@ const DROPDOWN_MENU_TRIGGER_CLASS = `
 
 const updateRowHeight = () => {
   const windowWidth = window.innerWidth
-  if (windowWidth < 640) { rowHeight.value = 24; return; } // mobile
-  if (windowWidth < 860) { rowHeight.value = 16; return; } // tablet
+  if (windowWidth < 640) { rowHeight.value = 24; return; }
+  if (windowWidth < 700) { rowHeight.value = 14; return; }
+  if (windowWidth < 860) { rowHeight.value = 16; return; }
+  if (windowWidth < 990) { rowHeight.value = 20; return; }
   if (windowWidth < 1024) { rowHeight.value = 24; return; }
+  if (windowWidth < 1130) { rowHeight.value = 26; return; }
+  if (windowWidth < 1350) { rowHeight.value = 28; return; }
   rowHeight.value = 37 // desktop
 }
 
-// Add window resize listener
 onMounted(() => {
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
 })
 
-// Clean up the event listener
 onUnmounted(() => {
   window.removeEventListener('resize', updateRowHeight)
 })
