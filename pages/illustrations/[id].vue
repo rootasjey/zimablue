@@ -1,36 +1,44 @@
 <template>
-  <div class="w-full h-screen flex justify-center items-center inset-0 bg-black/90 z-50">
-    <div class="container w-800px flex justify-center items-start">
+  <div class="w-full h-screen flex justify-center items-center inset-0 bg-black/90 z-2">
+    <div class="container max-w-70% overflow-clip flex justify-center items-start"
+    >
       <NuxtImg
         v-if="image"
         provider="hubblob"
-        width="600"
-        height="600"
+        :height="_height"
         :src="image?.pathname"
         :alt="image?.pathname"
         class="w-full h-full object-cover"
         :style="`view-transition-name: shared-image-${image?.id}`"
       />
-      <button 
-        @click="router.back()"
-        class="mt-0 ml-2 text-white hover:scale-110 active:scale-90 transition"
-      >
-      <div class="i-line-md-close-circle-filled text-2xl" />
-    </button>
+      <div class="flex flex-col gap-2">
+        <button 
+          @click="router.back()"
+          class="mt-0 ml-2 text-white hover:scale-110 active:scale-90 transition"
+        >
+          <div class="i-line-md-close-circle-filled text-2xl" />
+        </button>
+        <button 
+          @click="downloadImage"
+          class="mt-0 ml-2 text-white hover:scale-110 active:scale-90 transition"
+        >
+          <div class="i-line-md-downloading text-2xl" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useGridStore } from '@/stores/useGridStore';
-import type { Image } from '~/types/image';
 
 const router = useRouter()
 const route = useRoute()
 const gridStore = useGridStore()
 
-// const image = ref<Image | undefined>()
-  const image = computed(() => {
+const _height = ref(400)
+
+const image = computed(() => {
   // Try to get image from store first
   if (gridStore.selectedImage?.id.toString() === route.params.id) {
     return gridStore.selectedImage
@@ -52,23 +60,21 @@ async function fetchImage() {
   }
 }
 
-
 if (import.meta.server) {
   await fetchImage()
 }
 
-// if (import.meta.client && history && !image.value) {
-//   image.value = history.state.imageData
-// }
-
-// if (import.meta.server && !image.value) {
-//   const imageId = route.params.id
-//   const data = await $fetch(`/api/images/id/${imageId}`)
-//   image.value = data
-// }
-
+const downloadImage = () => {
+  const link = document.createElement('a')
+  const imagePathname = `/${image.value?.pathname}`
+  link.href = imagePathname
+  link.download = imagePathname
+  link.click()
+}
 
 onMounted(async () => {
+  _height.value = window.innerHeight * 0.75
+
   await fetchImage()
   // Prefetch adjacent images for smooth navigation
   if (image.value) {
