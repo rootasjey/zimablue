@@ -140,7 +140,7 @@
           </div>
 
           <UDropdownMenu 
-            :items="projectMenuItems(Object.assign(item))" 
+            :items="projectMenuItems(item)" 
             size="xs" 
             menu-label="" 
             :_dropdown-menu-content="{

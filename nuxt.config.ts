@@ -1,6 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { presetWebFonts } from 'unocss'
-
 export default defineNuxtConfig({
   compatibilityDate: "2025-01-27",
   devtools: { enabled: true },
