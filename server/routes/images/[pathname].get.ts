@@ -1,3 +1,4 @@
+import { Jimp } from 'jimp'
 import { z } from 'zod'
 
 /**
@@ -8,7 +9,6 @@ import { z } from 'zod'
  * If the requested image is not found in blob storage, a 404 error is thrown.
  */
 export default eventHandler(async (event) => {
-  const dateStart = Date.now()
   const { pathname } = await getValidatedRouterParams(event, z.object({
     pathname: z.string().min(1)
   }).parse)
@@ -16,9 +16,8 @@ export default eventHandler(async (event) => {
   const query = getQuery(event) // Get query parameters for transformations
   const width = query.width ? parseInt(query.width as string) : undefined
   const height = query.height ? parseInt(query.height as string) : undefined
-  const format = query.format ? query.format as string : undefined
-  // const fit = query.fit ? query.fit as keyof Sharp.FitEnum : undefined
-  const quality = query.quality ? parseInt(query.quality as string) : 100
+  const format = getFormat(query.format ? query.format as string : undefined)
+  const quality = query.quality ? parseInt(query.quality as string) : -1
 
   // Get image from blob storage
   const imagePathname = `images/${pathname}`
@@ -28,29 +27,37 @@ export default eventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Image not found' })
   }
 
-  // let pipeline = Sharp(await blob.arrayBuffer()) // Create Sharp instance
+  const imageBuffer = await Jimp.fromBuffer(await blob.arrayBuffer())
 
-  // Apply transformations based on query parameters
-  // if (width || height) {
-  //   pipeline = pipeline.resize({
-  //     width,
-  //     height,
-  //     fit: fit || 'cover',
-  //   })
-  // }
+  if (width || height) {
+    imageBuffer.resize({
+      w: width,
+      h: height ?? width ?? 360,
+    })
+  }
 
-  // if (format) {
-  //   pipeline = pipeline.toFormat(format as keyof Sharp.FormatEnum, {
-  //     quality,
-  //   })
-  // }
+  if (format) {
+    imageBuffer.getBuffer(format, {
+      quality,
+    } as any)
+  }
 
-  // const transformedImage = await pipeline.toBuffer()
-  const imgExt = format ?? pathname.split('.').pop()
-  
-  const dateEnd = Date.now()
-  console.log(`(server) ${pathname} took ${dateEnd - dateStart}ms`)
+  if (!format && quality > -1) {
+    console.warn(`⚠️ (server) ${pathname} \n • Specify an output format to apply quality`)
+  }
+
+  const mimeType = format ?? blob.type ?? `image/${pathname.split('.').pop()}`
   setHeader(event, 'Cache-Control', 'public, max-age=1800')
-  setHeader(event, 'Content-Type', `image/${imgExt || 'jpeg'}`)
-  return blob
+  setHeader(event, 'Content-Type', mimeType)
+  return imageBuffer.getBuffer(mimeType as any)
 })
+
+function getFormat(format?: string) {
+  if (!format) return undefined
+  if (format === 'bmp') return 'image/bmp'
+  if (format === 'gif') return 'image/gif'
+  if (format === 'jpg') return 'image/jpeg'
+  if (format === 'jpeg') return 'image/jpeg'
+  if (format === 'png') return 'image/png'
+  if (format === 'tiff') return 'image/tiff'
+}
