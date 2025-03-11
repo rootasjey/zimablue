@@ -10,7 +10,7 @@
   >
 
     <!-- Overlay for drag state -->
-    <div v-if="isDragging" 
+    <div v-if="isDragging && loggedIn" 
          class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50"
          @dragenter.prevent
          @dragover.prevent
@@ -308,6 +308,16 @@ async function handleDrop(e: DragEvent) {
   isDragging.value = false
   dragCounter = 0
 
+  if (!loggedIn.value) {
+    toast({
+      showProgress: true,
+      title: 'Login Required',
+      description: 'You must be logged in to upload images.',
+      toast: 'soft-warning',
+    })
+    return
+  }
+
   if (!e.dataTransfer) return
   const files = [...e.dataTransfer.files].filter(file => file.type.startsWith('image/'))
   const uploadResults = await gridStore.uploadImages(files)
@@ -362,6 +372,12 @@ const projectMenuItems = (image: Image) => {
 
 const userMenuItems = [
   {
+    label: 'Upload',
+    onClick: () => {
+      triggerFileUpload()
+    },
+  },
+  {
     label: 'Logout',
     onClick: () => {
       clear()
@@ -370,6 +386,7 @@ const userMenuItems = [
 ]
 
 function layoutUpdated(newLayout: any) {
+  if (!loggedIn.value) return
   gridStore.saveLayout(newLayout)
 }
 
@@ -383,10 +400,30 @@ function layoutReady(layout: any) {
 const fileInput = ref<HTMLInputElement>()
 
 function triggerFileUpload() {
+  if (!loggedIn.value) {
+    toast({
+      showProgress: true,
+      title: 'Login Required',
+      description: 'You must be logged in to upload images.',
+      toast: 'soft-warning',
+    })
+    return
+  }
+
   fileInput.value?.click()
 }
 
 async function handleFileSelect(event: Event) {
+  if (!loggedIn.value) {
+    toast({
+      showProgress: true,
+      title: 'Login Required',
+      description: 'You must be logged in to upload images.',
+      toast: 'soft-warning',
+    })
+    return
+  }
+
   const input = event.target as HTMLInputElement
   if (!input.files?.length) return
 
