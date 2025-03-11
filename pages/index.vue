@@ -89,6 +89,26 @@
       @change="handleFileSelect"
     />
 
+    <!-- Mobile Grid with 3 columns -->
+    <div v-if="layout.length" class="grid sm:hidden grid-cols-3 gap-5 mx-4">
+      <div v-for="item in layout" :key="item.i" 
+        class="mobile-group aspect-square relative overflow-hidden 
+        rounded-7 z-2 cursor-pointer transition duration-900"
+      >
+        <NuxtImg 
+            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
+            height="200"
+            :src="item.pathname" 
+            :alt="item.pathname"
+            class="nuxt-img object-cover w-full h-full rounded-7 transition-transform duration-400 hover:scale-105"
+            :style="`view-transition-name: shared-image-${item.id}`"
+            @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
+            @click.self="(event: MouseEvent) => openImage(item, event)"
+          />
+      </div>
+    </div>
+
+    <!-- Desktop Grid -->
     <GridLayout
       v-model:layout="layout"
       :col-num="colNum"
@@ -98,7 +118,7 @@
       vertical-compact
       use-css-transforms
       v-show="showGrid"
-      class="transition-all duration-100 w-200% sm:w-auto md:w-auto"
+      class="transition-all duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
       :class="showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       :responsive="false"
       @layout-ready="layoutReady"
@@ -159,7 +179,7 @@
     </GridLayout>
 
     <div v-if="loggedIn" class="fixed bottom-6 left-0 right-0 flex justify-center items-center">
-      <div class="backdrop-blur-md bg-white/20 dark:bg-black/20 shadow-lg rounded-full flex justify-center items-center gap-4">
+      <div class="border backdrop-blur-md bg-white/20 dark:bg-black/20 shadow-lg rounded-full flex justify-center items-center gap-4">
         <UButton 
           icon
           rounded="full"
@@ -220,7 +240,7 @@ const DROPDOWN_MENU_TRIGGER_CLASS = `
 
 const updateRowHeight = () => {
   const windowWidth = window.innerWidth
-  if (windowWidth < 640) { rowHeight.value = 24; return; }
+  if (windowWidth < 640) { rowHeight.value = 8; return; }
   if (windowWidth < 700) { rowHeight.value = 14; return; }
   if (windowWidth < 860) { rowHeight.value = 16; return; }
   if (windowWidth < 990) { rowHeight.value = 20; return; }
@@ -494,6 +514,55 @@ async function handleFileSelect(event: Event) {
     .dark & {
       box-shadow: rgba(0, 0, 0, 0.0) 0px 8px 24px;
     }
+  }
+}
+
+.mobile-group {
+  /* Remove the existing box-shadow and add these classes */
+  &:nth-child(3n) {
+    box-shadow: rgba(244, 114, 182, 0.4) 0px 8px 24px; /* Pink shadow */
+  }
+
+  &:nth-child(3n+1) {
+    box-shadow: rgba(134, 239, 172, 0.4) 0px 8px 24px; /* Green shadow */
+  }
+
+  &:nth-child(3n+2) {
+    box-shadow: rgba(129, 140, 248, 0.4) 0px 8px 24px; /* Indigo shadow */
+  }
+
+  &:nth-child(4n) {
+    box-shadow: rgb(255, 167, 37, 0.4) 0px 8px 24px;
+  }
+
+  &:nth-child(5n) {
+    box-shadow: rgb(152, 216, 239, 0.4) 0px 8px 24px;
+  }
+
+  /* Hover states with increased opacity */
+  &:nth-child(3n):hover {
+    box-shadow: rgba(244, 114, 182, 0.8) 0px 8px 24px;
+  }
+
+  &:nth-child(3n+1):hover {
+    box-shadow: rgba(134, 239, 172, 0.8) 0px 8px 24px;
+  }
+
+  &:nth-child(3n+2):hover {
+    box-shadow: rgba(129, 140, 248, 0.8) 0px 8px 24px;
+  }
+
+  &:nth-child(4n):hover {
+    box-shadow: rgb(255, 167, 37, 0.8) 0px 8px 24px; /* Indigo shadow */
+  }
+
+  &:nth-child(5n):hover {
+    box-shadow: rgb(152, 216, 239, 0.8) 0px 8px 24px;
+  }
+
+  /* Active state remains the same */
+  &:active {
+    box-shadow: rgba(0, 0, 0, 0) 0px 8px 24px;
   }
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-screen flex justify-center items-center inset-0 bg-black/90 z-2">
-    <div class="container max-w-70% overflow-clip flex justify-center items-start"
+    <div class="container md:max-w-70% overflow-clip flex justify-center items-start"
     >
       <NuxtImg
         v-if="image"
