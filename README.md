@@ -1,42 +1,74 @@
-# Nuxt 3 Minimal Starter
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+# zima blue
 
-## Setup
+A modern image gallery application built with Nuxt.js and NuxtHub (Cloudflare Workers), providing fast and efficient image hosting and management.
 
-Make sure to install the dependencies:
+![zima blue screenshot](./screenshots/zimablue-screenshot-2025-03-11-at-16.05.25.png)
 
+[Go to website ↗ 🌓](https://zimablue.nuxt.dev/)
+
+## Features
+
+- Responsive image gallery layout
+- Cloudflare Workers for optimized image delivery
+- Built with Nuxt.js for optimal performance and SEO
+- Server-side rendering capabilities
+- Modern and intuitive user interface
+
+## Tech Stack
+
+- [Nuxt.js](https://nuxt.com/) - The Vue.js Framework
+- [NuxtHub](https://hub.nuxt.com/) - Edge platform
+- [UnaUI](https://unaui.com/) - UI component library
+- [UnoCSS](https://unocss.dev/) - Utility-first CSS framework
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or later)
+- npm or yarn
+- Cloudflare & NuxtHub account
+
+### Installation
+
+1. Clone the repository:
 ```bash
-# yarn
-yarn install
-
-# npm
-npm install
-
-# pnpm
-pnpm install
+git clone https://github.com/rootasjey/zimablue.git
 ```
 
-## Development Server
+2. Install dependencies:
+```bash
+cd zimablue
+npm install
+```
 
-Start the development server on http://localhost:3000
+3. Configure environment variables:
+```bash
+cp .env.example .env
+```
 
+4. Run development server:
 ```bash
 npm run dev
 ```
 
-## Production
+### Deployment
 
-Build the application for production:
-
+1. Build the application:
 ```bash
 npm run build
 ```
 
-Locally preview production build:
-
+2. Deploy to Cloudflare Workers:
 ```bash
-npm run preview
+npm run deploy
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
