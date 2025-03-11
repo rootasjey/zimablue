@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen w-full">
     <NuxtPage />
+    <UToaster />
   </div>
 </template>
 
