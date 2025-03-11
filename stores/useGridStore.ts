@@ -78,13 +78,20 @@ export const useGridStore = defineStore('grid', () => {
   // Batch uploads
   async function uploadImages(files: File[]) {
     const uploads = files.map(async (file, index) => {
-      // Create optimistic grid item first
+      // Create base64 preview
+      const tempPreviewUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+
+      // Create optimistic grid item with base64 preview
       const newGridItem = {
         created_at: new Date().toString(),
         updated_at: new Date().toString(),
         x: (layout.value.length * 2) % 14,
         y: layout.value.length + 14,
-        w: 6,
+        w: 2,
         h: 6,
         i: layout.value.length + 1,
         name: file.name,
@@ -93,12 +100,11 @@ export const useGridStore = defineStore('grid', () => {
         sum_abs: 0,
         id: layout.value.length + 1,
         tags: [],
-        pathname: URL.createObjectURL(file),
-        // pathname: "",
+        pathname: tempPreviewUrl,
       }
   
       // Add to layout immediately for optimistic update
-      const insertedIndex = layout.value.push(newGridItem)
+      layout.value.push(newGridItem)
   
       try {
         const formData = new FormData()
@@ -118,12 +124,7 @@ export const useGridStore = defineStore('grid', () => {
   
         if (response.success) {
           const uploadedImage = response.results[0]
-          console.log(`(uploadImages • after upload) uploadedImage: `, response)
-
           Object.assign(newGridItem, uploadedImage)
-          // Update the layout with the uploaded image
-          // layout.value.pop()
-          // layout.value.push(Object.assign(newGridItem, uploadedImage))
           return response
         } else {
           throw new Error('Upload failed')
