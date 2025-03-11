@@ -21,35 +21,54 @@ export default eventHandler(async (event) => {
 
   // Get image from blob storage
   const imagePathname = `images/${pathname}`
-  const blob = await hubBlob().get(imagePathname)
-  
-  if (!blob) {
-    throw createError({ statusCode: 404, message: 'Image not found' })
-  }
+  const cacheKey = `imagecache:${imagePathname}`
 
-  const imageBuffer = await Jimp.fromBuffer(await blob.arrayBuffer())
+  // Try to get from cache first
+  const cachedImage = await hubKV().get(cacheKey) as Record<string, any> | null | undefined
+  if (cachedImage) {
+    console.log(`(server) cache hit: `, imagePathname)
+    const imageBuffer = Buffer.from(cachedImage.buffer, 'base64') // Convert back to buffer
+    setHeader(event, 'Cache-Control', 'public, max-age=1800')
+    setHeader(event, 'Content-Type', cachedImage.type)
+    return imageBuffer
+  }
+  
+  // If not in cache, get from blob storage
+  const blob = await hubBlob().get(imagePathname)
+  if (!blob) { throw createError({ statusCode: 404, message: 'Image not found' }) }
+
+  const image = await Jimp.fromBuffer(await blob.arrayBuffer())
+  const mimeType = format ?? blob.type ?? `image/${pathname.split('.').pop()}`
+  let imageBuffer: Buffer
 
   if (width || height) {
-    imageBuffer.resize({
+    await image.resize({
       w: width,
       h: height ?? width ?? 360,
     })
   }
 
-  if (format) {
-    imageBuffer.getBuffer(format, {
-      quality,
-    } as any)
-  }
+  imageBuffer = format 
+    ? await image.getBuffer(format, {
+        quality,
+      } as any)
+    : await image.getBuffer(mimeType as any)
 
   if (!format && quality > -1) {
     console.warn(`⚠️ (server) ${pathname} \n • Specify an output format to apply quality`)
   }
 
-  const mimeType = format ?? blob.type ?? `image/${pathname.split('.').pop()}`
+  // Store in cache with 1 hour TTL
+  await hubKV().set(cacheKey, {
+    buffer: Buffer.from(imageBuffer).toString('base64'), // Convert to base64 string
+    type: mimeType,
+  }, {
+    ttl: 60 * 60 // 1 hour in seconds
+  })
+
   setHeader(event, 'Cache-Control', 'public, max-age=1800')
   setHeader(event, 'Content-Type', mimeType)
-  return imageBuffer.getBuffer(mimeType as any)
+  return imageBuffer
 })
 
 function getFormat(format?: string) {
