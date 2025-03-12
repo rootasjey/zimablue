@@ -19,9 +19,15 @@ export default eventHandler(async (event) => {
   const format = getFormat(query.format ? query.format as string : undefined)
   const quality = query.quality ? parseInt(query.quality as string) : -1
 
+  // Convert query object to string
+  const queryString = 
+    Object.entries(query).length > 0
+    ? ":" + Object.entries(query).map(([key, value]) => `${key}=${value}`).join('&')
+    : ""
+
   // Get image from blob storage
   const imagePathname = `images/${pathname}`
-  const cacheKey = `imagecache:${imagePathname}`
+  const cacheKey = `imagecache:${pathname}${queryString}`
 
   // Try to get from cache first
   const cachedImage = await hubKV().get(cacheKey) as Record<string, any> | null | undefined
