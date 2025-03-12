@@ -80,15 +80,6 @@
       </h2>
     </div>
 
-    <input
-      type="file"
-      ref="fileInput"
-      class="hidden"
-      accept="image/*"
-      multiple
-      @change="handleFileSelect"
-    />
-
     <!-- Mobile Grid with 3 columns -->
     <div v-if="layout.length" class="grid sm:hidden grid-cols-3 gap-5 mx-4">
       <div v-for="item in layout" :key="item.i" 
@@ -159,7 +150,7 @@
           </div>
 
           <UDropdownMenu 
-            :items="projectMenuItems(item)" 
+            :items="imageMenuItems(item)" 
             size="xs" 
             menu-label="" 
             :_dropdown-menu-content="{
@@ -178,6 +169,23 @@
       </GridItem>
     </GridLayout>
 
+
+    <input
+      type="file"
+      ref="fileInput"
+      class="hidden"
+      accept="image/*"
+      multiple
+      @change="handleFileSelect"
+    />
+    <input
+      type="file"
+      ref="replacementFileInput"
+      class="hidden"
+      accept="image/*"
+      @change="handleReplaceFileSelect"
+    />
+
     <div v-if="loggedIn" class="fixed bottom-6 left-0 right-0 flex justify-center items-center">
       <div class="border backdrop-blur-md bg-white/20 dark:bg-black/20 shadow-lg rounded-full flex justify-center items-center gap-4">
         <UButton 
@@ -189,20 +197,15 @@
           />
       </div>
     </div>
-
-    <!-- Navigation Sections -->
-    <!-- <nav class="flex-1 flex flex-col gap-2">
-      <NavSection v-for="item in navigation" :key="item.title" v-bind="item" />
-    </nav> -->
   </div>
 </template>
 
 <script lang="ts" setup>
-const { loggedIn, user, clear } = useUserSession()
 import type { Image } from '~/types/image'
 import { GridLayout, GridItem } from 'grid-layout-plus'
 import { useGridStore } from '@/stores/useGridStore'
 
+const { loggedIn, user, clear } = useUserSession()
 const gridStore = useGridStore()
 const layout = computed(() => gridStore.layout)
 
@@ -218,10 +221,11 @@ const showGridOpacity = ref(false)
 const isDraggable = computed(() => loggedIn.value)
 const isResizable = computed(() => loggedIn.value)
 
+const fileInput = ref<HTMLInputElement>()
+const replacementFileInput = ref<HTMLInputElement>()
+
 // @ts-ignore
 const username = computed(() => user.value?.name ?? "")
-
-gridStore.fetchGrid()
 
 const colNum = ref(14)
 const rowHeight = ref(37)
@@ -249,6 +253,8 @@ const updateRowHeight = () => {
   if (windowWidth < 1350) { rowHeight.value = 28; return; }
   rowHeight.value = 37 // desktop
 }
+
+gridStore.fetchGrid()
 
 onMounted(() => {
   updateRowHeight()
@@ -364,7 +370,7 @@ async function handleDrop(e: DragEvent) {
   layoutUpdated(layout.value)
 }
 
-const projectMenuItems = (image: Image) => {
+const imageMenuItems = (image: Image) => {
   const items: Array<{ label: string, onClick?: () => void } | {}> = [
     {
       label: 'Download',
@@ -380,6 +386,13 @@ const projectMenuItems = (image: Image) => {
   if (loggedIn.value) {
     items.splice(items.length, 0, 
       {}, // to add a separator between items (label or items should be null).
+      {
+        label: 'Replace',
+        onClick: () => {
+          gridStore.selectedImage = image
+          replacementFileInput.value?.click()
+        },
+      },
       {
         label: 'Delete',
         onClick: () => gridStore.deleteImage(image.id),
@@ -416,8 +429,6 @@ function layoutReady(layout: any) {
     showGridOpacity.value = true
   }, 250);
 }
-
-const fileInput = ref<HTMLInputElement>()
 
 function triggerFileUpload() {
   if (!loggedIn.value) {
@@ -470,6 +481,38 @@ async function handleFileSelect(event: Event) {
     showProgress: true,
     toast: failed.length > 0 ? 'soft-warning' : 'soft-success'
   })
+
+  input.value = '' // Reset input
+}
+
+async function handleReplaceFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+
+  const file = input.files[0]
+  const imageToReplace = gridStore.selectedImage
+
+  if (!imageToReplace) return
+  console.log(`imageToReplace:`, imageToReplace)
+
+  try {
+    await gridStore.replaceImage(file, imageToReplace.id)
+    toast({
+      title: 'Replace Success',
+      description: 'Successfully replaced image',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-success'
+    })
+  } catch (error) {
+    toast({
+      title: 'Replace Failed',
+      description: 'Failed to replace image',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
+  }
 
   input.value = '' // Reset input
 }

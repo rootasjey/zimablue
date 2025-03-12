@@ -26,7 +26,6 @@ export default eventHandler(async (event) => {
   // Try to get from cache first
   const cachedImage = await hubKV().get(cacheKey) as Record<string, any> | null | undefined
   if (cachedImage) {
-    console.log(`(server) cache hit: `, imagePathname)
     const imageBuffer = Buffer.from(cachedImage.buffer, 'base64') // Convert back to buffer
     setHeader(event, 'Cache-Control', 'public, max-age=1800')
     setHeader(event, 'Content-Type', cachedImage.type)

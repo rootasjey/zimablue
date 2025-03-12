@@ -26,14 +26,6 @@ export const useGridStore = defineStore('grid', () => {
     initialized.value = true
   }
 
-  async function saveLayout(newLayout: Image[]) {
-    if (!initialized.value) return
-    await $fetch('/api/grid/save', {
-      method: 'POST',
-      body: newLayout,
-    })
-  }
-
   async function deleteImage(imageId: number) {
     layout.value = layout.value.filter((item) => item.id !== imageId)
     await $fetch(`/api/images/${imageId}`, {
@@ -60,6 +52,54 @@ export const useGridStore = defineStore('grid', () => {
     if (prevImage) {
       useImage()(prevImage.pathname, { width: 1200, height: 1200 }, { provider: 'hubblob' })
     }
+  }
+
+  async function replaceImage(file: File, imageId: number) {
+    const imageToReplace = layout.value.find((img) => img.id === imageId)
+    if (!imageToReplace) return
+  
+    // Create temporary preview
+    const tempPreviewUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.readAsDataURL(file)
+    })
+  
+    // Update layout with temporary preview
+    imageToReplace.pathname = tempPreviewUrl
+  
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('fileName', file.name)
+      formData.append('type', file.type)
+      formData.append('imageId', imageId.toString())
+  
+      const response = await $fetch(`/api/images/id/${imageId}/replace`, {
+        method: 'POST',
+        body: formData
+      })
+  
+      if (response.success && response.results?.length > 0) {
+        imageToReplace.pathname = response.results[0]?.pathname ?? imageToReplace.pathname
+        return response
+      } else {
+        throw new Error('Replace failed')
+      }
+    } catch (error) {
+      // Restore original image on error
+      const originalImage = await $fetch(`/api/images/${imageId}`)
+      Object.assign(imageToReplace, originalImage)
+      throw error
+    }
+  }
+
+  async function saveLayout(newLayout: Image[]) {
+    if (!initialized.value) return
+    await $fetch('/api/grid/save', {
+      method: 'POST',
+      body: newLayout,
+    })
   }
 
   // async function updateImagePosition(imageId: number, x: number, y: number) {
@@ -146,9 +186,9 @@ export const useGridStore = defineStore('grid', () => {
     isLoading,
     layout,
     prefetchAdjacentImages,
+    replaceImage,
     saveLayout,
     selectedImage,
-    // updateImagePosition,
     uploadImages,
   }
 })
