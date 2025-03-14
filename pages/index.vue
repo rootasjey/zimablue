@@ -116,21 +116,25 @@
       @layout-updated="layoutUpdated"
     >
       <GridItem
-        v-for="item in layout"
+        v-for="(item, index) in layout"
         :key="item.i"
         :x="item.x"
         :y="item.y"
         :w="item.w"
         :h="item.h"
         :i="item.i"
-        class="rounded-lg"
+        class="rounded-lg grid-item"
+        :style="{
+          '--delay': `${index * 0.15}s`
+        }"
       >
         <div 
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
           >
           <NuxtImg 
-            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
             height="200"
+            loading="lazy"
+            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
             :src="item.pathname" 
             :alt="item.pathname"
             class="nuxt-img object-cover w-full h-full transition-transform duration-200 hover:scale-105"
@@ -168,7 +172,6 @@
         </div>
       </GridItem>
     </GridLayout>
-
 
     <input
       type="file"
@@ -471,7 +474,6 @@ async function handleFileSelect(event: Event) {
     .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
     .map(result => result.reason)
 
-  console.log(`handleFileSelect: `, successful, failed)
   toast({
     title: failed.length > 0 ? 'Upload Results' : 'Upload Success',
     description: failed.length > 0 
@@ -634,4 +636,23 @@ async function handleReplaceFileSelect(event: Event) {
   visibility: visible;
 }
 
+.grid-item {
+  opacity: 0;
+  transform-origin: center;
+  animation: fadeInUp 0.6s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    padding: 8px;
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    padding: 0;
+  }
+}
 </style>
