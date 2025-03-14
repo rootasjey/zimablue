@@ -463,7 +463,6 @@ async function handleFileSelect(event: Event) {
 
   const files = Array.from(input.files)
   const uploadResults = await gridStore.uploadImages(files)
-  console.log(`(handleFileSelect) after upload: `, layout.value)
   layoutUpdated(layout.value)
 
   // Reuse existing upload success/error handling
@@ -496,7 +495,6 @@ async function handleReplaceFileSelect(event: Event) {
   const imageToReplace = gridStore.selectedImage
 
   if (!imageToReplace) return
-  console.log(`imageToReplace:`, imageToReplace)
 
   try {
     await gridStore.replaceImage(file, imageToReplace.id)

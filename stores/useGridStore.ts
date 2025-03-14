@@ -96,6 +96,11 @@ export const useGridStore = defineStore('grid', () => {
 
   async function saveLayout(newLayout: Image[]) {
     if (!initialized.value) return
+    if (newLayout.some((img: Image) => img.pathname.startsWith('data:image'))) {
+      console.warn(`(grid store) contains data:image value`, newLayout)
+      return
+    }
+
     await $fetch('/api/grid/save', {
       method: 'POST',
       body: newLayout,
@@ -145,7 +150,6 @@ export const useGridStore = defineStore('grid', () => {
   
       // Add to layout immediately for optimistic update
       layout.value.push(newGridItem)
-      console.log(`0 • (before upload) newGridItem.pathname: `, newGridItem.pathname)
 
       try {
         const formData = new FormData()
@@ -166,7 +170,6 @@ export const useGridStore = defineStore('grid', () => {
         if (response.success) {
           const uploadedImage = response.results[0]
           Object.assign(newGridItem, uploadedImage)
-          console.log(`1 • (after upload) newGridItem.pathname: `, newGridItem.pathname)
           return response
         } else {
           throw new Error('Upload failed')
