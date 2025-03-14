@@ -145,7 +145,8 @@ export const useGridStore = defineStore('grid', () => {
   
       // Add to layout immediately for optimistic update
       layout.value.push(newGridItem)
-  
+      console.log(`0 • (before upload) newGridItem.pathname: `, newGridItem.pathname)
+
       try {
         const formData = new FormData()
         formData.append('file', file)
@@ -165,6 +166,7 @@ export const useGridStore = defineStore('grid', () => {
         if (response.success) {
           const uploadedImage = response.results[0]
           Object.assign(newGridItem, uploadedImage)
+          console.log(`1 • (after upload) newGridItem.pathname: `, newGridItem.pathname)
           return response
         } else {
           throw new Error('Upload failed')
