@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-screen flex justify-center items-center inset-0 bg-black/90 z-2">
-    <div class="container md:max-w-70% overflow-clip flex justify-center items-start"
+    <div class="container w-400px overflow-clip flex justify-center items-start"
     >
       <NuxtImg
         v-if="image"
@@ -8,6 +8,7 @@
         :height="_height"
         :src="image?.pathname"
         :alt="image?.pathname"
+        fit="cover"
         class="w-full h-full object-cover"
         :style="`view-transition-name: shared-image-${image?.id}`"
       />
@@ -73,8 +74,6 @@ const downloadImage = () => {
 }
 
 onMounted(async () => {
-  _height.value = window.innerHeight * 0.75
-
   await fetchImage()
   // Prefetch adjacent images for smooth navigation
   if (image.value) {
