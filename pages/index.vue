@@ -21,7 +21,9 @@
     <!-- Header -->
     <header class="mb-8 flex flex-col items-center justify-center">
       <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
+        <NuxtLink to="/about">
         zima blue
+        </NuxtLink>
       </h1>
 
       <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 text-12px opacity-50">
