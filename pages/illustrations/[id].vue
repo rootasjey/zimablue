@@ -9,6 +9,7 @@
         :src="image?.pathname"
         :alt="image?.pathname"
         fit="cover"
+        placeholder="/loading.jpg"
         class="w-full h-full object-cover"
         :style="`view-transition-name: shared-image-${image?.id}`"
       />
