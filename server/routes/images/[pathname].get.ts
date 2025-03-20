@@ -68,7 +68,7 @@ export default eventHandler(async (event) => {
     buffer: Buffer.from(imageBuffer).toString('base64'), // Convert to base64 string
     type: mimeType,
   }, {
-    ttl: 60 * 60 // 1 hour in seconds
+    ttl: 60 * 60 * 24, // 1 day
   })
 
   setHeader(event, 'Cache-Control', 'public, max-age=1800')
