@@ -97,7 +97,6 @@ export const useGridStore = defineStore('grid', () => {
   async function saveLayout(newLayout: Image[]) {
     if (!initialized.value) return
     if (newLayout.some((img: Image) => img.pathname.startsWith('data:image'))) {
-      console.warn(`(grid store) contains data:image value`, newLayout)
       return
     }
 

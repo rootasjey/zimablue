@@ -1,28 +1,27 @@
 export const useNavigation = (countMap: { [key: string]: number } = {}) => {
   return [
     {
-      title: "projects",
-      count: countMap["projects"] ?? 0,
-      subtitle: "A collection of finished coding projects I've worked sometimes on years.",
-      icon: 'i-ph:laptop',
-      to: '/projects',
-      color: '#3D3BF3'
+      color: '#3D3BF3',
+      count: countMap["home"] ?? 0,
+      icon: '',
+      subtitle: "All the illustrations I've created.",
+      title: "home",
+      to: '/',
     },
     {
-      title: "reflexions",
-      count: countMap["posts"] ?? 0,
-      subtitle: "Thoughts, insights, and contemplations of the past. A garden of ideas in constant move.",
-      icon: 'i-ph-brain',
-      to: '/reflexions',
-      color: '#FAB12F'
+      color: '#FAB12F',
+      count: countMap["collections"] ?? 0,
+      icon: '',
+      subtitle: "Collections of categorized illustrations.",
+      title: "collections",
+      to: '/collections',
     },
     {
-      title: "experiments",
-      count: countMap["experiments"] ?? 0,
-      subtitle: "A playground for testing new ideas and breaking conventional boundaries.",
-      icon: 'i-ph-flask',
-      to: '/experiments',
-      color: '#CB9DF0'
+      color: '#CB9DF0',
+      count: countMap["about"] ?? 0,
+      subtitle: "Why all this even exists?",
+      title: "about",
+      to: '/about',
     }
   ]
 }
