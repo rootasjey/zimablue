@@ -51,7 +51,7 @@
           :_dropdown-menu-trigger="{
             icon: false,
             square: false,
-            class: 'ring-transparent p-0 hover:bg-transparent hover:scale-105 active:scale-99 transition',
+            class: 'ring-transparent p-0 shadow-none hover:bg-transparent hover:scale-105 active:scale-99 transition',
             label: `• ${username}`,
           }" 
         />
