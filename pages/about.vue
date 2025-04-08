@@ -41,8 +41,9 @@
           <p class="text-gray-500 dark:text-gray-300 leading-relaxed">
             All illustrations on this site are free to use under the 
             <NuxtLink href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" 
-               class="font-400 text-[#EC7FA9] dark:text-[#FFB8E0] hover:underline hover:text-[#ADB2D4] transition-all duration-300">
-              Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)</NuxtLink>. 
+              class="font-400 hover:underline hover:text-[#ADB2D4] transition-all duration-300"
+              :class="randomLightColor">
+              Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)</NuxtLink>
             This means you are free to share and adapt the material for any purpose, even commercially, 
             as long as you give appropriate credit and share your adaptations under the same license.
           </p>
@@ -58,7 +59,7 @@
             </p>
 
             <UCollapsibleTrigger as-child>
-              <UButton btn="link" size="md" class="pl-0 mb-4 text-[#EC7FA9] dark:text-[#FFB8E0]">
+              <UButton btn="link" size="md" class="pl-0 mb-4" :class="randomLightColor">
                 {{ isFormOpen ? "Hide contact form ☝️" : "Contact Me 👋" }}
               </UButton>
             </UCollapsibleTrigger>
@@ -183,30 +184,48 @@
     </div>
 
     <!-- Navigation -->
-    <div class="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto px-4 mb-25%">
-      <NuxtLink 
-        v-for="item in navigation" 
-        :key="item.title"
-        :to="item.to"
-        class="group p-4 rounded-lg border border-dashed border-gray-200 dark:border-gray-800 
-               hover:border-gray-300 dark:hover:border-gray-700
-               hover:shadow-md transition duration-300"
-               hover:border-solid
-      >
-        <div class="flex items-center">
-          <div v-if="item.icon" :class="item.icon" class="text-xl mr-2" :style="`color: ${item.color}`"></div>
-          <h3 class="text-size-2xl font-500 text-gray-800 dark:text-gray-200">{{ item.title }}</h3>
-        </div>
-        <p class="text-sm text-gray-400 dark:text-gray-400">{{ item.subtitle }}</p>
-      </NuxtLink>
-    </div>
+    <FooterNavigation />
   </div>
 </template>
 
 <script lang="ts" setup>
-const { useNavigation } = await import('~/composables/useNavigation')
-const navigation = useNavigation()
 const { toast } = useToast()
+
+// Define your color palettes
+const lightModeColors = [
+  'text-[#EC7FA9]',
+  'text-[#FF6B6B]',
+  'text-[#48A9A6]',
+  'text-[#9370DB]',
+  'text-[#4A90E2]',
+  'text-[#F7B801]'
+]
+
+const darkModeColors = [
+  'dark:text-[#66D2CE]',
+  'dark:text-[#FF9E9E]',
+  'dark:text-[#7FDBDA]',
+  'dark:text-[#B19CD9]',
+  'dark:text-[#7FB3F1]',
+  'dark:text-[#FFD54F]'
+]
+
+// Use useState to ensure the same random index is used on server and client
+const colorIndex = useState('colorIndex', () => Math.floor(Math.random() * lightModeColors.length))
+const darkColorIndex = useState('darkColorIndex', () => Math.floor(Math.random() * darkModeColors.length))
+
+// Function to get a random color from an array
+const getRandomColor = (colors: string[]) => {
+  const randomIndex = Math.floor(Math.random() * colors.length)
+  return colors[randomIndex]
+}
+
+// Computed properties for consistent colors
+const randomLightColor = computed(() => {
+  const lightColor = lightModeColors[colorIndex.value]
+  const darkColor = darkModeColors[darkColorIndex.value]
+  return `${lightColor} ${darkColor}`
+})
 
 const formData = reactive({
   email: '',

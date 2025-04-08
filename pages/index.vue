@@ -53,8 +53,14 @@
             square: false,
             class: 'ring-transparent p-0 shadow-none hover:bg-transparent hover:scale-105 active:scale-99 transition',
             label: `• ${username}`,
-          }" 
+          }"
         />
+
+        <div flex items-center justify-center>
+          <span mr-1>•</span>
+          <UButton icon to="/collections" class="i-ph-folder-simple-dashed-duotone  hover:scale-105 active:scale-99 transition">
+          </UButton>
+        </div>
       </div>
     </header>
 
