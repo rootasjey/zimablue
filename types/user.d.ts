@@ -2,6 +2,6 @@ export interface User {
   username: string;
   email: string;
   password: string;
-  id?: RecordId;
+  id?: number;
   [key: string]: any
 }

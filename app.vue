@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen w-full">
+  <div class="min-h-screen w-full flex items-center justify-center">
     <NuxtPage />
     <UToaster />
   </div>
@@ -7,6 +7,8 @@
 
 <script lang="ts" setup>
 import '@una-ui/preset/una.css'
+import '@/styles/main.css'
+import '@/styles/arrow-link.css'
 
 useHead({
   meta: [
@@ -14,33 +16,3 @@ useHead({
   ]
 })
 </script>
-
-<style>
-html {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-}
-
-[tooltip~="black"] {
-  border: none;
-}
-
-.tooltip-content {
-  padding: 0px;
-}
-
-
-div[data-radix-menu-content] {
-  backdrop-filter: blur(5px);
-  background-color: rgb(255 255 255 / 0.6) /* #fff */;
-}
-
-.dark div[data-radix-menu-content] {
-  backdrop-filter: blur(5px);
-  background-color: rgb(0 0 0 / 0.6) /* #000 */;
-}
-</style>

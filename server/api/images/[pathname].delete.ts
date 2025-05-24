@@ -1,3 +1,5 @@
+import { VariantType } from "~/types/image"
+
 export default eventHandler(async (event) => {
   await requireUserSession(event)
   const { pathname } = event.context.params || {}
@@ -33,6 +35,18 @@ export default eventHandler(async (event) => {
     })
   }
 
-  const blobPathname = dbResponse.results[0].pathname as string
-  return hubBlob().del(blobPathname)
+  const imageData = dbResponse.results[0]
+  
+  // Parse variants
+  const variants: Array<VariantType> = JSON.parse(imageData.variants as string || '[]')
+
+  // Delete all variants
+  for (const variant of variants) {
+    await hubBlob().del(variant.pathname)
+  }
+
+  return {
+    ...imageData,
+    ok: true,
+  }
 })

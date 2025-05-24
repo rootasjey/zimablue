@@ -6,11 +6,20 @@ export interface Image {
   i: number;
   name: string;
   pathname: string;
+  slug: string;
   sum: number;
   sum_abs: number;
-  tags: string[];
+  tags: string;
   updated_at: string;
+  variants: string;
   w: number;
   x: number;
   y: number;
+}
+
+export type VariantType = {
+  size: string
+  width: number
+  height: number
+  pathname: string
 }

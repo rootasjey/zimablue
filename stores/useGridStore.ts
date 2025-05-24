@@ -6,9 +6,6 @@ export const useGridStore = defineStore('grid', () => {
   const isLoading = ref(false)
   const selectedImage = ref<Image | null>(null)
 
-  // Cache the layout data
-  const cachedLayout = useLocalStorage('grid-layout', [])
-
   /**
    * Whether the store has been initialized with data from the server.
    */
@@ -20,7 +17,13 @@ export const useGridStore = defineStore('grid', () => {
       method: 'GET',
       key: 'grid',
     })
-    
+
+    if (!data.value) {
+      initialized.value = true
+      isLoading.value = false
+      return
+    }
+
     layout.value = data.value || []
     isLoading.value = false
     initialized.value = true
@@ -31,27 +34,6 @@ export const useGridStore = defineStore('grid', () => {
     await $fetch(`/api/images/${imageId}`, {
       method: 'DELETE',
     })
-  }
-  
-  // Prefetch next/previous images
-  function prefetchAdjacentImages(currentImageId: number) {
-    const currentIndex = layout.value.findIndex(img => img.id === currentImageId)
-    const currentImage = layout.value[currentIndex]
-    const nextImage = layout.value[currentIndex + 1]
-    const prevImage = layout.value[currentIndex - 1]
-
-    // Prefetch current image first for immediate transition
-    if (currentImage) {
-      useImage()(currentImage.pathname, { width: 1200, height: 1200 }, { provider: 'hubblob' })
-    }
-
-    if (nextImage) {
-      useImage()(nextImage.pathname, { width: 1200, height: 1200 }, { provider: 'hubblob' })
-    }
-
-    if (prevImage) {
-      useImage()(prevImage.pathname, { width: 1200, height: 1200 }, { provider: 'hubblob' })
-    }
   }
 
   async function replaceImage(file: File, imageId: number) {
@@ -66,6 +48,7 @@ export const useGridStore = defineStore('grid', () => {
     })
   
     // Update layout with temporary preview
+    const originalPathname = imageToReplace.pathname
     imageToReplace.pathname = tempPreviewUrl
   
     try {
@@ -81,7 +64,8 @@ export const useGridStore = defineStore('grid', () => {
       })
   
       if (response.success && response.results?.length > 0) {
-        imageToReplace.pathname = response.results[0]?.pathname ?? imageToReplace.pathname
+        // Update the image with all the returned data
+        Object.assign(imageToReplace, response.results[0])
         return response
       } else {
         throw new Error('Replace failed')
@@ -119,7 +103,6 @@ export const useGridStore = defineStore('grid', () => {
   //   }
   // }
 
-  // Batch uploads
   async function uploadImages(files: File[]) {
     const uploads = files.map(async (file, index) => {
       // Create base64 preview
@@ -132,7 +115,6 @@ export const useGridStore = defineStore('grid', () => {
       // Create optimistic grid item with base64 preview
       const newGridItem = {
         created_at: new Date().toString(),
-        updated_at: new Date().toString(),
         x: (layout.value.length * 2) % 14,
         y: layout.value.length + 14,
         w: 2,
@@ -143,8 +125,11 @@ export const useGridStore = defineStore('grid', () => {
         sum: 0,
         sum_abs: 0,
         id: layout.value.length + 1,
-        tags: [],
+        slug: "",
+        tags: "",
         pathname: tempPreviewUrl,
+        updated_at: new Date().toString(),
+        variants: "",
       }
   
       // Add to layout immediately for optimistic update
@@ -183,16 +168,36 @@ export const useGridStore = defineStore('grid', () => {
     return await Promise.allSettled(uploads)
   }
 
+  async function updateImage(imageData: { id: number, name?: string, description?: string, slug?: string, tags?: string }) {
+    try {
+      const response = await $fetch(`/api/images/${imageData.id}`, {
+        method: 'PATCH',
+        body: imageData
+      })
+      
+      // Update the image in the layout
+      const index = layout.value.findIndex(img => img.id === imageData.id)
+      if (index !== -1) {
+        layout.value[index] = { ...layout.value[index], ...imageData }
+      }
+      
+      return response
+    } catch (error) {
+      console.error('Failed to update image:', error)
+      throw error
+    }
+  }
+
   return {
     deleteImage,
     fetchGrid,
     initialized,
     isLoading,
     layout,
-    prefetchAdjacentImages,
     replaceImage,
     saveLayout,
     selectedImage,
     uploadImages,
+    updateImage,
   }
 })

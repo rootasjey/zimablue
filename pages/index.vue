@@ -1,5 +1,5 @@
-// pages/index.vue
 <template>
+  <!-- pages/index.vue -->
   <div class="flex flex-col justify-center 
     overflow-auto
     min-h-screen w-full rounded-xl md:p-8 transition-all duration-500"
@@ -25,18 +25,11 @@
         zima blue
         </NuxtLink>
       </h1>
-
-      <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 text-12px opacity-50">
-        <div :class="timeIcon" class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
-          @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
-
-        <h2 class="text-gray-800 dark:text-gray-200">
-          {{ greeting }} • {{ new Date().toLocaleDateString("fr-FR", {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          }) }}
-        </h2>
+      <div class="text-gray-800 dark:text-gray-200 text-3 font-500 opacity-50">
+        <span>Illustrations gallery & </span>
+        <ULink to="/collections" class="text-size-3 font-500 hover:scale-105 active:scale-99 transition">
+          <span>collections </span>
+        </ULink>
 
         <UDropdownMenu 
           v-if="loggedIn"
@@ -52,15 +45,49 @@
             icon: false,
             square: false,
             class: 'ring-transparent p-0 shadow-none hover:bg-transparent hover:scale-105 active:scale-99 transition',
-            label: `• ${username}`,
+            label: ` •`,
           }"
         />
+      </div>
 
-        <div flex items-center justify-center>
-          <span mr-1>•</span>
-          <UButton icon to="/collections" class="i-ph-folder-simple-dashed-duotone  hover:scale-105 active:scale-99 transition">
-          </UButton>
-        </div>
+      <!-- Greeting -->
+      <div class="flex justify-center items-center flex-wrap gap-2">
+        <UTooltip content="Go back" :_tooltip-content="{
+          side: 'right',
+        }">
+          <template #default>
+            <div :class="timeIcon" 
+              class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition" 
+              @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" 
+              @click.right="$colorMode.preference = 'system'"
+            />
+          </template>
+          <template #content>
+            <button @click="$colorMode.preference = 'system'" bg="light dark:dark" text="dark dark:white" text-3 px-3 py-1 rounded-md m-0
+              border-1 border-dashed class="b-#3D3BF3">
+              System theme
+            </button>
+          </template>
+        </UTooltip>
+
+        <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
+          {{ greeting }}
+        </span>
+
+        <ULink to="/time" class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
+           • {{ new Date().toLocaleDateString("fr-FR", { 
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          }) }}
+        </ULink>
+
+        <ULink to="/contact" class="text-size-3 font-500 hover:scale-102 active:scale-99 transition">
+          <span>• </span>
+          <span>contact me</span>
+          <span class="i-ph-envelope-simple-open-duotone ml-1"></span>
+        </ULink>
       </div>
     </header>
 
@@ -82,10 +109,14 @@
             <div class="i-lucide-plus absolute opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 text-gray-400 dark:text-gray-600 transition-all duration-300" />
         </div>
       </div>
-      <h2 class="font-size-4 font-mono font-600 text-gray-500 dark:text-gray-600">
-        Upload your first image 
-        <span class="i-ph:hand-pointing-bold"></span> 
-      </h2>
+
+      <div class="max-w-300px text-center">
+        <h2 class="mt-2 font-size-4 font-text font-500 text-gray-800 dark:text-gray-200">
+          This is an image gallery to share what you love with others. 
+          Use it with caution and without moderation.
+          <span class="i-ph:hand-pointing-bold"></span> 
+        </h2>
+      </div>
     </div>
 
     <!-- Mobile Grid with 3 columns -->
@@ -95,14 +126,15 @@
         rounded-7 z-2 cursor-pointer transition duration-900"
       >
         <NuxtImg 
-            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            height="200"
-            :src="item.pathname" 
-            :alt="item.pathname"
-            class="nuxt-img object-cover w-full h-full rounded-7 transition-transform duration-400 hover:scale-105"
-            :style="`view-transition-name: shared-image-${item.id}`"
-            @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
-            @click.self="(event: MouseEvent) => openImage(item, event)"
+          loading="lazy"
+          width="120"
+          :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
+          :src="item.pathname" 
+          :alt="item.pathname"
+          class="nuxt-img object-cover w-full h-full rounded-7 transition-transform duration-400 hover:scale-105"
+          :style="`view-transition-name: shared-image-${item.id}`"
+          @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
+          @click.self="(event: MouseEvent) => openImage(item, event)"
           />
       </div>
     </div>
@@ -131,6 +163,8 @@
         :w="item.w"
         :h="item.h"
         :i="item.i"
+        :is-draggable="!item.pathname.includes('blob')"
+        :is-resizable="!item.pathname.includes('blob')"
         class="rounded-lg grid-item"
         :style="{
           '--delay': `${index * 0.15}s`
@@ -140,18 +174,18 @@
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
           >
           <NuxtImg 
-            height="200"
             loading="lazy"
             :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            :src="item.pathname" 
+            :src="`${item.pathname}`" 
             :alt="item.pathname"
+            :width="240"
             class="nuxt-img object-cover w-full h-full transition-transform duration-200 hover:scale-105"
             :style="`view-transition-name: shared-image-${item.id}`"
             @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
             @click.self="(event: MouseEvent) => openImage(item, event)"
           />
 
-          <div class="absolute h-32px w-32px 
+          <div v-if="loggedIn" class="absolute h-32px w-32px 
             bottom-1 right-1 rounded-lg backdrop-blur-md
             bg-white/20 dark:bg-black/60 hover:bg-white/40 dark:hover:bg-black/80 
             invisible group-hover:visible flex justify-center items-center">
@@ -208,11 +242,87 @@
           />
       </div>
     </div>
+
+    <UDialog 
+      v-model:open="showEditModal" 
+      :ui="{ width: 'sm:max-w-md' }" 
+      :_dialog-close="{
+      btn: 'solid-gray',
+      }">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              Edit Image Details
+            </h3>
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <UFormGroup label="Name" name="name">
+            <UInput v-model="editForm.name" placeholder="Image name" />
+          </UFormGroup>
+          
+          <UFormGroup label="Slug" name="slug">
+            <UInput v-model="editForm.slug" placeholder="URL-friendly slug" />
+          </UFormGroup>
+          
+          <UFormGroup label="Description" name="description">
+            <UInput v-model="editForm.description" type="textarea" placeholder="Image description" />
+          </UFormGroup>
+          
+          <UFormGroup label="Tags" name="tags">
+             <UCombobox
+                v-model="editForm.tags"
+                :items="availableTags"
+                by="value"
+                multiple
+                :_combobox-input="{
+                  placeholder: 'Select tags...',
+                }"
+                :_combobox-list="{
+                  class: 'w-300px',
+                  align: 'start',
+                }"
+              >
+                <template #trigger>
+                  {{ editForm.tags?.length > 0
+                    ? editForm.tags.map(val => {
+                      const tag = availableTags.find(f => f.value === val)
+                      return tag ? tag.label : val
+                    }).join(", ")
+                    : "Select tags..." }}
+                </template>
+
+                <template #item="{ item, selected }">
+                  <UCheckbox
+                    :model-value="selected"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  />
+                  {{ item.label }}
+                </template>
+              </UCombobox>
+          </UFormGroup>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton btn="ghost-pink" @click="showEditModal = false">
+              Cancel
+            </UButton>
+            <UButton btn="outline" @click="handleEditSubmit">
+              Save Changes
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UDialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { Image } from '~/types/image'
+import type { Image, VariantType } from '~/types/image'
 import { GridLayout, GridItem } from 'grid-layout-plus'
 import { useGridStore } from '@/stores/useGridStore'
 
@@ -252,6 +362,30 @@ const DROPDOWN_MENU_TRIGGER_CLASS = `
   bg-white/20 dark:bg-black/60 
   hover:bg-white/40 dark:hover:bg-black/80 hover:scale-110 active:scale-99 transition b-0
   `
+
+const showEditModal = ref(false)
+const editForm = ref({
+  name: '',
+  description: '',
+  slug: '',
+  // tags: '',
+  tags: [],
+})
+
+const availableTags = [
+  { value: "abstract", label: "Abstract" },
+  { value: "anime", label: "Anime" },
+  { value: "cartoon", label: "Cartoon" },
+  { value: "comic", label: "Comic" },
+  { value: "landscape", label: "Landscape" },
+  { value: "litterature", label: "Litterature" },
+  { value: "movie", label: "Movie" },
+  { value: "music", label: "Music" },
+  { value: "poetry", label: "Poetry" },
+  { value: "portrait", label: "Portrait" },
+  { value: "tv-show", label: "TV Show" },
+  { value: "video-game", label: "Video Game" },
+]
 
 const updateRowHeight = () => {
   const windowWidth = window.innerWidth
@@ -305,11 +439,15 @@ function openImage(item: Image, event: MouseEvent) {
   }
 
   gridStore.selectedImage = item
-  gridStore.prefetchAdjacentImages(item.id)
+
+  // Use slug if available, otherwise fall back to ID
+  const urlPath = item.slug 
+    ? `/illustrations/${item.slug}` 
+    : `/illustrations/${item.id}`
 
   if (!document.startViewTransition) {
     router.push({
-      path: `/illustrations/${item.id}`,
+      path: urlPath,
       state: {
         imageData: JSON.parse(JSON.stringify(item)),
         previousPath: router.currentRoute.value.fullPath
@@ -320,7 +458,7 @@ function openImage(item: Image, event: MouseEvent) {
 
   document.startViewTransition(async () => {
     await router.push({
-      path: `/illustrations/${item.id}`,
+      path: urlPath,
       state: {
         imageData: JSON.parse(JSON.stringify(item)),
         previousPath: router.currentRoute.value.fullPath
@@ -386,9 +524,13 @@ const imageMenuItems = (image: Image) => {
     {
       label: 'Download',
       onClick: () => {
+        const variants: Array<VariantType> = JSON.parse(image.variants)
+        const originalVariant = variants.find(variant => variant.size === 'original')
+
         const link = document.createElement('a')
-        link.href = image.pathname
-        link.download = image.pathname
+        const imagePathname = `/${originalVariant?.pathname ?? image.pathname}`
+        link.href = imagePathname
+        link.download = image.name || imagePathname.split('/').pop() || 'image'
         link.click()
       },
     },
@@ -397,6 +539,13 @@ const imageMenuItems = (image: Image) => {
   if (loggedIn.value) {
     items.splice(items.length, 0, 
       {}, // to add a separator between items (label or items should be null).
+      {
+        label: 'Edit',
+        onClick: () => {
+          gridStore.selectedImage = image
+          showEditModal.value = true
+        },
+      },
       {
         label: 'Replace',
         onClick: () => {
@@ -429,12 +578,12 @@ const userMenuItems = [
   },
 ]
 
-function layoutUpdated(newLayout: any) {
+function layoutUpdated(newLayout: Image[]) {
   if (!loggedIn.value) return
   gridStore.saveLayout(newLayout)
 }
 
-function layoutReady(layout: any) {
+function layoutReady(layout: Image[]) {
   showGrid.value = true
   setTimeout(() => {
     showGridOpacity.value = true
@@ -525,6 +674,47 @@ async function handleReplaceFileSelect(event: Event) {
 
   input.value = '' // Reset input
 }
+async function handleEditSubmit() {
+  if (!gridStore.selectedImage) return
+  
+  try {
+    await gridStore.updateImage({
+      id: gridStore.selectedImage.id,
+      name: editForm.value.name,
+      description: editForm.value.description,
+      slug: editForm.value.slug,
+      // tags: editForm.value.tags
+      tags: JSON.stringify(editForm.value.tags)
+    })
+    
+    showEditModal.value = false
+    toast({
+      title: 'Update Success',
+      description: 'Image details updated successfully',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-success'
+    })
+  } catch (error) {
+    toast({
+      title: 'Update Failed',
+      description: 'Failed to update image details',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
+  }
+}
+
+watch(() => gridStore.selectedImage, (newImage) => {
+  if (newImage) {
+    editForm.value.name = newImage.name || ''
+    editForm.value.description = newImage.description || ''
+    editForm.value.slug = newImage.slug || ''
+    // editForm.value.tags = newImage.tags || ''
+    editForm.value.tags = JSON.parse(newImage.tags) || []
+  }
+}, { immediate: true })
 
 </script>
 

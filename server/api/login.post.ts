@@ -11,9 +11,25 @@ export default defineEventHandler(async (event) => {
   if (email === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     // set the user session in the cookie
     // this server util is auto-imported by the auth-utils module
+
+    const userData = await hubDatabase()
+    .prepare('SELECT * FROM users WHERE email = ?1 LIMIT 1')
+    .bind(email)
+    .first()
+
+    if (!userData) {
+      throw createError({
+        statusCode: 401,
+        message: 'Bad credentials'
+      })
+    }
+
     await setUserSession(event, {
       user: {
-        name: 'rootasjey'
+        id: userData.id,
+        email,
+        name: userData.name,
+        role: userData.role,
       }
     })
     return {}

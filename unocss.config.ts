@@ -26,7 +26,7 @@ export default {
       provider: 'fontshare',
       fonts: {
         title: 'Montserrat',
-        text: 'Satoshi',
+        text: 'Gambetta',
         body: 'Chillax',
         mono: 'Pally',
         sans: 'General Sans',
