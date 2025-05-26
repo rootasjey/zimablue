@@ -10,7 +10,7 @@
         <!-- Modal header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 :title="selectedModalImage?.name" class="text-lg font-semibold  text-gray-900 dark:text-gray-100 max-w-260px overflow-hidden text-ellipsis whitespace-nowrap">
               {{ selectedModalImage?.name || 'Image' }}
             </h3>
             <p v-if="selectedModalImage?.description" class="text-sm text-gray-500 dark:text-gray-400">
