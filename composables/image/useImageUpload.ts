@@ -15,7 +15,6 @@ export const useImageUpload = () => {
   const fileInput = ref<HTMLInputElement>()
   const replacementFileInput = ref<HTMLInputElement>()
 
-  // Validation
   const validateFile = (file: File): boolean => {
     if (!file.type.startsWith('image/')) {
       toast({
@@ -42,7 +41,6 @@ export const useImageUpload = () => {
     return true
   }
 
-  // Check authentication
   const checkAuth = (): boolean => {
     if (!loggedIn.value) {
       toast({
@@ -53,6 +51,7 @@ export const useImageUpload = () => {
       })
       return false
     }
+
     return true
   }
 
@@ -163,7 +162,6 @@ export const useImageUpload = () => {
         .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
         .map(result => result.reason)
 
-      // Show results toast
       toast({
         title: failed.length > 0 ? 'Upload Results' : 'Upload Success',
         description: failed.length > 0 
@@ -197,7 +195,6 @@ export const useImageUpload = () => {
   // Replace image
   const replaceImage = async (file: File, imageId: number) => {
     if (!checkAuth()) return
-
     isUploading.value = true
 
     try {

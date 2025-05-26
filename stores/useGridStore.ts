@@ -80,18 +80,21 @@ export const useGridStore = defineStore('grid', () => {
         method: 'POST',
         body: formData
       })
-  
-      if (response.success && response.results?.length > 0) {
-        // Update the image with all the returned data
-        Object.assign(imageToReplace, response.results[0])
-        return response
-      } else {
+
+      if (!response.success || !response.results?.length) {
         throw new Error('Replace failed')
       }
+  
+      const updatedImage = response.results[0]
+      if (!updatedImage) throw new Error('Failed to update image')
+
+      imageToReplace.pathname = updatedImage.pathname
+      imageToReplace.updated_at = updatedImage.updated_at
+      imageToReplace.variants = updatedImage.variants
+      imageToReplace.slug = updatedImage.slug
+      return response
     } catch (error) {
-      // Restore original image on error
-      const originalImage = await $fetch(`/api/images/${imageId}`)
-      Object.assign(imageToReplace, originalImage)
+      imageToReplace.pathname = originalPathname
       throw error
     }
   }

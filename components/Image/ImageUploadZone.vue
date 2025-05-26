@@ -39,7 +39,7 @@
         <div class="flex flex-col items-center gap-4">
           <div class="i-ph-upload-simple text-4xl text-white animate-bounce"></div>
           <div class="text-white text-xl font-medium">Drop your images here</div>
-          <div class="text-white/70 text-sm">Supported formats: JPG, PNG, GIF, WebP</div>
+          <div class="text-white/70 text-sm">Supported formats: JPG, PNG, GIF, BMP, TIFF</div>
         </div>
       </div>
     </div>

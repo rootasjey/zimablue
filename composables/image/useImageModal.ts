@@ -25,7 +25,6 @@ export const useImageModal = () => {
     dragStartPos.value = { x: e.clientX, y: e.clientY }
   }
 
-  // Open image modal with drag detection
   const openImageModal = (item: Image, event?: MouseEvent) => {
     if (event) {
       // Check if the user is dragging the image
@@ -44,7 +43,6 @@ export const useImageModal = () => {
     isImageModalOpen.value = true
   }
 
-  // Navigation methods
   const navigateToPrevious = () => {
     if (canNavigatePrevious.value) {
       currentImageIndex.value--
@@ -59,7 +57,6 @@ export const useImageModal = () => {
     }
   }
 
-  // Navigate to specific image by ID
   const navigateToImage = (imageId: number) => {
     const index = gridStore.layout.findIndex(img => img.id === imageId)
     if (index !== -1) {
@@ -69,7 +66,11 @@ export const useImageModal = () => {
   }
 
   // Open image in full page with view transition
-  const openImagePage = () => {
+  const openImagePage = (targetImage?: Image) => {
+    if (targetImage) {
+      selectedModalImage.value = targetImage
+    }
+
     if (!selectedModalImage.value) return
     
     const item = selectedModalImage.value
@@ -82,30 +83,25 @@ export const useImageModal = () => {
       ? `/illustrations/${item.slug}` 
       : `/illustrations/${item.id}`
 
+    const routePayload = {
+      path: urlPath,
+      state: {
+        imageData: JSON.parse(JSON.stringify(item)),
+        previousPath: router.currentRoute.value.fullPath
+      }
+    }
+
     // Use view transition if supported
     if (!document.startViewTransition) {
-      router.push({
-        path: urlPath,
-        state: {
-          imageData: JSON.parse(JSON.stringify(item)),
-          previousPath: router.currentRoute.value.fullPath
-        }
-      })
+      router.push(routePayload)
       return
     }
 
     document.startViewTransition(async () => {
-      await router.push({
-        path: urlPath,
-        state: {
-          imageData: JSON.parse(JSON.stringify(item)),
-          previousPath: router.currentRoute.value.fullPath
-        }
-      })
+      await router.push(routePayload)
     })
   }
 
-  // Close modal
   const closeModal = () => {
     isImageModalOpen.value = false
     selectedModalImage.value = null
@@ -125,11 +121,13 @@ export const useImageModal = () => {
         navigateToNext()
         break
       case 'Escape':
+      case 'ArrowDown':
         e.preventDefault()
         closeModal()
         break
       case 'Enter':
       case ' ':
+      case 'Space':
         e.preventDefault()
         openImagePage()
         break
@@ -159,7 +157,6 @@ export const useImageModal = () => {
     window.removeEventListener('keydown', handleKeydown)
   }
 
-  // Auto-setup on mount
   onMounted(() => {
     setupKeyboardListeners()
   })
@@ -169,19 +166,18 @@ export const useImageModal = () => {
   })
 
   // Watch for modal state changes to handle body scroll
-  watch(isImageModalOpen, (isOpen) => {
-    if (process.client) {
-      if (isOpen) {
-        document.body.style.overflow = 'hidden'
-      } else {
-        document.body.style.overflow = ''
-      }
+  watch(isImageModalOpen, (isOpen: boolean) => {
+    if (!import.meta.client) return
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      return
     }
+
+    document.body.style.overflow = ''
   })
 
-  // Cleanup on unmount
   onUnmounted(() => {
-    if (process.client) {
+    if (import.meta.client) {
       document.body.style.overflow = ''
     }
   })

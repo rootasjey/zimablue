@@ -35,19 +35,16 @@ export const useImageActions = () => {
   const isUpdating = ref(false)
   const isReplacing = ref(false)
 
-  // Open edit modal
   const openEditModal = (image: Image) => {
     gridStore.selectedImage = image
     showEditModal.value = true
   }
 
-  // Close edit modal
   const closeEditModal = () => {
     showEditModal.value = false
     resetEditForm()
   }
 
-  // Reset edit form
   const resetEditForm = () => {
     editForm.value = {
       name: '',
@@ -57,7 +54,6 @@ export const useImageActions = () => {
     }
   }
 
-  // Handle edit form submission
   const handleEditSubmit = async () => {
     if (!gridStore.selectedImage) {
       toast({
@@ -102,28 +98,22 @@ export const useImageActions = () => {
     }
   }
 
-  // Delete image
   const deleteImage = async (imageId: number) => {
     isDeleting.value = true
     
     try {
       const response = await gridStore.deleteImage(imageId)
-      if (!response?.success) {
-        toast({
-          showProgress: true,
-          title: 'Error',
-          description: response?.message || 'An error occurred while deleting the image.',
-          toast: 'soft-warning',
-        })
-      } else {
-        toast({
-          title: 'Delete Success',
-          description: 'Image deleted successfully',
-          duration: 3000,
-          showProgress: true,
-          toast: 'soft-success'
-        })
-      }
+      if (!response) throw new Error('Failed to delete image')
+      const success = response.success
+      const errorDescription = response.message ?? 'Failed to delete image'
+
+      toast({
+        title: success ? 'Image deleted successfully' : 'Error',
+        description: success ? 'Image deleted successfully' : errorDescription,
+        duration: 3000,
+        showProgress: true,
+        toast: success ? 'soft-success': 'soft-warning',
+      })
     } catch (error) {
       console.error('Delete error:', error)
       toast({
@@ -169,19 +159,16 @@ export const useImageActions = () => {
     }
   }
 
-  // View image in fullscreen (for modal integration)
-  const viewImageFullscreen = (image: Image, openImagePageFn: () => void) => {
+  const viewImageFullscreen = (image: Image, openImagePageFn: (image?: Image) => void) => {
     gridStore.selectedImage = image
-    openImagePageFn()
+    openImagePageFn(image)
   }
 
-  // Trigger image replacement
   const triggerImageReplacement = (image: Image, replacementFileInput: HTMLInputElement | undefined) => {
     gridStore.selectedImage = image
     replacementFileInput?.click()
   }
 
-  // Generate menu items for image dropdown
   const generateImageMenuItems = (
     image: Image, 
     openImagePageFn: () => void,
@@ -219,7 +206,6 @@ export const useImageActions = () => {
     return items
   }
 
-  // Generate user menu items
   const generateUserMenuItems = (triggerFileUploadFn: () => void, clearUserFn: () => void) => [
     {
       label: 'Upload',
@@ -231,22 +217,20 @@ export const useImageActions = () => {
     },
   ]
 
-  // Watch for selected image changes to populate edit form
   watch(() => gridStore.selectedImage, (newImage) => {
-    if (newImage) {
-      editForm.value.name = newImage.name || ''
-      editForm.value.description = newImage.description || ''
-      editForm.value.slug = newImage.slug || ''
-      
-      try {
-        editForm.value.tags = JSON.parse(newImage.tags || '[]')
-      } catch {
-        editForm.value.tags = []
-      }
+    if (!newImage) return
+
+    editForm.value.name = newImage.name || ''
+    editForm.value.description = newImage.description || ''
+    editForm.value.slug = newImage.slug || ''
+
+    try {
+      editForm.value.tags = JSON.parse(newImage.tags || '[]')
+    } catch {
+      editForm.value.tags = []
     }
   }, { immediate: true })
 
-  // Validation for edit form
   const isEditFormValid = computed(() => {
     return editForm.value.name.trim().length > 0
   })
@@ -258,8 +242,7 @@ export const useImageActions = () => {
 
   return {
     // State
-    showEditModal: readonly(showEditModal),
-    // editForm: readonly(editForm),
+    showEditModal,
     editForm,
     availableTags,
     isDeleting: readonly(isDeleting),

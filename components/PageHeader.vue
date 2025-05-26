@@ -25,7 +25,7 @@
           icon: false,
           square: false,
           class: 'ring-transparent p-0 w-auto h-auto shadow-none hover:bg-transparent hover:scale-105 active:scale-99 transition',
-          label: `(myself)`,
+          label: `(${user?.name})`,
         }"
       />
 
@@ -90,7 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
   userMenuItems: () => []
 })
 
-const { loggedIn } = useUserSession()
+const { loggedIn, user } = useUserSession()
 const { $colorMode } = useNuxtApp()
 
 // Theme management
