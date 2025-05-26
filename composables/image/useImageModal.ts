@@ -26,15 +26,17 @@ export const useImageModal = () => {
   }
 
   // Open image modal with drag detection
-  const openImageModal = (item: Image, event: MouseEvent) => {
-    // Check if the user is dragging the image
-    const moveDistance = Math.sqrt(
-      Math.pow(event.clientX - dragStartPos.value.x, 2) + 
-      Math.pow(event.clientY - dragStartPos.value.y, 2)
-    )
+  const openImageModal = (item: Image, event?: MouseEvent) => {
+    if (event) {
+      // Check if the user is dragging the image
+      const moveDistance = Math.sqrt(
+        Math.pow(event.clientX - dragStartPos.value.x, 2) + 
+        Math.pow(event.clientY - dragStartPos.value.y, 2)
+      )
 
-    if (moveDistance > DRAG_THRESHOLD) {
-      return
+      if (moveDistance > DRAG_THRESHOLD) {
+        return
+      }
     }
 
     selectedModalImage.value = item
@@ -186,7 +188,8 @@ export const useImageModal = () => {
 
   return {
     // State
-    isImageModalOpen: readonly(isImageModalOpen),
+    // isImageModalOpen: readonly(isImageModalOpen),
+    isImageModalOpen: isImageModalOpen,
     selectedModalImage: readonly(selectedModalImage),
     currentImageIndex: readonly(currentImageIndex),
     

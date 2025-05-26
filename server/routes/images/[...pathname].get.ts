@@ -34,11 +34,11 @@ export default eventHandler(async (event) => {
       return buffer
     }
   }
-
+  
   // Check if we have pre-generated variants for this image
   const imageData = await hubDatabase()
-    .prepare(`SELECT * FROM images WHERE pathname LIKE ? OR pathname = ? LIMIT 1`)
-    .bind(`images/${imageId}/%`, `images/${pathname}`)
+    .prepare(`SELECT * FROM images WHERE pathname = ? LIMIT 1`)
+    .bind(`images/${pathname}`)
     .first()
 
   if (!imageData || typeof imageData.variants !== 'string') {

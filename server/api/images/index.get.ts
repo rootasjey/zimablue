@@ -9,7 +9,5 @@ export default eventHandler(async () => {
     `)
     .all()
 
-    console.log(dbResponse)
-
   return dbResponse.results as unknown as Image[] ?? []
 })

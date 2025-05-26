@@ -174,7 +174,17 @@ export const useGridStore = defineStore('grid', () => {
   
         if (response.success) {
           const uploadedImage = response.results[0]
-          Object.assign(newGridItem, uploadedImage)
+          // Update the optimistic grid item with the uploaded image data
+          newGridItem.id = uploadedImage.id
+          newGridItem.created_at = uploadedImage.created_at
+          newGridItem.updated_at = uploadedImage.updated_at
+          newGridItem.name = uploadedImage.name
+          newGridItem.description = uploadedImage.description
+          newGridItem.pathname = uploadedImage.pathname
+          newGridItem.slug = uploadedImage.slug
+          newGridItem.variants = uploadedImage.variants
+
+          saveLayout(layout.value)
           return response
         } else {
           throw new Error('Upload failed')
