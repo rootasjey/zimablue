@@ -1,4 +1,3 @@
-// import { defineStore } from 'pinia'
 import type { Image } from '~/types/image'
 
 export const useGridStore = defineStore('grid', () => {
@@ -30,10 +29,29 @@ export const useGridStore = defineStore('grid', () => {
   }
 
   async function deleteImage(imageId: number) {
+    // Save the target imaege data to revert changes if the delete request fails
+    const targetImage = layout.value.find((item) => item.id === imageId)
+    if (!targetImage) return
+    
+    // Remove the image from the layout
     layout.value = layout.value.filter((item) => item.id !== imageId)
-    await $fetch(`/api/images/${imageId}`, {
+    const response = await $fetch(`/api/images/${imageId}`, {
       method: 'DELETE',
     })
+
+    if (!response.ok) {
+      // Revert the layout changes if the delete request fails
+      layout.value = [...layout.value, targetImage]
+      return {
+        success: false,
+        message: 'Failed to delete image',
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Image deleted successfully',
+    }
   }
 
   async function replaceImage(file: File, imageId: number) {
@@ -113,7 +131,7 @@ export const useGridStore = defineStore('grid', () => {
       })
 
       // Create optimistic grid item with base64 preview
-      const newGridItem = {
+      const newGridItem: Image = {
         created_at: new Date().toString(),
         x: (layout.value.length * 2) % 14,
         y: layout.value.length + 14,
@@ -126,6 +144,9 @@ export const useGridStore = defineStore('grid', () => {
         sum_abs: 0,
         id: layout.value.length + 1,
         slug: "",
+        stats_downloads: 0,
+        stats_likes: 0,
+        stats_views: 0,
         tags: "",
         pathname: tempPreviewUrl,
         updated_at: new Date().toString(),

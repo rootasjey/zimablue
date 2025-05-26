@@ -75,7 +75,6 @@ CREATE TABLE IF NOT EXISTS collections (
     description TEXT DEFAULT "",
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     is_public BOOLEAN DEFAULT TRUE,
-    items TEXT DEFAULT '[]',
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
     stats_likes INTEGER NOT NULL DEFAULT 0,
@@ -88,7 +87,27 @@ CREATE TABLE IF NOT EXISTS collections (
     FOREIGN KEY (cover_image_id) REFERENCES images(id) ON DELETE SET NULL
 );
 
+-- Junction table for collection-image relationships
+CREATE TABLE IF NOT EXISTS collection_images (
+    collection_id INTEGER NOT NULL,
+    image_id INTEGER NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (collection_id, image_id),
+    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+    FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+);
+
+-- Index for faster lookups by collection_id (common query pattern)
+CREATE INDEX IF NOT EXISTS idx_collection_images_collection_id ON collection_images(collection_id);
+-- Index for faster lookups by image_id (for finding all collections containing an image)
+CREATE INDEX IF NOT EXISTS idx_collection_images_image_id ON collection_images(image_id);
+-- Index for ordering images within a collection
+CREATE INDEX IF NOT EXISTS idx_collection_images_position ON collection_images(collection_id, position);
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_collections_slug ON collections(slug);
+
 -- Trigger to update the updated_at timestamp whenever a row is modified
 CREATE TRIGGER IF NOT EXISTS update_collections_timestamp
 AFTER UPDATE ON collections

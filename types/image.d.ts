@@ -7,6 +7,9 @@ export interface Image {
   name: string;
   pathname: string;
   slug: string;
+  stats_downloads: number;
+  stats_likes: number;
+  stats_views: number;
   sum: number;
   sum_abs: number;
   tags: string;

@@ -124,6 +124,7 @@
       <div v-for="item in layout" :key="item.i" 
         class="mobile-group aspect-square relative overflow-hidden 
         rounded-7 z-2 cursor-pointer transition duration-900"
+        @click.self="(event: MouseEvent) => openImageModal(item, event)"
       >
         <NuxtImg 
           loading="lazy"
@@ -133,8 +134,6 @@
           :alt="item.pathname"
           class="nuxt-img object-cover w-full h-full rounded-7 transition-transform duration-400 hover:scale-105"
           :style="`view-transition-name: shared-image-${item.id}`"
-          @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
-          @click.self="(event: MouseEvent) => openImage(item, event)"
           />
       </div>
     </div>
@@ -174,15 +173,15 @@
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
           >
           <NuxtImg 
+            @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
+            @click.self="(event: MouseEvent) => openImageModal(item, event)"
             loading="lazy"
             :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
             :src="`${item.pathname}`" 
             :alt="item.pathname"
             :width="240"
-            class="nuxt-img object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+            class="nuxt-img object-cover w-full h-full rounded-lg  transition-transform duration-200 hover:scale-105 active:scale-98"
             :style="`view-transition-name: shared-image-${item.id}`"
-            @mousedown="(e: MouseEvent) => { dragStartPos = { x: e.clientX, y: e.clientY } }"
-            @click.self="(event: MouseEvent) => openImage(item, event)"
           />
 
           <div v-if="loggedIn" class="absolute h-32px w-32px 
@@ -241,6 +240,10 @@
           @click="triggerFileUpload"
           />
       </div>
+    </div>
+
+    <div class="flex justify-center mt-12">
+      <Footer />
     </div>
 
     <UDialog 
@@ -318,6 +321,76 @@
         </template>
       </UCard>
     </UDialog>
+
+    <!-- Image Modal -->
+    <UDialog v-model:open="isImageModalOpen" :ui="{ width: 'max-w-7xl' }">
+      <div class="relative">
+        <!-- Modal header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {{ selectedModalImage?.name || 'Image' }}
+            </h3>
+            <p v-if="selectedModalImage?.description" class="text-sm text-gray-500 dark:text-gray-400">
+              {{ selectedModalImage.description }}
+            </p>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <span>{{ selectedModalImage?.stats_views }} views</span>
+            <span>{{ selectedModalImage?.stats_likes }} likes</span>
+            <UButton 
+              size="xs" 
+              btn="primary" 
+              icon
+              class="i-ph-arrow-square-up-right text-size-2"
+              @click="openImagePage"
+              title="Open in full page"
+            />
+          </div>
+        </div>
+        
+        <!-- Modal content -->
+        <div class="p-4">
+          <div class="flex justify-center">
+            <NuxtImg 
+              v-if="selectedModalImage"
+              :provider="selectedModalImage.pathname.includes('blob') ? 'ipx' : 'hubblob'"
+              :src="selectedModalImage.pathname"
+              :alt="selectedModalImage.name || 'Image'"
+              :width="600"
+              class="max-w-full max-h-[70vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+        
+        <!-- Modal footer with navigation -->
+        <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+          <UButton 
+            btn="ghost" 
+            size="sm" 
+            :disabled="!canNavigatePrevious"
+            @click="navigateToPrevious"
+          >
+            <span class="i-ph-arrow-left mr-1"></span>
+            Previous
+          </UButton>
+          
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ currentImageIndex + 1 }} of {{ layout.length }}
+          </span>
+          
+          <UButton 
+            btn="ghost" 
+            size="sm" 
+            :disabled="!canNavigateNext"
+            @click="navigateToNext"
+          >
+            Next
+            <span class="i-ph-arrow-right ml-1"></span>
+          </UButton>
+        </div>
+      </div>
+    </UDialog>
   </div>
 </template>
 
@@ -334,9 +407,6 @@ const router = useRouter()
 
 const { toast } = useToast()
 
-const isDragging = ref(false)
-let dragCounter = 0
-
 const showGrid = ref(false)
 const showGridOpacity = ref(false)
 const isDraggable = computed(() => loggedIn.value)
@@ -344,6 +414,15 @@ const isResizable = computed(() => loggedIn.value)
 
 const fileInput = ref<HTMLInputElement>()
 const replacementFileInput = ref<HTMLInputElement>()
+
+// Modal state
+const isImageModalOpen = ref(false)
+const selectedModalImage = ref<Image | null>(null)
+const currentImageIndex = ref(0)
+
+// Modal navigation computed properties
+const canNavigatePrevious = computed(() => currentImageIndex.value > 0)
+const canNavigateNext = computed(() => currentImageIndex.value < layout.value.length - 1)
 
 // @ts-ignore
 const username = computed(() => user.value?.name ?? "")
@@ -404,10 +483,38 @@ gridStore.fetchGrid()
 onMounted(() => {
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
+
+  // Keyboard navigation for modal
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (!isImageModalOpen.value) return
+    
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      navigateToPrevious()
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      navigateToNext()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      isImageModalOpen.value = false
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      openImagePage()
+    }
+  }
+  
+  window.addEventListener('keydown', handleKeydown)
+  
+  // Clean up keyboard listener in unmounted
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateRowHeight)
+    window.removeEventListener('keydown', handleKeydown)
+  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateRowHeight)
+  // window.removeEventListener('keydown', handleKeydown)
 })
 
 const greeting = computed(() => {
@@ -428,7 +535,9 @@ const timeIcon = computed(() => {
   return 'i-line-md:moon-rising-twotone-loop'
 })
 
-function openImage(item: Image, event: MouseEvent) {
+// Modal methods
+const openImageModal = (item: Image, event: MouseEvent) => {
+  // Check if the user is dragging the image
   const moveDistance = Math.sqrt(
     Math.pow(event.clientX - dragStartPos.value.x, 2) + 
     Math.pow(event.clientY - dragStartPos.value.y, 2)
@@ -437,10 +546,36 @@ function openImage(item: Image, event: MouseEvent) {
   if (moveDistance > DRAG_THRESHOLD) {
     return
   }
+  // --- end drag check ---
 
+  selectedModalImage.value = item
+  currentImageIndex.value = layout.value.findIndex(img => img.id === item.id)
+  isImageModalOpen.value = true
+}
+
+const navigateToPrevious = () => {
+  if (canNavigatePrevious.value) {
+    currentImageIndex.value--
+    selectedModalImage.value = layout.value[currentImageIndex.value]
+  }
+}
+
+const navigateToNext = () => {
+  if (canNavigateNext.value) {
+    currentImageIndex.value++
+    selectedModalImage.value = layout.value[currentImageIndex.value]
+  }
+}
+
+const openImagePage = () => {
+  if (!selectedModalImage.value) return
+  
+  const item = selectedModalImage.value
+  isImageModalOpen.value = false
+  
+  // Use the existing openImage logic but without the drag check
   gridStore.selectedImage = item
 
-  // Use slug if available, otherwise fall back to ID
   const urlPath = item.slug 
     ? `/illustrations/${item.slug}` 
     : `/illustrations/${item.id}`
@@ -522,6 +657,13 @@ async function handleDrop(e: DragEvent) {
 const imageMenuItems = (image: Image) => {
   const items: Array<{ label: string, onClick?: () => void } | {}> = [
     {
+      label: 'View in fullscreen',
+      onClick: () => {
+        selectedModalImage.value = image
+        openImagePage()
+      },
+    },
+    {
       label: 'Download',
       onClick: () => {
         const variants: Array<VariantType> = JSON.parse(image.variants)
@@ -538,7 +680,7 @@ const imageMenuItems = (image: Image) => {
 
   if (loggedIn.value) {
     items.splice(items.length, 0, 
-      {}, // to add a separator between items (label or items should be null).
+      {}, // separator
       {
         label: 'Edit',
         onClick: () => {
@@ -555,7 +697,17 @@ const imageMenuItems = (image: Image) => {
       },
       {
         label: 'Delete',
-        onClick: () => gridStore.deleteImage(image.id),
+        onClick: async () => {
+          const response = await gridStore.deleteImage(image.id)
+          if (!response?.success) {
+            toast({
+              showProgress: true,
+              title: 'Error',
+              description: response?.message || 'An error occurred while deleting the image.',
+              toast: 'soft-warning',
+            })
+          }
+        },
       },
     )
   }
@@ -674,6 +826,7 @@ async function handleReplaceFileSelect(event: Event) {
 
   input.value = '' // Reset input
 }
+
 async function handleEditSubmit() {
   if (!gridStore.selectedImage) return
   
@@ -683,7 +836,6 @@ async function handleEditSubmit() {
       name: editForm.value.name,
       description: editForm.value.description,
       slug: editForm.value.slug,
-      // tags: editForm.value.tags
       tags: JSON.stringify(editForm.value.tags)
     })
     
@@ -711,7 +863,6 @@ watch(() => gridStore.selectedImage, (newImage) => {
     editForm.value.name = newImage.name || ''
     editForm.value.description = newImage.description || ''
     editForm.value.slug = newImage.slug || ''
-    // editForm.value.tags = newImage.tags || ''
     editForm.value.tags = JSON.parse(newImage.tags) || []
   }
 }, { immediate: true })

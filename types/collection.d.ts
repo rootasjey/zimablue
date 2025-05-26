@@ -1,8 +1,11 @@
 export interface Collection {
+  owner: any;
   cover_image_id: number;
   created_at: string;
   description: string;
   id: number;
+  images: Image[];
+  image_count: number;
   is_public: number;
   items: Image[];
   name: string;

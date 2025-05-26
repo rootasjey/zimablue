@@ -38,7 +38,7 @@
             icon 
             size="xs"
             class="i-ph-plus-bold hover:scale-105 active:scale-99 transition text-size-2"
-            @click="isCreateDialogOpen = true"
+            @click="collectionStore.openCreateDialog()"
             >
           </UButton>
         </div>
@@ -48,14 +48,14 @@
     <!-- Content -->
     <div class="w-full mx-auto mt-8">
       <!-- Collections List -->
-      <section v-if="collections.length > 0" class="mb-16">
+      <section v-if="collectionStore.collections.length > 0" class="mb-16">
         <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
           <span class="i-ph-folder mr-2"></span>
           Your Collections
         </h2>
         
         <ul class="space-y-4">
-          <li v-for="collection in collections" :key="collection.id" 
+          <li v-for="collection in collectionStore.collections" :key="collection.id" 
               class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 
                     hover:border-gray-300 dark:hover:border-gray-700
                     hover:shadow-md hover:scale-101 active:scale-100
@@ -65,12 +65,12 @@
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="text-size-6 font-500 text-gray-800 dark:text-gray-200">{{ collection.name }}</h3>
-                  <p class="text-sm font-400 text-gray-500 dark:text-gray-400">{{ collection.items.length }} images</p>
+                  <p class="text-sm font-400 text-gray-500 dark:text-gray-400">{{ collection.image_count || 0 }} images</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <UDropdownMenu 
                     v-if="loggedIn"
-                    :items="getCollectionMenuItems(collection)" 
+                    :items="collectionStore.getCollectionMenuItems(collection)" 
                     size="xs" 
                     menu-label=""
                     :_dropdown-menu-content="{
@@ -101,7 +101,7 @@
             You haven't created any image collections yet. Collections help you organize your images into themed groups.
           </p>
 
-          <UButton btn="outline" class="mx-auto" @click="isCreateDialogOpen = true">
+          <UButton btn="outline" class="mx-auto" @click="collectionStore.openCreateDialog()">
             <span class="i-ph-plus mr-2"></span>
             Create your first collection
           </UButton>
@@ -112,7 +112,7 @@
       <UDialog
         title="Create New Collection"
         description="Create a new collection to organize your images"
-        v-model:open="isCreateDialogOpen"
+        v-model:open="collectionStore.isCreateDialogOpen"
       >
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
@@ -122,7 +122,7 @@
               </ULabel>
               <UInput
                 id="collection-name"
-                v-model="newCollection.name"
+                v-model="collectionStore.newCollection.name"
                 placeholder="My Collection"
                 :una="{
                   inputWrapper: 'col-span-2',
@@ -137,7 +137,7 @@
               <UInput
                 id="collection-description"
                 type="textarea"
-                v-model="newCollection.description"
+                v-model="collectionStore.newCollection.description"
                 placeholder="Describe your collection..."
                 :una="{
                   inputWrapper: 'col-span-2',
@@ -152,7 +152,7 @@
               <div class="col-span-2">
                 <USwitch
                   id="collection-public"
-                  v-model="newCollection.isPublic"
+                  v-model="collectionStore.newCollection.isPublic"
                 />
               </div>
             </div>
@@ -160,10 +160,10 @@
         </div>
         
         <div class="flex justify-end gap-3 mt-4">
-          <UButton btn="ghost-gray" @click="closeDialog">
+          <UButton btn="ghost-gray" @click="collectionStore.closeCreateDialog()">
             Cancel
           </UButton>
-          <UButton btn="solid" @click="createCollection">
+          <UButton btn="solid" @click="handleCreateCollection">
             Create Collection
           </UButton>
         </div>
@@ -173,7 +173,7 @@
       <UDialog
         title="Edit Collection"
         description="Rename, update description or change collection's visibility"
-        v-model:open="isEditDialogOpen"
+        v-model:open="collectionStore.isEditDialogOpen"
       >
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
@@ -183,7 +183,7 @@
               </ULabel>
               <UInput
                 id="edit-collection-name"
-                v-model="editCollection.name"
+                v-model="collectionStore.editCollection.name"
                 placeholder="My Collection"
                 :una="{
                   inputWrapper: 'col-span-2',
@@ -198,7 +198,7 @@
               <UInput
                 id="edit-collection-description"
                 type="textarea"
-                v-model="editCollection.description"
+                v-model="collectionStore.editCollection.description"
                 placeholder="Describe your collection..."
                 :una="{
                   inputWrapper: 'col-span-2',
@@ -213,7 +213,7 @@
               <div class="col-span-2">
                 <USwitch
                   id="edit-collection-public"
-                  v-model="editCollection.isPublic"
+                  v-model="collectionStore.editCollection.isPublic"
                 />
               </div>
             </div>
@@ -221,10 +221,10 @@
         </div>
         
         <div class="flex justify-end gap-3 mt-4">
-          <UButton btn="ghost-gray" @click="closeEditDialog">
+          <UButton btn="ghost-gray" @click="collectionStore.closeEditDialog()">
             Cancel
           </UButton>
-          <UButton btn="solid" @click="updateCollection">
+          <UButton btn="solid" @click="handleUpdateCollection">
             Update collection
           </UButton>
         </div>
@@ -237,46 +237,21 @@
 </template>
 
 <script lang="ts" setup>
-import type { Collection } from '~/types/collection'
-
 const { toast } = useToast()
 const { loggedIn, user, clear } = useUserSession()
+const collectionStore = useCollectionStore()
 
-const newCollection = ref({
-  name: '',
-  description: '',
-  isPublic: true
-})
+// Initialize collections on page load
+await collectionStore.fetchCollections(loggedIn.value)
 
-const editCollection = ref({
-  id: '',
-  name: '',
-  description: '',
-  isPublic: true
-})
-
-// Fetch collections
-const { data, error, refresh } = await useFetch('/api/collections')
-const collections = computed(() => data.value?.collections || []) as ComputedRef<Collection[]>
-
-// Handle error
-if (error.value) {
+// Handle collection store error
+if (collectionStore.error) {
   toast({
     title: 'Error',
-    description: 'Failed to load collections. Please try again.',
+    description: collectionStore.error,
     toast: 'soft-error',
     duration: 5000
   })
-}
-
-// Dialog control
-const isCreateDialogOpen = ref(false)
-const isEditDialogOpen = ref(false)
-const closeDialog = () => {
-  isCreateDialogOpen.value = false
-}
-const closeEditDialog = () => {
-  isEditDialogOpen.value = false
 }
 
 const greeting = computed(() => {
@@ -297,148 +272,27 @@ const timeIcon = computed(() => {
   return 'i-line-md:moon-rising-twotone-loop'
 })
 
-const getCollectionMenuItems = (collection: Collection) => {
-  return [
-    {
-      label: 'Edit',
-      onClick: () => {
-        editCollection.value = {
-          id: collection.id.toString(),
-          name: collection.name,
-          description: collection.description,
-          isPublic: collection.is_public === 1
-        }
-        isEditDialogOpen.value = true
-      }
-    },
-    {
-      label: 'Delete',
-      onClick: () => {
-        deleteCollection(collection.id)
-      }
-    }
-  ]
+const handleCreateCollection = async () => {
+  const result = await collectionStore.createCollection()
+  
+  toast({
+    title: result.success ? 'Success' : 'Error',
+    description: result.message,
+    toast: result.success ? 'soft-success' : 'soft-error',
+    duration: result.success ? 3000 : 5000
+  })
 }
 
-// Create collection function
-const createCollection = async () => {
-  try {
-    // Validate form
-    if (!newCollection.value.name) {
-      toast({
-        title: 'Error',
-        description: 'Collection name is required',
-        toast: 'soft-error',
-        duration: 3000
-      })
-      return
-    }
-    
-    // API call to create collection
-    const response = await $fetch('/api/collections', {
-      method: 'POST',
-      body: {
-        name: newCollection.value.name,
-        description: newCollection.value.description,
-        is_public: newCollection.value.isPublic
-      }
-    })
-    
-    // Success message
-    toast({
-      title: 'Success',
-      description: 'Collection created successfully',
-      toast: 'soft-success',
-      duration: 3000
-    })
-    
-    // Reset form and close dialog
-    newCollection.value = {
-      name: '',
-      description: '',
-      isPublic: true
-    }
-    closeDialog()
-    
-    // Refresh collections list
-    refresh()
-  } catch (error) {
-    toast({
-      title: 'Error',
-      description: 'Failed to create collection. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
-  }
+const handleUpdateCollection = async () => {
+  const result = await collectionStore.updateCollection()
+  
+  toast({
+    title: result.success ? 'Success' : 'Error',
+    description: result.message,
+    toast: result.success ? 'soft-success' : 'soft-error',
+    duration: result.success ? 3000 : 5000
+  })
 }
-
-const deleteCollection = async (collectionId: number) => {
-  try {
-    await $fetch(`/api/collections/${collectionId}`, {
-      method: 'DELETE'
-    })
-
-    refresh()
-  } catch (error) {
-    toast({
-      title: 'Error',
-      description: 'Failed to delete collection. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
-  }
-}
-
-const updateCollection = async () => {
-  try {
-      // Validate form
-      if (!editCollection.value.name) {
-        toast({
-          title: 'Error',
-          description: 'Collection name is required',
-          toast: 'soft-error',
-          duration: 3000
-        })
-        return
-      }
-
-      // API call to update collection
-      const response = await $fetch(`/api/collections/${editCollection.value.id}`, {
-        method: 'PUT',
-        body: {
-          name: editCollection.value.name,
-          description: editCollection.value.description,
-          is_public: editCollection.value.isPublic
-        }
-      })
-
-      toast({
-        title: 'Success',
-        description: 'Collection updated successfully',
-        toast: 'soft-success',
-        duration: 3000
-      })
-
-      // Reset form and close dialog
-      editCollection.value = {
-        id: '',
-        name: '',
-        description: '',
-        isPublic: true
-      }
-
-      closeEditDialog()
-      refresh()
-    } catch (error) {
-      toast({
-      title: 'Error',
-      description: 'Failed to update collection. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
-  }
-}
-
 </script>
 
 <style scoped>
