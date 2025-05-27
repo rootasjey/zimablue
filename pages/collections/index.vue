@@ -20,26 +20,24 @@
         </div>
       </div>
       
-      <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 text-12px opacity-50">
-        <div :class="timeIcon" class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
-          @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
-
-        <h2 class="text-gray-800 dark:text-gray-200">
-          {{ greeting }} • {{ new Date().toLocaleDateString("fr-FR", {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          }) }}
-        </h2>
+      <div class="flex items-center gap-2">
+        <UButton 
+          size="xs" 
+          btn="soft-black"
+          class="cursor-pointer hover:scale-105 hover:accent-rose active:scale-99 transition"
+          @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'">
+          <i :class="timeIcon"></i>
+        </UButton>
 
         <div v-if="loggedIn" flex items-center justify-center>
-          <span mr-1>•</span>
           <UButton 
-            icon 
+            btn="solid-black"
             size="xs"
-            class="i-ph-plus-bold hover:scale-105 active:scale-99 transition text-size-2"
+            class="hover:scale-101 active:scale-99 transition"
             @click="collectionStore.openCreateDialog()"
             >
+            <i class="i-ph-plus-bold"></i>
+            <span>Add a collection</span>
           </UButton>
         </div>
       </div>

@@ -6,7 +6,7 @@
       </NuxtLink>
     </h1>
     
-    <div class="flex gap-2 mt-1 mb-2 text-gray-800 dark:text-gray-200 text-3 font-500 opacity-50">
+    <div class="flex gap-2 mt-1 mb-2 text-gray-600 dark:text-gray-200 text-3 font-500">
       <p>
         ~ Welcome 
       </p>
@@ -141,11 +141,10 @@ const formattedDate = computed(() => {
 
 .header-link {
   display: block;
-  color: rgba(var(--una-gray-500), 1);
   transition: all;
   
   &:hover {
-    color: rgba(var(--una-gray-600), 1);
+    color: blue;
     text-decoration: underline;
     text-underline-offset: 4px;
     transform: scale(1.01);

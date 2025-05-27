@@ -17,14 +17,14 @@
               {{ selectedModalImage.description }}
             </p>
           </div>
-          <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span>{{ selectedModalImage?.stats_views }} views</span>
-            <span>{{ selectedModalImage?.stats_likes }} likes</span>
+          <div class="flex items-center gap-4 text-gray-500 dark:text-gray-400">
+            <span class="text-sm font-500">{{ selectedModalImage?.stats_views }} views</span>
+            <span class="text-sm font-500">{{ selectedModalImage?.stats_likes }} likes</span>
             <UButton 
-              size="xs" 
+              size="10px" 
               btn="primary" 
               icon
-              class="i-ph-arrow-square-up-right text-size-2"
+              class="i-ph-arrow-square-up-right"
               @click="$emit('openFullPage')"
               title="Open in full page"
             />

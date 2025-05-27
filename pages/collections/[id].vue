@@ -17,8 +17,9 @@
         <UButton 
           v-if="isOwner" 
           icon 
-          size="xs" 
-          class="i-ph-pencil-simple font-size-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" 
+          size="8px" 
+          btn="solid-black"
+          class="i-ph-pencil-simple" 
           @click="store.openEditDialog" 
         />
       </div>
@@ -27,13 +28,9 @@
         {{ store.collection.description }}
       </p>
 
-      <div class="w-40 flex text-center justify-center my-2">
-        <div class="w-full h-2">
-          <svg viewBox="0 0 300 10" preserveAspectRatio="none">
-            <path d="M 0 5 Q 15 0, 30 5 T 60 5 T 90 5 T 120 5 T 150 5 T 180 5 T 210 5 T 240 5 T 270 5 T 300 5"
-              stroke="currentColor" fill="none" class="text-gray-300 dark:text-gray-700" stroke-width="1" />
-          </svg>
-        </div>
+      <!-- Owner info -->
+      <div v-if="store.collection?.owner" class="flex items-center gap-2 text-3 text-gray-400 dark:text-gray-400">
+        <span>Created by {{ store.collection.owner.name }}</span>
       </div>
 
       <div class="flex items-center gap-4 font-500 text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -41,27 +38,33 @@
         <span> • </span>
         <span>{{ store.collection?.stats_views }} views</span>
         <span> • </span>
-        <span>{{ store.collection?.created_at ? new Date(store.collection.created_at).toLocaleDateString("FR-fr", {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        }) : '' }}</span>
-      </div>
-      
-      <!-- Owner info -->
-      <div v-if="store.collection?.owner" class="flex items-center gap-2 mt-1 text-3 text-gray-400 dark:text-gray-400">
-        <span>Created by {{ store.collection.owner.name }}</span>
+        <span v-if="store.collection?.created_at" :title="new Date(store.collection.created_at).toLocaleDateString('FR-fr', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+          })">
+          {{ store.collection?.created_at ? new Date(store.collection.created_at).toLocaleDateString("FR-fr", {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          }) : '' }}
+        </span>
       </div>
       
       <!-- Action buttons for collection owner -->
-      <div v-if="isOwner && store.images.length > 0" class="flex gap-2 mt-4">
-        <UButton btn="soft-blue" size="sm" @click="store.startAddingImages">
+      <div v-if="isOwner && store.images.length > 0" 
+        class="flex gap-2 mt-4 border-t pt-4 b-dashed border-gray-300 dark:border-gray-700">
+        <UButton btn="soft-blue" size="12px" @click="store.startAddingImages">
           <span class="i-ph-plus mr-1"></span>
           Add Images
         </UButton>
         
-        <UButton v-if="store.images.length > 0" size="sm" btn="outline" @click="store.startReordering">
+        <UButton v-if="store.images.length > 0" size="12px" btn="soft" @click="store.startReordering">
           <span class="i-ph-arrows-out-cardinal mr-1"></span>
           Reorder
         </UButton>
@@ -111,10 +114,7 @@
               class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
               @click="store.toggleImageSelection(image.id)">
             <div class="absolute top-2 right-2 z-10">
-              <UCheckbox 
-                :checked="store.selectedImages.includes(image.id)"
-                @change="store.toggleImageSelection(image.id)"
-              />
+              <UCheckbox v-model:model-value="store.selectedImagesMap[image.id]" />
             </div>
             <NuxtImg 
               provider="hubblob"
@@ -159,7 +159,7 @@
             <div class="absolute top-2 right-2 z-10">
               <span class="i-ph-dots-six-vertical text-white"></span>
             </div>
-            <img :src="`/images/${image.pathname}`" 
+            <img :src="`/${image.pathname}`" 
                 :alt="image.name || 'Image'" 
                 class="w-full h-48 object-cover" />
             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-3">
@@ -172,36 +172,42 @@
       <!-- Normal View with Images -->
       <section v-else-if="store.images.length > 0" class="mt-8">
         <!-- Image selection controls for owner -->
-        <div v-if="isOwner" class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
+        <div v-if="isOwner" class="flex items-center mb-4">
+          <h3 class="text-3 font-600 text-gray-800 dark:text-gray-200">
             {{ store.images.length }} Images
           </h3>
-          <div v-if="store.hasSelectedImages" class="flex gap-2">
-            <UButton size="sm" btn="outline" @click="store.clearSelection">
-              Cancel
+          <div class="ml-12 flex gap-2" 
+            :class="{
+              'opacity-100': store.hasSelectedImages,
+              'opacity-0': !store.hasSelectedImages,
+            }"
+          >
+            <UButton size="12px" btn="soft-gray" @click="store.clearSelection">
+              <i class="i-ph-x"></i>
+              <span>Cancel</span>
             </UButton>
-            <UButton size="sm" btn="soft-error" @click="handleRemoveImages">
+            <UButton size="12px" btn="soft-error" @click="handleRemoveImages">
               Remove {{ store.selectionCount }} Images
             </UButton>
           </div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div  v-for="image in store.images" :key="image.id" 
-            class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-102 active:scale-100 cursor-pointer"
+            class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-102 active:scale-100 cursor-pointer"
             @click="openImageModal(image)"
           >
             <!-- Selection checkbox for owner -->
-            <div v-if="isOwner" class="absolute top-2 right-2 z-10" @click.stop>
-              <UCheckbox 
-                :checked="store.selectedImages.includes(image.id)"
-                @change="store.toggleImageSelection(image.id)"
-              />
+            <div v-if="isOwner" class="opacity-0 group-hover:opacity-100 absolute top-2 right-2 z-10" @click.stop
+             :class="{ 
+                'opacity-100': store.hasSelectedImages
+              }">
+              <UCheckbox v-model:model-value="store.selectedImagesMap[image.id]" />
             </div>
             
             <!-- Set as cover button for owner -->
-            <div v-if="isOwner && !store.selectedImages.includes(image.id)" 
-                class="absolute top-2 left-2 z-10" @click.stop>
+            <div v-if="isOwner && !store.selectedImagesMap[image.id]" 
+                class="opacity-0 group-hover:opacity-100 absolute top-2 left-2 z-10" @click.stop>
               <UButton v-if="store.collection?.cover_image_id !== image.id"
                   size="xs" icon btn="soft" 
                   class="opacity-70 hover:opacity-100"
@@ -216,13 +222,9 @@
                 :width="100"
                 :src="`/${image.pathname}`" 
                 :alt="image.name || 'Image'" 
-                class="w-full h-48 object-cover" />
-            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-3">
+                class="w-full h-42 object-cover" />
+            <div class="opacity-0 group-hover:opacity-100 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-3">
               <h3 class="text-white text-sm font-medium truncate">{{ image.name }}</h3>
-              <div class="flex items-center gap-2 text-xs text-gray-300 mt-1">
-                <span>{{ image.stats_views }} views</span>
-                <span>{{ image.stats_likes }} likes</span>
-              </div>
             </div>
           </div>
         </div>

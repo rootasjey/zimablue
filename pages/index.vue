@@ -17,7 +17,7 @@
     <div v-if="imageUpload.isUploading.value" class="fixed top-4 right-4 z-50">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 min-w-64">
         <div class="flex items-center gap-3">
-          <div class="i-ph-upload-simple animate-spin text-blue-500"></div>
+          <div class="i-ph-upload-simple animate-bounce text-blue-500"></div>
           <div class="flex-1">
             <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
               Uploading images...

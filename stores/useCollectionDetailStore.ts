@@ -9,7 +9,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   const error = ref<string | null>(null)
 
   // Image selection state
-  const selectedImages = ref<number[]>([])
+  const selectedImagesMap = ref<Record<number, boolean>>({})
   const availableImages = ref<Image[]>([])
 
   // View modes
@@ -28,11 +28,11 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   })
 
   // Computed properties
-  const hasSelectedImages = computed(() => selectedImages.value.length > 0)
-  const selectionCount = computed(() => selectedImages.value.length)
+  const hasSelectedImages = computed(() => Object.values(selectedImagesMap.value).some(Boolean))
+  const selectionCount = computed(() => Object.values(selectedImagesMap.value).filter(Boolean).length)
   const isAllSelected = computed(() => {
     const currentImages = isAddingImages.value ? availableImages.value : images.value
-    return selectedImages.value.length === currentImages.length && currentImages.length > 0
+    return currentImages.length > 0 && Object.values(selectedImagesMap.value).every(Boolean)
   })
 
   // Fetch collection and its images
@@ -70,25 +70,29 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
   // Image selection methods
   function toggleImageSelection(imageId: number) {
-    const index = selectedImages.value.indexOf(imageId)
-    if (index === -1) {
-      selectedImages.value.push(imageId)
-    } else {
-      selectedImages.value.splice(index, 1)
+    if (!selectedImagesMap.value[imageId]) {
+      selectedImagesMap.value[imageId] = true
+      return
     }
+
+    // selectedImagesMap.value[imageId] = false
+    delete selectedImagesMap.value[imageId]
   }
 
   function clearSelection() {
-    selectedImages.value = []
+    selectedImagesMap.value = {}
   }
 
   function toggleSelectAll() {
     if (isAllSelected.value) {
-      selectedImages.value = []
-    } else {
-      const currentImages = isAddingImages.value ? availableImages.value : images.value
-      selectedImages.value = currentImages.map(img => img.id)
+      clearSelection()
+      return
     }
+
+    const currentImages = isAddingImages.value ? availableImages.value : images.value
+    currentImages.forEach((img) => {
+      selectedImagesMap.value[img.id] = true
+    })
   }
 
   // View mode controls
@@ -121,7 +125,8 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   // Collection operations
   async function addImagesToCollection(collectionId: string) {
     try {
-      if (selectedImages.value.length === 0) {
+      const selection = Object.entries(selectedImagesMap.value).filter(([_, selected]) => selected)
+      if (selection.length === 0) {
         throw new Error('Please select at least one image to add.')
       }
 
@@ -129,7 +134,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         method: 'PUT',
         body: {
           images: {
-            add: selectedImages.value
+            add: selection.map(([id]) => id)
           }
         }
       })
@@ -141,7 +146,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: `Added ${selectedImages.value.length} images to collection.` 
+        message: `Added ${selection.length} images to collection.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to add images to collection.'
@@ -151,7 +156,8 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
   async function removeImagesFromCollection(collectionId: string) {
     try {
-      if (selectedImages.value.length === 0) {
+      const selection = Object.entries(selectedImagesMap.value).filter(([_, selected]) => selected)
+      if (selection.length === 0) {
         throw new Error('Please select at least one image to remove.')
       }
 
@@ -159,7 +165,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         method: 'PUT',
         body: {
           images: {
-            remove: selectedImages.value
+            remove: selection.map(([id]) => Number(id))
           }
         }
       })
@@ -170,7 +176,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: `Removed ${selectedImages.value.length} images from collection.` 
+        message: `Removed ${selection.length} images from collection.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove images from collection.'
@@ -298,7 +304,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   function resetStore() {
     collection.value = null
     images.value = []
-    selectedImages.value = []
+    selectedImagesMap.value = {}
     availableImages.value = []
     isAddingImages.value = false
     isReordering.value = false
@@ -313,7 +319,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     images,
     isLoading,
     error,
-    selectedImages,
+    selectedImagesMap,
     availableImages,
     isAddingImages,
     isReordering,
