@@ -37,7 +37,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    // Validate request body
     const validatedData = updateCollectionSchema.parse(body)
 
     // Generate slug if name is provided but slug is not
@@ -65,7 +64,6 @@ export default defineEventHandler(async (event) => {
         })
       }
       
-      // Check if user owns the collection or is an admin
       const collection = existingCollections[0]
       if (collection.user_id !== user.id && user.role !== 'admin') {
         throw createError({
@@ -129,7 +127,8 @@ export default defineEventHandler(async (event) => {
           const imageIdsToRemove = validatedData.images.remove
           
           for (const imageId of imageIdsToRemove) {
-            const removeStmt = db.prepare(`
+            const removeStmt = db
+            .prepare(`
               DELETE FROM collection_images
               WHERE collection_id = ? AND image_id = ?
             `)
@@ -142,7 +141,8 @@ export default defineEventHandler(async (event) => {
         // Add new images
         if (validatedData.images.add && validatedData.images.add.length > 0) {
           // Get the current highest position
-          const { results: positionResult } = await db.prepare(`
+          const { results: positionResult } = await db
+          .prepare(`
             SELECT COALESCE(MAX(position), -1) as max_position
             FROM collection_images
             WHERE collection_id = ?
@@ -156,7 +156,8 @@ export default defineEventHandler(async (event) => {
           // Add each new image
           for (const imageId of validatedData.images.add) {
             // Check if image exists
-            const { results: imageExists } = await db.prepare(`
+            const { results: imageExists } = await db
+            .prepare(`
               SELECT id FROM images WHERE id = ?
             `)
             .bind(imageId)
@@ -164,7 +165,8 @@ export default defineEventHandler(async (event) => {
             
             if (imageExists.length > 0) {
               // Check if this image is already in the collection
-              const { results: existingRelation } = await db.prepare(`
+              const { results: existingRelation } = await db
+              .prepare(`
                 SELECT 1 FROM collection_images
                 WHERE collection_id = ? AND image_id = ?
               `)
@@ -173,7 +175,8 @@ export default defineEventHandler(async (event) => {
               
               if (existingRelation.length === 0) {
                 // Add the image to the collection
-                const addImageStmt = db.prepare(`
+                const addImageStmt = db
+                .prepare(`
                   INSERT INTO collection_images (collection_id, image_id, position)
                   VALUES (?, ?, ?)
                 `)
@@ -192,7 +195,8 @@ export default defineEventHandler(async (event) => {
           
           // Update positions based on the new order
           for (let i = 0; i < newOrder.length; i++) {
-            const reorderStmt = db.prepare(`
+            const reorderStmt = db
+            .prepare(`
               UPDATE collection_images
               SET position = ?
               WHERE collection_id = ? AND image_id = ?
@@ -210,7 +214,8 @@ export default defineEventHandler(async (event) => {
       }
       
       // Fetch the updated collection with image count
-      const updatedCollection = await db.prepare(`
+      const updatedCollection = await db
+      .prepare(`
         SELECT 
           c.*,
           (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count

@@ -59,11 +59,12 @@
       @layout-update="gridStore.layout = $event"
       @layout-ready="layoutReady"
       @layout-updated="layoutUpdated"
-      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems(
-        item, 
-        imageModal.openImagePage, 
+      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
+        image: item, 
+        openImagePageFn: imageModal.openImagePage, 
+        openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
-      )"
+      })"
     />
 
     <input
@@ -103,6 +104,18 @@
       @update-image-modal-open="imageModal.isImageModalOpen.value = $event"
       @update-edit-modal-open="imageActions.showEditModal.value = $event"
     />
+
+    <AddToCollectionModal
+      v-model:is-open="addToCollection.isOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
   </div>
 </template>
 
@@ -112,6 +125,7 @@ import { useGridStore } from '@/stores/useGridStore'
 import { useImageUpload } from '~/composables/image/useImageUpload'
 import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageActions } from '~/composables/image/useImageActions'
+import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 
 const { loggedIn, clear } = useUserSession()
 const gridStore = useGridStore()
@@ -120,6 +134,7 @@ const layout = computed(() => gridStore.layout)
 const imageActions = useImageActions()
 const imageModal = useImageModal()
 const imageUpload = useImageUpload()
+const addToCollection = useAddToCollectionModal()
 
 const replacementFileInput = imageUpload.replacementFileInput
 const fileInput = imageUpload.fileInput

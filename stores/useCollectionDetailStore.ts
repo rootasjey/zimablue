@@ -32,7 +32,10 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   const selectionCount = computed(() => Object.values(selectedImagesMap.value).filter(Boolean).length)
   const isAllSelected = computed(() => {
     const currentImages = isAddingImages.value ? availableImages.value : images.value
-    return currentImages.length > 0 && Object.values(selectedImagesMap.value).every(Boolean)
+    const isNotEmpty = currentImages.length > 0
+    const isEqual = currentImages.length === Object.values(selectedImagesMap.value).length
+    const isAllTrue = Object.values(selectedImagesMap.value).every((selected) => selected)
+    return isNotEmpty && isEqual && isAllTrue
   })
 
   // Fetch collection and its images

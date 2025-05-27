@@ -4,7 +4,7 @@ export const useImageActions = () => {
   const { loggedIn } = useUserSession()
   const { toast } = useToast()
   const gridStore = useGridStore()
-  
+
   // Edit modal state
   const showEditModal = ref(false)
   const editForm = ref({
@@ -44,7 +44,6 @@ export const useImageActions = () => {
     showEditModal.value = false
     resetEditForm()
   }
-
   const resetEditForm = () => {
     editForm.value = {
       name: '',
@@ -169,11 +168,17 @@ export const useImageActions = () => {
     replacementFileInput?.click()
   }
 
-  const generateImageMenuItems = (
-    image: Image, 
+  const generateImageMenuItems = ({
+    image, 
+    openImagePageFn,
+    openAddToCollectionModalFn,
+    replacementFileInput,
+  }: {
+    image: Image,
     openImagePageFn: () => void,
+    openAddToCollectionModalFn: (image: Image) => void,
     replacementFileInput: HTMLInputElement | undefined
-  ) => {
+  }) => {
     const items: Array<{ label: string, onClick?: () => void } | {}> = [
       {
         label: 'View in fullscreen',
@@ -195,6 +200,11 @@ export const useImageActions = () => {
         {
           label: 'Replace',
           onClick: () => triggerImageReplacement(image, replacementFileInput),
+        },
+        {
+          label: 'Add to collection',
+          onClick: () => openAddToCollectionModalFn(image),
+
         },
         {
           label: 'Delete',

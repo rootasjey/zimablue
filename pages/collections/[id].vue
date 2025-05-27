@@ -64,7 +64,7 @@
           Add Images
         </UButton>
         
-        <UButton v-if="store.images.length > 0" size="12px" btn="soft" @click="store.startReordering">
+        <UButton v-if="store.images.length > 0" size="12px" btn="soft dark:soft-emerald" @click="store.startReordering">
           <span class="i-ph-arrows-out-cardinal mr-1"></span>
           Reorder
         </UButton>
@@ -93,17 +93,17 @@
       <!-- Image Selection Mode -->
       <section v-else-if="store.isAddingImages" class="mt-8">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
+          <h3 class="text-4 font-500 text-gray-800 dark:text-gray-200">
             Select images to add
           </h3>
           <div class="flex gap-2">
-            <UButton size="sm" btn="outline" @click="store.toggleSelectAll">
+            <UButton size="12px" btn="outline-gray" @click="store.toggleSelectAll">
               {{ store.isAllSelected ? 'Deselect All' : 'Select All' }}
             </UButton>
-            <UButton size="sm" btn="outline" @click="store.cancelAddingImages">
+            <UButton size="12px" btn="outline-gray" @click="store.cancelAddingImages">
               Cancel
             </UButton>
-            <UButton size="sm" :disabled="!store.hasSelectedImages" @click="handleAddImages">
+            <UButton btn="solid-gray" size="12px" :disabled="!store.hasSelectedImages" @click="handleAddImages">
               Add {{ store.selectionCount }} Images
             </UButton>
           </div>
@@ -111,10 +111,12 @@
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div v-for="image in store.availableImages" :key="image.id" 
-              class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg 
+              hover:scale-102 active:scale-100 cursor-pointer 
+              transition-all duration-150"
               @click="store.toggleImageSelection(image.id)">
             <div class="absolute top-2 right-2 z-10">
-              <UCheckbox v-model:model-value="store.selectedImagesMap[image.id]" />
+              <UCheckbox checkbox="success" @click.stop v-model:model-value="store.selectedImagesMap[image.id]" />
             </div>
             <NuxtImg 
               provider="hubblob"
@@ -194,7 +196,7 @@
         
         <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div  v-for="image in store.images" :key="image.id" 
-            class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-102 active:scale-100 cursor-pointer"
+            class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-150 hover:scale-102 active:scale-100 cursor-pointer"
             @click="openImageModal(image)"
           >
             <!-- Selection checkbox for owner -->

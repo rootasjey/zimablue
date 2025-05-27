@@ -184,8 +184,7 @@ export const useImageModal = () => {
 
   return {
     // State
-    // isImageModalOpen: readonly(isImageModalOpen),
-    isImageModalOpen: isImageModalOpen,
+    isImageModalOpen,
     selectedModalImage: readonly(selectedModalImage),
     currentImageIndex: readonly(currentImageIndex),
     
