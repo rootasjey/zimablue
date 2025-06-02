@@ -137,7 +137,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         method: 'PUT',
         body: {
           images: {
-            add: selection.map(([id]) => id)
+            add: selection.map(([id]) => parseInt(id))
           }
         }
       })
@@ -239,7 +239,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         id: collection.value.id.toString(),
         name: collection.value.name,
         description: collection.value.description,
-        isPublic: collection.value.is_public === 1
+        isPublic: collection.value.is_public,
       }
       isEditDialogOpen.value = true
     }
@@ -303,6 +303,18 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
+  const toggleImageRange = (imageIds: number[], selected: boolean) => {
+    imageIds.forEach((imageId: number) => {
+      if (selected) {
+        selectedImagesMap.value[imageId] = true
+        return
+      }
+
+      delete selectedImagesMap.value[imageId]
+    })
+  }
+  
+
   // Reset store state
   function resetStore() {
     collection.value = null
@@ -351,6 +363,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     openEditDialog,
     closeEditDialog,
     resetEditForm,
+    toggleImageRange,
     updateCollection,
     deleteCollection,
     resetStore,

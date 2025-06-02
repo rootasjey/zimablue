@@ -134,7 +134,7 @@ export const useCollectionStore = defineStore('collection', () => {
       id: collection.id.toString(),
       name: collection.name,
       description: collection.description,
-      isPublic: collection.is_public === 1
+      isPublic: collection.is_public,
     }
     isEditDialogOpen.value = true
   }

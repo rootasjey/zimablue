@@ -6,7 +6,7 @@ export interface Collection {
   id: number;
   images: Image[];
   image_count: number;
-  is_public: number;
+  is_public: boolean;
   items: Image[];
   name: string;
   slug: string;
