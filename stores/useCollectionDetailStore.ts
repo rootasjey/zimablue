@@ -287,7 +287,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function deleteCollection(collectionId: string) {
+  async function deleteCollection(collectionId: number) {
     try {
       await $fetch(`/api/collections/${collectionId}`, {
         method: 'DELETE'

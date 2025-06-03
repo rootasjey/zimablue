@@ -5,38 +5,6 @@
         zima blue
       </NuxtLink>
     </h1>
-    
-    <div class="flex gap-2 mt-1 mb-2 text-gray-600 dark:text-gray-200 text-3 font-500">
-      <p>
-        ~ Welcome 
-      </p>
-
-      <UDropdownMenu 
-        v-if="loggedIn"
-        :items="userMenuItems" 
-        size="xs" 
-        menu-label=""
-        :_dropdown-menu-content="{
-          class: 'w-52',
-          align: 'end',
-          side: 'bottom',
-        }" 
-        :_dropdown-menu-trigger="{
-          icon: false,
-          square: false,
-          class: 'ring-transparent p-0 w-auto h-auto shadow-none hover:bg-transparent hover:scale-105 active:scale-99 transition',
-          label: `(${user?.name})`,
-        }"
-      />
-
-      <p>
-        to my illustration gallery •
-      </p>
-      <ULink to="/collections" class="header-link flex items-center gap-2">
-        <span class="font-500">Please take a seat</span>
-      </ULink>
-      <p> ~</p>
-    </div>
 
     <!-- Greeting -->
     <div class="flex justify-center items-center flex-wrap gap-2">
@@ -76,6 +44,12 @@
         <span>• </span>
         <span>contact me</span>
         <span class="i-ph-envelope-simple-open-duotone ml-1"></span>
+      </ULink>
+    </div>
+
+    <div class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
+      <ULink to="/collections" class="header-link flex items-center gap-2">
+        <span>see the latest collections →</span>
       </ULink>
     </div>
   </header>
@@ -144,7 +118,6 @@ const formattedDate = computed(() => {
   transition: all;
   
   &:hover {
-    color: blue;
     text-decoration: underline;
     text-underline-offset: 4px;
     transform: scale(1.01);

@@ -85,7 +85,8 @@ export default defineEventHandler(async (event) => {
       collection: {
         ...collection,
         image_count: images.length,
-        owner
+        is_public: collection.is_public === 1,
+        owner,
       },
       images
     }

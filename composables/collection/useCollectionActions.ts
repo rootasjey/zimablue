@@ -107,20 +107,12 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     }, 'Failed to update collection. Please try again.')
   }
 
-  const deleteCollection = async (skipConfirmation: boolean = false) => {
-    if (!skipConfirmation) {
-      const confirmed = confirm(
-        'Are you sure you want to delete this collection? This action cannot be undone.'
-      )
-      if (!confirmed) return null
-    }
-
+  const deleteCollection = async (collectionId: number) => {
     return executeAction(async () => {
       const result = await store.deleteCollection(collectionId)
       
       if (result.success) {
         handleSuccess(result.message)
-        // Navigate away after successful deletion
         await router.push('/collections')
       } else {
         handleError(result.message)

@@ -7,7 +7,7 @@
   >
     <form @submit.prevent="handleSubmit">
       <div class="grid gap-4 py-4">
-        <div class="grid gap-2">
+        <div class="grid gap-4">
           <!-- Collection Name -->
           <div class="grid grid-cols-3 items-center gap-4">
             <ULabel for="edit-collection-name">
@@ -43,11 +43,11 @@
           </div>
           
           <!-- Collection Visibility -->
-          <div class="grid grid-cols-3 items-center gap-4">
+          <div class="grid grid-cols-3 items-centerx gap-4">
             <ULabel for="edit-collection-public">
               Public
             </ULabel>
-            <div class="col-span-2">
+            <div class="flex gap-4 items-center col-span-2">
               <USwitch
                 id="edit-collection-public"
                 v-model="formData.isPublic"
@@ -61,8 +61,7 @@
       </div>
       
       <!-- Action Buttons -->
-      <div class="flex justify-between gap-3 mt-4">
-        <!-- Delete Button -->
+      <div class="flex justify-between gap-3 mt-4 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
         <UButton 
           type="button"
           btn="soft-error" 
@@ -70,7 +69,7 @@
           @click="handleDelete"
         >
           <span class="i-ph-trash mr-1"></span>
-          Delete Collection
+          Delete
         </UButton>
         
         <!-- Cancel and Save Buttons -->
@@ -85,55 +84,27 @@
           </UButton>
           <UButton 
             type="submit"
-            btn="solid" 
+            btn="solid-black" 
+            class="px-6"
             :disabled="isLoading || !isFormValid"
             :loading="isLoading"
           >
-            {{ isLoading ? 'Updating...' : 'Update collection' }}
+            {{ isLoading ? 'Updating...' : 'Update' }}
           </UButton>
         </div>
       </div>
     </form>
 
-    <!-- Delete Confirmation Dialog -->
-    <UDialog
+    <CollectionDeleteDialog
       v-model:open="showDeleteConfirmation"
-      title="Delete Collection"
-      description="This action cannot be undone. All images will be removed from this collection."
-    >
-      <div class="py-4">
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
-          Are you sure you want to delete "<strong>{{ collection?.name }}</strong>"?
-        </p>
-        
-        <div class="flex justify-end gap-2">
-          <UButton 
-            btn="ghost-gray" 
-            @click="showDeleteConfirmation = false"
-          >
-            Cancel
-          </UButton>
-          <UButton 
-            btn="solid-error" 
-            :loading="isDeleting"
-            @click="confirmDelete"
-          >
-            {{ isDeleting ? 'Deleting...' : 'Delete Collection' }}
-          </UButton>
-        </div>
-      </div>
-    </UDialog>
+      :collection="collection"
+      @delete="confirmDelete"
+    />
   </UDialog>
 </template>
 
 <script setup lang="ts">
-import type { Collection } from '~/types/collection'
-
-interface CollectionFormData {
-  name: string
-  description: string
-  isPublic: boolean
-}
+import type { Collection, CollectionFormData } from '~/types/collection'
 
 interface FormErrors {
   name?: string
@@ -150,7 +121,7 @@ interface Props {
 interface Emits {
   'update:open': [value: boolean]
   'update': [data: CollectionFormData]
-  'delete': []
+  'delete': [collectionId: number]
   'cancel': []
 }
 
@@ -277,10 +248,14 @@ const handleDelete = () => {
 
 const confirmDelete = async () => {
   isDeleting.value = true
+  if (!props.collection) {
+    console.warn(`No collection to delete. The collection property is null.`)
+  }
   
   try {
-    emit('delete')
+    emit('delete', props.collection?.id || 0)
     showDeleteConfirmation.value = false
+    emit('update:open', false)
   } finally {
     isDeleting.value = false
   }
@@ -305,3 +280,12 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 </script>
+
+<style scoped>
+button.btn {
+  height: 32px;
+  min-height: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+</style>

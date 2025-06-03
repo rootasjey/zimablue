@@ -37,8 +37,9 @@
     </div>
     
     <!-- Action Buttons -->
-    <div v-if="canEdit && imageCount > 0" 
-         class="flex gap-2 mt-4 border-t pt-4 b-dashed border-gray-300 dark:border-gray-700">
+    <div v-if="canEdit" 
+         class="flex gap-2 mt-4 border-t pt-4 b-dashed border-gray-300 dark:border-gray-700"
+    >
       <UButton btn="soft-blue" size="12px" @click="$emit('addImages')">
         <span class="i-ph-plus mr-1"></span>
         Add Images

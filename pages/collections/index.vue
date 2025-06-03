@@ -1,6 +1,5 @@
 <template>
   <div class="frame">
-    <!-- Header -->
     <header class="mt-12 mb-8">
       <div class="flex gap-2">
         <ULink to="/" class="hover:scale-102 active:scale-99 transition">
@@ -31,7 +30,7 @@
 
         <div v-if="loggedIn" flex items-center justify-center>
           <UButton 
-            btn="solid-black"
+            btn="soft"
             size="xs"
             class="hover:scale-101 active:scale-99 transition"
             @click="collectionStore.openCreateDialog()"
@@ -106,130 +105,29 @@
         </div>
       </section>
 
-      <!-- Create Collection Dialog -->
-      <UDialog
-        title="Create New Collection"
-        description="Create a new collection to organize your images"
+      <CollectionCreateDialog
         v-model:open="collectionStore.isCreateDialogOpen"
-      >
-        <div class="grid gap-4 py-4">
-          <div class="grid gap-2">
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="collection-name">
-                Name
-              </ULabel>
-              <UInput
-                id="collection-name"
-                v-model="collectionStore.newCollection.name"
-                placeholder="My Collection"
-                :una="{
-                  inputWrapper: 'col-span-2',
-                }"
-              />
-            </div>
-            
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="collection-description">
-                Description
-              </ULabel>
-              <UInput
-                id="collection-description"
-                type="textarea"
-                v-model="collectionStore.newCollection.description"
-                placeholder="Describe your collection..."
-                :una="{
-                  inputWrapper: 'col-span-2',
-                }"
-              />
-            </div>
-            
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="collection-public">
-                Public
-              </ULabel>
-              <div class="col-span-2">
-                <USwitch
-                  id="collection-public"
-                  v-model="collectionStore.newCollection.isPublic"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex justify-end gap-3 mt-4">
-          <UButton btn="ghost-gray" @click="collectionStore.closeCreateDialog()">
-            Cancel
-          </UButton>
-          <UButton btn="solid" @click="handleCreateCollection">
-            Create Collection
-          </UButton>
-        </div>
-      </UDialog>
+        :form-data="collectionStore.newCollection"
+        @create="handleCreateCollection"
+        @cancel="collectionStore.closeCreateDialog"
+      />
 
-      <!-- Edit Collection Dialog -->
-      <UDialog
-        title="Edit Collection"
-        description="Rename, update description or change collection's visibility"
+      <CollectionEditDialog
         v-model:open="collectionStore.isEditDialogOpen"
-      >
-        <div class="grid gap-4 py-4">
-          <div class="grid gap-2">
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="edit-collection-name">
-                Name
-              </ULabel>
-              <UInput
-                id="edit-collection-name"
-                v-model="collectionStore.editCollection.name"
-                placeholder="My Collection"
-                :una="{
-                  inputWrapper: 'col-span-2',
-                }"
-              />
-            </div>
-            
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="edit-collection-description">
-                Description
-              </ULabel>
-              <UInput
-                id="edit-collection-description"
-                type="textarea"
-                v-model="collectionStore.editCollection.description"
-                placeholder="Describe your collection..."
-                :una="{
-                  inputWrapper: 'col-span-2',
-                }"
-              />
-            </div>
-            
-            <div class="grid grid-cols-3 items-center gap-4">
-              <ULabel for="edit-collection-public">
-                Public
-              </ULabel>
-              <div class="col-span-2">
-                <USwitch
-                  id="edit-collection-public"
-                  v-model="collectionStore.editCollection.isPublic"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex justify-end gap-3 mt-4">
-          <UButton btn="ghost-gray" @click="collectionStore.closeEditDialog()">
-            Cancel
-          </UButton>
-          <UButton btn="solid" @click="handleUpdateCollection">
-            Update collection
-          </UButton>
-        </div>
-      </UDialog>
+        :collection="collectionStore.editCollection"
+        @update="handleUpdateCollection"
+        @delete="collectionStore.deleteCollection"
+        @cancel="collectionStore.closeEditDialog"
+      />
+
+      <CollectionDeleteDialog
+        v-model:open="collectionStore.isDeleteDialogOpen"
+        :collection="collectionStore.collectionToDelete"
+        @cancel="collectionStore.closeDeleteDialog"
+        @delete="collectionStore.deleteCollection"
+      />
     </div>
 
-    <!-- Footer -->
     <Footer />
   </div>
 </template>

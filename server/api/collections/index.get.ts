@@ -110,7 +110,8 @@ export default defineEventHandler(async (event) => {
       return {
         ...collection,
         cover_image: coverImage,
-        is_owner: userId === collection.owner_id
+        is_owner: userId === collection.owner_id,
+        is_public: collection.is_public === 1,
       }
     }))
     

@@ -228,7 +228,10 @@ export default defineEventHandler(async (event) => {
       return {
         success: true,
         message: 'Collection updated successfully',
-        collection: updatedCollection
+        collection: {
+          ...updatedCollection,
+          is_public: updatedCollection?.is_public === 1,
+        }
       }
       
     } catch (error) {

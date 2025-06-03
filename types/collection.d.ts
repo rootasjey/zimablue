@@ -15,3 +15,9 @@ export interface Collection {
   stats_views: number;
   updated_at: string;
 }
+
+export interface CollectionFormData {
+  name: string
+  description: string
+  isPublic: boolean
+}

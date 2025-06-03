@@ -9,8 +9,8 @@
           class="border border-dashed rounded-2 flex items-center justify-center w-22 h-22"
           :class="placeholderClasses"
         >
-          <component 
-            :is="placeholderIcon" 
+          <span 
+            :class="placeholderIcons[i % placeholderIcons.length]"
             class="text-size-6 text-gray-400"
           />
         </div>
@@ -32,9 +32,9 @@
         :btn="actionButtonStyle"
         @click="$emit('action')"
       >
-        <component 
+        <span 
           v-if="actionIcon" 
-          :is="actionIcon" 
+          :class="actionIcon" 
           class="mr-2"
         />
         {{ actionText }}
@@ -54,7 +54,7 @@ interface Props {
   
   // Visual props
   placeholderCount?: number
-  placeholderIcon?: string
+  placeholderIcons?: string[]
   placeholderClasses?: string
   
   // Action props
@@ -74,12 +74,11 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   // Default values based on variant
   placeholderCount: 3,
-  placeholderIcon: 'i-ph-image-square-duotone',
+  placeholderIcons: () => ['i-ph-image-duotone', 'i-ph-camera-duotone', 'i-ph-placeholder-duotone'],
   placeholderClasses: '',
   actionButtonStyle: 'outline',
   variant: 'collection'
 })
-
 defineEmits<Emits>()
 
 // Computed properties for variant-based defaults

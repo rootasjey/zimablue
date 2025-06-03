@@ -7,6 +7,7 @@ export const useCollectionStore = defineStore('collection', () => {
 
   const isCreateDialogOpen = ref(false)
   const isEditDialogOpen = ref(false)
+  const isDeleteDialogOpen = ref(false)
 
   const newCollection = ref({
     name: '',
@@ -15,12 +16,8 @@ export const useCollectionStore = defineStore('collection', () => {
     image_ids: []
   })
 
-  const editCollection = ref({
-    id: '',
-    name: '',
-    description: '',
-    isPublic: true
-  })
+  const editCollection = ref<Collection | null>(null)
+  const collectionToDelete = ref<Collection | null>(null)
 
   async function fetchCollections(includePrivate: boolean = false) {
     try {
@@ -75,6 +72,10 @@ export const useCollectionStore = defineStore('collection', () => {
   }
 
   async function updateCollection() {
+    if (!editCollection.value) {
+      return { success: false, message: 'Empty collection' }
+    }
+
     try {
       // Validate form
       if (!editCollection.value.name) {
@@ -87,7 +88,7 @@ export const useCollectionStore = defineStore('collection', () => {
         body: {
           name: editCollection.value.name,
           description: editCollection.value.description,
-          is_public: editCollection.value.isPublic
+          is_public: editCollection.value.is_public,
         }
       })
 
@@ -130,12 +131,7 @@ export const useCollectionStore = defineStore('collection', () => {
   }
 
   function openEditDialog(collection: Collection) {
-    editCollection.value = {
-      id: collection.id.toString(),
-      name: collection.name,
-      description: collection.description,
-      isPublic: collection.is_public,
-    }
+    editCollection.value = collection
     isEditDialogOpen.value = true
   }
 
@@ -143,22 +139,26 @@ export const useCollectionStore = defineStore('collection', () => {
     isEditDialogOpen.value = false
   }
 
+  function openDeleteDialog(collection: Collection) {
+    collectionToDelete.value = collection
+    isDeleteDialogOpen.value = true
+  }
+
+  function closeDeleteDialog() {
+    isDeleteDialogOpen.value = false
+  }
+
   function resetNewCollectionForm() {
     newCollection.value = {
       name: '',
       description: '',
       isPublic: true,
-      image_ids: []
+      image_ids: [],
     }
   }
 
   function resetEditCollectionForm() {
-    editCollection.value = {
-      id: '',
-      name: '',
-      description: '',
-      isPublic: true
-    }
+    editCollection.value = null
   }
 
   function getCollectionMenuItems(collection: Collection) {
@@ -169,7 +169,8 @@ export const useCollectionStore = defineStore('collection', () => {
       },
       {
         label: 'Delete',
-        onClick: () => deleteCollection(collection.id)
+        // onClick: () => deleteCollection(collection.id)
+        onClick: () => openDeleteDialog(collection)
       }
     ]
   }
@@ -181,8 +182,10 @@ export const useCollectionStore = defineStore('collection', () => {
     error,
     isCreateDialogOpen,
     isEditDialogOpen,
+    isDeleteDialogOpen,
     newCollection,
     editCollection,
+    collectionToDelete,
     
     // Actions
     fetchCollections,
@@ -191,6 +194,8 @@ export const useCollectionStore = defineStore('collection', () => {
     deleteCollection,
     openCreateDialog,
     closeCreateDialog,
+    openDeleteDialog,
+    closeDeleteDialog,
     openEditDialog,
     closeEditDialog,
     resetNewCollectionForm,

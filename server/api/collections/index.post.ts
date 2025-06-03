@@ -128,7 +128,10 @@ export default defineEventHandler(async (event) => {
       return {
         success: true,
         message: 'Collection created successfully',
-        collection: finalCollection
+        collection: {
+          ...finalCollection,
+          is_public: finalCollection?.is_public === 1,
+        },
       }
       
     } catch (error) {
