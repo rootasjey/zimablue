@@ -1,35 +1,28 @@
+// GET /api/collections/:slug
+
 import { Image } from '~/types/image'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  const slug = getRouterParam(event, 'slug')
   
-  if (!id || isNaN(Number(id))) {
+  if (typeof slug !== 'string' || slug.length === 0) {
     throw createError({
       statusCode: 400,
-      message: 'Invalid collection ID'
+      message: `Invalid collection slug ${slug}`,
     })
   }
   
   const db = hubDatabase()
 
   try {
-    // Increment the views counter
-    await db.prepare(`
-      UPDATE collections
-      SET stats_views = stats_views + 1
-      WHERE id = ?
-    `)
-    .bind(id)
-    .run()
-
     // Fetch the collection
     const queryResponse = await db.prepare(`
       SELECT id, name, description, cover_image_id, slug, is_public, stats_views, 
              stats_likes, stats_downloads, created_at, updated_at, user_id
       FROM collections
-      WHERE id = ?
+      WHERE slug = ?
     `)
-    .bind(id)
+    .bind(slug)
     .run()
 
     if (!queryResponse.success || queryResponse.results.length === 0) {
@@ -40,6 +33,16 @@ export default defineEventHandler(async (event) => {
     }
 
     const collection = queryResponse.results[0]
+    const id = collection.id
+
+    // Increment the views counter
+    await db.prepare(`
+      UPDATE collections
+      SET stats_views = stats_views + 1
+      WHERE id = ?
+    `)
+    .bind(id)
+    .run()
 
     // Fetch the associated images with their position in the collection
     const queryImagesResponse = await db.prepare(`
@@ -91,7 +94,7 @@ export default defineEventHandler(async (event) => {
       images
     }
   } catch (error: unknown) {
-    console.error(`Error fetching collection ${id}:`, error)
+    console.error(`Error fetching collection ${slug}:`, error)
     
     throw createError({
       statusCode: 500,

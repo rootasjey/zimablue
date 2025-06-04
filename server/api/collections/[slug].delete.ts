@@ -1,7 +1,9 @@
+// DELETE /api/collections/:slug
+
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  const slug = getRouterParam(event, 'slug')
   
-  if (!id || isNaN(Number(id))) {
+  if (typeof slug !== 'string' || slug.length === 0) {
     throw createError({
       statusCode: 400,
       message: 'Invalid collection ID'
@@ -23,9 +25,9 @@ export default defineEventHandler(async (event) => {
   try {
     // Check if collection exists and belongs to the user
     const { results: existingCollections } = await db.prepare(`
-      SELECT id, user_id FROM collections WHERE id = ?
+      SELECT id, user_id FROM collections WHERE slug = ?
     `)
-    .bind(id)
+    .bind(slug)
     .run()
 
     if (!existingCollections.length) {
@@ -37,6 +39,7 @@ export default defineEventHandler(async (event) => {
     
     // Check if user owns the collection or is an admin
     const collection = existingCollections[0]
+    const id = collection.id
     if (collection.user_id !== user.id && user.role !== 'admin') {
       throw createError({
         statusCode: 403,
@@ -82,13 +85,14 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       message: 'Collection deleted successfully',
-      data: {
+      collection: {
         id: Number(id),
-        imagesRemoved: imageCount
+        imagesRemoved: imageCount as number,
+        name: collection.name as string, 
       }
     }
   } catch (error: any) {
-    console.error(`Error deleting collection ${id}:`, error)
+    console.error(`Error deleting collection ${slug}:`, error)
 
     if (error.statusCode) {
       // Pass through custom errors

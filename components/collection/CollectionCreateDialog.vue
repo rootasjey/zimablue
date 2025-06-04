@@ -7,9 +7,23 @@
   >
     <div class="grid gap-4 py-4">
       <div class="grid gap-2">
-        <div class="grid grid-cols-3 items-center gap-4">
+        <div class="grid grid-cols-3 items-start gap-4">
           <ULabel for="collection-name">
-            Name
+            Name 
+            <UTooltip :_tooltip-content="{
+              side: 'right',
+            }">
+              <template #default>
+                <span class="i-ph-star-four-duotone color-red cursor-pointer"></span>
+              </template>
+              <template #content>
+                <div bg="light dark:dark" 
+                  text="dark dark:white" 
+                  class="b-#3D3BF3 text-3 px-3 py-1 rounded-md border-1 border-dashed">
+                  The name is required and must not be empty.
+                </div>
+              </template>
+            </UTooltip>
           </ULabel>
           <UInput
             id="collection-name"
@@ -21,7 +35,7 @@
           />
         </div>
         
-        <div class="grid grid-cols-3 items-center gap-4">
+        <div class="grid grid-cols-3 items-start gap-4">
           <ULabel for="collection-description">
             Description
           </ULabel>
@@ -29,14 +43,33 @@
             id="collection-description"
             type="textarea"
             v-model="formData.description"
-            placeholder="Describe your collection..."
+            placeholder="Describe your collection... (optional)"
             :una="{
               inputWrapper: 'col-span-2',
             }"
           />
         </div>
         
-        <div class="grid grid-cols-3 items-center gap-4">
+        <div class="grid grid-cols-3 items-start gap-4">
+          <ULabel for="collection-slug">
+            Slug
+          </ULabel>
+          <div class="col-span-2">
+            <UInput
+              id="collection-slug"
+              v-model="formData.slug"
+              placeholder="Choose a unique slug (optional)"
+              :una="{
+                inputWrapper: 'col-span-2',
+              }"
+            />
+            <p class="text-size-3 font-500 mt-2 line-height-3 text-color-gray-600 dark:text-color-gray-300">
+              If you leave this field empty, the slug will be generated from the name.
+            </p>
+          </div>
+        </div>
+        
+        <div class="mt-2 grid grid-cols-3 items-start gap-4">
           <ULabel for="collection-public">
             Public
           </ULabel>
@@ -63,7 +96,6 @@
 
 <script setup lang="ts">
 import type { CollectionFormData } from '~/types/collection';
-
 
 interface Props {
   open: boolean;

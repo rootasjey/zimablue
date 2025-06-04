@@ -38,7 +38,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'delete', collectionId: number): void
+  (e: 'delete', collectionSlug: string): void
   (e: 'update:open', value: boolean): void
 }
 
@@ -62,7 +62,7 @@ const confirmDelete = async () => {
   }
   
   try {
-    emit('delete', props.collection?.id || 0)
+    emit('delete', props.collection?.slug ?? "")
     isOpen.value = false
   } finally {
     isDeleting.value = false

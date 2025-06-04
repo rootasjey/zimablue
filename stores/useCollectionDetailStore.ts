@@ -1,5 +1,5 @@
 import type { Image } from '~/types/image'
-import type { Collection } from '~/types/collection'
+import type { Collection, CollectionFormData } from '~/types/collection'
 
 export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   // Core collection data
@@ -39,12 +39,11 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   })
 
   // Fetch collection and its images
-  async function fetchCollection(collectionId: string) {
+  async function fetchCollection(slug: string) {
     try {
       isLoading.value = true
       error.value = null
-
-      const data = await $fetch(`/api/collections/${collectionId}`)
+      const data = await $fetch(`/api/collections/${slug}`)
       
       collection.value = data?.collection as Collection
       images.value = data?.images || []
@@ -78,7 +77,6 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       return
     }
 
-    // selectedImagesMap.value[imageId] = false
     delete selectedImagesMap.value[imageId]
   }
 
@@ -126,14 +124,14 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   }
 
   // Collection operations
-  async function addImagesToCollection(collectionId: string) {
+  async function addImagesToCollection(slug: string) {
     try {
       const selection = Object.entries(selectedImagesMap.value).filter(([_, selected]) => selected)
       if (selection.length === 0) {
         throw new Error('Please select at least one image to add.')
       }
 
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -145,11 +143,11 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       // Reset state and refresh data
       clearSelection()
       isAddingImages.value = false
-      await fetchCollection(collectionId)
+      await fetchCollection(slug)
 
       return { 
         success: true, 
-        message: `Added ${selection.length} images to collection.` 
+        message: `Added ${selection.length} images to collection ${collection.name}.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to add images to collection.'
@@ -157,14 +155,14 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function removeImagesFromCollection(collectionId: string) {
+  async function removeImagesFromCollection(slug: string) {
     try {
       const selection = Object.entries(selectedImagesMap.value).filter(([_, selected]) => selected)
       if (selection.length === 0) {
         throw new Error('Please select at least one image to remove.')
       }
 
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -175,11 +173,11 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       // Reset state and refresh data
       clearSelection()
-      await fetchCollection(collectionId)
+      await fetchCollection(slug)
 
       return { 
         success: true, 
-        message: `Removed ${selection.length} images from collection.` 
+        message: `Removed ${selection.length} images from collection ${collection.name}.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove images from collection.'
@@ -187,9 +185,9 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function saveNewOrder(collectionId: string, newOrder: number[]) {
+  async function saveNewOrder(slug: string, newOrder: number[]) {
     try {
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -199,11 +197,11 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       })
 
       isReordering.value = false
-      await fetchCollection(collectionId)
+      await fetchCollection(slug)
 
       return { 
         success: true, 
-        message: 'Collection order updated successfully.' 
+        message: `Collection ${collection.name} order updated successfully.` ,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update image order.'
@@ -211,16 +209,16 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function setAsCover(collectionId: string, imageId: number) {
+  async function setAsCover(slug: string, imageId: number) {
     try {
-      await $fetch(`/api/collections/${collectionId}`, {
+      await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           cover_image_id: imageId
         }
       })
 
-      await fetchCollection(collectionId)
+      await fetchCollection(slug)
 
       return { 
         success: true, 
@@ -232,7 +230,6 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  // Collection edit operations
   function openEditDialog() {
     if (collection.value) {
       editCollection.value = {
@@ -259,27 +256,31 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function updateCollection(collectionId: string) {
+  async function updateCollection({slug, update}: {slug: string, update: CollectionFormData}) {
     try {
-      if (!editCollection.value.name) {
-        throw new Error('Collection name is required')
+      if (typeof update.name !== "string" || !update.name) {
+        throw new Error(`Collection name is required. Got: ${update.name}`)
       }
 
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
-          name: editCollection.value.name,
-          description: editCollection.value.description,
-          is_public: editCollection.value.isPublic
+          name: update.name,
+          description: update.description,
+          is_public: update.isPublic,
+          slug: update.slug,
         }
       })
 
       closeEditDialog()
-      await fetchCollection(collectionId)
+      const newSlug = collection.slug ?? slug
+      await fetchCollection(newSlug)
 
       return { 
         success: true, 
-        message: 'Collection updated successfully' 
+        message: `Collection ${collection.name} updated successfully.`,
+        slugChanged: newSlug !== slug,
+        slug: newSlug !== slug ? newSlug : "",
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update collection. Please try again.'
@@ -287,15 +288,15 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function deleteCollection(collectionId: number) {
+  async function deleteCollection(slug: string) {
     try {
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'DELETE'
       })
 
-      return { 
+      return {
         success: true, 
-        message: 'Collection deleted successfully.' 
+        message: `Collection ${collection.name} deleted successfully.` ,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete collection.'

@@ -16,8 +16,13 @@ export interface Collection {
   updated_at: string;
 }
 
+export interface ServerCollection extends Collection {
+  is_public: number;
+}
+
 export interface CollectionFormData {
   name: string
   description: string
   isPublic: boolean
+  slug?: string
 }

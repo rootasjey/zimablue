@@ -25,7 +25,7 @@
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           {{ store.error }}
         </p>
-        <UButton @click="store.fetchCollection(collectionId)">Try Again</UButton>
+        <UButton @click="store.fetchCollection(slug)">Try Again</UButton>
       </section>
 
       <ImageSelectionMode
@@ -114,12 +114,12 @@ const { loggedIn, user } = useUserSession()
 
 // Initialize the store
 const store = useCollectionDetailStore()
-const collectionId = route.params.id as string
+const slug = route.params.slug as string
 
 // Initialize actions composable
 const actions = useCollectionActions({
   store,
-  collectionId,
+  slug,
 })
 
 // Check if user is the owner of the collection
@@ -139,7 +139,7 @@ const canNavigateNext = computed(() => currentImageIndex.value < store.images.le
 // Load collection data on mount
 onMounted(async () => {
   try {
-    await store.fetchCollection(collectionId)
+    await store.fetchCollection(slug)
   } catch (err) {
     toast({
       title: 'Error',

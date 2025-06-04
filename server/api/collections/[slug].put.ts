@@ -1,4 +1,7 @@
+// PUT /api/collections/:slug
+
 import { z } from 'zod'
+import { ServerCollection } from '~/types/collection'
 
 const updateCollectionSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
@@ -15,12 +18,12 @@ const updateCollectionSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  const slug = getRouterParam(event, 'slug')
 
-  if (!id || isNaN(Number(id))) {
+  if (typeof slug !== 'string' || slug.length === 0) {
     throw createError({
       statusCode: 400,
-      message: 'Invalid collection ID'
+      message: `Invalid collection slug ${slug}`,
     })
   }
   
@@ -52,9 +55,9 @@ export default defineEventHandler(async (event) => {
     try {
       // Check if collection exists and belongs to the user
       const { results: existingCollections } = await db.prepare(`
-        SELECT id, user_id FROM collections WHERE id = ?
+        SELECT id, user_id FROM collections WHERE slug = ?
       `)
-      .bind(id)
+      .bind(slug)
       .run()
 
       if (!existingCollections.length) {
@@ -71,6 +74,8 @@ export default defineEventHandler(async (event) => {
           message: 'You do not have permission to update this collection'
         })
       }
+
+      const id = collection.id
 
       // Prepare batch operations array
       const batchOperations = []
@@ -214,7 +219,7 @@ export default defineEventHandler(async (event) => {
       }
       
       // Fetch the updated collection with image count
-      const updatedCollection = await db
+      const updatedCollection: ServerCollection | null = await db
       .prepare(`
         SELECT 
           c.*,
@@ -238,7 +243,7 @@ export default defineEventHandler(async (event) => {
       throw error
     }
   } catch (error: any) {
-    console.error(`Error updating collection ${id}:`, error)
+    console.error(`Error updating collection ${slug}:`, error)
 
     if (error instanceof z.ZodError) {
       throw createError({

@@ -23,9 +23,7 @@
             @click="setSystemTheme" 
             bg="light dark:dark" 
             text="dark dark:white" 
-            text-3 px-3 py-1 rounded-md m-0
-            border-1 border-dashed 
-            class="b-#3D3BF3"
+            class="b-#3D3BF3 text-3 px-3 py-1 rounded-md m-0 border-1 border-dashed"
           >
             System theme
           </button>

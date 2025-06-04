@@ -1,8 +1,9 @@
+import type { CollectionFormData } from "~/types/collection"
 import type { Image } from "~/types/image"
 
 interface UseCollectionActionsOptions {
   store: ReturnType<typeof useCollectionDetailStore>
-  collectionId: string
+  slug: string
   onSuccess?: (message: string) => void
   onError?: (message: string) => void
 }
@@ -13,9 +14,10 @@ interface CollectionActionResult {
 }
 
 export const useCollectionActions = (options: UseCollectionActionsOptions) => {
-  const { store, collectionId, onSuccess, onError } = options
+  const { store, slug: initialSlug, onSuccess, onError } = options
   const { toast } = useToast()
   const router = useRouter()
+  let collectionSlug = initialSlug
 
   // Default toast handlers if not provided
   const handleSuccess = (message: string) => {
@@ -53,7 +55,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
   // Image management actions
   const addImages = async () => {
     return executeAction(async () => {
-      const result = await store.addImagesToCollection(collectionId)
+      const result = await store.addImagesToCollection(collectionSlug)
       
       if (result.success) handleSuccess(result.message)
       else handleError(result.message)
@@ -64,7 +66,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
 
   const removeImages = async () => {
     return executeAction(async () => {
-      const result = await store.removeImagesFromCollection(collectionId)
+      const result = await store.removeImagesFromCollection(collectionSlug)
       
       if (result.success) handleSuccess(result.message) 
       else handleError(result.message)
@@ -75,7 +77,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
 
   const saveOrder = async (newOrder: number[]) => {
     return executeAction(async () => {
-      const result = await store.saveNewOrder(collectionId, newOrder)
+      const result = await store.saveNewOrder(collectionSlug, newOrder)
 
       if (result.success) handleSuccess(result.message)
       else handleError(result.message)
@@ -86,7 +88,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
 
   const setAsCover = async (imageId: number) => {
     return executeAction(async () => {
-      const result = await store.setAsCover(collectionId, imageId)
+      const result = await store.setAsCover(collectionSlug, imageId)
       
       if (result.success) handleSuccess(result.message)
       else handleError(result.message)
@@ -96,20 +98,25 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
   }
 
   // Collection management actions
-  const updateCollection = async () => {
+  const updateCollection = async (formData: CollectionFormData) => {
     return executeAction(async () => {
-      const result = await store.updateCollection(collectionId)
+      const result = await store.updateCollection({ slug: collectionSlug, update: formData })
       
       if (result.success) handleSuccess(result.message)
       else handleError(result.message)
+
+      if (result.success && result.slugChanged) {
+        await router.replace(`/collections/${result.slug}`)
+        collectionSlug = result.slug
+      }
       
       return result
     }, 'Failed to update collection. Please try again.')
   }
 
-  const deleteCollection = async (collectionId: number) => {
+  const deleteCollection = async (collectionSlug: string) => {
     return executeAction(async () => {
-      const result = await store.deleteCollection(collectionId)
+      const result = await store.deleteCollection(collectionSlug)
       
       if (result.success) {
         handleSuccess(result.message)

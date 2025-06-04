@@ -52,17 +52,12 @@
         </h2>
         
         <ul class="space-y-4">
-          <li v-for="collection in collectionStore.collections" :key="collection.id" 
-              class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 
-                    hover:border-gray-300 dark:hover:border-gray-700
-                    hover:shadow-md hover:scale-101 active:scale-100
-                    hover:bg-gray-50 dark:hover:bg-gray-900
-                    transition-all duration-300">
-            <NuxtLink :to="`/collections/${collection.id}`" class="block">
+          <li v-for="collection in collectionStore.collections" :key="collection.id" class="collection-item">
+            <NuxtLink :to="`/collections/${collection.slug}`" class="block">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-size-6 font-500 text-gray-800 dark:text-gray-200">{{ collection.name }}</h3>
-                  <p class="text-sm font-400 text-gray-500 dark:text-gray-400">{{ collection.image_count || 0 }} images</p>
+                  <h3 class="name">{{ collection.name }}</h3>
+                  <p class="image-count">{{ collection.image_count || 0 }} images</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <UDropdownMenu 
@@ -81,7 +76,7 @@
                       class: 'i-ph-dots-three bg-blue-400 hover:bg-blue-500 hover:scale-110 active:scale-99 transition-transform',
                     }"
                   />
-                  <div class="i-ph-arrow-right text-gray-400 dark:text-gray-600 group-hover:translate-x-1 transition-transform"></div>
+                  <div class="i-ph-arrow-right arrow-right"></div>
                 </div>
               </div>
             </NuxtLink>
@@ -133,6 +128,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { CollectionFormData } from '~/types/collection'
+
 const { toast } = useToast()
 const { loggedIn, user, clear } = useUserSession()
 const collectionStore = useCollectionStore()
@@ -149,15 +146,6 @@ if (collectionStore.error) {
     duration: 5000
   })
 }
-
-const greeting = computed(() => {
-  const hour = new Date().getHours()
-
-  if (hour >= 5 && hour < 12) return 'Good morning'
-  if (hour >= 12 && hour < 17) return 'Good afternoon'
-  if (hour >= 17 && hour < 22) return 'Good evening'
-  return 'Good night'
-})
 
 const timeIcon = computed(() => {
   const hour = new Date().getHours()
@@ -179,8 +167,8 @@ const handleCreateCollection = async () => {
   })
 }
 
-const handleUpdateCollection = async () => {
-  const result = await collectionStore.updateCollection()
+const handleUpdateCollection = async (data: CollectionFormData) => {
+  const result = await collectionStore.updateCollection(data)
   
   toast({
     title: result.success ? 'Success' : 'Error',
@@ -207,6 +195,80 @@ const handleUpdateCollection = async () => {
 .i-ph-sun-horizon,
 .i-line-md\:moon-to-sunny-outline-loop-transition {
   animation: fadeScale 0.3s ease-in-out;
+}
+
+.collection-item {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 300ms;
+
+  &:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    transform: scale(1.01);
+    background-color: #f9fafb;
+
+    .arrow-right {
+      transform: translateX(0.15rem);
+    }
+  }
+  
+  &:active {
+    transform: scale(1);
+    
+    .arrow-right {
+      transform: translateX(0.35rem);
+    }
+  }
+
+  .name {
+    font-size: 1.25rem;
+    font-weight: 500;
+    --un-text-opacity: 1;
+    color: rgba(var(--una-gray-800), var(--un-text-opacity));
+  }
+
+  .image-count {
+    font-size: 0.875rem;
+    font-weight: 400;
+    --un-text-opacity: 1;
+    color: rgba(var(--una-gray-500), var(--un-text-opacity));
+  }
+
+  .arrow-right {
+    color: rgba(var(--una-gray-400), var(--un-text-opacity));
+    transition-property: transform;
+    transform: translateX(0);
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+     /* text-gray-400 dark:text-gray-600 group-hover:translate-x-1 transition-transform */
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .collection-item {
+    border-color: #1f2937;
+
+    &:hover {
+      border-color: #374151;
+      background-color: #111827;
+    }
+
+    .name {
+      --un-text-opacity: 1;
+      color: rgba(var(--una-gray-200), var(--un-text-opacity));
+    }
+
+    .image-count {
+      --un-text-opacity: 1;
+      color: rgba(var(--una-gray-400), var(--un-text-opacity));
+    }
+
+    .arrow-right {
+      color: rgba(var(--una-gray-600), var(--un-text-opacity));
+    }
+  }
 }
 
 @keyframes fadeScale {

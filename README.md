@@ -3,7 +3,7 @@
 
 A modern image gallery application built with Nuxt.js and NuxtHub (Cloudflare Workers), providing fast and efficient image hosting and management.
 
-![zima blue screenshot](./screenshots/zimablue-screenshot-2025-03-15 at 04.15.06.png)
+![zima blue screenshot](./screenshots/zimablue-screenshot-light-1.png)
 
 [Go to website ↗ 🌓](https://zimablue.nuxt.dev/)
 

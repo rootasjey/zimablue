@@ -42,6 +42,22 @@
             />
           </div>
           
+          <!-- Collection Slug -->
+          <div class="grid grid-cols-3 items-center gap-4">
+            <ULabel for="edit-collection-slug">
+              Slug
+            </ULabel>
+            <UInput
+              id="edit-collection-slug"
+              v-model="formData.slug"
+              placeholder="Collection unique slug"
+              :error="errors.slug"
+              :una="{
+                inputWrapper: 'col-span-2',
+              }"
+            />
+          </div>
+          
           <!-- Collection Visibility -->
           <div class="grid grid-cols-3 items-centerx gap-4">
             <ULabel for="edit-collection-public">
@@ -109,6 +125,7 @@ import type { Collection, CollectionFormData } from '~/types/collection'
 interface FormErrors {
   name?: string
   description?: string
+  slug?: string
 }
 
 interface Props {
@@ -121,7 +138,7 @@ interface Props {
 interface Emits {
   'update:open': [value: boolean]
   'update': [data: CollectionFormData]
-  'delete': [collectionId: number]
+  'delete': [collectionSlug: string]
   'cancel': []
 }
 
@@ -142,7 +159,8 @@ const showDeleteConfirmation = ref(false)
 const formData = reactive<CollectionFormData>({
   name: '',
   description: '',
-  isPublic: false
+  isPublic: false,
+  slug: '',
 })
 
 // Form validation
@@ -159,7 +177,8 @@ const hasChanges = computed(() => {
   return (
     formData.name !== props.collection.name ||
     formData.description !== (props.collection.description || '') ||
-    formData.isPublic !== props.collection.is_public
+    formData.isPublic !== props.collection.is_public ||
+    formData.slug !== props.collection.slug
   )
 })
 
@@ -195,6 +214,13 @@ const validateForm = (): boolean => {
   if (formData.description.length > 500) {
     errors.description = 'Description must be less than 500 characters'
   }
+
+  // Validate slug
+  if (formData.slug && formData.slug.trim().length < 1) {
+    errors.slug = 'Slug must be at least 1 characters'
+  } else if (formData.slug && formData.slug.trim().length > 100) {
+    errors.slug = 'Slug must be less than 100 characters'
+  }
   
   return Object.keys(errors).length === 0
 }
@@ -209,6 +235,7 @@ const resetForm = () => {
     formData.name = props.collection.name
     formData.description = props.collection.description || ''
     formData.isPublic = props.collection.is_public || false
+    formData.slug = props.collection.slug
   }
   
   // Clear errors
@@ -253,7 +280,7 @@ const confirmDelete = async () => {
   }
   
   try {
-    emit('delete', props.collection?.id || 0)
+    emit('delete', props.collection?.slug ?? '')
     showDeleteConfirmation.value = false
     emit('update:open', false)
   } finally {

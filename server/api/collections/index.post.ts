@@ -1,3 +1,5 @@
+// POST /api/collections
+
 import { z } from 'zod'
 
 const createCollectionSchema = z.object({

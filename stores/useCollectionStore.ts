@@ -1,4 +1,4 @@
-import type { Collection } from "~/types/collection"
+import type { Collection, CollectionFormData } from "~/types/collection"
 
 export const useCollectionStore = defineStore('collection', () => {
   const collections = ref<Collection[]>([])
@@ -13,7 +13,8 @@ export const useCollectionStore = defineStore('collection', () => {
     name: '',
     description: '',
     isPublic: true,
-    image_ids: []
+    image_ids: [],
+    slug: '',
   })
 
   const editCollection = ref<Collection | null>(null)
@@ -71,28 +72,26 @@ export const useCollectionStore = defineStore('collection', () => {
     }
   }
 
-  async function updateCollection() {
-    if (!editCollection.value) {
+  async function updateCollection(formData: CollectionFormData) {
+    if (typeof formData.slug !== "string" || formData.slug.length === 0) {
       return { success: false, message: 'Empty collection' }
     }
 
     try {
-      // Validate form
-      if (!editCollection.value.name) {
-        throw new Error('Collection name is required')
+      if (!formData.name) {
+        throw new Error(`Collection name is required. Got: ${formData.name}`)
       }
 
-      // API call to update collection
-      await $fetch(`/api/collections/${editCollection.value.id}`, {
+      await $fetch(`/api/collections/${formData.slug}`, {
         method: 'PUT',
         body: {
-          name: editCollection.value.name,
-          description: editCollection.value.description,
-          is_public: editCollection.value.is_public,
+          name: formData.name,
+          description: formData.description,
+          is_public: formData.isPublic,
+          slug: formData.slug,
         }
       })
 
-      // Reset form and close dialog
       resetEditCollectionForm()
       closeEditDialog()
       
@@ -106,18 +105,16 @@ export const useCollectionStore = defineStore('collection', () => {
     }
   }
 
-  async function deleteCollection(collectionId: number) {
+  async function deleteCollection(slug: string) {
     try {
-      await $fetch(`/api/collections/${collectionId}`, {
+      const { collection } = await $fetch(`/api/collections/${slug}`, {
         method: 'DELETE'
       })
 
-      // Refresh collections list
       await fetchCollections(true)
-      
-      return { success: true, message: 'Collection deleted successfully' }
+      return { success: true, message: `Collection ${collection.name} deleted successfully` }
     } catch (err) {
-      return { success: false, message: 'Failed to delete collection. Please try again.' }
+      return { success: false, message: `Failed to delete collection. Please try again.` }
     }
   }
 
@@ -154,6 +151,7 @@ export const useCollectionStore = defineStore('collection', () => {
       description: '',
       isPublic: true,
       image_ids: [],
+      slug: '',
     }
   }
 
