@@ -14,7 +14,7 @@
           :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
           :src="item.pathname" 
           :alt="item.pathname"
-          class="nuxt-img object-cover w-full h-full rounded-7 transition-transform duration-400 hover:scale-105"
+          class="nuxt-img-mobile"
           :style="`view-transition-name: shared-image-${item.id}`"
         />
       </div>
@@ -63,18 +63,12 @@
             :src="`${item.pathname}`" 
             :alt="item.pathname"
             :width="240"
-            class="nuxt-img object-cover w-full h-full rounded-lg transition-transform duration-200 hover:scale-105 active:scale-98"
+            class="nuxt-img"
             :style="`view-transition-name: shared-image-${item.id}`"
           />
 
-          <div v-if="loggedIn" class="absolute h-32px w-32px 
-            bottom-1 right-1 rounded-lg backdrop-blur-md
-            bg-white/20 dark:bg-black/60 hover:bg-white/40 dark:hover:bg-black/80 
-            invisible group-hover:visible flex justify-center items-center">
-            <span class="vgl-item__resizer 
-            i-ph-arrow-down-right-duotone
-            invisible group-hover:visible z-2
-            hover:scale-110 active:scale-99 transition"></span>
+          <div v-if="loggedIn" class="image-resizer-container">
+            <span class="vgl-item__resizer image-resizer"></span>
           </div>
 
           <UDropdownMenu 
@@ -89,7 +83,7 @@
             :_dropdown-menu-trigger="{
               icon: true,
               square: true,
-              class: dropdownMenuTriggerClass,
+              class: 'menu-trigger dp-menu-trigger',
               label: 'i-lucide-ellipsis-vertical',
             }" 
           />
@@ -128,15 +122,6 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-
-const dropdownMenuTriggerClass = `
-  menu-trigger 
-  color-white 
-  absolute top-1 right-1 p-1
-  ring-0 invisible group-hover:visible rounded-lg backdrop-blur-md
-  bg-white/20 dark:bg-black/60 
-  hover:bg-white/40 dark:hover:bg-black/80 hover:scale-110 active:scale-99 transition b-0
-`
 </script>
 
 <style scoped>
@@ -223,7 +208,7 @@ const dropdownMenuTriggerClass = `
   position: relative;
 }
 
-.vgl-item__resizer {
+.group:hover .vgl-item__resizer {
   animation: colorPulse 6s infinite;
 }
 
@@ -243,6 +228,34 @@ const dropdownMenuTriggerClass = `
   transform-origin: center;
   animation: fadeInUp 0.6s ease-out forwards;
   animation-delay: var(--delay);
+}
+
+.nuxt-img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  transition: transform 200ms;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.nuxt-img-mobile {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  transition: transform 200ms;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes fadeInUp {

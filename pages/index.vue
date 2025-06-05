@@ -1,8 +1,6 @@
 <template>
   <!-- pages/index.vue -->
-  <div class="flex flex-col justify-center 
-    overflow-auto
-    min-h-screen w-full rounded-xl md:p-8 transition-all duration-500"
+  <div class="frame"
       @drop.prevent="imageUpload.handleDrop"
       @dragenter.prevent="imageUpload.handleDragEnter"
       @dragover.prevent="imageUpload.handleDragOver"
@@ -95,6 +93,12 @@
       :available-tags="imageActions.availableTags"
       :is-updating="imageActions.isUpdating.value"
       :is-edit-form-valid="imageActions.isEditFormValid.value"
+      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
+        image: item, 
+        openImagePageFn: imageModal.openImagePage, 
+        openAddToCollectionModalFn: addToCollection.openModal,
+        replacementFileInput,
+      })"
       @open-full-page="imageModal.openImagePage"
       @navigate-previous="imageModal.navigateToPrevious"
       @navigate-next="imageModal.navigateToNext"
@@ -186,4 +190,18 @@ function layoutReady(layout: Image[]) {
 </script>
 
 <style scoped>
+.frame {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+  min-height: 100vh;
+  width: 100%;
+  border-radius: 0.75rem;
+  transition: all 500ms;
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
 </style>

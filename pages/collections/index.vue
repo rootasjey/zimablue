@@ -22,7 +22,7 @@
       <div class="flex items-center gap-2">
         <UButton 
           size="xs" 
-          btn="soft-black"
+          btn="soft-black dark:soft-blue"
           class="cursor-pointer hover:scale-105 hover:accent-rose active:scale-99 transition"
           @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'">
           <i :class="timeIcon"></i>
@@ -30,7 +30,7 @@
 
         <div v-if="loggedIn" flex items-center justify-center>
           <UButton 
-            btn="soft"
+            btn="soft dark:soft-pink"
             size="xs"
             class="hover:scale-101 active:scale-99 transition"
             @click="collectionStore.openCreateDialog()"

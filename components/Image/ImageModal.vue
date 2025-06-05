@@ -8,25 +8,41 @@
     >
       <div class="relative">
         <!-- Modal header -->
-        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <div>
-            <h3 :title="selectedModalImage?.name" class="text-lg font-semibold  text-gray-900 dark:text-gray-100 max-w-260px overflow-hidden text-ellipsis whitespace-nowrap">
-              {{ selectedModalImage?.name || 'Image' }}
-            </h3>
-            <p v-if="selectedModalImage?.description" class="text-sm text-gray-500 dark:text-gray-400">
-              {{ selectedModalImage.description }}
-            </p>
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 :title="selectedModalImage?.name" class="text-lg font-semibold text-gray-900 dark:text-gray-100 max-w-420px overflow-hidden text-ellipsis whitespace-nowrap">
+                {{ selectedModalImage?.name || 'Image' }}
+              </h3>
+              <p v-if="selectedModalImage?.description" class="text-sm text-gray-500 dark:text-gray-400">
+                {{ selectedModalImage.description }}
+              </p>
+            </div>
           </div>
-          <div class="flex items-center gap-4 text-gray-500 dark:text-gray-400">
-            <span class="text-sm font-500">{{ selectedModalImage?.stats_views }} views</span>
-            <span class="text-sm font-500">{{ selectedModalImage?.stats_likes }} likes</span>
-            <UButton 
-              size="10px" 
-              btn="primary" 
-              icon
-              class="i-ph-arrow-square-up-right"
-              @click="$emit('openFullPage')"
-              title="Open in full page"
+          <div class="flex gap-4 text-3 font-medium text-gray-500 dark:text-gray-400">
+            <span>{{ selectedModalImage?.stats_views }} views</span>
+            <span>{{ selectedModalImage?.stats_downloads }} downloads</span>
+            <span>•</span>
+            <UButton btn="text-gray-500" size="xs" 
+              class="p-0 h-auto underline underline-dashed decoration-offset-4 hover:decoration-green-500" 
+              label="Open in full page" 
+              @click="$emit('openFullPage')" 
+            />
+            
+            <UDropdownMenu 
+              v-if="selectedModalImage && imageMenuItems"
+              :items="imageMenuItems(selectedModalImage)"
+              size="xs" 
+              menu-label="" 
+              :_dropdown-menu-content="{
+                class: 'w-52',
+                align: 'end',
+                side: 'bottom',
+              }" 
+              :_dropdown-menu-trigger="{
+                class: 'p-0 px-2 h-auto b-none ring-0 underline underline-dashed decoration-offset-4 text-gray-500 dark:text-gray-400 hover:bg-transparent hover:decoration-blue-500',
+                label: 'more',
+              }" 
             />
           </div>
         </div>
@@ -154,12 +170,13 @@
         </div>
 
         <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton btn="ghost-pink" @click="$emit('closeEdit')">
+          <div class="w-100% flex justify-end gap-3">
+            <UButton btn="ghost-pink" class="h-32px py-0 dark:bg-[#4ED7F1]/20 dark:text-[#4ED7F1] dark:hover:bg-[#4ED7F1]/30" @click="$emit('closeEdit')">
               Cancel
             </UButton>
             <UButton 
-              btn="outline" 
+              btn="outline dark:soft-blue" 
+              class="h-32px py-0"
               @click="$emit('submitEdit')"
               :loading="isUpdating"
               :disabled="!isEditFormValid"
@@ -196,6 +213,10 @@ interface Props {
   availableTags: Array<{ value: string, label: string }>
   isUpdating: boolean
   isEditFormValid: boolean
+  imageMenuItems?: (image: Image) => ({} | {
+      label: string;
+      onClick?: () => void;
+  })[]
 }
 
 interface Emits {
@@ -215,7 +236,3 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 </script>
-
-<style scoped>
-/* Add any modal-specific styles here if needed */
-</style>

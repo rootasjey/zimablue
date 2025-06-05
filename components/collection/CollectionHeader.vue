@@ -53,7 +53,7 @@
       <UButton 
         v-if="canEdit" 
         size="12px" 
-        btn="soft-black"
+        btn="soft-black dark:soft-orange"
         @click="$emit('edit')" 
       >
       <span class="i-ph-pencil mr-1"></span>

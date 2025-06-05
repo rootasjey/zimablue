@@ -25,7 +25,7 @@ export const useImageModal = () => {
     dragStartPos.value = { x: e.clientX, y: e.clientY }
   }
 
-  const openImageModal = (item: Image, event?: MouseEvent) => {
+  const openImageModal = async (item: Image, event?: MouseEvent) => {
     if (event) {
       // Check if the user is dragging the image
       const moveDistance = Math.sqrt(
@@ -41,6 +41,15 @@ export const useImageModal = () => {
     selectedModalImage.value = item
     currentImageIndex.value = gridStore.layout.findIndex(img => img.id === item.id)
     isImageModalOpen.value = true
+
+    // Update image view count
+    const updatedImage = await $fetch(`/api/images/slug/${item.slug}/views`, {
+      method: 'PUT',
+    })
+
+    selectedModalImage.value.stats_views = updatedImage.stats_views
+    selectedModalImage.value.stats_downloads = updatedImage.stats_downloads
+    selectedModalImage.value.stats_likes = updatedImage.stats_likes
   }
 
   const navigateToPrevious = () => {
@@ -78,6 +87,12 @@ export const useImageModal = () => {
     
     // Set selected image in store
     gridStore.selectedImage = item
+
+
+    // Update image view count
+    $fetch(`/api/images/slug/${item.slug}/views`, {
+      method: 'PUT',
+    })
 
     const urlPath = item.slug 
       ? `/illustrations/${item.slug}` 

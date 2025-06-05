@@ -138,6 +138,11 @@ export const useImageActions = () => {
       link.href = imagePathname
       link.download = image.name || imagePathname.split('/').pop() || 'image'
       link.click()
+
+      // Update the image's download count
+      $fetch(`/api/images/slug/${image.slug}/downloads`, {
+        method: 'PUT',
+      })
       
       toast({
         title: 'Download Started',
