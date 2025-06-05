@@ -1,8 +1,8 @@
 // GET /api/collections
 
 export default defineEventHandler(async (event) => {
-  const session = await requireUserSession(event)
-  const userId = session.user.id
+  const session = await getUserSession(event)
+  const userId = session.user?.id
 
   const query = getQuery(event)
   const limit = Number(query.limit) || 50

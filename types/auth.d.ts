@@ -1,7 +1,7 @@
 // auth.d.ts
 declare module '#auth-utils' {
   interface User {
-    // Add your own fields
+    createdAt: string;
     id: number
     email: string
     name: string

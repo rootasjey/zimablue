@@ -98,6 +98,8 @@
       @update-image-modal-open="isImageModalOpen = $event"
       @navigate-previous="navigateToPrevious"
       @navigate-next="navigateToNext"
+      @navigate-to-first="navigateToFirst"
+      @navigate-to-last="navigateToLast"
       @open-full-page="openFullPage"
     />
   </div>
@@ -150,27 +152,6 @@ onMounted(async () => {
   }
 })
 
-// Keyboard navigation
-onMounted(() => {
-  const handleKeydown = (e: KeyboardEvent) => {
-    if (!isImageModalOpen.value) return
-    
-    if (e.key === 'ArrowLeft') {
-      navigateToPrevious()
-    } else if (e.key === 'ArrowRight') {
-      navigateToNext()
-    } else if (e.key === 'Escape') {
-      isImageModalOpen.value = false
-    }
-  }
-  
-  window.addEventListener('keydown', handleKeydown)
-  
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-  })
-})
-
 // Reset store when component unmounts
 onUnmounted(() => {
   store.resetStore()
@@ -201,6 +182,19 @@ const navigateToNext = () => {
     selectedImage.value = store.images[currentImageIndex.value]
   }
 }
+
+const navigateToFirst = () => {
+  if (store.images.length === 0) return
+  currentImageIndex.value = 0
+  selectedImage.value = store.images[currentImageIndex.value]
+}
+
+const navigateToLast = () => {
+  if (store.images.length === 0) return
+  currentImageIndex.value = store.images.length - 1
+  selectedImage.value = store.images[currentImageIndex.value]
+}
+
 // Add this new method for the ImageModal component
 const openFullPage = () => {
   if (selectedImage.value) {
