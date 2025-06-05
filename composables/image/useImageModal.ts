@@ -66,6 +66,18 @@ export const useImageModal = () => {
     }
   }
 
+  const navigateToFirst = () => {
+    if (gridStore.layout.length === 0) return
+    currentImageIndex.value = 0
+    selectedModalImage.value = gridStore.layout[0]
+  }
+
+  const navigateToLast = () => {
+    if (gridStore.layout.length === 0) return
+    currentImageIndex.value = gridStore.layout.length - 1
+    selectedModalImage.value = gridStore.layout[gridStore.layout.length - 1]
+  }
+
   const navigateToImage = (imageId: number) => {
     const index = gridStore.layout.findIndex(img => img.id === imageId)
     if (index !== -1) {
@@ -122,64 +134,6 @@ export const useImageModal = () => {
     selectedModalImage.value = null
   }
 
-  // Keyboard navigation
-  const handleKeydown = (e: KeyboardEvent) => {
-    if (!isImageModalOpen.value) return
-    
-    switch (e.key) {
-      case 'ArrowLeft':
-        e.preventDefault()
-        navigateToPrevious()
-        break
-      case 'ArrowRight':
-        e.preventDefault()
-        navigateToNext()
-        break
-      case 'Escape':
-      case 'ArrowDown':
-        e.preventDefault()
-        closeModal()
-        break
-      case 'Enter':
-      case ' ':
-      case 'Space':
-        e.preventDefault()
-        openImagePage()
-        break
-      case 'Home':
-        e.preventDefault()
-        if (gridStore.layout.length > 0) {
-          currentImageIndex.value = 0
-          selectedModalImage.value = gridStore.layout[0]
-        }
-        break
-      case 'End':
-        e.preventDefault()
-        if (gridStore.layout.length > 0) {
-          currentImageIndex.value = gridStore.layout.length - 1
-          selectedModalImage.value = gridStore.layout[gridStore.layout.length - 1]
-        }
-        break
-    }
-  }
-
-  // Auto-setup keyboard listeners
-  const setupKeyboardListeners = () => {
-    window.addEventListener('keydown', handleKeydown)
-  }
-
-  const removeKeyboardListeners = () => {
-    window.removeEventListener('keydown', handleKeydown)
-  }
-
-  onMounted(() => {
-    setupKeyboardListeners()
-  })
-
-  onUnmounted(() => {
-    removeKeyboardListeners()
-  })
-
   // Watch for modal state changes to handle body scroll
   watch(isImageModalOpen, (isOpen: boolean) => {
     if (!import.meta.client) return
@@ -214,12 +168,10 @@ export const useImageModal = () => {
     closeModal,
     navigateToPrevious,
     navigateToNext,
+    navigateToFirst,
+    navigateToLast,
     navigateToImage,
     openImagePage,
     handleMouseDown,
-    
-    // Utilities
-    setupKeyboardListeners,
-    removeKeyboardListeners,
   }
 }

@@ -1,10 +1,10 @@
 <template>
   <!-- pages/index.vue -->
   <div class="frame"
-      @drop.prevent="imageUpload.handleDrop"
-      @dragenter.prevent="imageUpload.handleDragEnter"
-      @dragover.prevent="imageUpload.handleDragOver"
-      @dragleave.prevent="imageUpload.handleDragLeave"
+    @drop.prevent="imageUpload.handleDrop"
+    @dragenter.prevent="imageUpload.handleDragEnter"
+    @dragover.prevent="imageUpload.handleDragOver"
+    @dragleave.prevent="imageUpload.handleDragLeave"
   >
 
     <PageHeader 
@@ -88,11 +88,6 @@
       :total-images="imageModal.totalImages.value"
       :can-navigate-previous="imageModal.canNavigatePrevious.value"
       :can-navigate-next="imageModal.canNavigateNext.value"
-      :show-edit-modal="imageActions.showEditModal.value"
-      :edit-form="imageActions.editForm.value"
-      :available-tags="imageActions.availableTags"
-      :is-updating="imageActions.isUpdating.value"
-      :is-edit-form-valid="imageActions.isEditFormValid.value"
       :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
         image: item, 
         openImagePageFn: imageModal.openImagePage, 
@@ -102,11 +97,21 @@
       @open-full-page="imageModal.openImagePage"
       @navigate-previous="imageModal.navigateToPrevious"
       @navigate-next="imageModal.navigateToNext"
-      @close-edit="imageActions.closeEditModal"
-      @submit-edit="imageActions.handleEditSubmit"
-      @update-field="imageActions.updateEditFormField"
+      @navigate-to-first="imageModal.navigateToFirst"
+      @navigate-to-last="imageModal.navigateToLast"
       @update-image-modal-open="imageModal.isImageModalOpen.value = $event"
-      @update-edit-modal-open="imageActions.showEditModal.value = $event"
+    />
+
+    <ImageEditModal
+      :is-open="imageActions.showEditModal.value"
+      :edit-form="imageActions.editForm.value"
+      :available-tags="imageActions.availableTags"
+      :is-updating="imageActions.isUpdating.value"
+      :is-form-valid="imageActions.isEditFormValid.value"
+      @close="imageActions.closeEditModal"
+      @submit="imageActions.handleEditSubmit"
+      @update-field="imageActions.updateEditFormField"
+      @is-open="imageActions.showEditModal.value = $event"
     />
 
     <AddToCollectionModal
@@ -142,7 +147,6 @@ const addToCollection = useAddToCollectionModal()
 
 const replacementFileInput = imageUpload.replacementFileInput
 const fileInput = imageUpload.fileInput
-
 
 const showGrid = ref(false)
 const showGridOpacity = ref(false)

@@ -1,12 +1,16 @@
 <template>
   <div>
-    <!-- Image Viewer Modal -->
     <UDialog 
       :open="isImageModalOpen" 
       @update:open="$emit('updateImageModalOpen', $event)"
       :ui="{ width: 'max-w-7xl' }"
     >
-      <div class="relative">
+      <div 
+        ref="modalContent"
+        class="relative modal-content"
+        tabindex="0"
+        @keydown="handleKeydown"
+      >
         <!-- Modal header -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
@@ -25,7 +29,7 @@
             <span>•</span>
             <UButton btn="text-gray-500" size="xs" 
               class="p-0 h-auto underline underline-dashed decoration-offset-4 hover:decoration-green-500" 
-              label="Open in full page" 
+              label="view in fullscreen" 
               @click="$emit('openFullPage')" 
             />
             
@@ -38,16 +42,19 @@
                 class: 'w-52',
                 align: 'end',
                 side: 'bottom',
-              }" 
-              :_dropdown-menu-trigger="{
-                class: 'p-0 px-2 h-auto b-none ring-0 underline underline-dashed decoration-offset-4 text-gray-500 dark:text-gray-400 hover:bg-transparent hover:decoration-blue-500',
-                label: 'more',
-              }" 
-            />
+                onCloseAutoFocus() {
+                  nextTick(() => modalContent?.focus())
+                },
+              }"
+            >
+              <span class="dp-menu-trigger-text cursor-pointer">
+                more
+              </span>
+            </UDropdownMenu>
           </div>
         </div>
         
-        <!-- Modal content -->
+        <!-- Modal body -->
         <div class="p-4">
           <div class="flex justify-center">
             <NuxtImg 
@@ -56,7 +63,8 @@
               :src="selectedModalImage.pathname"
               :alt="selectedModalImage.name || 'Image'"
               :width="600"
-              class="max-w-full max-h-[70vh] object-contain rounded-lg"
+              class="max-w-full max-h-[70vh] object-contain rounded-lg cursor-pointer"
+              @click="$emit('openFullPage')" 
             />
           </div>
         </div>
@@ -89,104 +97,6 @@
         </div>
       </div>
     </UDialog>
-
-    <!-- Edit Modal -->
-    <UDialog 
-      :open="showEditModal"
-      @update:open="$emit('updateEditModalOpen', $event)"
-      :ui="{ width: 'sm:max-w-md' }" 
-      :_dialog-close="{
-        btn: 'solid-gray',
-      }">
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              Edit Image Details
-            </h3>
-          </div>
-        </template>
-
-        <div class="space-y-4">
-          <UFormGroup label="Name" name="name">
-            <UInput 
-              :model-value="editForm.name" 
-              @update:model-value="$emit('updateField', 'name', $event)"
-              placeholder="Image name" 
-            />
-          </UFormGroup>
-          
-          <UFormGroup label="Slug" name="slug">
-            <UInput 
-              :model-value="editForm.slug"
-              @update:model-value="$emit('updateField', 'slug', $event)"
-              placeholder="URL-friendly slug" 
-            />
-          </UFormGroup>
-          
-          <UFormGroup label="Description" name="description">
-            <UInput 
-              :model-value="editForm.description"
-              @update:model-value="$emit('updateField', 'description', $event)"
-              type="textarea" 
-              placeholder="Image description" 
-            />
-          </UFormGroup>
-          
-          <UFormGroup label="Tags" name="tags">
-             <UCombobox
-                :model-value="editForm.tags"
-                @update:model-value="$emit('updateField', 'tags', $event)"
-                :items="availableTags"
-                by="value"
-                multiple
-                :_combobox-input="{
-                  placeholder: 'Select tags...',
-                }"
-                :_combobox-list="{
-                  class: 'w-300px',
-                  align: 'start',
-                }"
-              >
-                <template #trigger>
-                  {{ editForm.tags?.length > 0
-                    ? editForm.tags.map(val => {
-                      const tag = availableTags.find(f => f.value === val)
-                      return tag ? tag.label : val
-                    }).join(", ")
-                    : "Select tags..." }}
-                </template>
-
-                <template #item="{ item, selected }">
-                  <UCheckbox
-                    :model-value="selected"
-                    tabindex="-1"
-                    aria-hidden="true"
-                  />
-                  {{ item.label }}
-                </template>
-              </UCombobox>
-          </UFormGroup>
-        </div>
-
-        <template #footer>
-          <div class="w-100% flex justify-end gap-3">
-            <UButton btn="ghost-pink" class="h-32px py-0 dark:bg-[#4ED7F1]/20 dark:text-[#4ED7F1] dark:hover:bg-[#4ED7F1]/30" @click="$emit('closeEdit')">
-              Cancel
-            </UButton>
-            <UButton 
-              btn="outline dark:soft-blue" 
-              class="h-32px py-0"
-              @click="$emit('submitEdit')"
-              :loading="isUpdating"
-              :disabled="!isEditFormValid"
-            >
-              Save Changes
-            </UButton>
-          </div>
-        </template>
-      </UCard>
-    </UDialog>
   </div>
 </template>
 
@@ -194,7 +104,6 @@
 import type { Image } from '~/types/image'
 
 interface Props {
-  // Image viewer modal
   isImageModalOpen: boolean
   selectedModalImage: Image | null
   currentPosition: number
@@ -202,17 +111,6 @@ interface Props {
   canNavigatePrevious: boolean
   canNavigateNext: boolean
   
-  // Edit modal
-  showEditModal: boolean
-  editForm: {
-    name: string
-    description: string
-    slug: string
-    tags: any[]
-  }
-  availableTags: Array<{ value: string, label: string }>
-  isUpdating: boolean
-  isEditFormValid: boolean
   imageMenuItems?: (image: Image) => ({} | {
       label: string;
       onClick?: () => void;
@@ -220,19 +118,78 @@ interface Props {
 }
 
 interface Emits {
-  // Image viewer events
   openFullPage: []
   navigatePrevious: []
   navigateNext: []
+  navigateToFirst: []
+  navigateToLast: []
   updateImageModalOpen: [value: boolean]
-  
-  // Edit modal events
-  closeEdit: []
-  submitEdit: []
-  updateField: [field: "description" | "name" | "slug" | "tags", value: any]
-  updateEditModalOpen: [value: boolean]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const modalContent = ref<HTMLElement>()
+
+// Focus the modal when it opens
+watch(() => props.isImageModalOpen, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      modalContent.value?.focus()
+    })
+  }
+})
+
+const handleKeydown = (event: KeyboardEvent) => {
+  switch (event.key) {
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      if (props.canNavigatePrevious) {
+        event.preventDefault()
+        emit('navigatePrevious')
+      }
+      break
+    case 'ArrowRight':
+    case 'ArrowDown':
+      if (props.canNavigateNext) {
+        event.preventDefault()
+        emit('navigateNext')
+      }
+      break
+    case 'Escape':
+      event.preventDefault()
+      emit('updateImageModalOpen', false)
+      break
+    case 'Home':
+      event.preventDefault()
+      emit('navigateToFirst')
+      break
+    case 'End':
+      event.preventDefault()
+      emit('navigateToLast')
+      break
+    case 'Enter':
+      event.preventDefault()
+      emit('openFullPage')
+      break
+  }
+}
 </script>
+
+<style scoped>
+:deep(button.dp-menu-trigger-text) {
+  box-shadow: none;
+  color: rgba(var(--una-gray-500), var(--un-text-opacity));
+
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+.modal-content:focus {
+  outline-color: rgba(0, 0, 0, 0.05);
+  outline-offset: 12px;
+  outline-style: dashed;
+  outline-width: 1px;
+}
+</style>
