@@ -31,11 +31,6 @@ export default defineNuxtConfig({
       hubblob: {
         name: 'hubblob',
         provider: '~/providers/hubblob.ts',
-        options: {
-          baseURL: process.env.NODE_ENV === 'development'
-            ? 'http://localhost:3000'
-            : 'https://zimablue.nuxt.dev',
-        },
       },
     },
   },
