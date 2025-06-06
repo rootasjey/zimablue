@@ -1,5 +1,5 @@
 <template>
-    <div class="frame">
+  <div class="frame">
     <!-- Header -->
     <header class="mt-12 mb-8">
       <div class="flex gap-2">
@@ -46,7 +46,7 @@
         All illustrations on this site are free to use under the 
         <NuxtLink href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" 
           class="font-400 hover:underline hover:text-[#ADB2D4] transition-all duration-300"
-          :class="randomLightColor">
+          :class="randomColors.getTextColorClasses()">
           Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)</NuxtLink>
         This means you are free to share and adapt the material for any purpose, even commercially, 
         as long as you give appropriate credit and share your adaptations under the same license.
@@ -56,39 +56,38 @@
     <!-- Connect -->
     <section>
       <UCollapsible v-model:open="isFormOpen">
-        
-      <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
-        <span class="i-ph-handshake mr-2"></span>
-        Let's Connect
-      </h2>
+        <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
+          <span class="i-ph-handshake mr-2"></span>
+          Let's Connect
+        </h2>
 
-      <p class="text-gray-700 dark:text-gray-300 mb-6">
-        If any of this resonates with you, or if you're curious to learn more about my work and perspectives, 
-        I'd love to connect. You can reach out through my 
-        <ULink to="/contact" class="arrow"><span>contact page</span></ULink> 
-        or find me on the social platforms linked below.
-      </p>
+        <p class="text-gray-700 dark:text-gray-300 mb-6">
+          If any of this resonates with you, or if you're curious to learn more about my work and perspectives, 
+          I'd love to connect. You can reach out through my 
+          <ULink to="/contact" class="arrow"><span>contact page</span></ULink> 
+          or find me on the social platforms linked below.
+        </p>
 
-      <div class="flex flex-wrap gap-4">
-        <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-github-logo"></div>
-          <span class="font-600 text-size-3">GitHub</span>
-        </ULink>
-        <ULink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-instagram-logo"></div>
-          <span class="font-600 text-size-3">Instagram</span>
-        </ULink>
-        <ULink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-linkedin-logo"></div>
-          <span class="font-600 text-size-3">LinkedIn</span>
-        </ULink>
-      </div>
+        <div class="flex flex-wrap gap-4">
+          <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
+            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <div class="i-ph-github-logo"></div>
+            <span class="font-600 text-size-3">GitHub</span>
+          </ULink>
+          <ULink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <div class="i-ph-instagram-logo"></div>
+            <span class="font-600 text-size-3">Instagram</span>
+          </ULink>
+          <ULink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <div class="i-ph-linkedin-logo"></div>
+            <span class="font-600 text-size-3">LinkedIn</span>
+          </ULink>
+        </div>
 
         <UCollapsibleTrigger as-child>
-          <UButton btn="text" size="md" class="pl-0 mt-6 mb-4" :class="randomLightColor">
+          <UButton btn="text" size="md" class="pl-0 mt-6 mb-4" :class="randomColors.getTextColorClasses()">
             {{ isFormOpen ? "Hide contact form ☝️" : "Send a message 📮" }}
           </UButton>
         </UCollapsibleTrigger>
@@ -216,42 +215,7 @@
 
 <script lang="ts" setup>
 const { toast } = useToast()
-
-// Define your color palettes
-const lightModeColors = [
-  'text-[#EC7FA9]',
-  'text-[#FF6B6B]',
-  'text-[#48A9A6]',
-  'text-[#9370DB]',
-  'text-[#4A90E2]',
-  'text-[#F7B801]'
-]
-
-const darkModeColors = [
-  'dark:text-[#66D2CE]',
-  'dark:text-[#FF9E9E]',
-  'dark:text-[#7FDBDA]',
-  'dark:text-[#B19CD9]',
-  'dark:text-[#7FB3F1]',
-  'dark:text-[#FFD54F]'
-]
-
-// Use useState to ensure the same random index is used on server and client
-const colorIndex = useState('colorIndex', () => Math.floor(Math.random() * lightModeColors.length))
-const darkColorIndex = useState('darkColorIndex', () => Math.floor(Math.random() * darkModeColors.length))
-
-// Function to get a random color from an array
-const getRandomColor = (colors: string[]) => {
-  const randomIndex = Math.floor(Math.random() * colors.length)
-  return colors[randomIndex]
-}
-
-// Computed properties for consistent colors
-const randomLightColor = computed(() => {
-  const lightColor = lightModeColors[colorIndex.value]
-  const darkColor = darkModeColors[darkColorIndex.value]
-  return `${lightColor} ${darkColor}`
-})
+const randomColors = useRandomColors()
 
 const formData = reactive({
   email: '',
@@ -306,24 +270,6 @@ async function submitForm() {
     isSubmitting.value = false
   }
 }
-
-const greeting = computed(() => {
-  const hour = new Date().getHours()
-  
-  if (hour >= 5 && hour < 12) return 'Good morning'
-  if (hour >= 12 && hour < 17) return 'Good afternoon'
-  if (hour >= 17 && hour < 22) return 'Good evening'
-  return 'Good night'
-})
-
-const timeIcon = computed(() => {
-  const hour = new Date().getHours()
-  
-  if (hour >= 5 && hour < 12) return 'i-ph-sun-horizon'
-  if (hour >= 12 && hour < 17) return 'i-line-md:moon-to-sunny-outline-loop-transition'
-  if (hour >= 17 && hour < 22) return 'i-ph:sun-horizon-bold'
-  return 'i-line-md:moon-rising-twotone-loop'
-})
 </script>
 
 <style scoped>

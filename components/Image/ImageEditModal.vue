@@ -58,8 +58,8 @@
             >
               <template #trigger>
                 {{ editForm.tags?.length > 0
-                  ? editForm.tags.map(val => {
-                    const tag = availableTags.find(f => f.value === val)
+                  ? editForm.tags.map((val: string) => {
+                    const tag = availableTags.find((f: TagMap) => f.value === val)
                     return tag ? tag.label : val
                   }).join(", ")
                   : "Select tags..." }}
@@ -98,6 +98,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { TagMap } from '~/types/image';
+
 interface Props {
   isOpen: boolean;
   editForm: {
@@ -106,7 +108,7 @@ interface Props {
     description: string;
     tags: any[];
   };
-  availableTags: Array<{ value: string, label: string }>
+  availableTags: Array<TagMap>;
   isUpdating: boolean;
   isFormValid: boolean;
 }

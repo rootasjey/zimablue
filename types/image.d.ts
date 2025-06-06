@@ -26,3 +26,8 @@ export type VariantType = {
   height: number
   pathname: string
 }
+
+export type TagMap = {
+  label: string
+  value: string
+}
