@@ -8,35 +8,35 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-  if (email === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-    // set the user session in the cookie
-    // this server util is auto-imported by the auth-utils module
-
-    const userData = await hubDatabase()
+  const userData = await hubDatabase()
     .prepare('SELECT * FROM users WHERE email = ?1 LIMIT 1')
     .bind(email)
     .first()
 
-    if (!userData) {
-      throw createError({
-        statusCode: 401,
-        message: 'Bad credentials'
-      })
-    }
-
-    await setUserSession(event, {
-      user: {
-        createdAt: userData.created_at,
-        email,
-        id: userData.id,
-        name: userData.name,
-        role: userData.role,
-      }
+  if (!userData) {
+    throw createError({
+      statusCode: 401,
+      message: 'Bad credentials'
     })
-    return {}
   }
-  throw createError({
-    statusCode: 401,
-    message: 'Bad credentials'
-  })
+
+  const isValidPassword = await verifyPassword(userData.password as string, password)
+  
+  if (!isValidPassword) {
+    throw createError({
+      statusCode: 401,
+      message: 'Bad credentials'
+    })
+  }
+
+  const user = {
+    createdAt: userData.created_at,
+    email: userData.email,
+    id: userData.id,
+    name: userData.name,
+    role: userData.role,
+  }
+
+  await setUserSession(event, { user })
+  return { user }
 })

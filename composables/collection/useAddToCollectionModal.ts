@@ -75,10 +75,12 @@ export const useAddToCollectionModal = () => {
       isAdding.value = true
       error.value = null
 
-      await $fetch(`/api/collections/${selectedCollection.value.id}/images`, {
-        method: 'POST',
+      await $fetch(`/api/collections/${selectedCollection.value.slug}`, {
+        method: 'PUT',
         body: {
-          imageId: selectedImage.value.id
+          images: {
+            add: [selectedImage.value.id]
+          }
         }
       })
 
@@ -92,6 +94,8 @@ export const useAddToCollectionModal = () => {
         error.value = 'This image is already in the selected collection'
       } else if (err.statusCode === 404) {
         error.value = 'Collection not found'
+      } else if (err.statusCode === 403) {
+        error.value = 'You do not have permission to modify this collection'
       } else {
         error.value = 'Failed to add image to collection. Please try again.'
       }

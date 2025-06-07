@@ -235,16 +235,16 @@ onMounted(() => {
   }
 })
 
-// Watch for login state changes
 watch(loggedIn, (newValue) => {
   if (newValue) {
     fetchUserStats()
-  } else {
-    userStats.value = {
-      totalImages: 0,
-      totalCollections: 0,
-      recentUploads: 0
-    }
+    return
+  }
+
+  userStats.value = {
+    totalImages: 0,
+    totalCollections: 0,
+    recentUploads: 0
   }
 })
 </script>

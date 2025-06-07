@@ -1,6 +1,6 @@
 <template>
   <!-- pages/index.vue -->
-  <div class="frame"
+  <div class="frame mt-2 md:mt-0"
     @drop.prevent="imageUpload.handleDrop"
     @dragenter.prevent="imageUpload.handleDragEnter"
     @dragover.prevent="imageUpload.handleDragOver"
