@@ -79,14 +79,12 @@
               class: 'w-52',
               align: 'end',
               side: 'bottom',
-            }" 
-            :_dropdown-menu-trigger="{
-              icon: true,
-              square: true,
-              class: 'menu-trigger dp-menu-trigger',
-              label: 'i-lucide-ellipsis-vertical',
-            }" 
-          />
+            }"
+          >
+            <div class="dp-menu-trigger w-32px h-32px flex items-center justify-center">
+              <span class="i-ph-chat-teardrop-dots-bold"></span>
+            </div>
+          </UDropdownMenu>
         </div>
       </GridItem>
     </GridLayout>
@@ -212,8 +210,13 @@ const emit = defineEmits<Emits>()
   animation: colorPulse 6s infinite;
 }
 
+.group:hover .dp-menu-trigger {
+  animation: colorPulse 6s infinite;
+}
+
 @keyframes colorPulse {
   0% { color: rgb(244 114 182); }  /* pink-400 */
+  16% { color: rgb(255 167 37); }  /* orange-400 */
   33% { color: rgb(134 239 172); }  /* green-300 */
   66% { color: rgb(129 140 248); }  /* indigo-400 */
   100% { color: rgb(244 114 182); }  /* back to pink-400 */
