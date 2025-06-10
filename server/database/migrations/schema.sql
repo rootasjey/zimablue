@@ -34,17 +34,17 @@ BEGIN
 END;
 
 CREATE TABLE IF NOT EXISTS users (
-    biography TEXT,
+    biography TEXT DEFAULT "",
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     email TEXT NOT NULL UNIQUE,
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    job TEXT,
-    language TEXT,
-    location TEXT,
+    job TEXT DEFAULT "",
+    language TEXT DEFAULT "en",
+    location TEXT DEFAULT "",
     name TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'user',
-    socials TEXT,
+    socials TEXT DEFAULT '[]',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
