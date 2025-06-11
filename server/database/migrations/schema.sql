@@ -64,10 +64,17 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     message TEXT NOT NULL,
+    read BOOLEAN DEFAULT FALSE
     sender_email TEXT NOT NULL,
     subject TEXT NOT NULL,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create index for faster filtering by read status
+CREATE INDEX IF NOT EXISTS idx_messages_read ON messages(read);
+
+-- Create composite index for common queries (read status + created_at for sorting)
+CREATE INDEX IF NOT EXISTS idx_messages_read_created_at ON messages(read, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS collections (
     cover_image_id INTEGER,

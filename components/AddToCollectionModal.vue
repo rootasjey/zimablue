@@ -4,8 +4,9 @@
     @update:open="$emit('update:isOpen', $event)"
     :ui="{ width: 'w-full sm:max-w-md' }"
     :_dialog-close="{
-        btn: 'solid-gray',
-      }">
+      btn: 'solid-gray',
+    }"
+  >
     <UCard>
       <template #header>
         <div>
