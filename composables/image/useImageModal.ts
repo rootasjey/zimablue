@@ -134,23 +134,6 @@ export const useImageModal = () => {
     selectedModalImage.value = null
   }
 
-  // Watch for modal state changes to handle body scroll
-  watch(isImageModalOpen, (isOpen: boolean) => {
-    if (!import.meta.client) return
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      return
-    }
-
-    document.body.style.overflow = ''
-  })
-
-  onUnmounted(() => {
-    if (import.meta.client) {
-      document.body.style.overflow = ''
-    }
-  })
-
   return {
     // State
     isImageModalOpen,
