@@ -168,7 +168,6 @@ export const useGridStore = defineStore('grid', () => {
         formData.append('y', newGridItem.y.toString())
         formData.append('w', newGridItem.w.toString())
         formData.append('h', newGridItem.h.toString())
-        formData.append('id', newGridItem.id.toString())
   
         const response = await $fetch('/api/images/upload', {
           method: 'POST',
@@ -179,6 +178,7 @@ export const useGridStore = defineStore('grid', () => {
           const uploadedImage = response.results[0]
           // Update the optimistic grid item with the uploaded image data
           newGridItem.id = uploadedImage.id
+          newGridItem.i = uploadedImage.id
           newGridItem.created_at = uploadedImage.created_at
           newGridItem.updated_at = uploadedImage.updated_at
           newGridItem.name = uploadedImage.name

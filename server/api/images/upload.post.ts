@@ -90,8 +90,8 @@ export default eventHandler(async (event) => {
   // Store the image metadata in the database
   const insertResponse = await hubDatabase()
     .prepare(`
-      INSERT INTO images (name, pathname, x, y, w, h, id, slug, user_id, variants)
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+      INSERT INTO images (name, pathname, x, y, w, h, slug, user_id, variants)
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
     `)
     .bind(
       fileName,
@@ -100,7 +100,6 @@ export default eventHandler(async (event) => {
       y,
       w,
       h,
-      id,
       slug,
       userId,
       JSON.stringify(generatedVariants)
