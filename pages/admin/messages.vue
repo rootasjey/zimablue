@@ -1,59 +1,60 @@
 <template>
-  <div class="frame">
-    <header class="mt-12 mb-8 border-b b-dashed pb-6 border-gray-200 dark:border-gray-700">
-      <div class="flex gap-2">
-        <ULink to="/" class="hover:scale-102 active:scale-99 transition">
-          <span class="i-ph-house-simple-duotone"></span>
-        </ULink>
-        <span>•</span>
-        <ULink to="/user" class="hover:scale-102 active:scale-99 transition text-gray-600 dark:text-gray-400">
-          Profile
-        </ULink>
-        <span>•</span>
-        <h1 class="font-body font-600 text-gray-800 dark:text-gray-200">
-          Admin Messages
-        </h1>
-      </div>
-    </header>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="flex">
+      <!-- Sidebar -->
+      <AdminSidebar :unread-count="unreadCount" />
 
-    <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-      <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <!-- Main Content -->
+      <main class="flex-1 p-8">
+
+        <!-- Access Control -->
+        <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
+          <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
+          <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
+          <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+          <UButton to="/user" class="mt-4">Go to Profile</UButton>
+        </div>
+
+        <!-- Messages Management -->
+        <div v-else>
+          <!-- Header -->
+          <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Message Management</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">
+              Manage contact messages and inquiries from users.
+            </p>
+          </div>
+
+          <AdminMessageHeader
+            :total-messages="pagination.total"
+            :unread-count="unreadCount"
+            :selected-count="Object.values(selectedMessages).filter(Boolean).length"
+            :is-loading="isLoading"
+            @refresh="fetchMessages"
+            @bulk-action="handleBulkAction"
+            @search="handleSearch"
+            @filter-change="handleFilterChange"
+          />
+
+          <AdminMessageList
+            :messages="messages"
+            :selected-messages="selectedMessages"
+            :is-loading="isLoading"
+            @select-message="toggleMessageSelection"
+            @select-all="toggleSelectAll"
+            @mark-read="markAsRead"
+            @delete-message="showDeleteDialog"
+            @view-message="viewMessage"
+          />
+
+          <AdminMessagePagination
+            v-if="pagination.totalPages > 1"
+            :pagination="pagination"
+            @page-change="handlePageChange"
+          />
+        </div>
+      </main>
     </div>
-
-    <div v-else>
-      <AdminMessageHeader 
-        :total-messages="pagination.total"
-        :unread-count="unreadCount"
-        :selected-count="Object.values(selectedMessages).filter(Boolean).length"
-        :is-loading="isLoading"
-        @refresh="fetchMessages"
-        @bulk-action="handleBulkAction"
-        @search="handleSearch"
-        @filter-change="handleFilterChange"
-      />
-
-      <AdminMessageList
-        :messages="messages"
-        :selected-messages="selectedMessages"
-        :is-loading="isLoading"
-        @select-message="toggleMessageSelection"
-        @select-all="toggleSelectAll"
-        @mark-read="markAsRead"
-        @delete-message="showDeleteDialog"
-        @view-message="viewMessage"
-      />
-
-      <AdminMessagePagination
-        v-if="pagination.totalPages > 1"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-      />
-    </div>
-
-    <Footer />
 
     <AdminMessageModal
       v-if="selectedMessage"
@@ -73,7 +74,26 @@
       @close="closeDeleteDialog"
     />
 
-    <AdminMessageDeleteBulkDialog 
+    <!-- Modals and Dialogs -->
+    <AdminMessageModal
+      v-if="selectedMessage"
+      :message="selectedMessage"
+      :is-open="isModalOpen"
+      @close="closeModal"
+      @mark-read="markAsRead"
+      @delete="showDeleteDialog"
+    />
+
+    <AdminMessageDeleteDialog
+      v-if="selectedMessage"
+      :message-id="selectedMessage.id"
+      :is-open="isDeleteDialogOpen"
+      :subject="selectedMessage.subject"
+      @confirm="deleteMessage"
+      @close="closeDeleteDialog"
+    />
+
+    <AdminMessageDeleteBulkDialog
       :is-open="isDeleteBulkDialogOpen"
       :count="Object.values(selectedMessages).filter(Boolean).length"
       @confirm="() => handleBulkAction('delete')"
@@ -363,23 +383,3 @@ watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
 })
 </script>
 
-<style scoped>
-.frame {
-  width: 800px;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  padding-bottom: 38vh;
-  display: flex;
-  flex-direction: column;
-  transition-property: all;
-  transition-duration: 500ms;
-  overflow-y: auto;
-}
-
-@media (max-width: 768px) {
-  .frame {
-    width: 100%;
-    padding: 1rem;
-  }
-}
-</style>
