@@ -1,6 +1,31 @@
 <template>
-  <div class="frame">
-    <header class="mt-12 mb-8">
+  <div class="frame pb-20 sm:pb-0">
+    <!-- Mobile Header -->
+    <header class="sm:hidden mt-4 mb-6 px-4">
+      <div class="flex items-center gap-3 mb-4">
+        <ULink to="/" class="mobile-back-btn">
+          <span class="i-ph-arrow-left text-lg"></span>
+        </ULink>
+        <h1 class="font-body text-lg font-600 text-gray-800 dark:text-gray-200">
+          Collections
+        </h1>
+      </div>
+
+      <div v-if="loggedIn" class="flex justify-center">
+        <UButton
+          btn="soft dark:soft-pink"
+          size="sm"
+          class="hover:scale-101 active:scale-99 transition"
+          @click="collectionStore.openCreateDialog()"
+        >
+          <i class="i-ph-plus-bold"></i>
+          <span>Add Collection</span>
+        </UButton>
+      </div>
+    </header>
+
+    <!-- Desktop Header -->
+    <header class="hidden sm:block mt-12 mb-8">
       <div class="flex gap-2">
         <ULink to="/" class="hover:scale-102 active:scale-99 transition">
           <span class="i-ph-house-simple-duotone"></span>
@@ -18,10 +43,10 @@
           </svg>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-2">
-        <UButton 
-          size="xs" 
+        <UButton
+          size="xs"
           btn="soft-black dark:soft-blue"
           class="cursor-pointer hover:scale-105 hover:accent-rose active:scale-99 transition"
           @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'">
@@ -29,7 +54,7 @@
         </UButton>
 
         <div v-if="loggedIn" flex items-center justify-center>
-          <UButton 
+          <UButton
             btn="soft dark:soft-pink"
             size="xs"
             class="hover:scale-101 active:scale-99 transition"
@@ -280,5 +305,15 @@ const handleUpdateCollection = async (data: CollectionFormData) => {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Mobile styles */
+.mobile-back-btn {
+  @apply flex items-center justify-center w-10 h-10 rounded-lg;
+  @apply text-gray-600 dark:text-gray-400;
+  @apply hover:text-gray-800 dark:hover:text-gray-200;
+  @apply hover:bg-gray-100 dark:hover:bg-gray-800;
+  @apply active:scale-95 transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 </style>

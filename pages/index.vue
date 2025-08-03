@@ -1,14 +1,14 @@
 <template>
   <!-- pages/index.vue -->
-  <div class="frame mt-2 md:mt-0"
+  <div class="frame mt-2 md:mt-0 pb-20 sm:pb-0"
     @drop.prevent="imageUpload.handleDrop"
     @dragenter.prevent="imageUpload.handleDragEnter"
     @dragover.prevent="imageUpload.handleDragOver"
     @dragleave.prevent="imageUpload.handleDragLeave"
   >
 
-    <PageHeader 
-      :user-menu-items="imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)" 
+    <PageHeader
+      :user-menu-items="imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)"
     />
 
     <!-- Upload Progress Indicator -->
@@ -184,7 +184,7 @@ function layoutUpdated(newLayout: Image[]) {
   gridStore.saveLayout(newLayout)
 }
 
-function layoutReady(layout: Image[]) {
+function layoutReady(_layout: Image[]) {
   showGrid.value = true
   setTimeout(() => {
     showGridOpacity.value = true
@@ -197,7 +197,6 @@ function layoutReady(layout: Image[]) {
 .frame {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   overflow: auto;
   min-height: 100vh;
   width: 100%;
@@ -205,6 +204,7 @@ function layoutReady(layout: Image[]) {
   transition: all 500ms;
   
   @media (min-width: 768px) {
+    justify-content: center;
     padding: 2rem;
   }
 }

@@ -1,10 +1,11 @@
 <template>
   <div class="min-h-screen w-full flex items-center justify-center">
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
     <UToaster />
-
-    <!-- Global Search Dialog -->
     <GlobalSearchDialog />
+    <MobileBottomNav />
   </div>
 </template>
 
@@ -15,7 +16,7 @@ import '@/styles/arrow-link.css'
 import GlobalSearchDialog from '~/components/search/GlobalSearchDialog.vue'
 
 // Setup global search functionality
-const globalSearch = useGlobalSearch()
+useGlobalSearch()
 
 useHead({
   meta: [

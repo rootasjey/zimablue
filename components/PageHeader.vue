@@ -1,5 +1,15 @@
 <template>
-  <header class="mb-8 flex flex-col items-center justify-center">
+  <!-- Mobile Header -->
+  <MobileHeader
+    :is-mobile-menu-open="isMobileMenuOpen"
+    @toggle-menu="toggleMobileMenu"
+  />
+
+  <!-- Mobile Menu Drawer -->
+  <MobileMenuDrawer v-model:open="isMobileMenuOpen" />
+
+  <!-- Desktop Header -->
+  <header class="hidden sm:flex mb-8 flex-col items-center justify-center">
     <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
       <NuxtLink to="/about">
         zima blue
@@ -12,17 +22,17 @@
         side: 'right',
       }">
         <template #default>
-          <div :class="timeIcon" 
-            class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition" 
-            @click="toggleTheme" 
+          <div :class="timeIcon"
+            class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
+            @click="toggleTheme"
             @click.right="setSystemTheme"
           />
         </template>
         <template #content>
-          <button 
-            @click="setSystemTheme" 
-            bg="light dark:dark" 
-            text="dark dark:white" 
+          <button
+            @click="setSystemTheme"
+            bg="light dark:dark"
+            text="dark dark:white"
             class="b-#3D3BF3 text-3 px-3 py-1 rounded-md m-0 border-1 border-dashed"
           >
             System theme
@@ -64,6 +74,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { loggedIn, user } = useUserSession()
 const { $colorMode } = useNuxtApp()
+
+// Mobile menu state
+const isMobileMenuOpen = ref(false)
+
+// Toggle mobile menu
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
 
 // Theme management
 const toggleTheme = () => {

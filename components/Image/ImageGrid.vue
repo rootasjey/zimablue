@@ -1,18 +1,18 @@
 <template>
   <div>
     <!-- Mobile Grid with 3 columns -->
-    <div v-if="layout.length" class="grid sm:hidden grid-cols-3 gap-5 mx-4">
-      <div v-for="item in layout" :key="item.i" 
-        class="mobile-group aspect-square relative overflow-hidden 
+    <div v-if="layout.length" class="grid sm:hidden grid-cols-3 gap-5 mx-4 mt-12">
+      <div v-for="item in layout" :key="item.i"
+        class="mobile-group aspect-square relative overflow-hidden
         rounded-7 z-2 cursor-pointer transition duration-900"
-        @click.self="(event: MouseEvent) => $emit('imageClick', item, event)"
         @mousedown="$emit('mouseDown', $event)"
       >
-        <NuxtImg 
+        <NuxtImg
+          @click="(event: MouseEvent) => $emit('imageClick', item, event)"
           loading="lazy"
           width="120"
           :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-          :src="item.pathname" 
+          :src="item.pathname"
           :alt="item.pathname"
           class="nuxt-img-mobile"
           :style="`view-transition-name: shared-image-${item.id}`"

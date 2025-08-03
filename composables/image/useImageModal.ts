@@ -137,8 +137,8 @@ export const useImageModal = () => {
   return {
     // State
     isImageModalOpen,
-    selectedModalImage: readonly(selectedModalImage),
-    currentImageIndex: readonly(currentImageIndex),
+    selectedModalImage,
+    currentImageIndex,
     
     // Computed
     canNavigatePrevious,

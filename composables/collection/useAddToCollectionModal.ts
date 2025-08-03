@@ -117,14 +117,13 @@ export const useAddToCollectionModal = () => {
 
   return {
     // State
-    isOpen: isOpen,
-    selectedImage: readonly(selectedImage),
-    collections: collections,
-    // collections: readonly(collections),
-    selectedCollection: readonly(selectedCollection),
-    isLoading: readonly(isLoading),
-    isAdding: readonly(isAdding),
-    error: readonly(error),
+    isOpen,
+    selectedImage,
+    collections,
+    selectedCollection,
+    isLoading,
+    isAdding,
+    error,
     
     // Computed
     hasSelectedCollection,
