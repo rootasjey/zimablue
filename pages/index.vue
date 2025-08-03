@@ -124,14 +124,14 @@
       @clear-selection="multiSelect.clearSelection"
     />
 
-    <BulkDeleteDialog
+    <ImageBulkDeleteDialog
       v-model:is-open="showBulkDeleteDialog"
       :image-count="multiSelect.selectionCount.value"
       :selected-image-ids="multiSelect.selectedImageIds.value"
       @confirm="handleBulkDelete"
     />
 
-    <BulkAddToCollectionDialog
+    <ImageBulkAddToCollectionDialog
       v-model:is-open="showBulkAddToCollectionDialog"
       :image-count="multiSelect.selectionCount.value"
       :selected-image-ids="multiSelect.selectedImageIds.value"
@@ -152,8 +152,6 @@ import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageActions } from '~/composables/image/useImageActions'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 import { useHomeMultiSelect } from '~/composables/image/useHomeMultiSelect'
-import BulkDeleteDialog from '~/components/image/BulkDeleteDialog.vue'
-import BulkAddToCollectionDialog from '~/components/image/BulkAddToCollectionDialog.vue'
 
 const { loggedIn, clear } = useUserSession()
 const gridStore = useGridStore()
