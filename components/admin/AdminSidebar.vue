@@ -56,8 +56,8 @@
         <ULink
           to="/admin/messages"
           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-          :class="$route.path.startsWith('/admin/messages') 
-            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400' 
+          :class="$route.path.startsWith('/admin/messages')
+            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'"
         >
           <span class="i-ph-envelope-duotone text-lg"></span>

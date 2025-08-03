@@ -239,9 +239,24 @@ export const useImageActions = () => {
     editForm.value.description = newImage.description || ''
     editForm.value.slug = newImage.slug || ''
 
-    try {
-      editForm.value.tags = JSON.parse(newImage.tags || '[]')
-    } catch {
+    // Handle both legacy JSON format and new normalized format
+    if (newImage.tags) {
+      if (typeof newImage.tags === 'string') {
+        // Legacy JSON format
+        try {
+          editForm.value.tags = JSON.parse(newImage.tags)
+        } catch {
+          editForm.value.tags = []
+        }
+      } else if (Array.isArray(newImage.tags)) {
+        // New normalized format - extract tag names
+        editForm.value.tags = newImage.tags.map(tag =>
+          typeof tag === 'string' ? tag : tag.name
+        )
+      } else {
+        editForm.value.tags = []
+      }
+    } else {
       editForm.value.tags = []
     }
   }, { immediate: true })

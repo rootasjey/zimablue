@@ -83,10 +83,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { Image } from '~/types/image'
+import type { ImageWithTags } from '~/types/image'
 
 interface Props {
-  image: Image
+  image: ImageWithTags
   isSelected: boolean
   id?: string
 }
@@ -94,18 +94,13 @@ interface Props {
 const props = defineProps<Props>()
 
 defineEmits<{
-  select: [image: Image]
+  select: [image: ImageWithTags]
   hover: []
 }>()
 
-// Parse tags from JSON string
+// Get tags from normalized structure
 const parsedTags = computed(() => {
-  try {
-    const tags = JSON.parse(props.image.tags || '[]')
-    return Array.isArray(tags) ? tags : []
-  } catch {
-    return []
-  }
+  return props.image.tags?.map(tag => tag.name) || []
 })
 
 // Format numbers for display

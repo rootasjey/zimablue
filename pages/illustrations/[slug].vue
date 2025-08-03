@@ -238,12 +238,25 @@ watch(() => image.value, (newImage) => {
     editForm.value.name = newImage.name || ''
     editForm.value.description = newImage.description || ''
     editForm.value.slug = newImage.slug || ''
-    
-    try {
-      // Parse tags if they exist
-      editForm.value.tags = newImage.tags ? JSON.parse(newImage.tags) : []
-    } catch (e) {
-      // If parsing fails, set as empty array
+
+    // Handle both legacy JSON format and new normalized format
+    if (newImage.tags) {
+      if (typeof newImage.tags === 'string') {
+        // Legacy JSON format
+        try {
+          editForm.value.tags = JSON.parse(newImage.tags)
+        } catch (e) {
+          editForm.value.tags = []
+        }
+      } else if (Array.isArray(newImage.tags)) {
+        // New normalized format - extract tag names
+        editForm.value.tags = newImage.tags.map((tag: { name: string; }) =>
+          typeof tag === 'string' ? tag : tag.name
+        )
+      } else {
+        editForm.value.tags = []
+      }
+    } else {
       editForm.value.tags = []
     }
   }

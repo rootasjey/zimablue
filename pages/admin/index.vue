@@ -115,22 +115,19 @@
           <!-- Quick Actions -->
           <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <UButton to="/admin/users" btn="soft-blue" class="justify-start">
                 <span class="i-ph-users-duotone mr-2"></span>
                 Manage Users
               </UButton>
-              
               <UButton to="/admin/images" btn="soft-green" class="justify-start">
                 <span class="i-ph-image-duotone mr-2"></span>
                 Manage Images
               </UButton>
-              
               <UButton to="/admin/collections" btn="soft-purple" class="justify-start">
                 <span class="i-ph-folder-duotone mr-2"></span>
                 Manage Collections
               </UButton>
-              
               <UButton to="/admin/messages" btn="soft-red" class="justify-start">
                 <span class="i-ph-envelope-duotone mr-2"></span>
                 View Messages

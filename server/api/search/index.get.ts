@@ -1,11 +1,12 @@
 // GET /api/search
 // Global search endpoint for images and collections
 
-import type { Image } from "~/types/image"
+import type { ImageWithTags } from "~/types/image"
 import type { Collection } from "~/types/collection"
+import type { Tag } from "~/types/tag"
 
 interface SearchResult {
-  images: Image[]
+  images: ImageWithTags[]
   collections: Collection[]
   total: {
     images: number
@@ -35,47 +36,90 @@ export default defineEventHandler(async (event): Promise<SearchResult> => {
   const searchPattern = `%${searchTerm}%`
   
   try {
-    let images: Image[] = []
+    let images: ImageWithTags[] = []
     let collections: Collection[] = []
     let totalImages = 0
     let totalCollections = 0
 
     // Search images if requested
     if (includeImages) {
-      // Get total count for images
+      // Get total count for images with normalized tag search
       const imageCountResult = await db.prepare(`
-        SELECT COUNT(*) as total 
-        FROM images 
-        WHERE name LIKE ? OR description LIKE ? OR tags LIKE ?
+        SELECT COUNT(DISTINCT i.id) as total
+        FROM images i
+        LEFT JOIN image_tags it ON i.id = it.image_id
+        LEFT JOIN tags t ON it.tag_id = t.id
+        WHERE i.name LIKE ? OR i.description LIKE ? OR t.name LIKE ?
       `).bind(searchPattern, searchPattern, searchPattern).first()
-      
+
       totalImages = imageCountResult?.total as number || 0
 
-      // Get image results
+      // Get image results with tags
       if (totalImages > 0) {
         const imageResults = await db.prepare(`
-          SELECT 
-            id, name, description, pathname, slug, tags, variants,
-            w, h, x, y, stats_views, stats_downloads, stats_likes,
-            created_at, updated_at
-          FROM images 
-          WHERE name LIKE ? OR description LIKE ? OR tags LIKE ?
-          ORDER BY 
-            CASE 
-              WHEN name LIKE ? THEN 1
-              WHEN description LIKE ? THEN 2
-              ELSE 3
+          SELECT DISTINCT
+            i.id, i.name, i.description, i.pathname, i.slug, i.variants,
+            i.w, i.h, i.x, i.y, i.stats_views, i.stats_downloads, i.stats_likes,
+            i.created_at, i.updated_at, i.user_id
+          FROM images i
+          LEFT JOIN image_tags it ON i.id = it.image_id
+          LEFT JOIN tags t ON it.tag_id = t.id
+          WHERE i.name LIKE ? OR i.description LIKE ? OR t.name LIKE ?
+          ORDER BY
+            CASE
+              WHEN i.name LIKE ? THEN 1
+              WHEN i.description LIKE ? THEN 2
+              WHEN t.name LIKE ? THEN 3
+              ELSE 4
             END,
-            stats_views DESC,
-            created_at DESC
+            i.stats_views DESC,
+            i.created_at DESC
           LIMIT ?
         `).bind(
           searchPattern, searchPattern, searchPattern,
-          searchPattern, searchPattern,
+          searchPattern, searchPattern, searchPattern,
           limit
         ).all()
 
-        images = imageResults.results as unknown as Image[]
+        const imageIds = (imageResults.results as any[]).map(img => img.id)
+
+        // Get tags for each image
+        if (imageIds.length > 0) {
+          const tagsResult = await db.prepare(`
+            SELECT
+              it.image_id,
+              t.id, t.name, t.slug, t.description, t.color, t.usage_count,
+              t.created_at, t.updated_at
+            FROM image_tags it
+            JOIN tags t ON it.tag_id = t.id
+            WHERE it.image_id IN (${imageIds.map(() => '?').join(',')})
+            ORDER BY t.name
+          `).bind(...imageIds).all()
+
+          // Group tags by image_id
+          const tagsByImage = new Map<number, any[]>()
+          for (const tagRow of (tagsResult.results as any[])) {
+            if (!tagsByImage.has(tagRow.image_id)) {
+              tagsByImage.set(tagRow.image_id, [])
+            }
+            tagsByImage.get(tagRow.image_id)!.push({
+              id: tagRow.id,
+              name: tagRow.name,
+              slug: tagRow.slug,
+              description: tagRow.description,
+              color: tagRow.color,
+              usage_count: tagRow.usage_count,
+              created_at: tagRow.created_at,
+              updated_at: tagRow.updated_at
+            })
+          }
+
+          // Combine images with their tags
+          images = (imageResults.results as any[]).map(img => ({
+            ...img,
+            tags: tagsByImage.get(img.id) || []
+          })) as ImageWithTags[]
+        }
       }
     }
 
