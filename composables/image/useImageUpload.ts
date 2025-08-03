@@ -1,12 +1,16 @@
+import { useUploadProgress } from './useUploadProgress'
+
 export const useImageUpload = () => {
   const { loggedIn } = useUserSession()
   const { toast } = useToast()
   const gridStore = useGridStore()
+  const uploadProgressTracker = useUploadProgress()
 
   // Reactive state
   const isDragging = ref(false)
-  const isUploading = ref(false)
-  const uploadProgress = ref(0)
+  const isUploading = computed(() => uploadProgressTracker.isUploading.value)
+  const uploadProgress = computed(() => uploadProgressTracker.currentSession.value?.overallProgress || 0)
+  const currentUploadSession = computed(() => uploadProgressTracker.currentSession.value)
   
   // Internal drag counter to handle nested drag events
   let dragCounter = 0
@@ -147,34 +151,86 @@ export const useImageUpload = () => {
   const uploadFiles = async (files: File[]) => {
     if (!checkAuth()) return
 
-    isUploading.value = true
-    uploadProgress.value = 0
+    // Start upload session
+    const sessionId = uploadProgressTracker.startUploadSession(files)
 
     try {
-      const uploadResults = await gridStore.uploadImages(files)
-      
+      // Create mapping between grid store file IDs and progress tracker file IDs
+      const fileIdMapping = new Map<string, string>()
+
+      const uploadResults = await gridStore.uploadImages(
+        files,
+        // onProgress callback
+        (gridFileId: string, progress: number) => {
+          // Map grid store file ID to progress tracker file ID
+          let progressFileId = fileIdMapping.get(gridFileId)
+          if (!progressFileId) {
+            // Extract file index from grid file ID and map to progress tracker format
+            const fileIndex = parseInt(gridFileId.split('_')[1]) || 0
+            progressFileId = `${sessionId}_file_${fileIndex}`
+            fileIdMapping.set(gridFileId, progressFileId)
+          }
+          uploadProgressTracker.updateFileProgress(progressFileId, progress, 'uploading')
+        },
+        // onFileComplete callback
+        (gridFileId: string, result: any) => {
+          const progressFileId = fileIdMapping.get(gridFileId)
+          if (progressFileId) {
+            uploadProgressTracker.completeFile(progressFileId, result)
+          }
+        },
+        // onFileError callback
+        (gridFileId: string, error: string) => {
+          const progressFileId = fileIdMapping.get(gridFileId)
+          if (progressFileId) {
+            uploadProgressTracker.failFile(progressFileId, error)
+          }
+        }
+      )
+
       // Handle results
       const successful = uploadResults
         .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
         .map(result => result.value)
+        .filter(value => value.success)
 
       const failed = uploadResults
         .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
         .map(result => result.reason)
 
-      toast({
-        title: failed.length > 0 ? 'Upload Results' : 'Upload Success',
-        description: failed.length > 0 
-          ? `${successful.length} uploaded, ${failed.length} failed` 
-          : `Successfully uploaded ${successful.length} images`,
-        duration: 5000,
-        showProgress: true,
-        toast: failed.length > 0 ? 'soft-warning' : 'soft-success'
-      })
+      // Add failed uploads from successful promises but failed uploads
+      const failedFromSuccess = uploadResults
+        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+        .map(result => result.value)
+        .filter(value => !value.success)
 
-      uploadProgress.value = 100
-      
-      return { successful, failed }
+      const totalFailed = failed.length + failedFromSuccess.length
+
+      // Show appropriate toast
+      if (totalFailed > 0) {
+        toast({
+          title: 'Upload Results',
+          description: `${successful.length} uploaded, ${totalFailed} failed`,
+          duration: 5000,
+          showProgress: true,
+          toast: 'soft-warning'
+        })
+      } else {
+        toast({
+          title: 'Upload Success',
+          description: `Successfully uploaded ${successful.length} ${successful.length === 1 ? 'image' : 'images'}`,
+          duration: 5000,
+          showProgress: true,
+          toast: 'soft-success'
+        })
+      }
+
+      // Clear session after a delay to show completion
+      setTimeout(() => {
+        uploadProgressTracker.clearSession()
+      }, 2000)
+
+      return { successful, failed: totalFailed }
     } catch (error) {
       console.error('Upload error:', error)
       toast({
@@ -183,22 +239,24 @@ export const useImageUpload = () => {
         toast: 'soft-warning',
         showProgress: true,
       })
+
+      // Clear session on error
+      uploadProgressTracker.clearSession()
       throw error
-    } finally {
-      isUploading.value = false
-      setTimeout(() => {
-        uploadProgress.value = 0
-      }, 1000)
     }
   }
 
   // Replace image
   const replaceImage = async (file: File, imageId: number) => {
     if (!checkAuth()) return
-    isUploading.value = true
+
+    // Start a single-file upload session for replacement
+    const sessionId = uploadProgressTracker.startUploadSession([file])
 
     try {
       await gridStore.replaceImage(file, imageId)
+      uploadProgressTracker.completeFile(`${sessionId}_file_0`, { imageId })
+
       toast({
         title: 'Replace Success',
         description: 'Successfully replaced image',
@@ -206,8 +264,15 @@ export const useImageUpload = () => {
         showProgress: true,
         toast: 'soft-success'
       })
+
+      // Clear session after a delay
+      setTimeout(() => {
+        uploadProgressTracker.clearSession()
+      }, 1000)
     } catch (error) {
       console.error('Replace error:', error)
+      uploadProgressTracker.failFile(`${sessionId}_file_0`, 'Failed to replace image')
+
       toast({
         title: 'Replace Failed',
         description: 'Failed to replace image',
@@ -215,9 +280,10 @@ export const useImageUpload = () => {
         showProgress: true,
         toast: 'soft-warning'
       })
+
+      // Clear session on error
+      uploadProgressTracker.clearSession()
       throw error
-    } finally {
-      isUploading.value = false
     }
   }
 
@@ -230,13 +296,14 @@ export const useImageUpload = () => {
   return {
     // State
     isDragging: readonly(isDragging),
-    isUploading: readonly(isUploading),
-    uploadProgress: readonly(uploadProgress),
-    
+    isUploading,
+    uploadProgress,
+    currentUploadSession,
+
     // Refs
     fileInput,
     replacementFileInput,
-    
+
     // Methods
     handleDragEnter,
     handleDragOver,
@@ -248,9 +315,15 @@ export const useImageUpload = () => {
     uploadFiles,
     replaceImage,
     resetDragState,
-    
+
     // Utilities
     validateFile,
     checkAuth,
+
+    // Upload progress utilities
+    clearUploadSession: uploadProgressTracker.clearSession,
+    getUploadingFiles: uploadProgressTracker.getUploadingFiles,
+    getCompletedFiles: uploadProgressTracker.getCompletedFiles,
+    getFailedFiles: uploadProgressTracker.getFailedFiles,
   }
 }

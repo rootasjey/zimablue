@@ -12,30 +12,15 @@
     />
 
     <!-- Upload Progress Indicator -->
-    <div v-if="imageUpload.isUploading.value" class="fixed top-4 right-4 z-50">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 min-w-64">
-        <div class="flex items-center gap-3">
-          <div class="i-ph-upload-simple animate-bounce text-blue-500"></div>
-          <div class="flex-1">
-            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-              Uploading images...
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
-              <div 
-                class="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                :style="`width: ${imageUpload.uploadProgress.value}%`"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ImageUploadProgress
+      :session="imageUpload.currentUploadSession.value"
+      @close="imageUpload.clearUploadSession"
+    />
 
     <ImageUploadZone
       :show-empty-state="!layout.length"
       :is-dragging="imageUpload.isDragging.value"
       :is-uploading="imageUpload.isUploading.value"
-      :upload-progress="imageUpload.uploadProgress.value"
       :logged-in="loggedIn"
       @upload="imageUpload.triggerFileUpload"
       @dragenter="imageUpload.handleDragEnter"
