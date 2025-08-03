@@ -1,14 +1,42 @@
 <template>
   <div>
     <!-- Mobile Grid with 3 columns -->
-    <div v-if="layout.length" class="grid sm:hidden grid-cols-3 gap-5 mx-4 mt-12">
-      <div v-for="item in layout" :key="item.i"
+    <div
+      v-if="layout.length"
+      class="grid sm:hidden grid-cols-3 gap-5 mx-4 mt-12"
+      role="grid"
+      :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
+    >
+      <div v-for="(item, index) in layout" :key="item.i"
         class="mobile-group aspect-square relative overflow-hidden
         rounded-7 z-2 cursor-pointer transition duration-900"
+        :class="{
+          'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
+          'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
+        }"
+        role="gridcell"
+        :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
+        :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
         @mousedown="$emit('mouseDown', $event)"
       >
+        <!-- Selection checkbox for mobile -->
+        <div
+          v-if="loggedIn && isSelectionMode"
+          class="absolute top-2 right-2 z-20"
+          @click.stop="$emit('imageToggle', item.id, index, $event)"
+        >
+          <UCheckbox
+            :model-value="selectedImagesMap?.[item.id] || false"
+            checkbox="success"
+          />
+        </div>
+
         <NuxtImg
-          @click="(event: MouseEvent) => $emit('imageClick', item, event)"
+          @click="(event: MouseEvent) => handleImageClick(item, index, event)"
+          @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
+          @pointermove="handleImagePointerMove"
+          @pointerup="handleImagePointerUp"
+          @pointercancel="handleImagePointerCancel"
           loading="lazy"
           width="120"
           :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
@@ -34,6 +62,8 @@
       class="transition-all duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
       :class="showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       :responsive="false"
+      role="grid"
+      :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
       @layout-ready="$emit('layoutReady', $event)"
       @layout-updated="$emit('layoutUpdated', $event)"
     >
@@ -48,33 +78,56 @@
         :is-draggable="!item.pathname.includes('blob')"
         :is-resizable="!item.pathname.includes('blob')"
         class="rounded-lg grid-item"
+        role="gridcell"
+        :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
+        :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
         :style="{
           '--delay': `${index * 0.15}s`
         }"
       >
-        <div 
+        <div
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
+          :class="{
+            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
+            'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
+          }"
         >
-          <NuxtImg 
-            @mousedown="$emit('mouseDown', $event)"
-            @click.self="(event: MouseEvent) => $emit('imageClick', item, event)"
+          <!-- Selection checkbox for desktop -->
+          <div
+            v-if="loggedIn && isSelectionMode"
+            class="absolute top-2 right-2 z-20"
+            @click.stop="$emit('imageToggle', item.id, index, $event)"
+          >
+            <UCheckbox
+              :model-value="selectedImagesMap?.[item.id] || false"
+              checkbox="success"
+            />
+          </div>
+
+          <NuxtImg
+            @click="(event: MouseEvent) => handleImageClick(item, index, event)"
+            @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
+            @pointermove="handleImagePointerMove"
+            @pointerup="handleImagePointerUp"
+            @pointercancel="handleImagePointerCancel"
             loading="lazy"
             :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            :src="`${item.pathname}`" 
+            :src="`${item.pathname}`"
             :alt="item.pathname"
             :width="240"
             class="nuxt-img"
             :style="`view-transition-name: shared-image-${item.id}`"
           />
 
-          <div v-if="loggedIn" class="image-resizer-container">
+          <div v-if="loggedIn && !isSelectionMode" class="image-resizer-container">
             <span class="vgl-item__resizer image-resizer"></span>
           </div>
 
-          <UDropdownMenu 
+          <UDropdownMenu
+            v-if="!isSelectionMode"
             :items="imageMenuItems(item)"
-            size="xs" 
-            menu-label="" 
+            size="xs"
+            menu-label=""
             :_dropdown-menu-content="{
               class: 'w-52',
               align: 'end',
@@ -108,6 +161,10 @@ interface Props {
     label: string;
     onClick?: () => void;
 })[]
+  // Multi-select props
+  isSelectionMode?: boolean
+  selectedImagesMap?: Record<number, boolean>
+  hasSelectedImages?: boolean
 }
 
 interface Emits {
@@ -116,10 +173,152 @@ interface Emits {
   layoutUpdate: [layout: Image[]]
   layoutReady: [layout: Image[]]
   layoutUpdated: [layout: Image[]]
+  // Multi-select emits
+  imageToggle: [imageId: number, index: number, event: MouseEvent]
+  enterSelectionMode: []
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Long press detection using pointer events for better reliability
+const longPressTimer = ref<NodeJS.Timeout | null>(null)
+const isLongPressing = ref(false)
+const longPressDelay = 600 // 600ms for long press (slightly longer for better UX)
+const currentLongPressItem = ref<{ item: Image, index: number } | null>(null)
+const pointerStartPosition = ref<{ x: number, y: number } | null>(null)
+const dragThreshold = 10 // pixels - if pointer moves more than this, it's considered a drag
+
+// Handle image click - either for selection or normal modal
+const handleImageClick = (item: Image, index: number, event: MouseEvent) => {
+  // Prevent action if we just completed a long press
+  if (isLongPressing.value) {
+    isLongPressing.value = false
+    return
+  }
+
+  // Check for Ctrl/Cmd + Click to enter selection mode
+  if (!props.isSelectionMode && (event.ctrlKey || event.metaKey)) {
+    emit('enterSelectionMode')
+    // Wait for next tick to ensure selection mode is active, then toggle
+    nextTick(() => {
+      emit('imageToggle', item.id, index, event)
+    })
+    return
+  }
+
+  if (props.isSelectionMode) {
+    // In selection mode, clicking the image toggles selection
+    emit('imageToggle', item.id, index, event)
+  } else {
+    // Normal mode, open image modal
+    emit('imageClick', item, event)
+  }
+}
+
+// Handle pointer down for long press detection
+const handleImagePointerDown = (item: Image, index: number, event: PointerEvent) => {
+  // Only handle primary pointer (left mouse button or first touch)
+  if (!event.isPrimary || event.button !== 0) {
+    return
+  }
+
+  // Emit mouseDown event for drag detection in image modal
+  emit('mouseDown', event as any)
+
+  // Don't start long press if already in selection mode
+  if (props.isSelectionMode) {
+    return
+  }
+
+  // Store initial pointer position for drag detection
+  pointerStartPosition.value = { x: event.clientX, y: event.clientY }
+
+  // Clear any existing timer
+  clearLongPressTimer()
+
+  isLongPressing.value = false
+  currentLongPressItem.value = { item, index }
+
+  // Start long press timer
+  longPressTimer.value = setTimeout(() => {
+    if (currentLongPressItem.value && pointerStartPosition.value) {
+      isLongPressing.value = true
+      emit('enterSelectionMode')
+      // Wait for next tick to ensure selection mode is active, then toggle
+      nextTick(() => {
+        if (currentLongPressItem.value) {
+          emit('imageToggle', currentLongPressItem.value.item.id, currentLongPressItem.value.index, event as any)
+        }
+      })
+    }
+  }, longPressDelay)
+
+  // Capture the pointer to ensure we get pointer events even if mouse moves outside element
+  ;(event.target as Element)?.setPointerCapture?.(event.pointerId)
+}
+
+// Handle pointer move to detect dragging
+const handleImagePointerMove = (event: PointerEvent) => {
+  if (!event.isPrimary || !pointerStartPosition.value) return
+
+  // Calculate distance moved
+  const deltaX = Math.abs(event.clientX - pointerStartPosition.value.x)
+  const deltaY = Math.abs(event.clientY - pointerStartPosition.value.y)
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+  // If moved beyond threshold, cancel long press (user is dragging)
+  if (distance > dragThreshold) {
+    clearLongPressTimer()
+    currentLongPressItem.value = null
+    pointerStartPosition.value = null
+  }
+}
+
+// Handle pointer up to clear long press timer
+const handleImagePointerUp = (event: PointerEvent) => {
+  if (!event.isPrimary) return
+
+  clearLongPressTimer()
+
+  // Release pointer capture
+  ;(event.target as Element)?.releasePointerCapture?.(event.pointerId)
+
+  // Reset state
+  pointerStartPosition.value = null
+
+  // Reset long press flag after a short delay to allow click handler to check it
+  setTimeout(() => {
+    isLongPressing.value = false
+    currentLongPressItem.value = null
+  }, 50)
+}
+
+// Handle pointer cancel (when pointer is interrupted)
+const handleImagePointerCancel = (event: PointerEvent) => {
+  if (!event.isPrimary) return
+
+  clearLongPressTimer()
+  isLongPressing.value = false
+  currentLongPressItem.value = null
+  pointerStartPosition.value = null
+
+  // Release pointer capture
+  ;(event.target as Element)?.releasePointerCapture?.(event.pointerId)
+}
+
+// Utility function to clear long press timer
+const clearLongPressTimer = () => {
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
+  }
+}
+
+// Cleanup on unmount
+onUnmounted(() => {
+  clearLongPressTimer()
+})
 </script>
 
 <style scoped>

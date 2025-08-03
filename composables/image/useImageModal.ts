@@ -21,15 +21,15 @@ export const useImageModal = () => {
   const currentPosition = computed(() => currentImageIndex.value + 1)
 
   // Track mouse down for drag detection
-  const handleMouseDown = (e: MouseEvent) => {
+  const handleMouseDown = (e: MouseEvent | PointerEvent) => {
     dragStartPos.value = { x: e.clientX, y: e.clientY }
   }
 
-  const openImageModal = async (item: Image, event?: MouseEvent) => {
+  const openImageModal = async (item: Image, event?: MouseEvent | PointerEvent) => {
     if (event) {
       // Check if the user is dragging the image
       const moveDistance = Math.sqrt(
-        Math.pow(event.clientX - dragStartPos.value.x, 2) + 
+        Math.pow(event.clientX - dragStartPos.value.x, 2) +
         Math.pow(event.clientY - dragStartPos.value.y, 2)
       )
 

@@ -32,19 +32,24 @@
       :layout="layout"
       :col-num="colNum"
       :row-height="rowHeight"
-      :is-draggable="isDraggable"
-      :is-resizable="isResizable"
+      :is-draggable="isDraggable && !multiSelect.isSelectionMode"
+      :is-resizable="isResizable && !multiSelect.isSelectionMode"
       :show-grid="showGrid"
       :show-grid-opacity="showGridOpacity"
       :logged-in="loggedIn"
+      :is-selection-mode="multiSelect.isSelectionMode.value"
+      :selected-images-map="multiSelect.selectedImagesMap.value"
+      :has-selected-images="multiSelect.hasSelectedImages.value"
       @image-click="imageModal.openImageModal"
+      @image-toggle="(imageId: number, index: number, event: MouseEvent) => multiSelect.handleImageToggle(layout, imageId, index, event)"
+      @enter-selection-mode="enterSelectionMode"
       @mouse-down="imageModal.handleMouseDown"
       @layout-update="gridStore.layout = $event"
       @layout-ready="layoutReady"
       @layout-updated="layoutUpdated"
       :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
-        image: item, 
-        openImagePageFn: imageModal.openImagePage, 
+        image: item,
+        openImagePageFn: imageModal.openImagePage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
       })"
@@ -110,6 +115,35 @@
       @add-to-collection="addToCollection.addImageToCollection"
       @select-collection="addToCollection.selectCollection"
     />
+
+    <!-- Multi-select components -->
+    <SelectionToolbar
+      :is-visible="multiSelect.hasSelectedImages.value && loggedIn"
+      :selection-count="multiSelect.selectionCount.value"
+      :is-all-selected="multiSelect.isAllSelected(layout)"
+      @toggle-select-all="multiSelect.toggleSelectAll(layout)"
+      @add-to-collection="openBulkAddToCollectionDialog"
+      @delete-selected="openBulkDeleteDialog"
+      @clear-selection="multiSelect.clearSelection"
+    />
+
+    <BulkDeleteDialog
+      v-model:is-open="showBulkDeleteDialog"
+      :image-count="multiSelect.selectionCount.value"
+      :selected-image-ids="multiSelect.selectedImageIds.value"
+      @confirm="handleBulkDelete"
+    />
+
+    <BulkAddToCollectionDialog
+      v-model:is-open="showBulkAddToCollectionDialog"
+      :image-count="multiSelect.selectionCount.value"
+      :selected-image-ids="multiSelect.selectedImageIds.value"
+      :collections="bulkCollections"
+      :is-loading-collections="isLoadingBulkCollections"
+      :error="bulkCollectionsError || undefined"
+      @confirm="handleBulkAddToCollection"
+      @create-collection="navigateToCreateCollection"
+    />
   </div>
 </template>
 
@@ -120,6 +154,10 @@ import { useImageUpload } from '~/composables/image/useImageUpload'
 import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageActions } from '~/composables/image/useImageActions'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
+import { useHomeMultiSelect } from '~/composables/image/useHomeMultiSelect'
+import SelectionToolbar from '~/components/image/SelectionToolbar.vue'
+import BulkDeleteDialog from '~/components/image/BulkDeleteDialog.vue'
+import BulkAddToCollectionDialog from '~/components/image/BulkAddToCollectionDialog.vue'
 
 const { loggedIn, clear } = useUserSession()
 const gridStore = useGridStore()
@@ -129,6 +167,7 @@ const imageActions = useImageActions()
 const imageModal = useImageModal()
 const imageUpload = useImageUpload()
 const addToCollection = useAddToCollectionModal()
+const multiSelect = useHomeMultiSelect()
 
 const replacementFileInput = imageUpload.replacementFileInput
 const fileInput = imageUpload.fileInput
@@ -140,6 +179,15 @@ const isResizable = computed(() => loggedIn.value)
 
 const colNum = ref(14)
 const rowHeight = ref(37)
+
+// Multi-select dialog states
+const showBulkDeleteDialog = ref(false)
+const showBulkAddToCollectionDialog = ref(false)
+
+// Bulk collections state
+const bulkCollections = ref<any[]>([])
+const isLoadingBulkCollections = ref(false)
+const bulkCollectionsError = ref<string | null>(null)
 
 const updateRowHeight = () => {
   const windowWidth = window.innerWidth
@@ -158,11 +206,25 @@ gridStore.fetchGrid()
 onMounted(() => {
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
+  window.addEventListener('keydown', handleGlobalKeydown)
 
   onUnmounted(() => {
     window.removeEventListener('resize', updateRowHeight)
+    window.removeEventListener('keydown', handleGlobalKeydown)
   })
 })
+
+// Global keyboard shortcuts
+const handleGlobalKeydown = (event: KeyboardEvent) => {
+  // Only handle shortcuts when logged in and not in input fields
+  if (!loggedIn.value ||
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement) {
+    return
+  }
+
+  multiSelect.handleKeyboardShortcuts(event, layout.value)
+}
 
 function layoutUpdated(newLayout: Image[]) {
   if (!loggedIn.value) return
@@ -174,6 +236,123 @@ function layoutReady(_layout: Image[]) {
   setTimeout(() => {
     showGridOpacity.value = true
   }, 250);
+}
+
+// Multi-select dialog handlers
+const openBulkDeleteDialog = () => {
+  if (multiSelect.selectionCount.value > 0) {
+    showBulkDeleteDialog.value = true
+  }
+}
+
+const openBulkAddToCollectionDialog = async () => {
+  if (multiSelect.selectionCount.value > 0) {
+    await fetchBulkCollections()
+    showBulkAddToCollectionDialog.value = true
+  }
+}
+
+const fetchBulkCollections = async () => {
+  try {
+    isLoadingBulkCollections.value = true
+    bulkCollectionsError.value = null
+
+    const data = await $fetch('/api/collections')
+    bulkCollections.value = (data.collections || [])
+  } catch (err) {
+    console.error('Error fetching collections:', err)
+    bulkCollectionsError.value = 'Failed to load collections. Please try again.'
+  } finally {
+    isLoadingBulkCollections.value = false
+  }
+}
+
+const handleBulkDelete = async (imageIds: number[]) => {
+  try {
+    const result = await multiSelect.bulkDeleteImages(imageIds)
+
+    if (result.success) {
+      showBulkDeleteDialog.value = false
+      // Show success toast
+      const { toast } = useToast()
+      toast({
+        title: 'Images Deleted',
+        description: result.message,
+        duration: 3000,
+        showProgress: true,
+        toast: 'soft-success'
+      })
+    } else {
+      // Show error toast
+      const { toast } = useToast()
+      toast({
+        title: 'Delete Failed',
+        description: result.message,
+        duration: 5000,
+        showProgress: true,
+        toast: 'soft-warning'
+      })
+    }
+  } catch (error) {
+    console.error('Bulk delete error:', error)
+    const { toast } = useToast()
+    toast({
+      title: 'Delete Failed',
+      description: 'An unexpected error occurred',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
+  }
+}
+
+const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: string) => {
+  try {
+    const result = await multiSelect.bulkAddToCollection(imageIds, collectionSlug)
+
+    if (result.success) {
+      showBulkAddToCollectionDialog.value = false
+      // Show success toast
+      const { toast } = useToast()
+      toast({
+        title: 'Added to Collection',
+        description: result.message,
+        duration: 3000,
+        showProgress: true,
+        toast: 'soft-success'
+      })
+    } else {
+      // Show error toast
+      const { toast } = useToast()
+      toast({
+        title: 'Add Failed',
+        description: result.message,
+        duration: 5000,
+        showProgress: true,
+        toast: 'soft-warning'
+      })
+    }
+  } catch (error) {
+    console.error('Bulk add to collection error:', error)
+    const { toast } = useToast()
+    toast({
+      title: 'Add Failed',
+      description: 'An unexpected error occurred',
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
+  }
+}
+
+const navigateToCreateCollection = () => {
+  navigateTo('/collections/create')
+}
+
+// Enter selection mode (triggered by long press or Ctrl+click)
+const enterSelectionMode = () => {
+  // The multiSelect composable will automatically enter selection mode when an image is toggled
+  // This method is mainly for future extensibility
 }
 
 </script>
