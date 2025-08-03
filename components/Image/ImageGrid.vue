@@ -82,7 +82,7 @@
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
         :style="{
-          '--delay': `${index * 0.15}s`
+          '--delay': `${index * 0.5}s`
         }"
       >
         <div
@@ -437,7 +437,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 0.5rem;
-  transition: transform 200ms;
+  transition: transform 150ms;
   
   &:hover {
     transform: scale(1.05);
@@ -453,7 +453,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 7px;
-  transition: transform 200ms;
+  transition: transform 150ms;
 
   &:hover {
     transform: scale(1.05);

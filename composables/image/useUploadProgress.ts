@@ -160,7 +160,7 @@ export const useUploadProgress = () => {
 
   return {
     // State
-    currentSession: readonly(currentSession),
+    currentSession,
     isUploading,
     hasActiveSession,
 

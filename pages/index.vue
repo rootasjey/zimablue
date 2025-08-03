@@ -11,7 +11,6 @@
       :user-menu-items="imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)"
     />
 
-    <!-- Upload Progress Indicator -->
     <ImageUploadProgress
       :session="imageUpload.currentUploadSession.value"
       @close="imageUpload.clearUploadSession"
@@ -41,8 +40,7 @@
       :selected-images-map="multiSelect.selectedImagesMap.value"
       :has-selected-images="multiSelect.hasSelectedImages.value"
       @image-click="imageModal.openImageModal"
-      @image-toggle="(imageId: number, index: number, event: MouseEvent) => multiSelect.handleImageToggle(layout, imageId, index, event)"
-      @enter-selection-mode="enterSelectionMode"
+      @image-toggle="handleImageToggle"
       @mouse-down="imageModal.handleMouseDown"
       @layout-update="gridStore.layout = $event"
       @layout-ready="layoutReady"
@@ -116,8 +114,7 @@
       @select-collection="addToCollection.selectCollection"
     />
 
-    <!-- Multi-select components -->
-    <SelectionToolbar
+    <ImageSelectionToolbar
       :is-visible="multiSelect.hasSelectedImages.value && loggedIn"
       :selection-count="multiSelect.selectionCount.value"
       :is-all-selected="multiSelect.isAllSelected(layout)"
@@ -155,7 +152,6 @@ import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageActions } from '~/composables/image/useImageActions'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 import { useHomeMultiSelect } from '~/composables/image/useHomeMultiSelect'
-import SelectionToolbar from '~/components/image/SelectionToolbar.vue'
 import BulkDeleteDialog from '~/components/image/BulkDeleteDialog.vue'
 import BulkAddToCollectionDialog from '~/components/image/BulkAddToCollectionDialog.vue'
 
@@ -238,7 +234,10 @@ function layoutReady(_layout: Image[]) {
   }, 250);
 }
 
-// Multi-select dialog handlers
+function handleImageToggle(imageId: number, index: number, event: MouseEvent) {
+  multiSelect.handleImageToggle(layout.value, imageId, index, event)
+}
+
 const openBulkDeleteDialog = () => {
   if (multiSelect.selectionCount.value > 0) {
     showBulkDeleteDialog.value = true
@@ -273,30 +272,26 @@ const handleBulkDelete = async (imageIds: number[]) => {
 
     if (result.success) {
       showBulkDeleteDialog.value = false
-      // Show success toast
-      const { toast } = useToast()
-      toast({
+      useToast().toast({
         title: 'Images Deleted',
         description: result.message,
         duration: 3000,
         showProgress: true,
         toast: 'soft-success'
       })
-    } else {
-      // Show error toast
-      const { toast } = useToast()
-      toast({
-        title: 'Delete Failed',
-        description: result.message,
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      return
     }
+
+    useToast().toast({
+      title: 'Delete Failed',
+      description: result.message,
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
   } catch (error) {
     console.error('Bulk delete error:', error)
-    const { toast } = useToast()
-    toast({
+    useToast().toast({
       title: 'Delete Failed',
       description: 'An unexpected error occurred',
       duration: 5000,
@@ -312,30 +307,26 @@ const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: str
 
     if (result.success) {
       showBulkAddToCollectionDialog.value = false
-      // Show success toast
-      const { toast } = useToast()
-      toast({
+      useToast().toast({
         title: 'Added to Collection',
         description: result.message,
         duration: 3000,
         showProgress: true,
         toast: 'soft-success'
       })
-    } else {
-      // Show error toast
-      const { toast } = useToast()
-      toast({
-        title: 'Add Failed',
-        description: result.message,
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      return
     }
+
+    useToast().toast({
+      title: 'Add Failed',
+      description: result.message,
+      duration: 5000,
+      showProgress: true,
+      toast: 'soft-warning'
+    })
   } catch (error) {
     console.error('Bulk add to collection error:', error)
-    const { toast } = useToast()
-    toast({
+    useToast().toast({
       title: 'Add Failed',
       description: 'An unexpected error occurred',
       duration: 5000,
@@ -347,12 +338,6 @@ const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: str
 
 const navigateToCreateCollection = () => {
   navigateTo('/collections/create')
-}
-
-// Enter selection mode (triggered by long press or Ctrl+click)
-const enterSelectionMode = () => {
-  // The multiSelect composable will automatically enter selection mode when an image is toggled
-  // This method is mainly for future extensibility
 }
 
 </script>
