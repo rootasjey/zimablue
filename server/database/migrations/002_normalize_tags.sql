@@ -63,35 +63,7 @@ BEGIN
     WHERE id = OLD.tag_id;
 END;
 
--- Create a view for easy querying of images with their tags
-CREATE VIEW IF NOT EXISTS images_with_tags AS
-SELECT
-    i.id,
-    i.name,
-    i.description,
-    i.pathname,
-    i.slug,
-    i.w,
-    i.h,
-    i.x,
-    i.y,
-    i.stats_views,
-    i.stats_downloads,
-    i.stats_likes,
-    i.created_at,
-    i.updated_at,
-    i.user_id,
-    i.variants,
-    GROUP_CONCAT(t.name, ',') as tag_names,
-    GROUP_CONCAT(t.id, ',') as tag_ids,
-    COUNT(t.id) as tag_count
-FROM images i
-LEFT JOIN image_tags it ON i.id = it.image_id
-LEFT JOIN tags t ON it.tag_id = t.id
-GROUP BY i.id;
 
--- Remove old tags column from images table
--- SQLite doesn't support DROP COLUMN directly, so we recreate the table
 CREATE TABLE images_new (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description TEXT DEFAULT "",
@@ -130,7 +102,35 @@ FROM images;
 
 -- Replace old table with new one
 DROP TABLE images;
+
 ALTER TABLE images_new RENAME TO images;
+
+-- Now recreate the view for easy querying of images with their tags
+CREATE VIEW IF NOT EXISTS images_with_tags AS
+SELECT
+    i.id,
+    i.name,
+    i.description,
+    i.pathname,
+    i.slug,
+    i.w,
+    i.h,
+    i.x,
+    i.y,
+    i.stats_views,
+    i.stats_downloads,
+    i.stats_likes,
+    i.created_at,
+    i.updated_at,
+    i.user_id,
+    i.variants,
+    GROUP_CONCAT(t.name, ',') as tag_names,
+    GROUP_CONCAT(t.id, ',') as tag_ids,
+    COUNT(t.id) as tag_count
+FROM images i
+LEFT JOIN image_tags it ON i.id = it.image_id
+LEFT JOIN tags t ON it.tag_id = t.id
+GROUP BY i.id;
 
 -- Recreate indexes and triggers for images table
 CREATE UNIQUE INDEX IF NOT EXISTS idx_images_slug ON images(slug);
