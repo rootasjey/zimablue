@@ -82,7 +82,7 @@
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
         :style="{
-          '--delay': `${index * 0.5}s`
+          '--delay': `${index * 0.05}s`
         }"
       >
         <div
