@@ -1,11 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AdminSidebar :unread-count="unreadCount" />
-
+  <div>
       <!-- Main Content -->
-      <main class="flex-1 p-8">
+      <main>
 
         <!-- Access Control -->
         <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
@@ -54,7 +50,6 @@
           />
         </div>
       </main>
-    </div>
 
     <AdminMessageModal
       v-if="selectedMessage"
@@ -110,7 +105,8 @@ const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({
-  middleware: 'authenticated'
+  middleware: 'admin',
+  layout: 'admin'
 })
 
 const messages = ref<Message[]>([])

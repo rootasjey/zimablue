@@ -22,7 +22,7 @@ A comprehensive admin dashboard for managing the core entities in the Zima Blue 
 - **Statistics**: Views, downloads, and likes for each image
 - **Image Preview**: Full-size image preview in modal
 - **Direct Links**: Quick access to public image pages
-- **Bulk Operations**: Delete multiple images at once
+- **Bulk Operations**: Delete or regenerate thumbnails for multiple images at once
 
 ### 📁 Collection Management (`/admin/collections`)
 - **Collection Overview**: Name, description, and visibility status
@@ -37,10 +37,15 @@ A comprehensive admin dashboard for managing the core entities in the Zima Blue 
 - **Unread Badge**: Sidebar shows unread message count
 - **All Existing Features**: Search, filter, bulk actions, mark as read/unread
 
+### 🧰 Tools (`/admin/tools`)
+- Regenerate thumbnails for a single image (by ID) or all images
+- Import JSON dump (images, collections, tags, relations)
+- Export a JSON dump of core entities
+
 ## Technical Implementation
 
 ### Architecture
-- **Sidebar Navigation**: Consistent navigation across all admin pages
+- **Sidebar Navigation**: Consistent navigation across all admin pages using UnaUI Sidebar
 - **Reusable Components**: AdminTable, AdminStatsCard, AdminSidebar
 - **Type Safety**: Full TypeScript support with proper type definitions
 - **API Endpoints**: RESTful admin API endpoints with proper authentication
@@ -59,6 +64,10 @@ A comprehensive admin dashboard for managing the core entities in the Zima Blue 
 - `DELETE /api/admin/images/[id]`: Delete image
 - `GET /api/admin/collections`: List collections with statistics
 - `DELETE /api/admin/collections/[id]`: Delete collection
+- `POST /api/admin/images/[id]/regenerate`: Rebuild image variants for a single image
+- `POST /api/admin/images/regenerate`: Batch regenerate variants for all images
+- `GET /api/admin/export`: Export database entities as JSON
+- `POST /api/admin/import`: Import entities from a JSON file
 
 ### Security Features
 - **Admin-only Access**: All admin routes require admin role

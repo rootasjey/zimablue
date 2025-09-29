@@ -1,11 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AdminSidebar :unread-count="stats?.messages.unread || 0" />
-      
+  <div>
       <!-- Main Content -->
-      <main class="flex-1 p-8">
+      <main>
         <!-- Access Control -->
         <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
           <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
@@ -139,7 +135,6 @@
           </div>
         </div>
       </main>
-    </div>
   </div>
 </template>
 
@@ -150,7 +145,8 @@ const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({
-  middleware: 'authenticated'
+  middleware: 'admin',
+  layout: 'admin'
 })
 
 const stats = ref<AdminStats | null>(null)

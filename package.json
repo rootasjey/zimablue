@@ -19,7 +19,7 @@
     "@nuxt/image": "^1.10.0",
     "@nuxthub/core": "^0.8.27",
     "@pinia/nuxt": "^0.11.0",
-    "@una-ui/nuxt": "^0.55.1",
+    "@una-ui/nuxt": "^0.65.0",
     "grid-layout-plus": "^1.0.6",
     "jimp": "^1.6.0",
     "nuxt": "^3.17.4",

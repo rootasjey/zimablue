@@ -1,11 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AdminSidebar />
-      
+  <div>
       <!-- Main Content -->
-      <main class="flex-1 p-8">
+      <main>
         <!-- Access Control -->
         <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
           <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
@@ -134,7 +130,6 @@
           </AdminTable>
         </div>
       </main>
-    </div>
 
     <!-- View Collection Dialog -->
     <UDialog v-model:open="isViewDialogOpen" title="Collection Details">
@@ -229,7 +224,12 @@
 </template>
 
 <script lang="ts" setup>
-import type { Collection } from '~/types/collection'
+// Using a lightweight row type to match admin API shape
+type CollectionRow = {
+  id: number; name: string; description: string; slug: string; is_public: boolean;
+  image_count: number; stats_views: number; stats_downloads: number; stats_likes: number;
+  created_at: string; updated_at: string; user_name: string; user_email: string;
+}
 import type { Pagination } from '~/types/pagination'
 import type { AdminTableColumn, AdminBulkAction } from '~/types/admin'
 
@@ -237,12 +237,13 @@ const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({
-  middleware: 'authenticated'
+  middleware: 'admin',
+  layout: 'admin'
 })
 
 // State
-const collections = ref<(Collection & { user_name: string; user_email: string })[]>([])
-const selectedCollection = ref<Collection | null>(null)
+const collections = ref<CollectionRow[]>([])
+const selectedCollection = ref<CollectionRow | null>(null)
 const isViewDialogOpen = ref(false)
 const isDeleteDialogOpen = ref(false)
 const isLoading = ref(false)
@@ -351,22 +352,22 @@ const handlePageChange = (page: number) => {
   fetchCollections()
 }
 
-const handleBulkAction = async (actionId: string, selectedRows: Collection[]) => {
+const handleBulkAction = async (actionId: string, selectedRows: CollectionRow[]) => {
   // Implementation for bulk actions would go here
   console.log('Bulk action:', actionId, selectedRows)
 }
 
-const viewCollection = (collection: Collection) => {
+const viewCollection = (collection: CollectionRow) => {
   selectedCollection.value = collection
   isViewDialogOpen.value = true
 }
 
-const editCollection = (collection: Collection) => {
+const editCollection = (collection: CollectionRow) => {
   // Navigate to edit page
   navigateTo(`/collections/${collection.slug}`)
 }
 
-const showDeleteDialog = (collection: Collection) => {
+const showDeleteDialog = (collection: CollectionRow) => {
   selectedCollection.value = collection
   isDeleteDialogOpen.value = true
 }

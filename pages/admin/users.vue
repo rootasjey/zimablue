@@ -1,11 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AdminSidebar />
-      
+  <div>
       <!-- Main Content -->
-      <main class="flex-1 p-8">
+      <main>
         <!-- Access Control -->
         <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
           <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
@@ -75,7 +71,6 @@
           </AdminTable>
         </div>
       </main>
-    </div>
 
     <!-- Edit User Dialog -->
     <UDialog v-model:open="isEditDialogOpen" title="Edit User">
@@ -158,7 +153,8 @@ const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({
-  middleware: 'authenticated'
+  middleware: 'admin',
+  layout: 'admin'
 })
 
 // State
@@ -306,7 +302,7 @@ const saveUser = async () => {
       // Update local state
       const userIndex = users.value.findIndex(u => u.id === selectedUser.value!.id)
       if (userIndex > -1) {
-        users.value[userIndex] = response.data
+        users.value[userIndex] = response.data as unknown as User
       }
 
       isEditDialogOpen.value = false
