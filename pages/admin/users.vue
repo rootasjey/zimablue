@@ -1,78 +1,137 @@
 <template>
   <div>
-      <!-- Main Content -->
-      <main>
-        <!-- Access Control -->
-        <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-          <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-          <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-          <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-          <UButton to="/user" class="mt-4">Go to Profile</UButton>
+    <!-- Access Control -->
+    <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
+      <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
+      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+    </div>
+
+    <!-- Users Management -->
+    <div v-else>
+      <!-- Header -->
+      <div class="p-6 bg-white dark:bg-black rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">User Management</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage all users in the system</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <UInput
+              v-model="filters.search"
+              placeholder="Search..."
+              @keyup.enter="handleSearch(filters.search)"
+              @input="debouncedSearch"
+              class="w-64"
+            >
+              <template #leading>
+                <span class="i-ph-magnifying-glass"></span>
+              </template>
+            </UInput>
+
+            <UButton @click="fetchUsers" :loading="isLoading" btn="soft-gray" size="sm">
+              <span class="i-ph-arrow-clockwise mr-2"></span>
+              Refresh
+            </UButton>
+          </div>
         </div>
 
-        <!-- Users Management -->
-        <div v-else>
-          <AdminTable
-            title="User Management"
-            description="Manage all users in the system"
-            :columns="userColumns"
-            :data="users"
-            :loading="isLoading"
-            :pagination="pagination"
-            :bulk-actions="bulkActions"
-            empty-message="No users found. This shouldn't happen!"
-            @search="handleSearch"
-            @refresh="fetchUsers"
-            @page-change="handlePageChange"
-            @bulk-action="handleBulkAction"
-            @edit="editUser"
-            @delete="showDeleteDialog"
-            @row-click="viewUser"
-          >
-            <!-- Custom cell renderers -->
-            <template #role-cell="{ cell }">
-              <span 
-                :class="[
-                  'px-2 py-1 text-xs font-medium rounded-full',
-                  cell.value === 'admin' 
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                ]"
-              >
-                {{ cell.value }}
-              </span>
-            </template>
-
-            <template #created_at-cell="{ cell }">
-              {{ new Date(cell.value).toLocaleDateString() }}
-            </template>
-
-            <template #actions="{ row }">
-              <div class="flex items-center gap-2">
-                <UButton
-                  @click="editUser(row)"
-                  btn="soft-gray"
-                  size="xs"
-                  title="Edit user"
-                >
-                  <span class="i-ph-pencil"></span>
-                </UButton>
-                <UButton
-                  @click="showDeleteDialog(row)"
-                  btn="soft-red"
-                  size="xs"
-                  title="Delete user"
-                  :disabled="row.id === user?.id"
-                >
-                  <span class="i-ph-trash"></span>
-                </UButton>
-              </div>
-            </template>
-          </AdminTable>
+        <!-- Bulk Actions -->
+        <div v-if="selectedUsers.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            {{ selectedUsers.length }} selected
+          </span>
+          <UButton btn="soft-yellow" size="sm" @click="bulkPromote">
+            <span class="i-ph-crown mr-2"></span>
+            Promote to Admin
+          </UButton>
+          <UButton btn="soft-gray" size="sm" @click="bulkDemote">
+            <span class="i-ph-user mr-2"></span>
+            Demote to User
+          </UButton>
+          <UButton btn="soft-red" size="sm" @click="bulkDelete">
+            <span class="i-ph-trash mr-2"></span>
+            Delete Selected
+          </UButton>
         </div>
-      </main>
+      </div>
 
-    <!-- Edit User Dialog -->
+      <!-- Table -->
+      <div class="border-x border-gray-200 dark:border-gray-700">
+        <UTable
+          :columns="unaColumns"
+          :data="users"
+          :loading="isLoading"
+          row-id="id"
+          :enable-row-selection="true"
+          :enable-multi-row-selection="true"
+          v-model:rowSelection="rowSelection"
+          @row="onRowClick"
+          empty-text="No users found."
+        >
+          <template #row_actions-cell="{ cell }">
+            <UDropdownMenu
+              :items="userRowMenuItems(cell.row.original)"
+              size="xs"
+              dropdown-menu="link-pink"
+              :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
+              :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
+            />
+          </template>
+
+          <template #role-cell="{ cell }">
+            <span :class="['px-2 py-1 text-xs font-medium rounded-full', (cell.getValue() as string) === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400']">
+              {{ cell.getValue() }}
+            </span>
+          </template>
+
+          <template #created_at-cell="{ cell }">
+            {{ new Date(cell.getValue() as string).toLocaleDateString() }}
+          </template>
+
+          <template #actions="{ row }">
+            <div class="flex items-center gap-2">
+              <UButton @click="editUser(row)" btn="soft-gray" size="xs" title="Edit user">
+                <span class="i-ph-pencil"></span>
+              </UButton>
+              <UButton @click="showDeleteDialog(row)" btn="soft-red" size="xs" title="Delete user" :disabled="row.id === user?.id">
+                <span class="i-ph-trash"></span>
+              </UButton>
+            </div>
+          </template>
+        </UTable>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="pagination && pagination.totalPages > 1" class="p-6 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg bg-white dark:bg-gray-800">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
+            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
+            {{ pagination.total }} results
+          </div>
+
+          <div class="flex items-center gap-2">
+            <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+              <span class="i-ph-caret-left"></span>
+            </UButton>
+
+            <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
+              Page {{ pagination.page }} of {{ pagination.totalPages }}
+            </span>
+
+            <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+              <span class="i-ph-caret-right"></span>
+            </UButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit User Dialog -->
     <UDialog v-model:open="isEditDialogOpen" title="Edit User">
       <div class="p-6">
         <form @submit.prevent="saveUser" class="space-y-4">
@@ -88,13 +147,7 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
-            <USelect
-              v-model="editForm.role"
-              :items="roleOptions"
-              item-key="value"
-              value-key="value"
-              required
-            />
+            <USelect v-model="editForm.role" :items="roleLabels" required />
           </div>
           
           <div>
@@ -120,7 +173,7 @@
       </div>
     </UDialog>
 
-    <!-- Delete Confirmation Dialog -->
+  <!-- Delete Confirmation Dialog -->
     <UDialog v-model:open="isDeleteDialogOpen" title="Delete User">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
@@ -141,13 +194,12 @@
         </div>
       </div>
     </UDialog>
-  </div>
 </template>
 
 <script lang="ts" setup>
 import type { User, UserFormData } from '~/types/user'
 import type { Pagination } from '~/types/pagination'
-import type { AdminTableColumn, AdminBulkAction } from '~/types/admin'
+import type { RowSelectionState } from '@tanstack/vue-table'
 
 const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
@@ -165,6 +217,7 @@ const isDeleteDialogOpen = ref(false)
 const isLoading = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
+const rowSelection = ref<RowSelectionState>({})
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -189,37 +242,27 @@ const editForm = ref<UserFormData>({
   biography: ''
 })
 
-// Configuration
-const userColumns: AdminTableColumn[] = [
-  { accessorKey: 'name', header: 'Name', sortable: true },
-  { accessorKey: 'email', header: 'Email', sortable: true },
-  { accessorKey: 'role', header: 'Role', sortable: true },
-  { accessorKey: 'job', header: 'Job' },
-  { accessorKey: 'location', header: 'Location' },
-  { accessorKey: 'created_at', header: 'Created', sortable: true }
+// Columns for UTable
+const unaColumns = [
+  { id: 'row_actions', header: '', enableSorting: false },
+  { accessorKey: 'name', header: 'Name', enableSorting: true },
+  { accessorKey: 'email', header: 'Email', enableSorting: true },
+  { accessorKey: 'role', header: 'Role', enableSorting: true },
+  { accessorKey: 'job', header: 'Job', enableSorting: false },
+  { accessorKey: 'location', header: 'Location', enableSorting: false },
+  { accessorKey: 'created_at', header: 'Created', enableSorting: true }
 ]
 
-const bulkActions: AdminBulkAction[] = [
-  {
-    id: 'promote_to_admin',
-    label: 'Promote to Admin',
-    icon: 'i-ph-crown',
-    variant: 'soft-yellow',
-    confirmMessage: 'Are you sure you want to promote selected users to admin?'
-  },
-  {
-    id: 'demote_to_user',
-    label: 'Demote to User',
-    icon: 'i-ph-user',
-    variant: 'soft-gray',
-    confirmMessage: 'Are you sure you want to demote selected users to regular users?'
-  }
-]
+const selectedUsers = computed(() => {
+  const selected = new Set(
+    Object.entries(rowSelection.value)
+      .filter(([, v]) => Boolean(v))
+      .map(([k]) => k)
+  )
+  return users.value.filter(u => selected.has(String(u.id)))
+})
 
-const roleOptions = [
-  { label: 'User', value: 'user' },
-  { label: 'Admin', value: 'admin' }
-]
+const roleLabels = ['user', 'admin']
 
 // Methods
 const fetchUsers = async () => {
@@ -259,8 +302,16 @@ const fetchUsers = async () => {
   }
 }
 
-const handleSearch = (searchTerm: string) => {
-  filters.value.search = searchTerm
+let searchTimeout: any
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    handleSearch()
+  }, 400)
+}
+
+const handleSearch = (searchTerm?: string) => {
+  filters.value.search = searchTerm ?? ''
   pagination.value.page = 1
   fetchUsers()
 }
@@ -270,9 +321,31 @@ const handlePageChange = (page: number) => {
   fetchUsers()
 }
 
-const handleBulkAction = async (actionId: string, selectedRows: User[]) => {
-  // Implementation for bulk actions would go here
-  console.log('Bulk action:', actionId, selectedRows)
+const bulkPromote = async () => {
+  const rows = selectedUsers.value
+  for (const r of rows) {
+    try { await $fetch(`/api/admin/users/${r.id}`, { method: 'PATCH', body: { role: 'admin' } }) } catch {}
+  }
+  fetchUsers()
+}
+
+const bulkDemote = async () => {
+  const rows = selectedUsers.value
+  for (const r of rows) {
+    try { await $fetch(`/api/admin/users/${r.id}`, { method: 'PATCH', body: { role: 'user' } }) } catch {}
+  }
+  fetchUsers()
+}
+
+const bulkDelete = async () => {
+  const rows = selectedUsers.value.filter(r => r.id !== user.value?.id)
+  if (rows.length === 0) return
+  const confirmed = window.confirm(`Delete ${rows.length} selected user${rows.length > 1 ? 's' : ''}? This cannot be undone.`)
+  if (!confirmed) return
+  for (const r of rows) {
+    try { await $fetch(`/api/admin/users/${r.id}`, { method: 'DELETE' }) } catch {}
+  }
+  fetchUsers()
 }
 
 const editUser = (userToEdit: User) => {
@@ -327,8 +400,8 @@ const saveUser = async () => {
 }
 
 const viewUser = (userToView: User) => {
-  // Could navigate to user detail page or show more info
-  console.log('View user:', userToView)
+  // Keep simple: open edit
+  editUser(userToView)
 }
 
 const showDeleteDialog = (userToDelete: User) => {
@@ -384,4 +457,17 @@ watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
     fetchUsers()
   }
 })
+
+// Row click
+const onRowClick = (event: Event, row: User) => {
+  const target = event.target as HTMLElement
+  if (target.closest('button') || target.closest('a') || target.closest('input')) return
+  viewUser(row)
+}
+
+// Row dropdown items
+const userRowMenuItems = (row: User) => [
+  { label: 'Edit', onClick: () => editUser(row) },
+  { label: 'Delete', onClick: () => showDeleteDialog(row) },
+]
 </script>

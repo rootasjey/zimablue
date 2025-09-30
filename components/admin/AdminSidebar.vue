@@ -1,11 +1,15 @@
 <template>
-  <USidebar sidebar="floating" collapsible="icon">
+  <USidebar sidebar="floating" collapsible="icon" class="my-6 ml-2 h-96%">
     <template #header>
       <div class="flex items-center gap-2 px-2 py-1">
-        <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
           <span class="i-ph-gear-six text-white text-lg"></span>
         </div>
-        <span class="font-semibold">Admin</span>
+        
+        <div>
+          <h1 class="font-600 -mb-1">Admin</h1>
+          <span class="text-size-3 text-gray-500 dark:text-gray-400">Admin Panel</span>
+        </div>
       </div>
     </template>
 
