@@ -1,15 +1,18 @@
 <template>
-  <USidebarProvider class="min-h-screen">
-    <div class="flex">
-      <AdminSidebar :unread-count="unreadCount" />
+  <div class="flex min-h-screen min-w-screen bg-[#E0ECF2]">
+    <!-- Custom Sidebar -->
+    <AdminSidebar :unread-count="unreadCount" />
 
-      <USidebarInset class="flex-1 min-h-screen">
-        <div class="p-6 md:p-8">
+    <!-- Main Content Area -->
+    <main class="flex-1 min-h-screen md:ml-0">
+      <div class="p-4 md:p-6">
+        <!-- Base background wrapper to mirror design reference -->
+        <div class="min-h-[calc(100vh-3rem)] rounded-[28px] p-4 md:p-6">
           <slot />
         </div>
-      </USidebarInset>
-    </div>
-  </USidebarProvider>
+      </div>
+    </main>
+  </div>
 </template>
 
 <script lang="ts" setup>

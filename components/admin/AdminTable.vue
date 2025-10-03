@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-[#D1E0E9] dark:bg-gray-800 rounded-2xl border border-[#b7cbd8] dark:border-gray-700 backdrop-blur-sm">
     <!-- Table Header with Actions -->
-    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+  <div class="p-6 border-b border-[#b7cbd8] dark:border-gray-700">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
@@ -79,7 +79,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody class="bg-[#D1E0E9] dark:bg-gray-900 divide-y divide-[#b7cbd8] dark:divide-gray-700">
           <tr v-if="loading" class="animate-pulse">
             <td :colspan="columns.length + 2" class="px-6 py-12 text-center">
               <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -97,7 +97,7 @@
             v-else
             v-for="(row, index) in data"
             :key="row.id || index"
-            class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+            class="hover:bg-[#c4d5df] dark:hover:bg-gray-800 cursor-pointer"
             @click="handleRowClick(row, $event)"
           >
             <td class="w-12 px-6 py-4">

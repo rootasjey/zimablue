@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+  <div class="bg-[#D1E0E9] dark:bg-gray-800 rounded-2xl p-6 border border-[#b7cbd8] dark:border-gray-700">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ title }}</p>
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-400">{{ title }}</p>
         <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ value }}</p>
         <div v-if="change !== undefined" class="flex items-center mt-2">
           <span 
