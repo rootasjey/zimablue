@@ -15,16 +15,16 @@
         <!-- Greeting/Header -->
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl sm:text-3xl font-700 text-gray-900">Good {{ greetingTime }}, {{ firstName }}!</h1>
+            <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Good {{ greetingTime }}, {{ firstName }}!</h1>
           </div>
 
           <!-- Quick profile / actions -->
           <div class="hidden sm:flex items-center gap-3">
-            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 transition">
-              <span class="i-ph-calendar text-gray-700 text-lg"></span>
+            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition">
+              <span class="i-ph-calendar text-gray-700 dark:text-gray-300 text-lg"></span>
             </button>
-            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 transition">
-              <span class="i-ph-bell text-gray-700 text-lg"></span>
+            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition">
+              <span class="i-ph-bell text-gray-700 dark:text-gray-300 text-lg"></span>
             </button>
             <UDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
               :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
@@ -39,59 +39,59 @@
         </div>
 
         <div class="flex gap-12">
-          <div class="flex-1 space-y-6">
+          <div class="flex-1 space-y-6 max-w-70%">
             <!-- Top Stats Row -->
             <div class="flex gap-6 overflow-x-auto">
               <!-- Bank Balance Card -->
-              <div class="w-48 rounded-[28px] p-6 py-10 bg-[#D1E0E9] relative">
+              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
                 <button
                   class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700"></span>
+                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
                 </button>
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-wallet text-gray-900 text-2xl"></span>
+                  <span class="i-ph-wallet text-gray-900 dark:text-gray-300 text-2xl"></span>
                 </div>
-                <div class="text-3xl font-800 text-gray-900 mb-1">$143,624</div>
+                <div class="text-3xl font-800 text-gray-900 dark:text-white mb-1">$143,624</div>
                 <div class="text-sm text-gray-600">Your bank balance</div>
               </div>
 
               <!-- Uncategorized Transactions -->
-              <div class="w-48 rounded-[28px] p-6 py-10 bg-[#D1E0E9] relative">
+              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
                 <button
                   class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700"></span>
+                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
                 </button>
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-clock text-gray-900 text-2xl"></span>
+                  <span class="i-ph-clock text-gray-900 dark:text-gray-300 text-2xl"></span>
                 </div>
-                <div class="text-3xl font-800 text-gray-900 mb-1">12</div>
-                <div class="text-sm text-gray-600">Uncategorized transactions</div>
+                <div class="text-3xl font-800 text-gray-900 dark:text-white mb-1">12</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">Uncategorized transactions</div>
               </div>
 
               <!-- Employees Working Today -->
-              <div class="w-48 rounded-[28px] p-6 py-10 bg-[#D1E0E9] relative">
+              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
                 <button
                   class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700"></span>
+                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
                 </button>
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-users text-gray-900 text-2xl"></span>
+                  <span class="i-ph-users text-gray-900 dark:text-gray-300 text-2xl"></span>
                 </div>
-                <div class="text-3xl font-800 text-gray-900 mb-1">7</div>
-                <div class="text-sm text-gray-600">Employees working today</div>
+                <div class="text-3xl font-800 text-gray-900 dark:text-white mb-1">7</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">Employees working today</div>
               </div>
 
               <!-- Card Spending -->
-              <div class="w-48 rounded-[28px] p-6 py-10 bg-[#D1E0E9] relative">
+              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
                 <button
                   class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700"></span>
+                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
                 </button>
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-credit-card text-gray-900 text-2xl"></span>
+                  <span class="i-ph-credit-card text-gray-900 dark:text-gray-300 text-2xl"></span>
                 </div>
-                <div class="text-3xl font-800 text-gray-900 mb-1">$3,287.49</div>
-                <div class="text-sm text-gray-600">This week's card spending</div>
+                <div class="text-3xl font-800 text-gray-900 dark:text-white mb-1">$3,287.49</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">This week's card spending</div>
               </div>
             </div>
 
@@ -99,30 +99,39 @@
             <div class="flex gap-4">
               <!-- Left: Stacked Cards -->
               <div class="space-y-4">
-                <!-- New Clients -->
-                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9]">
-                  <div class="text-size-4 font-800 mb-2">New clients</div>
-                  <div class="flex items-center gap-3">
-                    <div class="text-5xl font-800 text-gray-900">54</div>
-                    <span class="px-2 py-1 rounded-full text-xs font-700 bg-emerald-100 text-emerald-700">+ 18.7%</span>
+                <!-- User Growth -->
+                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+                  <div class="text-size-4 font-800 mb-2">New users this month</div>
+                  <div v-if="isLoadingUserGrowth" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
+                  <div v-else class="flex items-center gap-3">
+                    <div class="text-5xl font-800 text-gray-900 dark:text-white">{{ userGrowth.this_month }}</div>
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-700"
+                      :class="userGrowth.percentage_change >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                    >
+                      {{ userGrowth.percentage_change >= 0 ? '+' : '' }} {{ userGrowth.percentage_change }}%
+                    </span>
                   </div>
                 </div>
 
-                <!-- Invoices Overdue -->
-                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9]">
-                  <div class="text-size-4 font-800 mb-2">Invoices overdue</div>
-                  <div class="flex items-center gap-3">
-                    <div class="text-5xl font-800 text-gray-900">6</div>
-                    <span class="px-2 py-1 rounded-full text-xs font-700 bg-red-100 text-red-700">+ 2.7%</span>
+                <!-- Content Activity -->
+                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+                  <div class="text-size-4 font-800 mb-2">Images (7 days)</div>
+                  <div v-if="isLoadingContentActivity" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
+                  <div v-else class="flex items-center gap-3">
+                    <div class="text-5xl font-800 text-gray-900 dark:text-white">{{ contentActivity.last_7_days }}</div>
+                    <span class="px-2 py-1 rounded-full text-xs font-700 bg-blue-100 text-blue-700">
+                      {{ contentActivity.last_30_days }} / 30d
+                    </span>
                   </div>
                 </div>
               </div>
 
               <!-- Right: Revenue Chart -->
-              <div class="flex-1 rounded-[28px] p-6 bg-[#D1E0E9]">
+              <div class="flex-1 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
                 <div class="flex items-center justify-between mb-4">
-                  <div class="text-lg font-700 text-gray-900">Revenue</div>
-                  <div class="text-sm text-gray-600">Last 7 days VS prior week</div>
+                  <div class="text-lg font-700 text-gray-900 dark:text-white">Revenue</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-300">Last 7 days VS prior week</div>
                 </div>
                 <!-- Placeholder for chart -->
                 <div class="h-48 flex items-center justify-center rounded-2xl">
@@ -134,41 +143,79 @@
               </div>
             </div>
 
-            <!-- Recent Emails -->
-            <div class="rounded-[28px] p-6 bg-[#D1E0E9]">
-              <div class="text-lg font-700 text-gray-900 mb-4">Recent emails</div>
-              <div class="space-y-3">
-                <div v-for="email in recentEmails" :key="email.id"
-                  class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/50 transition cursor-pointer">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-600"
-                    :style="{ backgroundColor: email.color }">
-                    {{ email.initials }}
+            <!-- Recent Messages -->
+            <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-lg font-700 text-gray-900 dark:text-white">Recent messages</div>
+                <UButton to="/admin/messages" btn="light:soft-blue dark:soft-blue" rounded="6" size="sm">View all</UButton>
+              </div>
+
+              <div v-if="isLoadingMessages" class="space-y-3">
+                <div v-for="n in 4" :key="n" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
+              </div>
+
+              <div v-else-if="recentMessages.length === 0" class="text-center py-8 text-gray-500">
+                No recent messages
+              </div>
+
+              <div v-else class="space-y-3">
+                <NuxtLink
+                  v-for="message in recentMessages"
+                  :key="message.id"
+                  :to="`/admin/messages`"
+                  class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition cursor-pointer"
+                >
+                  <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-600">
+                    {{ getInitials(message.sender_email) }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="font-600 text-gray-900">{{ email.name }}</div>
-                    <div class="text-sm text-gray-600 truncate">{{ email.subject }}</div>
+                    <div class="font-600 text-gray-900 dark:text-white flex items-center gap-2">
+                      {{ message.sender_email }}
+                      <span v-if="!message.read" class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 truncate">{{ message.subject }}</div>
                   </div>
-                  <div class="text-sm text-gray-500">{{ email.time }}</div>
-                </div>
+                  <div class="text-sm text-gray-500">{{ formatMessageDate(message.created_at) }}</div>
+                </NuxtLink>
               </div>
             </div>
           </div>
 
           <!-- Right Column: Stacked Cards -->
           <div class="space-y-4">
-            <!-- Formation Status (dark card) -->
-            <div class="rounded-[28px] bg-black text-white p-6">
-              <div class="text-lg font-700 mb-1">Formation status</div>
-              <div class="text-sm text-gray-300 mb-4">In progress</div>
-              <div class="h-2 rounded-full bg-white/20 overflow-hidden mb-3">
-                <div class="h-full bg-white/90 rounded-full" style="width: 62%"></div>
+            <!-- Next Project (dark card) -->
+            <div v-if="nextTodo" class="rounded-[28px] bg-black text-white p-6">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-lg font-700">Next Project</div>
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-700"
+                  :class="nextTodo.priority === 'high' ? 'bg-red-500/20 text-red-300' : nextTodo.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300'"
+                >
+                  {{ nextTodo.priority }}
+                </span>
               </div>
-              <div class="text-sm text-gray-200 mb-4">Estimated processing 4–5 business days</div>
-              <button
-                class="w-full px-4 py-2 rounded-xl bg-white text-black font-600 text-sm hover:bg-gray-100 transition">
-                View status
-              </button>
+              <div class="text-xl font-600 mb-2">{{ nextTodo.title }}</div>
+              <div class="text-sm text-gray-300 mb-4">Due: {{ formatDate(nextTodo.due_date) }}</div>
+              <div class="flex items-center gap-2 text-sm text-gray-200 mb-4">
+                <span class="i-ph-clock"></span>
+                <span>{{ getStatusLabel(nextTodo.status) }}</span>
+              </div>
+              <UButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
+                View all tasks
+              </UButton>
             </div>
+
+            <!-- No upcoming tasks -->
+            <div v-else-if="!isLoadingNextTodo" class="rounded-[28px] bg-black text-white p-6">
+              <div class="text-lg font-700 mb-2">Next Project</div>
+              <div class="text-sm text-gray-300 mb-4">No upcoming tasks</div>
+              <UButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
+                Create a task
+              </UButton>
+            </div>
+
+            <!-- Loading state -->
+            <div v-else class="rounded-[28px] bg-black text-white p-6 h-48 animate-pulse"></div>
 
             <!-- To-Do List -->
             <div class="rounded-[28px] bg-[#D1E0E9] p-6">
@@ -205,6 +252,7 @@
 <script lang="ts" setup>
 import type { AdminStats } from '~/types/admin'
 import type { Message } from '~/types/message'
+import type { Todo } from '~/types/todo'
 
 const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
@@ -217,7 +265,24 @@ definePageMeta({
 const stats = ref<AdminStats | null>(null)
 const isLoading = ref(false)
 const isLoadingMessages = ref(false)
+const isLoadingNextTodo = ref(false)
+const isLoadingUserGrowth = ref(false)
+const isLoadingContentActivity = ref(false)
 const recentMessages = ref<Message[]>([])
+const nextTodo = ref<Todo | null>(null)
+
+const userGrowth = ref({
+  this_month: 0,
+  last_month: 0,
+  total: 0,
+  percentage_change: 0
+})
+
+const contentActivity = ref({
+  last_7_days: 0,
+  last_30_days: 0,
+  total: 0
+})
 
 // Greeting helpers
 const firstName = computed(() => user.value?.name?.split(' ')[0] || 'James')
@@ -228,15 +293,7 @@ const greetingTime = computed(() => {
   return 'evening'
 })
 
-// Mock data for recent emails
-const recentEmails = ref([
-  { id: 1, name: 'Hannah Morgan', initials: 'HM', subject: 'Meeting scheduled', time: '1:24 PM', color: '#EF4444' },
-  { id: 2, name: 'Megan Clark', initials: 'MC', subject: 'Update on marketing campaign', time: '12:32 PM', color: '#10B981' },
-  { id: 3, name: 'Brandon Williams', initials: 'BW', subject: 'Designly 2.0 is about to launch', time: 'Yesterday at 8:57 PM', color: '#F59E0B' },
-  { id: 4, name: 'Reid Smith', initials: 'RS', subject: 'My friend Julie loves Dappr!', time: 'Yesterday at 8:49 PM', color: '#8B5CF6' },
-])
-
-// Mock data for to-do list
+// Mock data for to-do list (for the "Your to-Do list" card)
 const todoItems = ref([
   { title: 'Run payroll', time: 'Mar 4 at 6:00 pm' },
   { title: 'Review time off request', time: 'Mar 7 at 6:00 pm' },
@@ -250,6 +307,38 @@ const userMenuItems = [
   { label: 'Settings', onClick: () => navigateTo('/admin/settings') },
   { label: 'Logout', onClick: () => navigateTo('/logout') },
 ]
+
+// Helper functions
+const getInitials = (email: string) => {
+  const parts = email.split('@')[0].split('.')
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return email.substring(0, 2).toUpperCase()
+}
+
+const formatMessageDate = (dateString: string): string => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+
+  if (diffInHours < 1) {
+    const m = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+    return m < 1 ? 'Just now' : `${m}m ago`
+  }
+  if (diffInHours < 24) return `${diffInHours}h ago`
+  if (diffInHours < 48) return 'Yesterday'
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    pending: 'Pending',
+    in_progress: 'In Progress',
+    completed: 'Completed'
+  }
+  return labels[status] || status
+}
 
 // Simple chart data
 const chart = reactive({ currPoints: '', prevPoints: '' })
@@ -301,10 +390,64 @@ const fetchRecentMessages = async () => {
   }
 }
 
+const fetchNextTodo = async () => {
+  if (!loggedIn.value || user.value?.role !== 'admin') return
+  isLoadingNextTodo.value = true
+  try {
+    const res = await $fetch('/api/admin/todos/next') as any
+    if (res?.success) {
+      nextTodo.value = res.data
+    }
+  } catch (e) {
+    console.warn('Failed to load next todo', e)
+  } finally {
+    isLoadingNextTodo.value = false
+  }
+}
+
+const fetchUserGrowth = async () => {
+  if (!loggedIn.value || user.value?.role !== 'admin') return
+  isLoadingUserGrowth.value = true
+  try {
+    const res = await $fetch('/api/admin/analytics/user-growth') as any
+    if (res?.success) {
+      userGrowth.value = res.data
+    }
+  } catch (e) {
+    console.warn('Failed to load user growth', e)
+  } finally {
+    isLoadingUserGrowth.value = false
+  }
+}
+
+const fetchContentActivity = async () => {
+  if (!loggedIn.value || user.value?.role !== 'admin') return
+  isLoadingContentActivity.value = true
+  try {
+    const res = await $fetch('/api/admin/analytics/content-activity') as any
+    if (res?.success) {
+      contentActivity.value = res.data
+    }
+  } catch (e) {
+    console.warn('Failed to load content activity', e)
+  } finally {
+    isLoadingContentActivity.value = false
+  }
+}
+
+// Helper function for formatting dates
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 onMounted(() => {
   if (loggedIn.value && user.value?.role === 'admin') {
     fetchStats()
     fetchRecentMessages()
+    fetchNextTodo()
+    fetchUserGrowth()
+    fetchContentActivity()
   }
 })
 
@@ -312,6 +455,9 @@ watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
   if (newLoggedIn && newRole === 'admin') {
     fetchStats()
     fetchRecentMessages()
+    fetchNextTodo()
+    fetchUserGrowth()
+    fetchContentActivity()
   }
 })
 </script>

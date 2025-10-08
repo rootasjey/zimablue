@@ -3,72 +3,78 @@
     <!-- Access Control -->
     <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
+      <p class="text-gray-600">You need admin privileges to access this page.</p>
       <UButton to="/user" class="mt-4">Go to Profile</UButton>
     </div>
 
     <!-- Tags Management -->
-    <div v-else>
+    <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="p-6 bg-white dark:bg-black rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Tag Management</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Manage tags used throughout the system</p>
+        </div>
+        <UButton btn="solid-black" size="sm" @click="showCreateModal = true">
+          <span class="i-ph-plus mr-2"></span>
+          Create Tag
+        </UButton>
+      </div>
+
+      <!-- Search and Actions Card -->
+      <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <UInput
+            v-model="searchQuery"
+            placeholder="Search tags..."
+            @keyup.enter="handleSearch(searchQuery)"
+            @input="debouncedSearch"
+            size="sm"
+            class="flex-1 b-black focus-within:border-blue-300 dark:b-gray-700"
+            rounded="6"
+          >
+            <template #leading>
+              <span class="i-ph-magnifying-glass"></span>
+            </template>
+          </UInput>
+
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tag Management</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage tags used throughout the system</p>
+            <USelect v-model="selectedSortLabel" :items="sortLabels" size="sm" />
           </div>
 
-          <div class="flex items-center gap-3">
-            <UInput
-              v-model="searchQuery"
-              placeholder="Search..."
-              @keyup.enter="handleSearch(searchQuery)"
-              @input="debouncedSearch"
-              class="w-64"
-            >
-              <template #leading>
-                <span class="i-ph-magnifying-glass"></span>
-              </template>
-            </UInput>
-
-            <USelect v-model="selectedSortLabel" :items="sortLabels" class="w-40" />
-
-            <UButton
-              @click="fetchTags"
-              :loading="isLoading"
-              btn="soft-gray"
-              size="sm"
-            >
-              <span class="i-ph-arrow-clockwise mr-2"></span>
-              Refresh
-            </UButton>
-
-            <UButton btn="soft-indigo" size="sm" @click="showCreateModal = true">
-              <span class="i-ph-plus mr-2"></span>
-              Create Tag
-            </UButton>
-          </div>
+          <UButton
+            @click="fetchTags"
+            :loading="isLoading"
+            btn="light:soft-blue dark:solid-gray"
+            size="sm"
+            rounded="6"
+          >
+            <span class="i-ph-arrow-clockwise mr-2"></span>
+            Refresh
+          </UButton>
         </div>
 
         <!-- Bulk Actions -->
-        <div v-if="selectedTags.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span class="text-sm text-gray-600 dark:text-gray-400">
+        <div v-if="selectedTags.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-[#b7cbd8]">
+          <span class="text-sm font-600 text-gray-700">
             {{ selectedTags.length }} selected
           </span>
-          <UButton btn="soft-blue" size="sm" @click="openBulkColorDialog">
+          <UButton btn="soft-gray" size="sm" @click="openBulkColorDialog">
             <span class="i-ph-palette mr-2"></span>
             Set Color
           </UButton>
-          <UButton btn="soft-red" size="sm" @click="handleBulkDelete">
+          <UButton btn="soft-error" size="sm" @click="handleBulkDelete">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
           </UButton>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="border-x border-gray-200 dark:border-gray-700">
-        <UTable
+      <!-- Table Card -->
+      <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
+        <div class="p-6">
+          <UTable
           :columns="unaColumns"
           :data="tags"
           :loading="isLoading"
@@ -78,6 +84,14 @@
           v-model:rowSelection="rowSelection"
           @row="onRowClick"
           empty-text="No tags found."
+          :una="{
+            tableRoot: 'rounded-[28px] b-transparent',
+            tableHead: 'b-transparent',
+            tableRow: 'b-transparent cursor-pointer hover:bg-[#000000]/5',
+            tableLoadingRow: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableEmpty: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableCell: 'table-cell',
+          }"
         >
           <template #row_actions-cell="{ cell }">
             <UDropdownMenu
@@ -110,87 +124,88 @@
             {{ new Date(cell.getValue() as string).toLocaleDateString() }}
           </template>
         </UTable>
-      </div>
+        </div>
 
-      <!-- Pagination -->
-      <div v-if="pagination && pagination.totalPages > 1" class="p-6 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg bg-white dark:bg-gray-800">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
-            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
-            {{ pagination.total }} results
-          </div>
+        <!-- Pagination -->
+        <div v-if="pagination && pagination.totalPages > 1" class="px-6 pb-6">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
+              Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to
+              {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of
+              {{ pagination.total }} results
+            </div>
 
-          <div class="flex items-center gap-2">
-            <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-left"></span>
-            </UButton>
+            <div class="flex items-center gap-2">
+              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-left"></span>
+              </UButton>
 
-            <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
-              Page {{ pagination.page }} of {{ pagination.totalPages }}
-            </span>
+              <span class="text-sm text-gray-600 px-3">
+                Page {{ pagination.page }} of {{ pagination.totalPages }}
+              </span>
 
-            <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-right"></span>
-            </UButton>
+              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-right"></span>
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Create/Edit Modal -->
-      <UDialog v-model:open="showCreateModal" :title="editingTag ? 'Edit Tag' : 'Create Tag'">
-        <div class="space-y-4 p-2">
-          <UFormGroup label="Name" required>
-            <UInput v-model="tagForm.name" placeholder="Enter tag name" />
-          </UFormGroup>
-          <UFormGroup label="Description">
-            <UTextarea v-model="tagForm.description" placeholder="Optional description" />
-          </UFormGroup>
-          <UFormGroup label="Color">
-            <UInput v-model="tagForm.color" type="color" />
-          </UFormGroup>
-        </div>
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton btn="soft-gray" @click="showCreateModal = false">Cancel</UButton>
-            <UButton :loading="isSubmitting" @click="submitTag">{{ editingTag ? 'Update' : 'Create' }}</UButton>
-          </div>
-        </template>
-      </UDialog>
-
-      <!-- Delete Confirmation Modal -->
-      <UDialog v-model:open="showDeleteModal" title="Delete Tag">
-        <div class="p-2">
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            Are you sure you want to delete the tag "{{ tagToDelete?.name }}"?
-            <span v-if="tagToDelete && tagToDelete?.usage_count > 0" class="text-red-600 dark:text-red-400">
-              This tag is used by {{ tagToDelete.usage_count }} image(s).
-            </span>
-          </p>
-        </div>
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton btn="soft-gray" @click="showDeleteModal = false">Cancel</UButton>
-            <UButton color="red" :loading="isDeleting" @click="confirmDelete">Delete</UButton>
-          </div>
-        </template>
-      </UDialog>
-
-      <UDialog v-model:open="isBulkColorOpen" title="Set Tags Color">
-        <div class="p-2 space-y-3">
-          <UFormGroup label="Color">
-            <UInput v-model="bulkColor" type="color" />
-          </UFormGroup>
-          <p class="text-xs text-gray-500 dark:text-gray-400">This will update the color of {{ selectedTags.length }} selected tag(s).</p>
-        </div>
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton btn="soft-gray" @click="isBulkColorOpen = false">Cancel</UButton>
-            <UButton btn="soft-blue" @click="applyBulkColor">Apply</UButton>
-          </div>
-        </template>
-      </UDialog>
     </div>
+
+    <!-- Create/Edit Modal -->
+    <UDialog v-model:open="showCreateModal" :title="editingTag ? 'Edit Tag' : 'Create Tag'">
+      <div class="space-y-4 p-2">
+        <UFormGroup label="Name" required>
+          <UInput v-model="tagForm.name" placeholder="Enter tag name" />
+        </UFormGroup>
+        <UFormGroup label="Description">
+          <UInput type="textarea" v-model="tagForm.description" placeholder="Optional description" />
+        </UFormGroup>
+        <UFormGroup label="Color">
+          <UInput v-model="tagForm.color" type="color" />
+        </UFormGroup>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton btn="soft-gray" @click="showCreateModal = false">Cancel</UButton>
+          <UButton btn="soft-blue" :loading="isSubmitting" @click="submitTag">{{ editingTag ? 'Update' : 'Create' }}</UButton>
+        </div>
+      </template>
+    </UDialog>
+
+    <!-- Delete Confirmation Modal -->
+    <UDialog v-model:open="showDeleteModal" title="Delete Tag">
+      <div class="p-2">
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
+          Are you sure you want to delete the tag "{{ tagToDelete?.name }}"?
+          <span v-if="tagToDelete && tagToDelete?.usage_count > 0" class="text-red-600 dark:text-red-400">
+            This tag is used by {{ tagToDelete.usage_count }} image(s).
+          </span>
+        </p>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton btn="soft-gray" @click="showDeleteModal = false">Cancel</UButton>
+          <UButton color="red" :loading="isDeleting" @click="confirmDelete">Delete</UButton>
+        </div>
+      </template>
+    </UDialog>
+
+    <UDialog v-model:open="isBulkColorOpen" title="Set Tags Color">
+      <div class="p-2 space-y-3">
+        <UFormGroup label="Color">
+          <UInput v-model="bulkColor" type="color" />
+        </UFormGroup>
+        <p class="text-xs text-gray-500 dark:text-gray-400">This will update the color of {{ selectedTags.length }} selected tag(s).</p>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton btn="soft-gray" @click="isBulkColorOpen = false">Cancel</UButton>
+          <UButton btn="soft-blue" @click="applyBulkColor">Apply</UButton>
+        </div>
+      </template>
+    </UDialog>
   </div>
 </template>
 
@@ -213,7 +228,6 @@ const isLoading = ref(false)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 const searchQuery = ref('')
-const sortBy = ref('usage_count')
 const selectedSortLabel = ref('Usage Count')
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
@@ -412,10 +426,6 @@ const resetForm = () => {
     description: '',
     color: '#3B82F6'
   }
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
 }
 
 const tagRowMenuItems = (row: Tag) => [

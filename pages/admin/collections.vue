@@ -9,41 +9,44 @@
     </div>
 
     <!-- Collections Management -->
-    <div v-else>
+    <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="p-6 bg-white dark:bg-black rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Collection Management</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage all collections in the system</p>
-          </div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Collection Management</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Manage all collections in the system</p>
+        </div>
+      </div>
 
-          <div class="flex items-center gap-3">
-            <UInput
-              v-model="filters.search"
-              placeholder="Search..."
-              @keyup.enter="handleSearch(filters.search)"
-              @input="debouncedSearch"
-              class="w-64"
-            >
-              <template #leading>
-                <span class="i-ph-magnifying-glass"></span>
-              </template>
-            </UInput>
+      <!-- Search and Actions Card -->
+      <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <UInput
+            v-model="filters.search"
+            placeholder="Search collections..."
+            @keyup.enter="handleSearch(filters.search)"
+            @input="debouncedSearch"
+            size="sm"
+            class="flex-1 b-black focus-within:border-blue-300 dark:b-gray-700"
+            rounded="6"
+          >
+            <template #leading>
+              <span class="i-ph-magnifying-glass"></span>
+            </template>
+          </UInput>
 
-            <UButton @click="fetchCollections" :loading="isLoading" btn="soft-gray" size="sm">
-              <span class="i-ph-arrow-clockwise mr-2"></span>
-              Refresh
-            </UButton>
-          </div>
+          <UButton @click="fetchCollections" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
+            <span class="i-ph-arrow-clockwise mr-2"></span>
+            Refresh
+          </UButton>
         </div>
 
         <!-- Bulk Actions -->
-        <div v-if="selectedCollections.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span class="text-sm text-gray-600 dark:text-gray-400">
+        <div v-if="selectedCollections.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-[#b7cbd8]">
+          <span class="text-sm font-600 text-gray-700">
             {{ selectedCollections.length }} selected
           </span>
-          <UButton btn="soft-green" size="sm" @click="bulkMakePublic">
+          <UButton btn="soft-gray" size="sm" @click="bulkMakePublic">
             <span class="i-ph-globe mr-2"></span>
             Make Public
           </UButton>
@@ -51,16 +54,17 @@
             <span class="i-ph-lock mr-2"></span>
             Make Private
           </UButton>
-          <UButton btn="soft-red" size="sm" @click="deleteSelected">
+          <UButton btn="soft-error" size="sm" @click="deleteSelected">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
           </UButton>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="border-x border-gray-200 dark:border-gray-700">
-        <UTable
+  <!-- Table Card -->
+  <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
+        <div class="p-6">
+          <UTable
           :columns="unaColumns"
           :data="collections"
           :loading="isLoading"
@@ -70,12 +74,20 @@
           v-model:rowSelection="rowSelection"
           @row="onRowClick"
           empty-text="No collections found."
+          :una="{
+            tableRoot: 'rounded-[28px] b-transparent',
+            tableHead: 'b-transparent',
+            tableRow: 'b-transparent cursor-pointer hover:bg-[#000000]/5',
+            tableLoadingRow: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableEmpty: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableCell: 'table-cell',
+          }"
         >
           <template #row_actions-cell="{ cell }">
             <UDropdownMenu
               :items="collectionRowMenuItems(cell.row.original)"
               size="xs"
-              dropdown-menu="link-pink"
+              dropdown-menu="link-black"
               :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
               :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
             />
@@ -83,8 +95,8 @@
 
           <template #name-cell="{ cell }">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
-                <span class="i-ph-folder text-gray-400"></span>
+              <div class="w-12 h-12 bg-black rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                <span class="i-ph-folder text-white"></span>
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.getValue() }}</p>
@@ -95,8 +107,8 @@
 
           <template #user_name-cell="{ cell }">
             <div class="flex items-center gap-2">
-              <div class="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                <span class="i-ph-user text-xs text-gray-600 dark:text-gray-400"></span>
+              <div class="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                <UIcon name="i-ph-user" size="xs" class="text-white" />
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.getValue() }}</p>
@@ -113,28 +125,28 @@
 
           <template #image_count-cell="{ cell }">
             <div class="flex items-center gap-1">
-              <span class="i-ph-image text-gray-400"></span>
+              <span class="i-ph-image-bold"></span>
               <span class="text-sm">{{ cell.getValue() }} images</span>
             </div>
           </template>
 
           <template #stats_views-cell="{ cell }">
             <div class="flex items-center gap-1">
-              <span class="i-ph-eye text-gray-400"></span>
+              <span class="i-ph-eye-bold"></span>
               <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
             </div>
           </template>
 
           <template #stats_downloads-cell="{ cell }">
             <div class="flex items-center gap-1">
-              <span class="i-ph-download text-gray-400"></span>
+              <span class="i-ph-download-bold"></span>
               <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
             </div>
           </template>
 
           <template #stats_likes-cell="{ cell }">
             <div class="flex items-center gap-1">
-              <span class="i-ph-heart text-gray-400"></span>
+              <span class="i-ph-heart-bold"></span>
               <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
             </div>
           </template>
@@ -143,33 +155,36 @@
             {{ new Date(cell.getValue() as string).toLocaleDateString() }}
           </template>
         </UTable>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="pagination && pagination.totalPages > 1" class="p-6 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg bg-white dark:bg-gray-800">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
-            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
-            {{ pagination.total }} results
-          </div>
-
-          <div class="flex items-center gap-2">
-            <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-left"></span>
-            </UButton>
-
-            <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
-              Page {{ pagination.page }} of {{ pagination.totalPages }}
-            </span>
-
-            <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-right"></span>
-            </UButton>
-          </div>
         </div>
 
-      <!-- View Collection Dialog -->
+        <!-- Pagination -->
+        <div v-if="pagination && pagination.totalPages > 1" class="px-6 pb-6">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
+              Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to
+              {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of
+              {{ pagination.total }} results
+            </div>
+
+            <div class="flex items-center gap-2">
+              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-left"></span>
+              </UButton>
+
+              <span class="text-sm text-gray-600 px-3">
+                Page {{ pagination.page }} of {{ pagination.totalPages }}
+              </span>
+
+              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-right"></span>
+              </UButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Collection Dialog -->
     <UDialog v-model:open="isViewDialogOpen" title="Collection Details">
       <div v-if="selectedCollection" class="p-6">
         <div class="space-y-6">
@@ -251,15 +266,13 @@
             </p>
           </div>
         </div>
-        
+
         <div class="flex justify-end gap-3">
           <UButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</UButton>
           <UButton @click="deleteCollection" :loading="isDeleting" btn="soft-red">Delete Collection</UButton>
         </div>
       </div>
     </UDialog>
-    </div>
-    </div>
   </div>
 </template>
 

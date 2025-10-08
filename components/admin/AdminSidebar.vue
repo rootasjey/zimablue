@@ -27,9 +27,9 @@
     >
       <!-- Header/Logo -->
       <div class="flex items-center justify-center py-6 px-4">
-        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
+        <ULink to="/" class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
           <span class="text-black text-xl font-bold">zb</span>
-        </div>
+        </ULink>
       </div>
 
       <!-- Navigation -->
@@ -37,8 +37,9 @@
         <UTooltip
           v-for="item in navItems"
           :key="item.path"
-          :text="item.label"
-          placement="right"
+          :_tooltip-content="{
+            side: 'right',
+          }"
           :disabled="isMobile"
         >
           <NuxtLink
@@ -58,12 +59,20 @@
               {{ unreadCount > 99 ? '99+' : unreadCount }}
             </span>
           </NuxtLink>
+
+          <template #content>
+            <div class="text-sm font-medium p-2">
+              {{ item.label }}
+            </div>
+          </template>
         </UTooltip>
       </nav>
 
       <!-- Footer/Settings -->
       <div class="px-4 py-4 border-t border-white/10">
-        <UTooltip text="Settings" :disabled="isMobile">
+        <UTooltip :_tooltip-content="{
+          side: 'right',
+        }" :disabled="isMobile">
           <NuxtLink
             to="/admin/settings"
             @click="closeMobileMenu"
@@ -73,6 +82,12 @@
             <span class="i-ph-gear text-xl flex-shrink-0"></span>
             <span v-if="isMobile" class="text-sm font-medium">Settings</span>
           </NuxtLink>
+
+          <template #content>
+            <div class="text-sm font-medium p-2">
+              Settings
+            </div>
+          </template>
         </UTooltip>
       </div>
     </aside>
@@ -102,11 +117,13 @@ const isMobile = ref(false)
 // Navigation items
 const navItems: NavItem[] = [
   { path: '/admin', label: 'Dashboard', icon: 'i-ph-house-simple-duotone' },
+  { path: '/admin/analytics', label: 'Analytics', icon: 'i-ph-chart-line-up' },
   { path: '/admin/images', label: 'Images', icon: 'i-ph-image-duotone' },
   { path: '/admin/tags', label: 'Tags', icon: 'i-ph-hash-straight' },
   { path: '/admin/collections', label: 'Collections', icon: 'i-ph-folder-duotone' },
   { path: '/admin/users', label: 'Users', icon: 'i-ph-users-duotone' },
   { path: '/admin/messages', label: 'Messages', icon: 'i-ph-envelope-duotone', badge: true },
+  { path: '/admin/todos', label: 'To-Do List', icon: 'i-ph-check-square' },
   { path: '/admin/tools', label: 'Tools', icon: 'i-ph-wrench' },
 ]
 

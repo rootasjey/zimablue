@@ -1,77 +1,69 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
+  <div class="relative rounded-6 mb-6">
     <!-- Stats Row -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <div class="w-full flex justify-around">
-        <div class="text-center">
-          <div class="text-size-24 font-200 text-#525FE1 dark:text-white">{{ totalMessages }}</div>
-          <div class="text-sm font-600 text-gray-600 dark:text-gray-400">Total Messages</div>
+    <UTooltip>
+      <template #default>
+        <UButton @click="$emit('refresh')" :loading="isLoading" btn="light:soft-indigo dark:solid-gray" size="xs"
+          rounded="6" class="absolute right-4 top-4">
+          <span class="i-ph-info mr-2"></span>
+          <span class="hidden md:inline">Stats</span>
+        </UButton>
+      </template>
+      <template #content>
+        <div class="flex gap-3 items-center px-3 py-1">
+          <p>{{ totalMessages }} total messages</p>
+          <span>•</span>
+          <p>{{ unreadCount }} unread</p>
         </div>
-        <div class="text-center">
-          <div class="text-size-24 font-200 text-#09A8FA">{{ unreadCount }}</div>
-          <div class="text-sm font-600 text-gray-600 dark:text-gray-400">Unread</div>
-        </div>
-        <div class="text-center">
-          <div class="text-size-24 font-200 text-#616EEF">{{ selectedCount }}</div>
-          <div class="text-sm font-600 text-gray-600 dark:text-gray-400">Selected</div>
-        </div>
-      </div>
-    </div>
+      </template>
+    </UTooltip>
 
-    <!-- Search and Filters Row -->
-    <div class="flex flex-wrap gap-4 mb-4">
-      <div class="flex-1 min-w-64">
-        <UInput
-          v-model="searchQuery"
-          placeholder="Search messages..."
-          @keyup.enter="handleSearch"
-          @input="debouncedSearch"
-        >
+    <!-- Bulk Actions Row -->
+    <div class="flex flex-wrap gap-4 pt-4 border-t b-dashed border-gray-200 dark:border-gray-700">
+      <div>
+        <UInput v-model="searchQuery" placeholder="Search messages..." @keyup.enter="handleSearch"
+          @input="debouncedSearch" size="sm" rounded=6
+          class="shadow-lg border border-white focus:border-blue-500 dark:border-gray-700">
           <template #leading>
             <span class="i-ph-magnifying-glass"></span>
           </template>
         </UInput>
       </div>
-      
-      <USelect
-        v-model="readFilter"
-        :items="readFilterOptions"
-        @update:model-value="handleFilterChange"
-        placeholder="Filter by status"
-        item-key="label"
-        value-key="label"
-      />
-    </div>
-
-    <!-- Bulk Actions Row -->
-    <div class="flex flex-wrap gap-2 pt-4 border-t b-dashed border-gray-200 dark:border-gray-700">
+      <div>
+        <USelect v-model="readFilter" :items="readFilterOptions" @update:model-value="handleFilterChange"
+          select="soft-gray" size="xs" placeholder="Filter by status" item-key="label" value-key="label" />
+      </div>
       <UTooltip>
         <template #default>
-          <UButton 
-            @click="$emit('refresh')" 
-            :loading="isLoading"
-            btn="soft-indigo"
-            size="sm"
-          >
-            <span class="i-ph-arrow-clockwise mr-2"></span>
-            <span class="hidden md:inline">Refresh</span>
+          <UButton @click="$emit('toggle-multiselect')" size="xs" :btn="multiSelectActive ? 'soft-blue' : 'soft-gray'"
+            rounded="6">
+            <span class="i-ph-list mr-1"></span>
+            <span class="hidden md:inline">Multi-select</span>
           </UButton>
         </template>
         <template #content>
-          <div class="px-3 py-1">Refresh data</div>
+          <div class="px-3 py-1">{{ multiSelectActive ? 'Deactivate' : 'Activate' }} multi-select mode</div>
+        </template>
+      </UTooltip>
+
+      <UTooltip v-if="multiSelectActive">
+        <template #default>
+          <UButton @click="$emit('select-all')" size="xs" btn="soft-gray" rounded="6">
+            <span class="i-ph-check-square-offset mr-1"></span>
+            <span class="hidden md:inline">{{ isAllSelected ? 'Deselect all' : 'Select all' }}</span>
+          </UButton>
+        </template>
+        <template #content>
+          <div class="px-3 py-1">Toggle select all messages</div>
         </template>
       </UTooltip>
 
       <div v-if="selectedCount > 0" class="flex flex-wrap gap-2">
         <UTooltip>
           <template #default>
-            <UButton
-              @click="$emit('bulk-action', 'mark_read')"
-              size="sm"
-              btn="soft"
-            >
+            <UButton @click="$emit('bulk-action', 'mark_read')" size="xs" btn="soft-gray" rounded="6">
               <span class="i-ph-check mr-2"></span>
-              <span class="hidden md:inline">Mark Read </span>
+              <span class="hidden md:inline">Read </span>
               <span>({{ selectedCount }})</span>
             </UButton>
           </template>
@@ -79,16 +71,12 @@
             <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as read</div>
           </template>
         </UTooltip>
-        
+
         <UTooltip>
           <template #default>
-            <UButton
-              @click="$emit('bulk-action', 'mark_unread')"
-              size="sm"
-              btn="soft-gray"
-            >
+            <UButton @click="$emit('bulk-action', 'mark_unread')" size="xs" btn="soft-gray" rounded="6">
               <span class="i-ph-circle mr-2"></span>
-              <span class="hidden md:inline">Mark Unread </span>
+              <span class="hidden md:inline">Unread </span>
               <span>({{ selectedCount }})</span>
             </UButton>
           </template>
@@ -96,14 +84,11 @@
             <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as unread</div>
           </template>
         </UTooltip>
-        
+
         <UTooltip>
           <template #default>
-            <UButton
-              @click="$emit('bulk-action', 'confirm_delete')"
-              size="sm"
-              btn="soft-pink"
-            >
+            <UButton @click="$emit('bulk-action', 'confirm_delete')" size="xs" btn="light:soft-pink dark:outline-pink"
+              rounded="6">
               <span class="i-ph-trash mr-2"></span>
               <span class="hidden md:inline">Delete </span>
               <span>({{ selectedCount }})</span>
@@ -124,11 +109,12 @@ interface Props {
   unreadCount: number
   selectedCount: number
   isLoading: boolean
+  multiSelectActive: boolean
 }
 
 interface ReadFilterOption {
   label: string
-  value: boolean | undefined
+  value: string | undefined
 }
 
 interface Emits {
@@ -136,16 +122,21 @@ interface Emits {
   (e: 'bulk-action', action: 'mark_read' | 'mark_unread' | 'confirm_delete' | 'delete'): void
   (e: 'search', query: string): void
   (e: 'filter-change', filterType: string, value: any): void
+  (e: 'toggle-multiselect'): void
+  (e: 'select-all'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Determine if all are selected to change button label
+const isAllSelected = computed(() => props.totalMessages > 0 && props.selectedCount === props.totalMessages)
 
 // Local state
 const searchQuery = ref('')
-const readFilter = ref<string | undefined>(undefined)
+const readFilter = ref<ReadFilterOption>({ label: 'All Messages', value: undefined })
 
-const readFilterOptions = [
+const readFilterOptions: ReadFilterOption[] = [
   { label: 'All Messages', value: undefined },
   { label: 'Unread Only', value: 'false' },
   { label: 'Read Only', value: 'true' }
@@ -164,9 +155,9 @@ const handleSearch = () => {
   emit('search', searchQuery.value)
 }
 
-const handleFilterChange = () => {
-  const selectedFilter = readFilter.value as unknown as ReadFilterOption
-  const filterValue = selectedFilter.value === undefined ? undefined : selectedFilter.value
+const handleFilterChange = (selectedOption: ReadFilterOption) => {
+  readFilter.value = selectedOption
+  const filterValue = selectedOption.value === undefined ? undefined : selectedOption.value === 'true'
   emit('filter-change', 'read', filterValue)
 }
 </script>

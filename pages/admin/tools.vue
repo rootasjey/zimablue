@@ -10,7 +10,7 @@
 
     <div v-else class="space-y-8">
       <div>
-        <h1 class="text-3xl font-bold mb-2">Admin Tools</h1>
+        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Admin Tools</h1>
         <p class="text-gray-600 dark:text-gray-400">Operations that affect stored data and files.</p>
       </div>
 

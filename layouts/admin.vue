@@ -1,10 +1,10 @@
 <template>
-  <div class="flex min-h-screen min-w-screen bg-[#E0ECF2]">
+  <div class="flex min-h-screen min-w-screen bg-[#E0ECF2] dark:bg-gray-900">
     <!-- Custom Sidebar -->
     <AdminSidebar :unread-count="unreadCount" />
 
     <!-- Main Content Area -->
-    <main class="flex-1 min-h-screen md:ml-0">
+    <main class="flex-1 min-h-screen md:ml-0 overflow-x-hidden">
       <div class="p-4 md:p-6">
         <!-- Base background wrapper to mirror design reference -->
         <div class="min-h-[calc(100vh-3rem)] rounded-[28px] p-4 md:p-6">

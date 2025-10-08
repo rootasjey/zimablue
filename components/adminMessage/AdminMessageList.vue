@@ -1,18 +1,6 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-    <!-- Table Header -->
-    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
-      <div class="flex items-center gap-4">
-        <UCheckbox
-          :model-value="isIndeterminate ? 'indeterminate' : isAllSelected"
-          :indeterminate="isIndeterminate"
-          @update:model-value="$emit('select-all')"
-        />
-        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ selectedMessagesCount > 0 ? `${selectedMessagesCount} selected` : 'Select all' }}
-        </span>
-      </div>
-    </div>
+  <div class="bg-[#D1E0E9] dark:bg-gray-800 rounded-3 overflow-hidden">
+    <!-- List has no internal header; selection controls live in AdminMessageHeader -->
 
     <!-- Loading State -->
     <div v-if="isLoading" class="p-8 text-center">
@@ -28,96 +16,47 @@
     </div>
 
     <!-- Messages List -->
-    <div v-else class="divide-y divide-gray-200 dark:divide-gray-600">
-      <div
-        v-for="message in messages"
-        :key="message.id"
-        class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-        @click="$emit('view-message', message)"
-      >
-        <!-- Checkbox -->
-        <UCheckbox
-          v-model:model-value="selectedMessages[message.id]"
-          @click.stop
-        />
+    <div v-else class="space-y-4 px-4 py-2 my-2">
+      <div v-for="message in messages" :key="message.id"
+        class="relative group rounded-xl border b-transparent transition-all transition-duration-300 cursor-pointer flex items-stretch"
+        :class="{
+          'border-blue-500 border-1 ring-1 ring-blue-100 dark:ring-blue-900 bg-blue-50 dark:bg-blue-500/5': selectedMessages[message.id] || message.id === activeMessageId,
+          'bg-white/70 dark:bg-gray-900': !(selectedMessages[message.id] || message.id === activeMessageId)
+        }" @click="multiSelectActive ? $emit('select-message', message.id) : $emit('view-message', message)">
+        <!-- Selection Check Overlay (selected) -->
+        <div v-if="multiSelectActive && selectedMessages[message.id]"
+          class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white shadow-md pointer-events-none"
+          aria-hidden="true">
+          <span class="i-ph-check-bold text-xs"></span>
+        </div>
 
-        <!-- Read Status Indicator -->
-        <div class="flex-shrink-0">
-          <div
-            v-if="!message.read"
-            class="w-2 h-2 bg-blue-500 rounded-full"
-            title="Unread"
-          ></div>
-          <div
-            v-else
-            class="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"
-            title="Read"
-          ></div>
+        <!-- Faint Check Overlay (hint when not selected) -->
+        <div v-else-if="multiSelectActive && !selectedMessages[message.id]"
+          class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-500/10 text-gray-700/50 border border-gray-400/30 pointer-events-none opacity-0 group-hover:opacity-70 transition-opacity duration-150"
+          aria-hidden="true">
+          <span class="i-ph-check text-xs"></span>
         </div>
 
         <!-- Message Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 min-w-0">
-              <!-- Sender Email -->
-              <div class="flex items-center gap-2 mb-1">
-                <span class="i-ph-envelope text-gray-400"></span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  {{ message.sender_email }}
-                </span>
-              </div>
-
-              <!-- Subject -->
-              <h3 
-                class="text-base font-semibold text-gray-800 dark:text-gray-200 truncate mb-1"
-                :class="{ 'font-bold': !message.read }"
-              >
+        <div class="flex-1 min-w-0 py-4 pr-4 pl-2">
+          <div class="px-2 flex flex-col">
+            <div class="flex justify-between items-center gap-2">
+              <h3 class="text-size-3 font-semibold text-gray-900 dark:text-white truncate"
+                :class="{ 'font-bold': !message.read }">
                 {{ message.subject }}
               </h3>
-
-              <!-- Message Preview -->
-              <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                {{ truncateMessage(message.message) }}
-              </p>
+              <span v-if="!message.read" class="ml-2 px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                Unread
+              </span>
             </div>
-
-            <!-- Timestamp and Actions -->
-            <div class="flex-shrink-0 text-right">
-              <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                {{ formatDate(message.created_at) }}
-              </div>
-              
-              <!-- Action Buttons -->
-              <div class="flex gap-1" @click.stop>
-                <UButton
-                  v-if="!message.read"
-                  @click="$emit('mark-read', message.id, true)"
-                  size="xs"
-                  btn="ghost-gray"
-                  title="Mark as read"
-                >
-                  <span class="i-ph-check"></span>
-                </UButton>
-                
-                <UButton
-                  v-else
-                  @click="$emit('mark-read', message.id, false)"
-                  size="xs"
-                  btn="ghost-gray"
-                  title="Mark as unread"
-                >
-                  <span class="i-ph-circle"></span>
-                </UButton>
-
-                <UButton
-                  @click="$emit('delete-message', message)"
-                  size="xs"
-                  btn="ghost-gray"
-                  title="Delete message"
-                >
-                  <span class="i-ph-trash"></span>
-                </UButton>
-              </div>
+            <div class="flex items-center gap-2">
+              <span class="text-size-3 font-medium text-gray-700 dark:text-gray-200 truncate">{{ message.sender_email }}</span>
+            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
+              {{ truncateMessage(message.message) }}
+            </p>
+            <div class="flex justify-end text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>{{ formatDate(message.created_at) }}</span>
             </div>
           </div>
         </div>
@@ -141,31 +80,17 @@ interface Props {
   messages: Message[]
   selectedMessages: Record<number, boolean>
   isLoading: boolean
+  multiSelectActive: boolean
+  activeMessageId?: number
 }
 
 interface Emits {
   (e: 'select-message', messageId: number): void
-  (e: 'select-all'): void
-  (e: 'mark-read', messageId: number, read: boolean): void
-  (e: 'delete-message', message: Message): void
   (e: 'view-message', message: Message): void
 }
 
 const props = defineProps<Props>()
 defineEmits<Emits>()
-
-const selectedMessagesCount = computed(() => {
-  return Object.values(props.selectedMessages).filter(Boolean).length
-})
-
-// Computed properties for select all checkbox
-const isAllSelected = computed(() => {
-  return props.messages.length > 0 && selectedMessagesCount.value === props.messages.length
-})
-
-const isIndeterminate = computed(() => {
-  return selectedMessagesCount.value > 0 && selectedMessagesCount.value < props.messages.length
-})
 
 // Utility functions
 const truncateMessage = (message: string, maxLength: number = 150): string => {

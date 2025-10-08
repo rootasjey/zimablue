@@ -13,25 +13,25 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900">Settings</h1>
-          <p class="text-gray-600 mt-1">Manage your account and application preferences.</p>
+          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Settings</h1>
+          <p class="text-gray-600 mt-1 dark:text-gray-300">Manage your account and application preferences.</p>
         </div>
       </div>
 
       <!-- Settings Sections -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Appearance Settings -->
-        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8]">
+        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8] dark:bg-gray-800 dark:border-transparent">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
               <span class="i-ph-palette text-white text-xl"></span>
             </div>
-            <h2 class="text-xl font-700 text-gray-900">Appearance</h2>
+            <h2 class="text-xl font-700 text-gray-900 dark:text-white">Appearance</h2>
           </div>
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Theme</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Theme</label>
               <div class="grid grid-cols-3 gap-2">
                 <button
                   v-for="themeOption in themeOptions"
@@ -40,7 +40,7 @@
                   class="px-4 py-3 rounded-xl border-2 transition-all text-sm font-medium"
                   :class="selectedTheme === themeOption.value 
                     ? 'border-black bg-black text-white' 
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'"
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-400'"
                 >
                   <span :class="themeOption.icon" class="text-lg mb-1"></span>
                   <div>{{ themeOption.label }}</div>
@@ -51,100 +51,100 @@
         </div>
 
         <!-- Profile Settings -->
-        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8]">
+        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8] dark:bg-gray-800 dark:border-transparent">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
               <span class="i-ph-user text-white text-xl"></span>
             </div>
-            <h2 class="text-xl font-700 text-gray-900">Profile</h2>
+            <h2 class="text-xl font-700 text-gray-900 dark:text-white">Profile</h2>
           </div>
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Username</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Username</label>
               <UInput
                 v-model="formData.username"
                 placeholder="Enter your username"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Email</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Email</label>
               <UInput
                 v-model="formData.email"
                 type="email"
                 placeholder="Enter your email"
                 size="lg"
-                class="w-full"
                 disabled
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
-              <p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Email cannot be changed</p>
             </div>
 
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Job Title</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Job Title</label>
               <UInput
                 v-model="formData.job"
                 placeholder="e.g., Administrator"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Location</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Location</label>
               <UInput
                 v-model="formData.location"
                 placeholder="e.g., New York, USA"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
         </div>
 
         <!-- Security Settings -->
-        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8] lg:col-span-2">
+        <div class="rounded-[28px] p-6 bg-[#D1E0E9] border border-[#b7cbd8] lg:col-span-2 dark:bg-gray-800 dark:border-transparent">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
               <span class="i-ph-lock text-white text-xl"></span>
             </div>
-            <h2 class="text-xl font-700 text-gray-900">Security</h2>
+            <h2 class="text-xl font-700 text-gray-900 dark:text-white">Security</h2>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">Current Password</label>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Current Password</label>
               <UInput
                 v-model="formData.currentPassword"
                 type="password"
                 placeholder="Enter current password"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-600 text-gray-700 mb-2">New Password</label>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">New Password</label>
               <UInput
                 v-model="formData.newPassword"
                 type="password"
                 placeholder="Enter new password"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
-            <div class="md:col-span-2">
-              <label class="block text-sm font-600 text-gray-700 mb-2">Confirm New Password</label>
+            <div>
+              <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Confirm New Password</label>
               <UInput
                 v-model="formData.confirmPassword"
                 type="password"
                 placeholder="Confirm new password"
                 size="lg"
-                class="w-full"
+                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -174,13 +174,13 @@
 </template>
 
 <script lang="ts" setup>
-const { loggedIn, user } = useUserSession()
-const { toast } = useToast()
-
 definePageMeta({
   middleware: 'admin',
   layout: 'admin'
 })
+
+const { loggedIn, user } = useUserSession()
+const { toast } = useToast()
 
 // Theme options
 const themeOptions = [
@@ -189,8 +189,17 @@ const themeOptions = [
   { value: 'system', label: 'System', icon: 'i-ph-monitor' },
 ]
 
-// Form state
-const selectedTheme = ref('light')
+// Wire theme selector to Nuxt color mode
+const { $colorMode } = useNuxtApp()
+// Initialize selectedTheme from current preference/value
+const selectedTheme = ref($colorMode.preference || $colorMode.value || 'system')
+// Keep Nuxt color mode in sync when user changes selection
+watch(selectedTheme, (val) => {
+  // map our values directly to $colorMode.preference which accepts 'light'|'dark'|'system'
+  if (val === 'light' || val === 'dark' || val === 'system') {
+    $colorMode.preference = val
+  }
+})
 const isSaving = ref(false)
 
 const formData = ref({
@@ -223,7 +232,8 @@ const resetForm = () => {
     newPassword: '',
     confirmPassword: '',
   }
-  selectedTheme.value = 'light'
+  // restore selected theme from current app preference
+  selectedTheme.value = $colorMode.preference || $colorMode.value || 'system'
 }
 
 // Save settings

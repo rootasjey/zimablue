@@ -1,87 +1,98 @@
 <template>
   <div>
-      <!-- Main Content -->
-      <main>
-        <!-- Access Control -->
-        <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-          <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-          <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-          <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-          <UButton to="/user" class="mt-4">Go to Profile</UButton>
+    <!-- Access Control -->
+    <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
+      <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
+      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+    </div>
+
+    <!-- Images Management -->
+    <div v-else class="space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Image Management</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Manage all images and illustrations in the system</p>
+        </div>
+      </div>
+
+      <!-- Search and Actions Card -->
+      <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <UInput
+            v-model="searchQuery"
+            placeholder="Search images..."
+            @keyup.enter="handleSearch(searchQuery)"
+            @input="debouncedSearch"
+            size="sm"
+            class="flex-1 b-black focus-within:border-blue-300 dark:b-gray-700"
+            rounded="6"
+          >
+            <template #leading>
+              <span class="i-ph-magnifying-glass"></span>
+            </template>
+          </UInput>
+
+          <UButton
+            @click="fetchImages"
+            :loading="isLoading"
+            btn="light:soft-blue dark:solid-gray"
+            size="sm"
+            rounded="6"
+          >
+            <span class="i-ph-arrow-clockwise mr-2"></span>
+            Refresh
+          </UButton>
         </div>
 
-        <!-- Images Management -->
-        <div v-else>
-          <!-- Header with search and actions -->
-          <div class="p-6 bg-white dark:bg-black rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Image Management</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage all images and illustrations in the system</p>
-              </div>
+        <!-- Bulk Actions -->
+        <div v-if="selectedImages.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-[#b7cbd8]">
+          <span class="text-sm font-600 text-gray-700">
+            {{ selectedImages.length }} selected
+          </span>
+          <UButton
+            v-for="action in bulkActions"
+            :key="action.id"
+            @click="handleBulkAction(action.id)"
+            :btn="action.variant || 'soft-gray'"
+            size="sm"
+          >
+            <span v-if="action.icon" :class="[action.icon, 'mr-2']"></span>
+            {{ action.label }}
+          </UButton>
+        </div>
+      </div>
 
-              <div class="flex items-center gap-3">
-                <UInput
-                  v-model="searchQuery"
-                  placeholder="Search..."
-                  @keyup.enter="handleSearch(searchQuery)"
-                  @input="debouncedSearch"
-                  class="w-64"
-                >
-                  <template #leading>
-                    <span class="i-ph-magnifying-glass"></span>
-                  </template>
-                </UInput>
-
-                <UButton
-                  @click="fetchImages"
-                  :loading="isLoading"
-                  btn="soft-gray"
-                  size="sm"
-                >
-                  <span class="i-ph-arrow-clockwise mr-2"></span>
-                  Refresh
-                </UButton>
-              </div>
-            </div>
-
-            <!-- Bulk Actions -->
-            <div v-if="selectedImages.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ selectedImages.length }} selected
-              </span>
-              <UButton
-                v-for="action in bulkActions"
-                :key="action.id"
-                @click="handleBulkAction(action.id)"
-                :btn="action.variant || 'soft'"
-                size="sm"
-              >
-                <span v-if="action.icon" :class="[action.icon, 'mr-2']"></span>
-                {{ action.label }}
-              </UButton>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="border-x border-gray-200 dark:border-gray-700">
-            <UTable
-              :columns="unaColumns"
-              :data="images"
-              :loading="isLoading"
-              row-id="id"
-              :enable-row-selection="true"
-              :enable-multi-row-selection="true"
-              v-model:rowSelection="rowSelection"
-              @row="onRowClick"
-              empty-text="No images found."
+      <!-- Table Card -->
+      <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
+        <div class="p-6">
+          <UTable
+            :columns="unaColumns"
+            :data="images"
+            :loading="isLoading"
+            row-id="id"
+            :enable-row-selection="true"
+            :enable-multi-row-selection="true"
+            v-model:rowSelection="rowSelection"
+            @row="onRowClick"
+            empty-text="No images found."
+            :una="{
+              tableRoot: 'rounded-[28px] b-transparent',
+              tableHead: 'b-transparent',
+              tableRow: 'b-transparent cursor-pointer hover:bg-[#000000]/5',
+              tableLoadingRow: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+              tableEmpty: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+              tableCell: 'table-cell',
+            }"
             >
               <!-- Left actions dropdown -->
               <template #row_actions-cell="{ cell }">
                 <UDropdownMenu
                   :items="imageRowMenuItems(cell.row.original)"
                   size="xs"
-                  dropdown-menu="link-pink"
+                  dropdown-menu="link-black"
                   :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
                   :_dropdown-menu-trigger="{
                     icon: true,
@@ -102,8 +113,8 @@
                     @error="handleImageError"
                   />
                   <div class="min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.row.original.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ cell.getValue() }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.row.original.name }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ cell.getValue() }}</p>
                   </div>
                 </div>
               </template>
@@ -111,8 +122,8 @@
               <!-- Owner cell -->
               <template #user_name-cell="{ cell }">
                 <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <span class="i-ph-user text-xs text-gray-600 dark:text-gray-400"></span>
+                  <div class="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                    <UIcon name="i-ph-user" class="text-white" size="xs" />
                   </div>
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.getValue() }}</p>
@@ -124,21 +135,21 @@
               <!-- Stats cells -->
               <template #stats_views-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <span class="i-ph-eye text-gray-400"></span>
+                  <UIcon name="i-ph-eye-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
 
               <template #stats_downloads-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <span class="i-ph-download text-gray-400"></span>
+                  <UIcon name="i-ph-download-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
 
               <template #stats_likes-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <span class="i-ph-heart text-gray-400"></span>
+                  <UIcon name="i-ph-heart-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
@@ -148,44 +159,44 @@
               </template>
 
             </UTable>
-          </div>
+        </div>
 
-          <!-- Pagination -->
-          <div v-if="pagination && pagination.totalPages > 1" class="p-6 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg bg-white dark:bg-gray-800">
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-600 dark:text-gray-400">
-                Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
-                {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
-                {{ pagination.total }} results
-              </div>
+        <!-- Pagination -->
+        <div v-if="pagination && pagination.totalPages > 1" class="px-6 pb-6">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+              Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to
+              {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of
+              {{ pagination.total }} results
+            </div>
 
-              <div class="flex items-center gap-2">
-                <UButton
-                  @click="handlePageChange(pagination.page - 1)"
-                  :disabled="!pagination.hasPrev"
-                  btn="soft-gray"
-                  size="sm"
-                >
-                  <span class="i-ph-caret-left"></span>
-                </UButton>
+            <div class="flex items-center gap-2">
+              <UButton
+                @click="handlePageChange(pagination.page - 1)"
+                :disabled="!pagination.hasPrev"
+                btn="soft-gray"
+                size="sm"
+              >
+                <span class="i-ph-caret-left"></span>
+              </UButton>
 
-                <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
-                  Page {{ pagination.page }} of {{ pagination.totalPages }}
-                </span>
+              <span class="text-sm text-gray-600 px-3">
+                Page {{ pagination.page }} of {{ pagination.totalPages }}
+              </span>
 
-                <UButton
-                  @click="handlePageChange(pagination.page + 1)"
-                  :disabled="!pagination.hasNext"
-                  btn="soft-gray"
-                  size="sm"
-                >
-                  <span class="i-ph-caret-right"></span>
-                </UButton>
-              </div>
+              <UButton
+                @click="handlePageChange(pagination.page + 1)"
+                :disabled="!pagination.hasNext"
+                btn="soft-gray"
+                size="sm"
+              >
+                <span class="i-ph-caret-right"></span>
+              </UButton>
             </div>
           </div>
         </div>
-      </main>
+      </div>
+    </div>
 
     <!-- View Image Dialog -->
     <UDialog v-model:open="isViewDialogOpen" title="Image Details">

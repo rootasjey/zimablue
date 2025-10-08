@@ -1,8 +1,6 @@
 <template>
   <div>
-      <!-- Main Content -->
       <main>
-
         <!-- Access Control -->
         <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
           <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
@@ -26,22 +24,47 @@
             :unread-count="unreadCount"
             :selected-count="Object.values(selectedMessages).filter(Boolean).length"
             :is-loading="isLoading"
+            :multi-select-active="multiSelectActive"
             @refresh="fetchMessages"
             @bulk-action="handleBulkAction"
             @search="handleSearch"
             @filter-change="handleFilterChange"
+            @select-all="toggleSelectAll"
+            @toggle-multiselect="multiSelectActive = !multiSelectActive; if (!multiSelectActive) selectedMessages = {}"
           />
 
-          <AdminMessageList
-            :messages="messages"
-            :selected-messages="selectedMessages"
-            :is-loading="isLoading"
-            @select-message="toggleMessageSelection"
-            @select-all="toggleSelectAll"
-            @mark-read="markAsRead"
-            @delete-message="showDeleteDialog"
-            @view-message="viewMessage"
-          />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1">
+              <AdminMessageList
+                :messages="messages"
+                :selected-messages="selectedMessages"
+                :is-loading="isLoading"
+                :multi-select-active="multiSelectActive"
+                :active-message-id="selectedMessage ? selectedMessage.id : undefined"
+                @select-message="toggleMessageSelection"
+                @view-message="viewMessage"
+              />
+            </div>
+
+            <!-- Detail column: occupies 2/3 on desktop -->
+            <div class="hidden md:block md:col-span-2">
+              <div v-if="selectedMessage" class="sticky top-6">
+                <AdminMessageDetail
+                  :message="selectedMessage"
+                  @mark-read="markAsRead"
+                  @delete="showDeleteDialog"
+                  @close="closeDetail"
+                />
+              </div>
+
+              <div v-else class="p-6">
+                <div class="text-center text-gray-500 dark:text-gray-400">
+                  <h3 class="text-lg font-medium mb-2">Select a message</h3>
+                  <p class="text-sm">Choose a message from the list to view its details here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <AdminMessagePagination
             v-if="pagination.totalPages > 1"
@@ -51,33 +74,27 @@
         </div>
       </main>
 
-    <AdminMessageModal
-      v-if="selectedMessage"
-      :message="selectedMessage"
-      :is-open="isModalOpen"
-      @close="closeModal"
-      @mark-read="markAsRead"
-      @delete="showDeleteDialog"
-    />
+    <!-- Mobile drawer for message details -->
+    <UDrawer v-model:open="isDrawerOpen">
+      <UDrawerContent class="w-full max-w-[95vw] bottom-0">
+        <UDrawerHeader>
+          <UDrawerTitle>Message Details</UDrawerTitle>
+          <UDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">Details and actions</UDrawerDescription>
+        </UDrawerHeader>
 
-    <AdminMessageDeleteDialog
-      v-if="selectedMessage"
-      :message-id="selectedMessage.id"
-      :is-open="isDeleteDialogOpen"
-      :subject="selectedMessage.subject"
-      @confirm="deleteMessage"
-      @close="closeDeleteDialog"
-    />
+        <div class="p-4">
+          <AdminMessageDetail
+            v-if="selectedMessage"
+            :message="selectedMessage"
+            @mark-read="markAsRead"
+            @delete="showDeleteDialog"
+            @close="closeDrawer"
+          />
+        </div>
 
-    <!-- Modals and Dialogs -->
-    <AdminMessageModal
-      v-if="selectedMessage"
-      :message="selectedMessage"
-      :is-open="isModalOpen"
-      @close="closeModal"
-      @mark-read="markAsRead"
-      @delete="showDeleteDialog"
-    />
+        <UDrawerFooter />
+      </UDrawerContent>
+    </UDrawer>
 
     <AdminMessageDeleteDialog
       v-if="selectedMessage"
@@ -100,6 +117,7 @@
 <script lang="ts" setup>
 import type { Message } from '~/types/message'
 import type { Pagination } from '~/types/pagination'
+import AdminMessageDetail from '~/components/adminMessage/AdminMessageDetail.vue'
 
 const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
@@ -115,8 +133,10 @@ const selectedMessage = ref<Message | null>(null)
 const isModalOpen = ref(false)
 const isDeleteDialogOpen = ref(false)
 const isDeleteBulkDialogOpen = ref(false)
+const isDrawerOpen = ref(false)
 const isLoading = ref(false)
 const unreadCount = ref(0)
+const multiSelectActive = ref(false)
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -344,8 +364,18 @@ const handlePageChange = (page: number) => {
 
 const viewMessage = (message: Message) => {
   selectedMessage.value = message
-  isModalOpen.value = true
-  
+  // Only open drawer on mobile
+  try {
+    const breakpoints = useBreakpoints({ sm: 0, md: 768 })
+    const isMobile = breakpoints.smaller('md')
+    if (isMobile.value) {
+      isDrawerOpen.value = true
+    } else {
+      isDrawerOpen.value = false
+    }
+  } catch (e) {
+    isDrawerOpen.value = false
+  }
   // Mark as read when viewing
   if (!message.read) {
     markAsRead(message.id, true)
@@ -355,6 +385,17 @@ const viewMessage = (message: Message) => {
 const closeModal = () => {
   selectedMessage.value = null
   isModalOpen.value = false
+}
+
+const closeDetail = () => {
+  // Used by inline detail close button to clear selection
+  selectedMessage.value = null
+}
+
+const closeDrawer = () => {
+  isDrawerOpen.value = false
+  // keep selectedMessage so user can re-open, but clear if desired
+  selectedMessage.value = null
 }
 
 const showDeleteDialog = (message: Message) => {

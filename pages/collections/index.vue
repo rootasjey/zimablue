@@ -47,7 +47,7 @@
       <div class="flex items-center gap-2">
         <UButton
           size="xs"
-          btn="soft-black dark:soft-blue"
+          btn="light:soft-black dark:soft-gray"
           class="cursor-pointer hover:scale-105 hover:accent-rose active:scale-99 transition"
           @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'">
           <i :class="timeIcon"></i>
@@ -307,13 +307,47 @@ const handleUpdateCollection = async (data: CollectionFormData) => {
   }
 }
 
-/* Mobile styles */
+/* Mobile styles (converted from Tailwind to plain CSS) */
 .mobile-back-btn {
-  @apply flex items-center justify-center w-10 h-10 rounded-lg;
-  @apply text-gray-600 dark:text-gray-400;
-  @apply hover:text-gray-800 dark:hover:text-gray-200;
-  @apply hover:bg-gray-100 dark:hover:bg-gray-800;
-  @apply active:scale-95 transition-all duration-200;
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem; /* w-10 */
+  height: 2.5rem; /* h-10 */
+  border-radius: 0.5rem; /* rounded-lg */
+  color: #4b5563; /* text-gray-600 */
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  transition: all 200ms ease; /* transition-all duration-200 */
+  transform: translateZ(0);
+}
+
+.mobile-back-btn:hover {
+  color: #1f2937; /* hover:text-gray-800 */
+  background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
+
+.mobile-back-btn:active {
+  transform: scale(0.95); /* active:scale-95 */
+}
+
+/* Focus ring similar to focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 */
+.mobile-back-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+  border-radius: 0.5rem;
+}
+
+/* Dark mode equivalents */
+@media (prefers-color-scheme: dark) {
+  .mobile-back-btn {
+    color: #9ca3af; /* dark:text-gray-400 */
+  }
+
+  .mobile-back-btn:hover {
+    color: #e5e7eb; /* dark:hover:text-gray-200 */
+    background-color: #111827; /* dark:hover:bg-gray-800 */
+  }
 }
 </style>

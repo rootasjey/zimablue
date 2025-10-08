@@ -3,47 +3,50 @@
     <!-- Access Control -->
     <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
+      <p class="text-gray-600">You need admin privileges to access this page.</p>
       <UButton to="/user" class="mt-4">Go to Profile</UButton>
     </div>
 
     <!-- Users Management -->
-    <div v-else>
+    <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="p-6 bg-white dark:bg-black rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">User Management</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage all users in the system</p>
-          </div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">User Management</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Manage all users in the system</p>
+        </div>
+      </div>
 
-          <div class="flex items-center gap-3">
-            <UInput
-              v-model="filters.search"
-              placeholder="Search..."
-              @keyup.enter="handleSearch(filters.search)"
-              @input="debouncedSearch"
-              class="w-64"
-            >
-              <template #leading>
-                <span class="i-ph-magnifying-glass"></span>
-              </template>
-            </UInput>
+      <!-- Search and Actions Card -->
+      <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <UInput
+            v-model="filters.search"
+            placeholder="Search users..."
+            @keyup.enter="handleSearch(filters.search)"
+            @input="debouncedSearch"
+            size="sm"
+            class="flex-1 b-black focus-within:border-blue-300 dark:b-gray-700"
+            rounded="6"
+          >
+            <template #leading>
+              <span class="i-ph-magnifying-glass"></span>
+            </template>
+          </UInput>
 
-            <UButton @click="fetchUsers" :loading="isLoading" btn="soft-gray" size="sm">
-              <span class="i-ph-arrow-clockwise mr-2"></span>
-              Refresh
-            </UButton>
-          </div>
+          <UButton @click="fetchUsers" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
+            <span class="i-ph-arrow-clockwise mr-2"></span>
+            Refresh
+          </UButton>
         </div>
 
         <!-- Bulk Actions -->
-        <div v-if="selectedUsers.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span class="text-sm text-gray-600 dark:text-gray-400">
+        <div v-if="selectedUsers.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-[#b7cbd8]">
+          <span class="text-sm font-600 text-gray-700">
             {{ selectedUsers.length }} selected
           </span>
-          <UButton btn="soft-yellow" size="sm" @click="bulkPromote">
+          <UButton btn="soft-gray" size="sm" @click="bulkPromote">
             <span class="i-ph-crown mr-2"></span>
             Promote to Admin
           </UButton>
@@ -51,16 +54,17 @@
             <span class="i-ph-user mr-2"></span>
             Demote to User
           </UButton>
-          <UButton btn="soft-red" size="sm" @click="bulkDelete">
+          <UButton btn="soft-error" size="sm" @click="bulkDelete">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
           </UButton>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="border-x border-gray-200 dark:border-gray-700">
-        <UTable
+      <!-- Table Card -->
+      <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
+        <div class="p-6">
+          <UTable
           :columns="unaColumns"
           :data="users"
           :loading="isLoading"
@@ -70,12 +74,20 @@
           v-model:rowSelection="rowSelection"
           @row="onRowClick"
           empty-text="No users found."
+          :una="{
+            tableRoot: 'rounded-[28px] b-transparent',
+            tableHead: 'b-transparent',
+            tableRow: 'b-transparent cursor-pointer hover:bg-[#000000]/5',
+            tableLoadingRow: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableEmpty: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
+            tableCell: 'table-cell',
+          }"
         >
           <template #row_actions-cell="{ cell }">
             <UDropdownMenu
               :items="userRowMenuItems(cell.row.original)"
               size="xs"
-              dropdown-menu="link-pink"
+              dropdown-menu="link-black"
               :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
               :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
             />
@@ -102,36 +114,36 @@
             </div>
           </template>
         </UTable>
-      </div>
+        </div>
 
-      <!-- Pagination -->
-      <div v-if="pagination && pagination.totalPages > 1" class="p-6 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg bg-white dark:bg-gray-800">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
-            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
-            {{ pagination.total }} results
-          </div>
+        <!-- Pagination -->
+        <div v-if="pagination && pagination.totalPages > 1" class="px-6 pb-6">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
+              Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to
+              {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of
+              {{ pagination.total }} results
+            </div>
 
-          <div class="flex items-center gap-2">
-            <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-left"></span>
-            </UButton>
+            <div class="flex items-center gap-2">
+              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-left"></span>
+              </UButton>
 
-            <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
-              Page {{ pagination.page }} of {{ pagination.totalPages }}
-            </span>
+              <span class="text-sm text-gray-600 px-3">
+                Page {{ pagination.page }} of {{ pagination.totalPages }}
+              </span>
 
-            <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
-              <span class="i-ph-caret-right"></span>
-            </UButton>
+              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+                <span class="i-ph-caret-right"></span>
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Edit User Dialog -->
+    <!-- Edit User Dialog -->
     <UDialog v-model:open="isEditDialogOpen" title="Edit User">
       <div class="p-6">
         <form @submit.prevent="saveUser" class="space-y-4">
@@ -173,7 +185,7 @@
       </div>
     </UDialog>
 
-  <!-- Delete Confirmation Dialog -->
+    <!-- Delete Confirmation Dialog -->
     <UDialog v-model:open="isDeleteDialogOpen" title="Delete User">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
@@ -194,6 +206,7 @@
         </div>
       </div>
     </UDialog>
+  </div>
 </template>
 
 <script lang="ts" setup>
