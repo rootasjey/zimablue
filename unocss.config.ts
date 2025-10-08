@@ -6,7 +6,7 @@ import presetAnimations from 'unocss-preset-animations'
 import {
   presetAttributify,
   presetIcons,
-  presetUno,
+  presetWind3,
   presetWebFonts,
   transformerDirectives,
   transformerVariantGroup,
@@ -14,7 +14,7 @@ import {
 
 export default {
   presets: [
-    presetUno(),
+    presetWind3(),
     presetAttributify(),
     presetIcons({
       scale: 1.2,

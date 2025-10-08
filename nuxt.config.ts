@@ -1,4 +1,24 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+
+function computeVersion(): string {
+  // Prefer latest git tag like v1.2.3; fallback to package.json version
+  try {
+    const tag = execSync("git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*' --abbrev=0", {
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim()
+    return tag.replace(/^v/, '')
+  } catch { }
+
+  try {
+    const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8') as unknown as string)
+    return pkg.version || '0.0.0'
+  } catch { }
+
+  return '0.0.0'
+}
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-01-27",
   devtools: { enabled: true },
@@ -42,6 +62,19 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
   ],
+
+  runtimeConfig: {
+    // Private keys (only available on server-side)
+    authSecret: process.env.NUXT_AUTH_SECRET,
+
+    // Public keys (exposed to client-side)
+    public: {
+      authUrl: process.env.NUXT_AUTH_ORIGIN || 'http://localhost:3000',
+      // Injected at build time; used in UI (About, header, footer)
+      appVersion: computeVersion(),
+    }
+  },
+
   unocss: {
     preflight: true,
     icons: {

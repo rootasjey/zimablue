@@ -1,5 +1,7 @@
 {
   "name": "zimablue",
+  "version": "0.8.0",
+  "description": "Handmade illustrations",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,7 +9,12 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "bump:version": "node ./scripts/bump-version.mjs patch",
+    "bump:fix": "node ./scripts/bump-version.mjs fix",
+    "bump:minor": "node ./scripts/bump-version.mjs minor",
+    "bump:major": "node ./scripts/bump-version.mjs major",
+    "version": "node ./scripts/tag-version.mjs"
   },
   "devDependencies": {
     "@iconify-json/icon-park-outline": "^1.2.2",

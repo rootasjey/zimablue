@@ -2,23 +2,14 @@
   <div class="frame">
     <!-- Header -->
     <header class="mt-12 mb-8">
-      <div class="flex gap-2">
-        <ULink to="/" class="hover:scale-102 active:scale-99 transition">
-          <span class="i-ph-house-simple-duotone"></span>
-        </ULink>
-        <span>•</span>
-        <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
-          About Me
+      <div class="flex gap-2 border-b b-dashed border-gray-200 dark:border-gray-700 pb-2 mb-2">
+        <h1 class="font-body text-size-16 font-600 text-gray-800 dark:text-gray-200">
+          About
         </h1>
       </div>
-      <div class="w-40 flex text-center justify-center my-2">
-        <div class="w-full h-2">
-          <svg viewBox="0 0 300 10" preserveAspectRatio="none">
-            <path d="M 0 5 Q 15 0, 30 5 T 60 5 T 90 5 T 120 5 T 150 5 T 180 5 T 210 5 T 240 5 T 270 5 T 300 5"
-              stroke="currentColor" fill="none" class="text-gray-300 dark:text-gray-700" stroke-width="1" />
-          </svg>
-        </div>
-      </div>
+      <span class="text-sm font-600 text-gray-500 dark:text-gray-400">
+        App v{{ version }}
+      </span>
     </header>
 
     <!-- Who am I -->
@@ -28,8 +19,8 @@
         Who's behind this gallery?
       </h2>
       <p class="text-gray-700 dark:text-gray-300 mb-4">
-          I'm a self-taught illustrator and software engineer based in France. My work explores the intersection of 
-          technology and art, creating digital illustrations that blend technical precision with creative expression.
+        I'm a self-taught illustrator and software engineer based in France. My work explores the intersection of
+        technology and art, creating digital illustrations that blend technical precision with creative expression.
       </p>
       <ULink to="https://www.rootasjey.dev/resume" class="arrow" target="_blank" rel="noopener noreferrer">
         <span>Learn more about my work experiences.</span>
@@ -43,12 +34,12 @@
         Licensing
       </h2>
       <p class="text-gray-700 dark:text-gray-300 mb-4">
-        All illustrations on this site are free to use under the 
-        <NuxtLink href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" 
+        All illustrations on this site are free to use under the
+        <NuxtLink href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank"
           class="font-400 hover:underline hover:text-[#ADB2D4] transition-all duration-300"
           :class="randomColors.getTextColorClasses()">
           Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)</NuxtLink>
-        This means you are free to share and adapt the material for any purpose, even commercially, 
+        This means you are free to share and adapt the material for any purpose, even commercially,
         as long as you give appropriate credit and share your adaptations under the same license.
       </p>
     </section>
@@ -62,14 +53,14 @@
         </h2>
 
         <p class="text-gray-700 dark:text-gray-300 mb-6">
-          If any of this resonates with you, or if you're curious to learn more about my work and perspectives, 
-          I'd love to connect. You can reach out through my 
-          <ULink to="/contact" class="arrow"><span>contact page</span></ULink> 
+          If any of this resonates with you, or if you're curious to learn more about my work and perspectives,
+          I'd love to connect. You can reach out through my
+          <ULink to="/contact" class="arrow"><span>contact page</span></ULink>
           or find me on the social platforms linked below.
         </p>
 
         <div class="flex flex-wrap gap-4">
-          <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
+          <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer"
             class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             <div class="i-ph-github-logo"></div>
             <span class="font-600 text-size-3">GitHub</span>
@@ -98,14 +89,8 @@
               <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Your Email <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
               </label>
-              <UInput
-                id="email"
-                v-model="formData.email"
-                type="email"
-                placeholder="your@email.com"
-                required
-                class="w-full"
-                :ui="{ 
+              <UInput id="email" v-model="formData.email" type="email" placeholder="your@email.com" required
+                class="w-full" :ui="{ 
                   base: 'transition duration-200',
                   rounded: 'rounded-lg',
                   color: {
@@ -113,22 +98,15 @@
                       outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
                     }
                   }
-                }"
-              />
+                }" />
             </div>
-            
+
             <div>
               <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Subject <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
               </label>
-              <UInput
-                id="subject"
-                v-model="formData.subject"
-                type="text"
-                placeholder="What's this about?"
-                required
-                class="w-full"
-                :ui="{ 
+              <UInput id="subject" v-model="formData.subject" type="text" placeholder="What's this about?" required
+                class="w-full" :ui="{ 
                   base: 'transition duration-200',
                   rounded: 'rounded-lg',
                   color: {
@@ -136,23 +114,15 @@
                       outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
                     }
                   }
-                }"
-              />
+                }" />
             </div>
-            
+
             <div>
               <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Message <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
               </label>
-              <UInput
-                id="message"
-                type="textarea"
-                v-model="formData.message"
-                placeholder="Tell me about your project or inquiry..."
-                required
-                :rows="5"
-                class="w-full"
-                :ui="{ 
+              <UInput id="message" type="textarea" v-model="formData.message"
+                placeholder="Tell me about your project or inquiry..." required :rows="5" class="w-full" :ui="{ 
                   base: 'transition duration-200',
                   rounded: 'rounded-lg',
                   color: {
@@ -160,18 +130,12 @@
                       outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
                     }
                   }
-                }"
-              />
+                }" />
             </div>
-            
+
             <div>
-              <UButton
-                type="submit"
-                :loading="isSubmitting"
-                :disabled="isSubmitting"
-                class="w-full sm:w-auto"
-                btn="outline"
-              >
+              <UButton type="submit" :loading="isSubmitting" :disabled="isSubmitting" class="w-full sm:w-auto"
+                btn="outline">
                 <span class="i-ph-paper-plane-right mr-2"></span>
                 Send Message
               </UButton>
@@ -179,32 +143,16 @@
           </form>
         </UCollapsibleContent>
       </UCollapsible>
-      
+
       <!-- Success message -->
-      <UAlert
-        v-if="showSuccess"
-        class="mt-4"
-        color="green"
-        variant="soft"
-        title="Message Sent!"
-        icon="i-ph-check-circle"
-        :close-button="{ icon: 'i-ph-x', color: 'gray' }"
-        @close="showSuccess = false"
-      >
+      <UAlert v-if="showSuccess" class="mt-4" color="green" variant="soft" title="Message Sent!"
+        icon="i-ph-check-circle" :close-button="{ icon: 'i-ph-x', color: 'gray' }" @close="showSuccess = false">
         Thank you for reaching out. I'll get back to you as soon as possible.
       </UAlert>
-      
+
       <!-- Error message -->
-      <UAlert
-        v-if="hasError"
-        class="mt-4"
-        color="red"
-        variant="soft"
-        title="Something went wrong"
-        icon="i-ph-warning-circle"
-        :close-button="{ icon: 'i-ph-x', color: 'gray' }"
-        @close="hasError = false"
-      >
+      <UAlert v-if="hasError" class="mt-4" color="red" variant="soft" title="Something went wrong"
+        icon="i-ph-warning-circle" :close-button="{ icon: 'i-ph-x', color: 'gray' }" @close="hasError = false">
         There was an error sending your message. Please try again later or contact me directly.
       </UAlert>
     </section>
@@ -214,8 +162,11 @@
 </template>
 
 <script lang="ts" setup>
+const config = useRuntimeConfig()
 const { toast } = useToast()
 const randomColors = useRandomColors()
+
+const version = config.public.appVersion
 
 const formData = reactive({
   email: '',
