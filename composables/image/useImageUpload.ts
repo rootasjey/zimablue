@@ -15,9 +15,9 @@ export const useImageUpload = () => {
   // Internal drag counter to handle nested drag events
   let dragCounter = 0
 
-  // File input refs
-  const fileInput = ref<HTMLInputElement>()
-  const replacementFileInput = ref<HTMLInputElement>()
+  // File input refs (shared across app via useState)
+  const fileInput = useState<HTMLInputElement | undefined>('upload-file-input', () => undefined)
+  const replacementFileInput = useState<HTMLInputElement | undefined>('upload-replacement-file-input', () => undefined)
 
   const validateFile = (file: File): boolean => {
     if (!file.type.startsWith('image/')) {

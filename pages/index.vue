@@ -53,21 +53,7 @@
       })"
     />
 
-    <input
-      type="file"
-      ref="fileInput"
-      class="hidden"
-      accept="image/*"
-      multiple
-      @change="imageUpload.handleFileSelect"
-    />
-    <input
-      type="file"
-      ref="replacementFileInput"
-      class="hidden"
-      accept="image/*"
-      @change="imageUpload.handleReplaceFileSelect"
-    />
+    
 
     <ImageModal
       :is-image-modal-open="imageModal.isImageModalOpen.value"

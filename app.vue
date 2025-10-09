@@ -5,6 +5,7 @@
     </NuxtLayout>
     <UToaster />
     <GlobalSearchDialog />
+    <HiddenFileInputs />
     <MobileBottomNav />
   </div>
 </template>
@@ -14,8 +15,8 @@ import '@una-ui/preset/una.css'
 import '@/styles/main.css'
 import '@/styles/arrow-link.css'
 import GlobalSearchDialog from '~/components/search/GlobalSearchDialog.vue'
+import HiddenFileInputs from '~/components/HiddenFileInputs.vue'
 
-// Setup global search functionality
 useGlobalSearch()
 
 useHead({
