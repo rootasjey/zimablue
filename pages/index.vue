@@ -51,9 +51,7 @@
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
       })"
-    />
-
-    
+    />    
 
     <ImageModal
       :is-image-modal-open="imageModal.isImageModalOpen.value"

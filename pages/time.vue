@@ -6,21 +6,35 @@
         Current Time
       </h1> -->
       
-      <div class="flex justify-center items-center gap-2">
-        <div :class="timeIcon" class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition" @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
-        
-        <h2 class="font-bold text-gray-800 dark:text-gray-200 cursor-pointer 
-          hover:scale-102 active:scale-99 transition" 
-          @click="toggleClockSize"
-          :class="{
-            'text-size-4': clockSize === 1,
-            'text-size-24': clockSize === 2,
-            'text-size-54': clockSize === 3,
-          }"
-        >
-          {{ formattedTime }}
-        </h2>
-      </div>
+      <ClientOnly>
+        <div class="flex justify-center items-center gap-2">
+          <div :class="timeIcon" class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition" @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
+          
+          <h2 class="font-bold text-gray-800 dark:text-gray-200 cursor-pointer 
+            hover:scale-102 active:scale-99 transition" 
+            @click="toggleClockSize"
+            :class="{
+              'text-size-4': clockSize === 1,
+              'text-size-24': clockSize === 2,
+              'text-size-54': clockSize === 3,
+            }"
+          >
+            {{ formattedTime }}
+          </h2>
+        </div>
+        <template #fallback>
+          <div class="flex justify-center items-center gap-2">
+            <div class="i-ph-sun-duotone cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition" @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'" />
+            
+            <h2 class="font-bold text-gray-800 dark:text-gray-200 cursor-pointer 
+              hover:scale-102 active:scale-99 transition text-size-4" 
+              @click="toggleClockSize"
+            >
+              --:--
+            </h2>
+          </div>
+        </template>
+      </ClientOnly>
 
       <div class="w-40 flex text-center justify-center my-2 mx-auto">
         <div class="w-full h-2">

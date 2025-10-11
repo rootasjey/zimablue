@@ -123,21 +123,28 @@
             <span class="vgl-item__resizer image-resizer"></span>
           </div>
 
-          <UDropdownMenu
-            v-if="!isSelectionMode"
-            :items="imageMenuItems(item)"
-            size="xs"
-            menu-label=""
-            :_dropdown-menu-content="{
-              class: 'w-52',
-              align: 'end',
-              side: 'bottom',
-            }"
-          >
-            <div class="dp-menu-trigger w-32px h-32px flex items-center justify-center">
-              <span class="i-ph-chat-teardrop-dots-bold"></span>
-            </div>
-          </UDropdownMenu>
+          <ClientOnly>
+            <UDropdownMenu
+              v-if="!isSelectionMode"
+              :items="imageMenuItems(item)"
+              size="xs"
+              menu-label=""
+              :_dropdown-menu-content="{
+                class: 'w-52',
+                align: 'end',
+                side: 'bottom',
+              }"
+            >
+              <div class="dp-menu-trigger w-32px h-32px flex items-center justify-center">
+                <span class="i-ph-chat-teardrop-dots-bold"></span>
+              </div>
+            </UDropdownMenu>
+            <template #fallback>
+              <div v-if="!isSelectionMode" class="dp-menu-trigger w-32px h-32px flex items-center justify-center opacity-50">
+                <span class="i-ph-chat-teardrop-dots-bold"></span>
+              </div>
+            </template>
+          </ClientOnly>
         </div>
       </GridItem>
     </GridLayout>

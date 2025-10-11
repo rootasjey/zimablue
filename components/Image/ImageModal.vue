@@ -33,27 +33,47 @@
               @click="$emit('openFullPage')" 
             />
             
-            <UDropdownMenu 
-              v-if="selectedModalImage && imageMenuItems"
-              :items="imageMenuItems(selectedModalImage)"
-              size="xs" 
-              menu-label="" 
-              :_dropdown-menu-content="{
-                class: 'w-52',
-                align: 'end',
-                side: 'bottom',
-                onCloseAutoFocus() {
-                  nextTick(() => modalContent?.focus())
-                },
-              }"
-            >
-              <span class="dp-menu-trigger-text cursor-pointer">
-                more
-              </span>
-            </UDropdownMenu>
+            <ClientOnly>
+              <UDropdownMenu 
+                v-if="selectedModalImage && imageMenuItems"
+                :items="imageMenuItems(selectedModalImage)"
+                size="xs" 
+                menu-label="" 
+                :_dropdown-menu-content="{
+                  class: 'w-52',
+                  align: 'end',
+                  side: 'bottom',
+                  onCloseAutoFocus() {
+                    nextTick(() => modalContent?.focus())
+                  },
+                }"
+              >
+                <span class="dp-menu-trigger-text cursor-pointer">
+                  more
+                </span>
+              </UDropdownMenu>
+              <template #fallback>
+                <span v-if="selectedModalImage && imageMenuItems" class="dp-menu-trigger-text cursor-pointer opacity-50">
+                  more
+                </span>
+              </template>
+            </ClientOnly>
           </div>
         </div>
         
+        <!-- Keyboard hints (auto-fade) -->
+        <Transition name="hint-fade">
+          <div
+            v-if="showHints"
+            class="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center"
+            aria-hidden="true"
+          >
+            <div class="rounded-full bg-black/60 text-white text-xs px-3 py-1.5 shadow-md backdrop-blur">
+              ←/→ to navigate · Esc to close · Enter to open
+            </div>
+          </div>
+        </Transition>
+
         <!-- Modal body -->
         <div class="p-4">
           <div class="flex justify-center">
@@ -64,6 +84,7 @@
               :alt="selectedModalImage.name || 'Image'"
               :width="600"
               class="max-w-full max-h-[70vh] object-contain rounded-lg cursor-pointer"
+              :style="selectedModalImage ? { viewTransitionName: `image-${selectedModalImage.id}` } : {}"
               @click="$emit('openFullPage')" 
             />
           </div>
@@ -72,7 +93,7 @@
         <!-- Modal footer with navigation -->
         <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
           <UButton 
-            btn="ghost" 
+            btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigatePrevious"
             @click="$emit('navigatePrevious')"
@@ -86,7 +107,7 @@
           </span>
           
           <UButton 
-            btn="ghost" 
+            btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigateNext"
             @click="$emit('navigateNext')"
@@ -130,6 +151,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const modalContent = ref<HTMLElement>()
+const showHints = ref(false)
 
 // Focus the modal when it opens
 watch(() => props.isImageModalOpen, (isOpen) => {
@@ -137,6 +159,9 @@ watch(() => props.isImageModalOpen, (isOpen) => {
     nextTick(() => {
       modalContent.value?.focus()
     })
+    showHints.value = true
+    // fade out after a short delay
+    setTimeout(() => { showHints.value = false }, 1200)
   }
 })
 
@@ -177,6 +202,15 @@ const handleKeydown = (event: KeyboardEvent) => {
 </script>
 
 <style scoped>
+:deep(.hint-fade-enter-active),
+:deep(.hint-fade-leave-active) {
+  transition: opacity 260ms ease-in-out;
+}
+:deep(.hint-fade-enter-from),
+:deep(.hint-fade-leave-to) {
+  opacity: 0;
+}
+
 :deep(button.dp-menu-trigger-text) {
   box-shadow: none;
   color: rgba(var(--una-gray-500), var(--un-text-opacity));

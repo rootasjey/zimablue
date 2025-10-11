@@ -14,6 +14,7 @@
               Name
             </ULabel>
             <UInput
+              autofocus
               id="edit-collection-name"
               v-model="formData.name"
               placeholder="My Collection"
@@ -65,6 +66,7 @@
             </ULabel>
             <div class="flex gap-4 items-center col-span-2">
               <USwitch
+                switch-checked="blue"
                 id="edit-collection-public"
                 v-model="formData.isPublic"
               />
@@ -80,7 +82,7 @@
       <div class="flex justify-between gap-3 mt-4 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
         <UButton 
           type="button"
-          btn="soft-error" 
+          btn="light:soft-error dark:soft-gray" 
           :disabled="isLoading"
           @click="handleDelete"
         >

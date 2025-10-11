@@ -22,17 +22,18 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8 [content-visibility:auto]">
       <div  
-        v-for="image in images" 
+        v-for="(image, index) in images" 
         :key="image.id" 
-        class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-150 hover:scale-102 active:scale-100 cursor-pointer"
+        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60 dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70 transition-all duration-200 hover:shadow-md active:shadow-sm cursor-pointer animate-fade-in-up"
+        :style="{ animationDelay: `${index * 50}ms` }"
         @click="$emit('imageClick', image)"
       >
         <!-- Selection checkbox for owner -->
         <div 
           v-if="canEdit" 
-          class="opacity-0 group-hover:opacity-100 absolute top-2 right-2 z-10" 
+          class="opacity-0 group-hover:opacity-100 absolute top-2 right-2 z-2" 
           @click.stop
           :class="{ 
             'opacity-100': hasSelectedImages
@@ -51,7 +52,7 @@
             v-if="coverImageId !== image.id"
             size="xs" 
             icon 
-            btn="soft" 
+            btn="soft-gray" 
             class="opacity-70 hover:opacity-100"
             @click="$emit('setCover', image.id)"
           >
@@ -65,9 +66,12 @@
           :width="100"
           :src="`/${image.pathname}`" 
           :alt="image.name || 'Image'" 
-          class="w-full h-42 object-cover" 
+          class="w-full aspect-[4/4] object-cover" 
+          :style="{ viewTransitionName: `image-${image.id}` }"
+          loading="lazy"
+          decoding="async"
         />
-        <div class="opacity-0 group-hover:opacity-100 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-3">
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
           <h3 class="text-white text-sm font-medium truncate">{{ image.name }}</h3>
         </div>
       </div>
@@ -96,3 +100,30 @@ defineEmits<{
   setCover: [imageId: number]
 }>()
 </script>
+
+<style scoped>
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+/* Enhanced hover animation */
+.group:hover {
+  transform: translateY(-2px);
+}
+
+.group:active {
+  transform: translateY(0);
+}
+</style>

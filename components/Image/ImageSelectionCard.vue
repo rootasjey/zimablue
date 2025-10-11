@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg 
+    class="relative overflow-hidden rounded-sm shadow-md hover:shadow-lg 
            hover:scale-102 active:scale-100 cursor-pointer 
            transition-all duration-150"
     :class="cardClasses"

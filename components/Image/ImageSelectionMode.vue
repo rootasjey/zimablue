@@ -47,7 +47,7 @@
     <div 
       v-if="images.length > 0" 
       ref="containerRef"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+      class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4"
       tabindex="0"
       @keydown="handleKeyNavigation"
       @focus="handleContainerFocus"

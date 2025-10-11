@@ -6,11 +6,17 @@
     </div>
 
     <!-- Desktop bottom nav (hidden on small screens) -->
-    <DesktopBottomNav />
+    <DesktopBottomNav v-if="showBottomNav" />
   </div>
   
 </template>
 
 <script lang="ts" setup>
-// no-op: purely presentational layout
+// Hide the desktop bottom nav on full-screen illustration pages (e.g. /illustrations/:slug)
+import { computed } from 'vue'
+const route = useRoute()
+const showBottomNav = computed(() => {
+  // Hide only when path matches /illustrations/:slug (no trailing segments)
+  return !/^\/illustrations\/[^^/]+$/.test(route.path)
+})
 </script>

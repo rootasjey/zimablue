@@ -84,13 +84,20 @@
           }"
         >
           <template #row_actions-cell="{ cell }">
-            <UDropdownMenu
-              :items="collectionRowMenuItems(cell.row.original)"
-              size="xs"
-              dropdown-menu="link-black"
-              :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
-              :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
-            />
+            <ClientOnly>
+              <UDropdownMenu
+                :items="collectionRowMenuItems(cell.row.original)"
+                size="xs"
+                dropdown-menu="link-black"
+                :_dropdown-menu-content="{ class: 'w-44', align: 'start', side: 'bottom' }"
+                :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
+              />
+              <template #fallback>
+                <div class="w-8 h-8 grid place-items-center text-gray-500">
+                  <span class="i-lucide-ellipsis-vertical"></span>
+                </div>
+              </template>
+            </ClientOnly>
           </template>
 
           <template #name-cell="{ cell }">
@@ -152,7 +159,12 @@
           </template>
 
           <template #created_at-cell="{ cell }">
-            {{ new Date(cell.getValue() as string).toLocaleDateString() }}
+            <ClientOnly>
+              {{ new Date(cell.getValue() as string).toLocaleDateString() }}
+              <template #fallback>
+                {{ (cell.getValue() as string).slice(0, 10) }}
+              </template>
+            </ClientOnly>
           </template>
         </UTable>
         </div>

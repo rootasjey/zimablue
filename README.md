@@ -1,11 +1,13 @@
 
-# zima blue
+<h1 align="center" style="font-weight: 100;">zima blue</h1>
 
-A modern image gallery application built with Nuxt.js and NuxtHub (Cloudflare Workers), providing fast and efficient image hosting and management. This "borderless artistic space" offers a sophisticated platform for organizing, sharing, and discovering visual content.
+Discover new illustrations regularly.
+
+Edge image gallery application built with Nuxt.js on NuxtHub (Cloudflare Workers), providing image hosting and management.
 
 ![zima blue screenshot](./screenshots/zimablue-screenshot-dark-2.png)
 
-[Go to website ↗ 🌓](https://zimablue.jerem-dev.workers.dev/)
+[Go to website ↗ 🌓](https://zimablue.cc/)
 
 ## Features
 

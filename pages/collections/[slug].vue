@@ -1,31 +1,43 @@
 <template>
-  <div class="frame">
+  <div :class="['container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']">
+    <!-- Header (non-sticky). Only the internal action bar stays sticky. -->
+    <!-- Header skeleton while loading -->
+    <div v-if="store.isLoading" class="space-y-2">
+      <div class="h-6 w-52 rounded-md bg-gray-200/60 dark:bg-gray-800/60 animate-pulse"></div>
+      <div class="h-4 w-80 rounded-md bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
+    </div>
     <CollectionHeader 
+      v-else
       :collection="store.collection"
       :image-count="store.images.length"
       :can-edit="isOwner"
+      class="animate-fade-in-down"
       @edit="store.openEditDialog"
       @add-images="store.startAddingImages"
       @reorder="store.startReordering"
     />
 
     <!-- Content -->
-    <div class="w-full mx-auto">
-      <!-- Loading State -->
-      <section v-if="store.isLoading" class="flex justify-center items-center py-12">
-        <div class="i-line-md:loading-twotone-loop w-12 h-12 text-gray-400 dark:text-gray-600"></div>
+    <div class="w-full mx-auto space-y-8">
+      <!-- Loading State: grid skeletons -->
+      <section v-if="store.isLoading" class="space-y-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 [content-visibility:auto]">
+          <div v-for="i in 12" :key="i" class="aspect-[4/3] rounded-xl bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
+        </div>
       </section>
 
       <!-- Error State -->
-      <section v-else-if="store.error" class="text-center py-12">
-        <div class="i-ph-warning-circle text-size-16 text-amber-500 mx-auto mb-4"></div>
-        <h3 class="text-size-12 font-semibold mb-2 text-gray-800 dark:text-gray-200">
-          Something went wrong
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
-          {{ store.error }}
-        </p>
-        <UButton @click="store.fetchCollection(slug)">Try Again</UButton>
+      <section v-else-if="store.error" class="py-8">
+        <div class="mx-auto max-w-2xl">
+          <div class="flex items-start gap-3 rounded-xl border border-amber-300/40 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3">
+            <div class="i-ph-warning-circle text-size-6 text-amber-500 mt-0.5"></div>
+            <div class="flex-1">
+              <h3 class="text-size-5 font-600 text-gray-800 dark:text-gray-200 mb-1">Something went wrong</h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-3">{{ store.error }}</p>
+              <UButton size="12px" btn="soft-gray" @click="store.fetchCollection(slug)">Try again</UButton>
+            </div>
+          </div>
+        </div>
       </section>
 
       <ImageSelectionMode
@@ -35,6 +47,7 @@
         :is-all-selected="store.isAllSelected"
         :has-selected-images="store.hasSelectedImages"
         :selection-count="store.selectionCount"
+        class="animate-fade-in-up animation-delay-200"
         @toggle-select-all="store.toggleSelectAll"
         @cancel="store.cancelAddingImages"
         @confirm="actions.addImages"
@@ -47,6 +60,7 @@
       <CollectionImageReorderMode
         v-else-if="store.isReordering"
         :images="store.images"
+        class="animate-fade-in-up animation-delay-200"
         @cancel="store.cancelReordering"
         @save="actions.saveOrder"
       />
@@ -59,6 +73,7 @@
         :has-selected-images="store.hasSelectedImages"
         :cover-image-id="store.collection?.cover_image_id"
         :selection-count="store.selectionCount"
+        class="animate-fade-in-up animation-delay-200"
         @image-click="openImageModal"
         @set-cover="actions.setAsCover"
         @remove-images="actions.removeImages"
@@ -69,11 +84,40 @@
         v-if="!store.isLoading && !store.error && store.images.length === 0"
         :show-action="isOwner"
         variant="collection"
+        class="animate-fade-in-up animation-delay-200"
         @action="store.startAddingImages"
       />
     </div>
 
-    <Footer class="mt-34" />
+    <!-- Sticky Selection Toolbar with entrance animation -->
+    <Transition name="toolbar-fade-slide">
+      <div v-if="store.hasSelectedImages" class="fixed left-0 right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.0rem+env(safe-area-inset-bottom))] z-10 pointer-events-none">
+        <div class="pointer-events-auto mx-auto max-w-xl px-4">
+          <div class="rounded-xl border border-gray-200/60 dark:border-gray-800/60 backdrop-blur bg-white/90 dark:bg-gray-900/90 px-3 py-2 shadow-lg">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm text-gray-600 dark:text-gray-300">
+                <span class="font-600">{{ store.selectionCount }}</span> selected
+              </div>
+              <div class="flex items-center gap-2">
+                <UButton size="12px" btn="soft-gray" @click="store.clearSelection">Clear</UButton>
+                <UButton
+                  v-if="store.isAddingImages"
+                  size="12px"
+                  btn="soft-blue"
+                  @click="actions.addImages"
+                >Add</UButton>
+                <UButton
+                  v-else
+                  size="12px"
+                  btn="soft-error"
+                  @click="actions.removeImages"
+                >Remove</UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <CollectionEditDialog
       v-model:open="store.isEditDialogOpen"
@@ -95,7 +139,7 @@
       :available-tags="[]"
       :is-updating="false"
       :is-edit-form-valid="false"
-      @update-image-modal-open="isImageModalOpen = $event"
+      @update-image-modal-open="onUpdateImageModalOpen"
       @navigate-previous="navigateToPrevious"
       @navigate-next="navigateToNext"
       @navigate-to-first="navigateToFirst"
@@ -164,9 +208,11 @@ const navigateToUpload = () => {
 
 // Modal methods
 const openImageModal = (image: any) => {
-  selectedImage.value = image
-  currentImageIndex.value = store.images.findIndex(img => img.id === image.id)
-  isImageModalOpen.value = true
+  withViewTransition(() => {
+    selectedImage.value = image
+    currentImageIndex.value = store.images.findIndex(img => img.id === image.id)
+    isImageModalOpen.value = true
+  })
 }
 
 const navigateToPrevious = () => {
@@ -202,19 +248,78 @@ const openFullPage = () => {
   }
 }
 
+// Shared element transitions helper
+const withViewTransition = (cb: () => void) => {
+  // @ts-ignore: View Transitions API
+  const svt = (document as any)?.startViewTransition
+  if (typeof svt === 'function') {
+    // @ts-ignore
+    svt(() => cb())
+  } else {
+    cb()
+  }
+}
+
+const onUpdateImageModalOpen = (value: boolean) => {
+  withViewTransition(() => {
+    isImageModalOpen.value = value
+  })
+}
+
 </script>
 
 <style scoped>
-.frame {
-  width: 600px;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  padding-bottom: 38vh;
-  display: flex;
-  flex-direction: column;
-  transition-property: all;
-  transition-duration: 500ms;
-  overflow-y: auto;
+/* Entrance animations */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+/* Toolbar entrance animation */
+.toolbar-fade-slide-enter-active,
+.toolbar-fade-slide-leave-active {
+  transition: opacity 220ms cubic-bezier(.4,0,.2,1), transform 320ms cubic-bezier(.4,0,.2,1);
+}
+.toolbar-fade-slide-enter-from,
+.toolbar-fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(32px);
+}
+.toolbar-fade-slide-enter-to,
+.toolbar-fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .i-ph-sun-horizon,
@@ -230,21 +335,6 @@ const openFullPage = () => {
   100% {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 840px) {
-  .frame {
-    width: 100%;
-    border-radius: 0;
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .frame {
-    padding: 1rem;
   }
 }
 </style>

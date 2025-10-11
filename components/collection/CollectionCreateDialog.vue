@@ -6,7 +6,7 @@
     @update:open="handleOpenChange"
   >
     <div class="grid gap-4 py-4">
-      <div class="grid gap-2">
+      <div class="grid gap-6">
         <div class="grid grid-cols-3 items-start gap-4">
           <ULabel for="collection-name">
             Name 
@@ -14,7 +14,7 @@
               side: 'right',
             }">
               <template #default>
-                <span class="i-ph-star-four-duotone color-red cursor-pointer"></span>
+                <span class="color-red cursor-pointer">*</span>
               </template>
               <template #content>
                 <div bg="light dark:dark" 
@@ -26,8 +26,10 @@
             </UTooltip>
           </ULabel>
           <UInput
+            autofocus
             id="collection-name"
             v-model="formData.name"
+            size="sm"
             placeholder="My Collection"
             :una="{
               inputWrapper: 'col-span-2',
@@ -42,6 +44,7 @@
           <UInput
             id="collection-description"
             type="textarea"
+            size="sm"
             v-model="formData.description"
             placeholder="Describe your collection... (optional)"
             :una="{
@@ -58,6 +61,7 @@
             <UInput
               id="collection-slug"
               v-model="formData.slug"
+              size="sm"
               placeholder="Choose a unique slug (optional)"
               :una="{
                 inputWrapper: 'col-span-2',
@@ -69,13 +73,14 @@
           </div>
         </div>
         
-        <div class="mt-2 grid grid-cols-3 items-start gap-4">
+        <div class="mt-2 grid grid-cols-3 items-center gap-4">
           <ULabel for="collection-public">
             Public
           </ULabel>
           <div class="col-span-2">
             <USwitch
               id="collection-public"
+              switch-checked="blue"
               v-model="formData.isPublic"
             />
           </div>
@@ -87,7 +92,7 @@
       <UButton btn="ghost-gray" @click="handleCancel">
         Cancel
       </UButton>
-      <UButton btn="solid" class="px-6" @click="emit('create')">
+      <UButton btn="solid-gray" class="px-6" @click="emit('create')">
         Create Collection
       </UButton>
     </div>
@@ -132,6 +137,24 @@ const handleCancel = () => {
 const handleOpenChange = (value: boolean) => {
   emit('update:open', value)
 }
+
+// Keyboard shortcut handler
+const handleKeyDown = (event: KeyboardEvent) => {
+  // Check if dialog is open and if Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux) is pressed
+  if (isOpen.value && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault()
+    handleCreate()
+  }
+}
+
+// Add/remove event listener when component mounts/unmounts
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeyDown)
+})
 
 </script>
 

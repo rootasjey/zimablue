@@ -26,13 +26,13 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
       <div 
         v-for="(image, index) in localImages" 
         :key="image.id"
         :draggable="true"
         :class="[
-          'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-move',
+          'relative overflow-hidden rounded-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-move',
           {
             'opacity-50 scale-95': draggedIndex === index,
             'ring-2 ring-blue-500': dropTargetIndex === index,

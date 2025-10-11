@@ -26,15 +26,23 @@
             <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition">
               <span class="i-ph-bell text-gray-700 dark:text-gray-300 text-lg"></span>
             </button>
-            <UDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
-              :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
-              <template #trigger>
+            <ClientOnly>
+              <UDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
+                :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
+                <template #trigger>
+                  <button
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center hover:opacity-90 transition">
+                    <span class="i-ph-user text-white text-lg"></span>
+                  </button>
+                </template>
+              </UDropdownMenu>
+              <template #fallback>
                 <button
-                  class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center hover:opacity-90 transition">
+                  class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center opacity-50">
                   <span class="i-ph-user text-white text-lg"></span>
                 </button>
               </template>
-            </UDropdownMenu>
+            </ClientOnly>
           </div>
         </div>
 
