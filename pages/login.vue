@@ -1,258 +1,265 @@
 <template>
-  <div class="frame">
-    <!-- Header -->
-    <header class="mt-12 mb-8">
-      <div class="flex gap-2">
-        <ULink to="/" class="hover:scale-102 active:scale-99 transition">
-          <span class="i-ph-house-simple-duotone"></span>
-        </ULink>
-        <span>•</span>
-        <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
-          {{ isLogin ? 'Sign in' : 'Sign up' }}
-        </h1>
+  <div class="min-h-96vh flex flex-col lg:flex-row">
+    <!-- Left Side - Visual/Brand Section (hidden on mobile) -->
+    <div class="hidden rounded-2xl lg:flex lg:w-1/2 relative bg-[#0066CC] overflow-hidden">
+      <!-- Animated gradient mesh with bike-ride colors -->
+      <div class="absolute inset-0">
+        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-cyan-400/30 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-pink-500/30 via-transparent to-transparent"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-300/20 via-transparent to-transparent"></div>
       </div>
-      <div class="w-40 flex text-center justify-center my-2">
-        <div class="w-full h-2">
-          <svg viewBox="0 0 300 10" preserveAspectRatio="none">
-            <path d="M 0 5 Q 15 0, 30 5 T 60 5 T 90 5 T 120 5 T 150 5 T 180 5 T 210 5 T 240 5 T 270 5 T 300 5"
-              stroke="currentColor" fill="none" class="text-gray-300 dark:text-gray-700" stroke-width="1" />
-          </svg>
-        </div>
+      
+      <!-- Floating shapes with neon colors -->
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-20 left-20 w-64 h-64 rounded-full bg-gradient-to-br from-cyan-400/30 to-blue-500/30 blur-3xl animate-float"></div>
+        <div class="absolute bottom-32 right-20 w-48 h-48 rounded-full bg-gradient-to-br from-pink-500/40 to-fuchsia-500/30 blur-3xl animate-float-delayed"></div>
+        <div class="absolute top-1/2 left-1/3 w-32 h-32 rounded-full bg-gradient-to-br from-yellow-300/30 to-amber-400/20 blur-2xl animate-float-slow"></div>
+        <!-- Speed lines like in the image -->
+        <div class="absolute top-1/4 left-0 w-32 h-1 bg-gradient-to-r from-cyan-400 to-transparent rounded-full animate-speed-line"></div>
+        <div class="absolute top-1/3 right-0 w-48 h-1 bg-gradient-to-l from-yellow-300 to-transparent rounded-full animate-speed-line-delayed"></div>
+        <div class="absolute bottom-1/4 left-0 w-40 h-1 bg-gradient-to-r from-pink-400 to-transparent rounded-full animate-speed-line-slow"></div>
       </div>
-      <p class="text-gray-700 dark:text-gray-300 text-sm opacity-75">
-        {{ isLogin ? 'Welcome back' : 'Create your account' }}
-      </p>
-    </header>
 
-    <!-- Login/Register Form -->
-    <section class="mb-12">
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <!-- Name field (only for registration) -->
-        <div v-if="!isLogin">
-          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <span class="i-ph-user mr-2"></span>
-            Name <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
-          </label>
-          <UInput
-            id="name"
-            v-model="name"
-            type="text"
-            placeholder="Your full name"
-            required
-            class="w-full"
-            :ui="{ 
-              base: 'transition duration-200',
-              rounded: 'rounded-lg',
-              color: {
-                gray: {
-                  outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
-                }
-              }
-            }"
-          />
-        </div>
-
+      <!-- Content -->
+      <div class="relative z-10 flex flex-col justify-between p-12 text-white">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <span class="i-ph-envelope mr-2"></span>
-            Email <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
-          </label>
-          <UInput
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="your@email.com"
-            required
-            class="w-full"
-            :ui="{ 
-              base: 'transition duration-200',
-              rounded: 'rounded-lg',
-              color: {
-                gray: {
-                  outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
-                }
-              }
-            }"
-          />
+          <NuxtLink to="/" class="inline-flex items-center gap-3 group">
+            <NuxtImg src="/images/logo-192.png" alt="Zima Blue Logo" width="28" height="28" class="rounded-2 shadow-lg shadow-black/20 group-hover:scale-105 transition-transform" />
+            <span class="text-2xl font-600 font-body">Zima Blue</span>
+          </NuxtLink>
         </div>
-
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <span class="i-ph-lock mr-2"></span>
-            Password <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
-          </label>
-          <UInput
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Enter your password"
-            required
-            class="w-full"
-            :ui="{ 
-              base: 'transition duration-200',
-              rounded: 'rounded-lg',
-              color: {
-                gray: {
-                  outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
-                }
-              }
-            }"
-          />
-          <p v-if="!isLogin" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Password must be at least 8 characters long
+        
+        <div class="max-w-md">
+          <h2 class="text-6xl font-200 mb-4 leading-tight">
+            Your creative space for <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-pink-300 to-yellow-300">beautiful imagery</span>
+          </h2>
+          <p class="text-white/70 text-lg">
+            Organize, showcase, and share your visual content with an elegant gallery experience.
           </p>
         </div>
 
-        <div v-if="!isLogin">
-          <label for="master-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <span class="i-ph-lock mr-2"></span>
-            Master Password <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
-          </label>
-          <UInput
-            id="master-password"
-            v-model="masterPassword"
-            type="password"
-            placeholder="Enter the master password"
-            required
-            class="w-full"
-            :ui="{ 
-              base: 'transition duration-200',
-              rounded: 'rounded-lg',
-              color: {
-                gray: {
-                  outline: 'bg-white dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
-                }
-              }
-            }"
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            The master paswword is necessary to create an account.
+        <div class="flex items-center gap-4">
+          <div class="flex -space-x-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-500 ring-2 ring-[#0066CC]"></div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 ring-2 ring-[#0066CC]"></div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-amber-400 ring-2 ring-[#0066CC]"></div>
+          </div>
+          <p class="text-white/60 text-sm">Join our creative community</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Form Section -->
+    <div class="flex-1 flex flex-col bg-white dark:bg-gray-900">
+      <!-- Mobile header -->
+      <div class="flex flex-col items-center lg:hidden p-4 border-b border-dashed border-gray-100 dark:border-gray-800">
+        <NuxtLink to="/" class="inline-flex items-center gap-2">
+          <NuxtImg src="/images/logo-192.png" alt="Zima Blue Logo" width="32" height="32" class="rounded-md" />
+        </NuxtLink>
+        <span class="mt-2 font-body text-size-6 font-600 text-gray-900 dark:text-white">Zima Blue</span>
+      </div>
+
+      <!-- Form container -->
+      <div class="flex-1 flex items-start lg:items-start justify-center p-6 sm:p-8 lg:p-12 pb-32 sm:pb-8">
+        <Transition name="card-appear" appear>
+          <div class="w-full max-w-sm form-card">
+            <!-- Tabs -->
+            <div class="relative flex mb-8 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl tab-wrapper">
+              <!-- moving pill to indicate active tab -->
+              <div class="absolute inset-1 rounded-lg bg-white dark:bg-gray-700 tab-active transform transition-transform duration-300 ease-out" :class="isLogin ? 'translate-x-0' : 'translate-x-full'"></div>
+              <button
+                type="button"
+                @click="isLogin = true"
+                class="flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200 relative z-10"
+                :class="isLogin 
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                @click="isLogin = false"
+                class="flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200 relative z-10"
+                :class="!isLogin 
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+              >
+                Sign up
+              </button>
+            </div>
+
+            <!-- Header + Form (swap when changing tabs) -->
+            <Transition name="form-swap" mode="out-in">
+              <div :key="isLogin ? 'login' : 'signup'">
+                <!-- Header -->
+                <div class="mb-6">
+                  <h1 class="text-2xl font-400 text-gray-900 dark:text-white">
+                    {{ isLogin ? 'Welcome back' : 'Get started' }}
+                  </h1>
+                  <p class="mt-1 text-gray-500 dark:text-gray-400 text-sm">
+                    {{ isLogin ? 'Enter your credentials to access your account' : 'Create your account to start organizing' }}
+                  </p>
+                </div>
+
+                <!-- Form -->
+                <form @submit.prevent="handleSubmit" class="space-y-4" key="form">
+                  <!-- Name (signup only) -->
+                  <div v-if="!isLogin">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                    <div class="relative">
+                      <UInput
+                        input="~"
+                        v-model="name"
+                        type="text"
+                        placeholder="John Doe"
+                        required
+                        leading="i-ph-user"
+                        class="w-full pl-10 pr-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Email -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                    <UInput
+                      input="~"
+                      v-model="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      required
+                      leading="i-ph-envelope"
+                      class="w-full pl-10 pr-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                    />
+                  </div>
+
+                  <!-- Password -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+                    <UInput
+                      input="~"
+                      v-model="password"
+                      type="password"
+                      placeholder="••••••••"
+                      required
+                      leading="i-ph-key"
+                      class="w-full pl-10 pr-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                    />
+                    <p v-if="!isLogin" class="mt-1 text-xs text-gray-500">At least 8 characters</p>
+                  </div>
+
+                  <!-- Master Password (signup only) -->
+                  <div v-if="!isLogin">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Master Password</label>
+                    <UInput
+                      input="~"
+                      v-model="masterPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      required
+                      leading="i-ph-lock"
+                      class="w-full pl-10 pr-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">Required for account creation</p>
+                  </div>
+
+                  <!-- Optional fields toggle -->
+                  <div v-if="!isLogin">
+                    <button
+                      type="button"
+                      @click="showOptionalFields = !showOptionalFields"
+                      class="text-sm text-sky-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
+                    >
+                      <span :class="showOptionalFields ? 'i-ph-caret-up' : 'i-ph-caret-down'"></span>
+                      {{ showOptionalFields ? 'Less options' : 'More options' }}
+                    </button>
+                  </div>
+
+                  <!-- Optional fields -->
+                  <Transition name="collapse">
+                    <div v-if="!isLogin && showOptionalFields" class="space-y-4 pt-2">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
+                        <UInput
+                          input="~"
+                          type="textarea"
+                          v-model="biography"
+                          placeholder="Tell us about yourself..."
+                          rows="2"
+                          class="w-full px-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all resize-none"
+                        />
+                      </div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Job</label>
+                          <UInput
+                            input="~"
+                            v-model="job"
+                            type="text"
+                            placeholder="Designer"
+                            class="w-full px-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
+                          <UInput
+                            input="~"
+                            v-model="location"
+                            type="text"
+                            placeholder="Paris, FR"
+                            class="w-full px-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Transition>
+
+                  <!-- Error -->
+                  <Transition name="fade">
+                    <div v-if="error" class="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-sm text-red-600 dark:text-red-400">
+                      <span class="i-ph-warning-circle flex-shrink-0"></span>
+                      <span>{{ error }}</span>
+                      <button @click="error = ''" class="ml-auto i-ph-x hover:text-red-800 dark:hover:text-red-300"></button>
+                    </div>
+                  </Transition>
+
+                  <!-- Success -->
+                  <Transition name="fade">
+                    <div v-if="successMessage" class="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-xl text-sm text-green-600 dark:text-green-400">
+                      <span class="i-ph-check-circle flex-shrink-0"></span>
+                      <span>{{ successMessage }}</span>
+                    </div>
+                  </Transition>
+
+                  <!-- Submit -->
+                  <button
+                    type="submit"
+                    :disabled="isSubmitting"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-[#0077CC] via-sky-500 to-cyan-400 text-white font-medium rounded-xl hover:from-[#0066BB] hover:via-sky-600 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40"
+                  >
+                    <span v-if="isSubmitting" class="i-ph-spinner animate-spin"></span>
+                    <span>{{ isLogin ? 'Sign in' : 'Create account' }}</span>
+                    <span v-if="!isSubmitting" :class="isLogin ? 'i-ph-arrow-right' : 'i-ph-user-plus'"></span>
+                  </button>
+                </form>
+              </div>
+            </Transition>
+
+          <!-- Footer -->
+          <p class="mt-6 text-center text-xs text-gray-500 dark:text-gray-500">
+            By continuing, you agree to our Terms & Privacy Policy
           </p>
         </div>
-
-        <!-- Optional fields for registration -->
-        <div v-if="!isLogin && showOptionalFields" class="space-y-4">
-          <div>
-            <label for="biography" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <span class="i-ph-note mr-2"></span>
-              Biography
-            </label>
-            <UInput
-              id="biography"
-              type="textarea"
-              v-model="biography"
-              placeholder="Tell us about yourself..."
-              class="w-full"
-              :rows="3"
-            />
-          </div>
-
-          <div>
-            <label for="job" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <span class="i-ph-briefcase mr-2"></span>
-              Job Title
-            </label>
-            <UInput
-              id="job"
-              v-model="job"
-              type="text"
-              placeholder="Your job title"
-              class="w-full"
-            />
-          </div>
-
-          <div>
-            <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <span class="i-ph-map-pin mr-2"></span>
-              Location
-            </label>
-            <UInput
-              id="location"
-              v-model="location"
-              type="text"
-              placeholder="Your location"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- Toggle optional fields for registration -->
-        <div v-if="!isLogin" class="text-center w-full">
-          <UButton
-            type="button"
-            @click="showOptionalFields = !showOptionalFields"
-            btn="text-blue"
-            size="sm"
-          >
-            {{ showOptionalFields ? 'Hide optional fields' : 'Add optional details' }}
-            <span :class="showOptionalFields ? 'i-ph-caret-up' : 'i-ph-caret-down'"></span>
-          </UButton>
-        </div>
-
-        <div class="pt-4">
-          <UButton
-            type="submit"
-            btn="solid dark:solid-pink"
-            :loading="isSubmitting"
-            :disabled="isSubmitting"
-            class="w-full"
-          >
-          {{ isLogin ? 'Sign in' : 'Sign up' }}
-          <span :class="isLogin ? 'i-ph-sign-in-bold' : 'i-ph-user-plus'"></span>
-          </UButton>
-        </div>
-
-        <!-- Error Alert -->
-        <UAlert
-          v-if="error"
-          class="mt-4"
-          color="red"
-          variant="soft"
-          title="Authentication Error"
-          icon="i-ph-warning-circle"
-          :close-button="{ icon: 'i-ph-x', color: 'gray' }"
-          @close="error = ''"
-        >
-          {{ error }}
-        </UAlert>
-
-        <!-- Success Alert -->
-        <UAlert
-          v-if="successMessage"
-          class="mt-4"
-          color="green"
-          variant="soft"
-          title="Success"
-          icon="i-ph-check-circle"
-          :close-button="{ icon: 'i-ph-x', color: 'gray' }"
-          @close="successMessage = ''"
-        >
-          {{ successMessage }}
-        </UAlert>
-
-        <!-- Toggle between login/signup -->
-        <div class="text-center">
-          <UButton
-            type="button"
-            @click="toggleMode"
-            btn="text-green"
-            size="sm"
-            :class="randomColors.getTextColorClasses()"
-          >
-            {{ isLogin ? 'Need an account? Sign up' : 'Already have an account? Sign in' }}
-          </UButton>
-        </div>
-      </form>
-    </section>
-
-    <Footer />
+      </Transition>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 const { loggedIn, fetch: refreshSession } = useUserSession()
-const randomColors = useRandomColors()
 
 // Form fields
 const name = ref('')
@@ -282,12 +289,9 @@ watch(loggedIn, (newValue) => {
   }
 })
 
-const toggleMode = () => {
-  isLogin.value = !isLogin.value
+watch(isLogin, () => {
   error.value = ''
   successMessage.value = ''
-  
-  // Clear form fields when switching modes
   if (isLogin.value) {
     name.value = ''
     biography.value = ''
@@ -296,7 +300,7 @@ const toggleMode = () => {
     masterPassword.value = ''
     showOptionalFields.value = false
   }
-}
+})
 
 const handleSubmit = async () => {
   error.value = ""
@@ -304,7 +308,6 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   if (isLogin.value) {
-    // Login logic
     try {
       await $fetch('/api/login', {
         method: 'POST',
@@ -320,21 +323,22 @@ const handleSubmit = async () => {
       error.value = e.data?.message || 'Invalid credentials. Please try again.'
     }
   } else {
-    // Registration logic
     try {
-      // Client-side validation
       if (name.value.length < 2) {
         error.value = 'Name must be at least 2 characters long.'
+        isSubmitting.value = false
         return
       }
       
       if (password.value.length < 8) {
         error.value = 'Password must be at least 8 characters long.'
+        isSubmitting.value = false
         return
       }
       
       if (masterPassword.value.length === 0) {
-        error.value = 'Master password is required.';
+        error.value = 'Master password is required.'
+        isSubmitting.value = false
         return
       }
 
@@ -352,11 +356,8 @@ const handleSubmit = async () => {
       })
       
       successMessage.value = response.message || 'Account created successfully!'
-      
-      // Refresh session since the register endpoint sets the user session
       await refreshSession()
       
-      // Redirect after a short delay to show success message
       setTimeout(async () => {
         await navigateTo('/')
       }, 1500)
@@ -372,15 +373,135 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.frame {
-  width: 500px;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  padding-bottom: 38vh;
-  display: flex;
-  flex-direction: column;
-  transition-property: all;
-  transition-duration: 500ms;
-  overflow-y: auto;
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(-5deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes speed-line {
+  0% { transform: translateX(-100%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+.animate-speed-line {
+  animation: speed-line 4s ease-in-out infinite;
+}
+
+.animate-speed-line-delayed {
+  animation: speed-line 5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-speed-line-slow {
+  animation: speed-line 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 500px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* --- New transitions & micro-interactions for login form --- */
+
+/* Form card appear on mount */
+.card-appear-enter-active,
+.card-appear-leave-active {
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+.card-appear-enter-from {
+  opacity: 0;
+  transform: translateY(10px) scale(0.995);
+}
+.card-appear-enter-to {
+  opacity: 1;
+  transform: none;
+}
+
+/* Swapping header + form when switching tabs */
+.form-swap-enter-active,
+.form-swap-leave-active {
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.form-swap-enter-from { opacity: 0; transform: translateY(6px); }
+.form-swap-enter-to   { opacity: 1; transform: none; }
+.form-swap-leave-from { opacity: 1; transform: none; }
+.form-swap-leave-to   { opacity: 0; transform: translateY(-6px); }
+
+/* Tabs - sliding active pill */
+.tab-wrapper { position: relative; }
+.tab-active {
+  left: 0.25rem; /* matches inset-1 */
+  top: 0.25rem;
+  bottom: 0.25rem;
+  right: auto;
+  width: calc(50% - 0.5rem);
+  z-index: 0;
+}
+
+/* Ensure buttons sit above the active pill */
+.tab-wrapper > button { position: relative; z-index: 10; }
+
+/* Input focus micro-interaction */
+input[type="text"], input[type="email"], input[type="password"], textarea {
+  transition: box-shadow 180ms ease, transform 160ms ease, border-color 150ms;
+}
+input:focus, textarea:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(2,132,199,0.08);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tab-active, .card-appear-enter-active, .form-swap-enter-active, input[type="text"], textarea { transition: none !important; animation: none !important; transform: none !important; }
 }
 </style>

@@ -37,6 +37,7 @@ Edge image gallery application built with Nuxt.js on NuxtHub (Cloudflare Workers
 - **Fully responsive design** optimized for all devices
 - **Dark/light theme support** with smooth transitions
 - **View transitions** and smooth animations
+- **Interactive click fireworks** — a lightweight, full-screen fireworks animation plays when you click anywhere in the app. The effect is implemented in `components/ClickFireworks.vue` and uses the login page palette (cyan / blue / pink / fuchsia / yellow / amber).
 - **Customizable grid layout** (draggable, resizable components)
 - **Modern component library** with consistent design system
 - **Accessibility-first** approach

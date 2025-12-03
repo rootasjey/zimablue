@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="hidden sm:block">
     <UDialog 
       :open="isImageModalOpen" 
       @update:open="$emit('updateImageModalOpen', $event)"
@@ -84,7 +84,6 @@
               :alt="selectedModalImage.name || 'Image'"
               :width="600"
               class="max-w-full max-h-[70vh] object-contain rounded-lg cursor-pointer"
-              :style="selectedModalImage ? { viewTransitionName: `image-${selectedModalImage.id}` } : {}"
               @click="$emit('openFullPage')" 
             />
           </div>

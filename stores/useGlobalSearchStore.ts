@@ -1,8 +1,8 @@
-import type { Image } from '~/types/image'
+import type { ImageWithTags } from '~/types/image'
 import type { Collection } from '~/types/collection'
 
 interface SearchResults {
-  images: Image[]
+  images: ImageWithTags[]
   collections: Collection[]
   total: {
     images: number
@@ -53,7 +53,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   )
 
   const allResults = computed(() => {
-    const results: Array<{ type: 'image' | 'collection', item: Image | Collection }> = []
+    const results: Array<{ type: 'image' | 'collection', item: ImageWithTags | Collection }> = []
     
     // Add images first
     state.value.results.images.forEach(image => {
@@ -83,16 +83,9 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   }
 
   const closeDialog = () => {
+    // Close only toggles the dialog visibility. Preserve the current query & results
+    // so that reopening the dialog shows the previous input and results.
     state.value.isDialogOpen = false
-    state.value.query = ''
-    state.value.results = {
-      images: [],
-      collections: [],
-      total: { images: 0, collections: 0 }
-    }
-    state.value.selectedIndex = -1
-    state.value.error = null
-    state.value.retryCount = 0
   }
 
   const setQuery = (query: string) => {

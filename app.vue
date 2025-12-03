@@ -3,10 +3,13 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    
     <UToaster />
     <GlobalSearchDialog />
     <HiddenFileInputs />
-    <MobileBottomNav />
+    <DesktopBottomNav />
+    <UserMenu />
+    <ClickFireworks v-if="fireworksEnabled" />
   </div>
 </template>
 
@@ -16,8 +19,11 @@ import '@/styles/main.css'
 import '@/styles/arrow-link.css'
 import GlobalSearchDialog from '~/components/search/GlobalSearchDialog.vue'
 import HiddenFileInputs from '~/components/HiddenFileInputs.vue'
+import ClickFireworks from '~/components/ClickFireworks.vue'
+import { useAppSettings } from '~/composables/useAppSettings'
 
 useGlobalSearch()
+const { fireworksEnabled } = useAppSettings()
 
 useHead({
   meta: [

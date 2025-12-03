@@ -96,7 +96,7 @@
 
         <p
           v-if="collection.description"
-          class="text-xs text-gray-600 dark:text-gray-400 truncate mb-1"
+          class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 break-words mb-1"
         >
           {{ collection.description }}
         </p>

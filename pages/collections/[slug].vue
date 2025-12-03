@@ -206,15 +206,6 @@ const navigateToUpload = () => {
   // router.push('/upload')
 }
 
-// Modal methods
-const openImageModal = (image: any) => {
-  withViewTransition(() => {
-    selectedImage.value = image
-    currentImageIndex.value = store.images.findIndex(img => img.id === image.id)
-    isImageModalOpen.value = true
-  })
-}
-
 const navigateToPrevious = () => {
   if (canNavigatePrevious.value) {
     currentImageIndex.value--
@@ -248,22 +239,14 @@ const openFullPage = () => {
   }
 }
 
-// Shared element transitions helper
-const withViewTransition = (cb: () => void) => {
-  // @ts-ignore: View Transitions API
-  const svt = (document as any)?.startViewTransition
-  if (typeof svt === 'function') {
-    // @ts-ignore
-    svt(() => cb())
-  } else {
-    cb()
-  }
+const openImageModal = (image: any) => {
+  selectedImage.value = image
+  currentImageIndex.value = store.images.findIndex(img => img.id === image.id)
+  isImageModalOpen.value = true
 }
 
 const onUpdateImageModalOpen = (value: boolean) => {
-  withViewTransition(() => {
-    isImageModalOpen.value = value
-  })
+  isImageModalOpen.value = value
 }
 
 </script>

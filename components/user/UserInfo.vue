@@ -5,6 +5,7 @@
         <span class="i-ph-user-circle mr-2"></span>
         <span class="font-600">{{ user?.name }}</span>
       </h2>
+      
       <UButton 
         v-if="!isEditing"
         btn="soft-blue"
@@ -15,12 +16,22 @@
         <span class="i-ph-pencil"></span>
         Edit Profile
       </UButton>
+      <UButton 
+        v-else
+        btn="soft-gray"
+        size="sm"
+        class="px-6"
+        @click="$emit('cancelEditing')"
+      >
+        <span class="i-ph-x"></span>
+        Cancel
+      </UButton>
     </div>
     
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
       <!-- View Mode -->
       <div v-if="!isEditing" class="flex items-center gap-4">
-        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+        <div class="w-16 h-16 border rounded-full flex items-center justify-center">
           <span class="i-ph-user text-white text-2xl"></span>
         </div>
         <div class="flex-1">
@@ -134,7 +145,7 @@
 
           <UButton 
             type="submit"
-            btn="soft"
+            btn="soft-blue"
             size="sm"
             :disabled="isSaving"
           >

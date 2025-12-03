@@ -74,6 +74,25 @@
       @update-image-modal-open="imageModal.isImageModalOpen.value = $event"
     />
 
+    <ImageMobileDrawer
+      :is-image-drawer-open="imageModal.isImageDrawerOpen.value"
+      :selected-modal-image="imageModal.selectedModalImage.value"
+      :current-position="imageModal.currentPosition.value"
+      :total-images="imageModal.totalImages.value"
+      :can-navigate-previous="imageModal.canNavigatePrevious.value"
+      :can-navigate-next="imageModal.canNavigateNext.value"
+      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
+        image: item, 
+        openImagePageFn: imageModal.openImagePage, 
+        openAddToCollectionModalFn: addToCollection.openModal,
+        replacementFileInput,
+      })"
+      @open-full-page="imageModal.openImagePage"
+      @navigate-previous="imageModal.navigateToPrevious"
+      @navigate-next="imageModal.navigateToNext"
+      @update-image-drawer-open="imageModal.isImageDrawerOpen.value = $event"
+    />
+
     <ImageEditModal
       :is-open="imageActions.showEditModal.value"
       :edit-form="imageActions.editForm.value"

@@ -38,8 +38,9 @@ END;
 -- 2. Add analytics columns to messages table
 -- ============================================================================
 
--- Add read_at column for message response time tracking
-ALTER TABLE messages ADD COLUMN read_at DATETIME;
+-- NOTE: read_at column is already defined in schema.sql, so we skip adding it here.
+-- If you're running a fresh install, schema.sql handles this column.
+-- ALTER TABLE messages ADD COLUMN read_at DATETIME;
 
 -- ============================================================================
 -- 3. Add storage metrics to images table

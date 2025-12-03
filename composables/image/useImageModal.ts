@@ -4,14 +4,17 @@ export const useImageModal = () => {
   const router = useRouter()
   const gridStore = useGridStore()
   
-  // Modal state
+  // Modal state (desktop)
   const isImageModalOpen = ref(false)
+  // Drawer state (mobile)
+  const isImageDrawerOpen = ref(false)
   const selectedModalImage = ref<Image | null>(null)
   const currentImageIndex = ref(0)
   
   // Drag detection for preventing modal open during drag
   const dragStartPos = ref({ x: 0, y: 0 })
   const DRAG_THRESHOLD = 5 // pixels
+  const MOBILE_BREAKPOINT = 640 // sm breakpoint in pixels
 
   // Computed properties for navigation
   const canNavigatePrevious = computed(() => currentImageIndex.value > 0)
@@ -40,7 +43,14 @@ export const useImageModal = () => {
 
     selectedModalImage.value = item
     currentImageIndex.value = gridStore.layout.findIndex(img => img.id === item.id)
-    isImageModalOpen.value = true
+    
+    // Check if mobile (client-side only)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT
+    if (isMobile) {
+      isImageDrawerOpen.value = true
+    } else {
+      isImageModalOpen.value = true
+    }
 
     // Update image view count
     const updatedImage = await $fetch(`/api/images/slug/${item.slug}/views`, {
@@ -118,12 +128,13 @@ export const useImageModal = () => {
       }
     }
 
-    // Use view transition if supported
-    if (!document.startViewTransition) {
+    // Use view transition if supported — but guard for SSR / non-DOM envs
+    if (typeof document === 'undefined' || typeof document.startViewTransition !== 'function') {
       router.push(routePayload)
       return
     }
 
+    // Call startViewTransition on the document to preserve the correct receiver
     document.startViewTransition(async () => {
       await router.push(routePayload)
     })
@@ -131,12 +142,14 @@ export const useImageModal = () => {
 
   const closeModal = () => {
     isImageModalOpen.value = false
+    isImageDrawerOpen.value = false
     selectedModalImage.value = null
   }
 
   return {
     // State
     isImageModalOpen,
+    isImageDrawerOpen,
     selectedModalImage,
     currentImageIndex,
     

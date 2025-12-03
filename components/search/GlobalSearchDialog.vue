@@ -166,7 +166,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Image } from '~/types/image'
+import type { ImageWithTags as Image } from '~/types/image'
 import type { Collection } from '~/types/collection'
 
 const searchStore = useGlobalSearchStore()
@@ -195,8 +195,8 @@ watch(searchQuery, (newQuery) => {
 // Handle dialog open/close
 const handleDialogToggle = (open: boolean) => {
   if (!open) {
+    // Close dialog but keep the current query so the user's input persists when they reopen
     searchStore.closeDialog()
-    searchQuery.value = ''
   }
 }
 
@@ -240,17 +240,19 @@ const handleInputKeydown = (event: KeyboardEvent) => {
 }
 
 // Handle Enter key press
-const handleEnterKey = () => {
+const handleEnterKey = async () => {
   const result = searchStore.selectResult()
   if (result) {
-    navigateToResult(result.type, result.item)
+    // selectResult already closes the dialog, but let the navigation wait for the dialog to finish hiding
+    await navigateToResult(result.type, result.item)
   }
 }
 
 // Handle result selection
-const handleResultSelect = (item: Image | Collection) => {
+const handleResultSelect = async (item: Image | Collection) => {
   const isImage = 'pathname' in item
-  navigateToResult(isImage ? 'image' : 'collection', item)
+  // close dialog + wait before navigation so new screen isn't hidden behind the dialog
+  await navigateToResult(isImage ? 'image' : 'collection', item)
 }
 
 // Handle result hover
@@ -279,11 +281,18 @@ const scrollSelectedIntoView = () => {
 }
 
 // Navigate to selected result
-const navigateToResult = (type: 'image' | 'collection', item: Image | Collection) => {
+const navigateToResult = async (type: 'image' | 'collection', item: Image | Collection) => {
+  // ensure the dialog is closed first
+  searchStore.closeDialog()
+
+  // wait for DOM update / allow dialog out-animation to complete so the target screen is visible
+  await nextTick()
+  await new Promise((res) => setTimeout(res, 180))
+
   if (type === 'image') {
-    router.push(`/illustrations/${item.slug}`)
+    await router.push(`/illustrations/${item.slug}`)
   } else {
-    router.push(`/collections/${item.slug}`)
+    await router.push(`/collections/${item.slug}`)
   }
 }
 
@@ -295,9 +304,20 @@ const handleRetry = () => {
 // Focus input when dialog opens
 watch(() => searchStore.isDialogOpen, (isOpen) => {
   if (isOpen) {
+    // When the dialog opens, make sure the input reflects any existing store query
+    // so that reopening from another view (eg. /search) shows the same query and results.
+    searchQuery.value = searchStore.query || ''
+
     nextTick(() => {
       searchInputRef.value?.focus()
     })
+
+    // If there is an existing query but no results yet, trigger a search immediately
+    // (this covers cases where the store might contain a query but results were not populated)
+    if ((searchStore.query || '').trim() && !searchStore.hasResults) {
+      // call search synchronously (no debounce) to ensure results appear when dialog reopens
+      searchStore.search(searchStore.query)
+    }
   }
 })
 

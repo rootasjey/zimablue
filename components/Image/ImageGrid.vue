@@ -1,19 +1,22 @@
 <template>
   <div>
-    <!-- Mobile Grid with 3 columns -->
+    <!-- Mobile Grid - Dynamic Masonry Layout -->
     <div
       v-if="layout.length"
-      class="grid sm:hidden grid-cols-3 gap-5 mx-4 mt-12"
+      class="mobile-masonry-grid mx-4 mt-12"
       role="grid"
       :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
     >
       <div v-for="(item, index) in layout" :key="item.i"
-        class="mobile-group aspect-square relative overflow-hidden
-        rounded-7 z-2 cursor-pointer transition duration-900"
-        :class="{
-          'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
-          'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
-        }"
+        class="mobile-grid-item relative overflow-hidden cursor-pointer transition-all duration-300"
+        :class="[
+          getMobileGridItemClass(index),
+          {
+            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
+            'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
+          }
+        ]"
+        :style="{ '--index': index }"
         role="gridcell"
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
@@ -33,18 +36,44 @@
 
         <NuxtImg
           @click="(event: MouseEvent) => handleImageClick(item, index, event)"
+          @load="() => markLoaded(keyFor(item, index))"
+          @error="() => markError(keyFor(item, index))"
           @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
           @pointermove="handleImagePointerMove"
           @pointerup="handleImagePointerUp"
           @pointercancel="handleImagePointerCancel"
           loading="lazy"
-          width="120"
+          width="180"
           :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
           :src="item.pathname"
-          :alt="item.pathname"
+          :alt="''"
+          :aria-label="item.name || item.pathname || 'Image'"
           class="nuxt-img-mobile"
+          :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
           :style="`view-transition-name: shared-image-${item.id}`"
         />
+          <!-- Loading / fallback placeholder (visible until image has loaded) -->
+          <div
+            v-if="!loadedMap[keyFor(item, index)]"
+            class="image-placeholder absolute inset-0 flex items-center justify-center"
+            :aria-hidden="true"
+          >
+            <div class="image-placeholder-inner w-2/3 text-center">
+              <template v-if="errorMap[keyFor(item, index)]">
+                <svg class="mx-auto mb-2 w-8 h-8 text-red-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636L5.636 18.364M5.636 5.636L18.364 18.364" />
+                </svg>
+                <div class="text-xs opacity-80">Couldn't load</div>
+              </template>
+              <template v-else>
+                <svg class="mx-auto mb-2 w-8 h-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v4l2-2 2 2 3-3 3 3" />
+                </svg>
+                <div class="text-xs opacity-70">Loading image…</div>
+              </template>
+            </div>
+          </div>
       </div>
     </div>
 
@@ -106,6 +135,8 @@
 
           <NuxtImg
             @click="(event: MouseEvent) => handleImageClick(item, index, event)"
+            @load="() => markLoaded(keyFor(item, index))"
+            @error="() => markError(keyFor(item, index))"
             @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
             @pointermove="handleImagePointerMove"
             @pointerup="handleImagePointerUp"
@@ -113,11 +144,32 @@
             loading="lazy"
             :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
             :src="`${item.pathname}`"
-            :alt="item.pathname"
+            :alt="''"
+            :aria-label="item.name || item.pathname || 'Image'"
             :width="240"
             class="nuxt-img"
+            :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
             :style="`view-transition-name: shared-image-${item.id}`"
           />
+
+          <!-- Desktop loading / fallback placeholder -->
+          <div v-if="!loadedMap[keyFor(item, index)]" class="image-placeholder absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <div class="image-placeholder-inner w-1/2 text-center">
+              <template v-if="errorMap[keyFor(item, index)]">
+                <svg class="mx-auto mb-2 w-8 h-8 text-red-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636L5.636 18.364M5.636 5.636L18.364 18.364" />
+                </svg>
+                <div class="text-sm opacity-80">Couldn't load</div>
+              </template>
+              <template v-else>
+                <svg class="mx-auto mb-2 w-8 h-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v4l2-2 2 2 3-3 3 3" />
+                </svg>
+                <div class="text-sm opacity-70">Loading image…</div>
+              </template>
+            </div>
+          </div>
 
           <div v-if="loggedIn && !isSelectionMode" class="image-resizer-container">
             <span class="vgl-item__resizer image-resizer"></span>
@@ -187,6 +239,47 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Mobile grid layout patterns - creates visual variety similar to Pinterest/Google Photos
+// Pattern repeats every 10 items with varying sizes for a dynamic masonry effect
+const mobileGridPatterns = [
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (1)
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (2)
+  { gridColumn: 'span 1', gridRow: 'span 2', size: 'tall' },       // Tall portrait (3)
+  { gridColumn: 'span 2', gridRow: 'span 1', size: 'wide' },       // Wide landscape (4)
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (5)
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (6)
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (7)
+  { gridColumn: 'span 2', gridRow: 'span 2', size: 'large' },      // Feature large square (8)
+  { gridColumn: 'span 1', gridRow: 'span 1', size: 'small' },      // Square small (9)
+  { gridColumn: 'span 1', gridRow: 'span 2', size: 'tall' },       // Tall portrait (10)
+]
+
+// Get grid item class based on index pattern
+const getMobileGridItemClass = (index: number): string => {
+  const patternIndex = index % mobileGridPatterns.length
+  const pattern = mobileGridPatterns[patternIndex]
+  
+  // Build class string for grid placement
+  const classes = ['mobile-grid-cell']
+  
+  // Add special classes for different sizes
+  switch (pattern.size) {
+    case 'large':
+      classes.push('mobile-cell-large')
+      break
+    case 'wide':
+      classes.push('mobile-cell-wide')
+      break
+    case 'tall':
+      classes.push('mobile-cell-tall')
+      break
+    default:
+      classes.push('mobile-cell-square')
+  }
+  
+  return classes.join(' ')
+}
 
 // Long press detection using pointer events for better reliability
 const longPressTimer = ref<NodeJS.Timeout | null>(null)
@@ -326,6 +419,20 @@ const clearLongPressTimer = () => {
 onUnmounted(() => {
   clearLongPressTimer()
 })
+
+// Image loading state tracking (avoid showing alt text while images are still loading)
+const loadedMap = ref<Record<string | number, boolean>>({})
+const errorMap = ref<Record<string | number, boolean>>({})
+
+const keyFor = (item: any, index: number) => item.id ?? item.i ?? index
+
+const markLoaded = (itemKey: string | number) => {
+  loadedMap.value[itemKey] = true
+}
+
+const markError = (itemKey: string | number) => {
+  errorMap.value[itemKey] = true
+}
 </script>
 
 <style scoped>
@@ -353,6 +460,182 @@ onUnmounted(() => {
   }
 }
 
+/* Mobile Masonry Grid Styles */
+.mobile-masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(90px, 110px);
+  gap: 10px;
+  grid-auto-flow: dense;
+  padding-bottom: 80px; /* Space for bottom nav */
+
+  /* Tablet range (480px - 639px): Simple 2-column uniform grid */
+  @media (min-width: 480px) and (max-width: 639px) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 14px;
+  }
+
+  /* Hide on tablet and desktop (sm breakpoint = 640px) */
+  @media (min-width: 640px) {
+    display: none;
+  }
+}
+
+.mobile-grid-cell {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.06) 0px 2px 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+
+  .dark & {
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 16px;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.mobile-cell-square {
+  grid-column: span 1;
+  grid-row: span 1;
+  aspect-ratio: 1/1;
+  
+  /* In tablet range, all squares are uniform */
+  @media (min-width: 480px) and (max-width: 639px) {
+    aspect-ratio: 1/1;
+  }
+}
+
+.mobile-cell-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+  min-height: 90px;
+  
+  /* In tablet range, no spanning - simple uniform grid */
+  @media (min-width: 480px) and (max-width: 639px) {
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: auto;
+    aspect-ratio: 1/1;
+  }
+}
+
+.mobile-cell-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+  min-height: 180px;
+  
+  /* In tablet range, no spanning - simple uniform grid */
+  @media (min-width: 480px) and (max-width: 639px) {
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: auto;
+    aspect-ratio: 1/1;
+  }
+}
+
+.mobile-cell-large {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 180px;
+  
+  /* In tablet range, no spanning - simple uniform grid */
+  @media (min-width: 480px) and (max-width: 639px) {
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: auto;
+    aspect-ratio: 1/1;
+  }
+}
+
+/* Colorful shadows for mobile grid - nth-child patterns */
+.mobile-grid-cell:nth-child(7n) {
+  box-shadow: rgba(244, 114, 182, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+1) {
+  box-shadow: rgba(134, 239, 172, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+2) {
+  box-shadow: rgba(129, 140, 248, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+3) {
+  box-shadow: rgba(251, 191, 36, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+4) {
+  box-shadow: rgba(167, 139, 250, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+5) {
+  box-shadow: rgba(56, 189, 248, 0.25) 0px 8px 24px;
+}
+
+.mobile-grid-cell:nth-child(7n+6) {
+  box-shadow: rgba(251, 113, 133, 0.25) 0px 8px 24px;
+}
+
+/* Hover states for colorful shadows */
+.mobile-grid-cell:nth-child(7n):hover {
+  box-shadow: rgba(244, 114, 182, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+1):hover {
+  box-shadow: rgba(134, 239, 172, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+2):hover {
+  box-shadow: rgba(129, 140, 248, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+3):hover {
+  box-shadow: rgba(251, 191, 36, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+4):hover {
+  box-shadow: rgba(167, 139, 250, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+5):hover {
+  box-shadow: rgba(56, 189, 248, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+.mobile-grid-cell:nth-child(7n+6):hover {
+  box-shadow: rgba(251, 113, 133, 0.5) 0px 12px 32px;
+  transform: translateY(-2px);
+}
+
+/* Mobile grid item animation */
+.mobile-grid-item {
+  opacity: 0;
+  animation: mobileGridFadeIn 0.5s ease-out forwards;
+  animation-delay: calc(var(--index, 0) * 0.03s);
+}
+
+@keyframes mobileGridFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Legacy mobile-group styles - kept for backward compatibility */
 .mobile-group {
   /* Remove the existing box-shadow and add these classes */
   &:nth-child(3n) {
@@ -459,12 +742,45 @@ onUnmounted(() => {
   object-fit: cover;
   width: 100%;
   height: 100%;
-  border-radius: 7px;
-  transition: transform 150ms;
+  border-radius: 20px;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
   }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Loading placeholder styles */
+.image-placeholder {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(250,250,250,0.8));
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 15;
+}
+
+.image-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0,0,0,0.45);
+}
+
+.image-placeholder svg {
+  color: rgba(0,0,0,0.2);
+}
+
+/* small fade-in when image loads */
+.nuxt-img.is-loading {
+  opacity: 0;
+  transition: opacity 250ms ease-in-out;
+}
+.nuxt-img:not(.is-loading), .nuxt-img-mobile:not(.is-loading) {
+  opacity: 1;
 }
 
 @keyframes fadeInUp {

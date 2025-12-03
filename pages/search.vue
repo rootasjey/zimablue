@@ -228,7 +228,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Image } from '~/types/image'
+import type { ImageWithTags as Image } from '~/types/image'
 import type { Collection } from '~/types/collection'
 
 // Meta

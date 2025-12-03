@@ -28,28 +28,29 @@
       </div>
     </header>
 
-    <!-- Horizontal Cards (Carousel-like) -->
-    <section v-if="collectionStore.collections.length > 0" class="relative mt-24 animate-fade-in-up animation-delay-200">
-      <button class="nav left absolute top-1/2 -translate-y-1/2 w-9 h-9  color-black
+    <!-- Vertical Cards on Mobile, Horizontal Carousel on Desktop -->
+    <section v-if="collectionStore.collections.length > 0" class="relative mt-12 sm:mt-24 animate-fade-in-up animation-delay-200">
+      <!-- Navigation buttons - hidden on mobile -->
+      <button class="hidden sm:inline-flex nav left absolute top-1/2 -translate-y-1/2 w-9 h-9 color-black
         rounded-full border border-[rgba(0,0,0,0.08)] bg-white/85 backdrop-blur-md 
-        inline-flex items-center justify-center cursor-pointer shadow-lg left-[-10px] animate-fade-in-left animation-delay-400" 
+        items-center justify-center cursor-pointer shadow-lg left-[-10px] z-10 animate-fade-in-left animation-delay-400" 
         aria-label="Previous" @click="scrollByAmount(-1)">
         <span class="i-ph-caret-left"></span>
       </button>
 
       <div ref="scrollEl" 
-        class="grid auto-flow-col auto-cols-[minmax(240px,380px)] gap-[28px] overscroll-contain snap-x snap-mandatory p-3 mx-6" 
+        class="flex flex-col gap-6 sm:grid sm:grid-flow-col sm:auto-cols-[minmax(240px,380px)] sm:gap-[28px] sm:overflow-x-auto sm:overscroll-contain sm:snap-x sm:snap-mandatory p-3 sm:mx-6" 
         @scroll.passive="onScroll">
         <article
           v-for="(collection, index) in collectionStore.collections"
           :key="collection.id"
-          class="hcard snap-start animate-fade-in-scale"
+          class="hcard sm:snap-start animate-fade-in-scale w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]"
           :style="{ animationDelay: `${300 + index * 100}ms` }"
           @mousemove="(e) => onParallax(e, collection.id)"
           @mouseleave="() => resetParallax(collection.id)"
         >
           <NuxtLink :to="`/collections/${collection.slug}`" class="hcard-link">
-            <div class="hcover relative w-full aspect-[3/4] rounded-[4px] overflow-hidden shadow-lg">
+            <div class="hcover relative w-full aspect-[16/9] sm:aspect-[3/4] rounded-[4px] overflow-hidden shadow-lg">
               <NuxtImg
                 v-if="getCoverSrc(collection)"
                 provider="hubblob"
@@ -105,9 +106,10 @@
         </article>
       </div>
 
-      <button class="right absolute top-1/2 -translate-y-1/2 w-9 h-9 
-        rounded-full border border-[rgba(0,0,0,0.08)] bg-white/85 color-black backdrop-blur-md inline-flex 
-        items-center justify-center cursor-pointer shadow-lg right-[-10px] animate-fade-in-right animation-delay-400" aria-label="Next" @click="scrollByAmount(1)">
+      <!-- Right navigation button - hidden on mobile -->
+      <button class="hidden sm:inline-flex right absolute top-1/2 -translate-y-1/2 w-9 h-9 
+        rounded-full border border-[rgba(0,0,0,0.08)] bg-white/85 color-black backdrop-blur-md 
+        items-center justify-center cursor-pointer shadow-lg right-[-10px] z-10 animate-fade-in-right animation-delay-400" aria-label="Next" @click="scrollByAmount(1)">
         <span class="i-ph-caret-right"></span>
       </button>
     </section>
@@ -128,8 +130,8 @@
       </div>
     </section>
 
-    <!-- Bottom bar: stats + scrollbar -->
-    <footer class="bottombar mt-12 mx-4 animate-fade-in-up animation-delay-500" v-if="collectionStore.collections.length > 0">
+    <!-- Bottom bar: stats + scrollbar (hidden on mobile) -->
+    <footer class="hidden mb-12 md:mb-0 sm:grid bottombar mt-12 mx-4 animate-fade-in-up animation-delay-500" v-if="collectionStore.collections.length > 0">
       <div class="font-500 color-gray-400 text-size-3 uppercase">
         {{ collectionStore.collections.length.toLocaleString() }} Collections
       </div>

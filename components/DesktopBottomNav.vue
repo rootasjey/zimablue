@@ -1,28 +1,21 @@
 <template>
-  <nav class="hidden sm:block fixed bottom-4 left-0 right-0 z-40" role="navigation" aria-label="Desktop navigation">
+  <nav class="fixed bottom-0 sm:bottom-4 left-0 right-0 z-40" role="navigation" aria-label="Main navigation">
     <div class="pointer-events-none flex w-full justify-center">
       <div
-        class="pointer-events-auto flex items-center gap-6 rounded-[32px] px-3 py-2 shadow-lg shadow-black/10 border border-white/10 bg-black text-white/90 dark:bg-black/90 backdrop-blur-md">
+        class="pointer-events-auto flex items-center gap-2 sm:gap-6 w-full sm:w-auto rounded-none sm:rounded-[32px] px-4 sm:px-3 py-3 sm:py-1  shadow-lg shadow-black/10 border-t sm:border border-white/10 bg-black text-white/90 dark:bg-black/90 backdrop-blur-md">
         <NuxtLink v-for="item in visibleItems" :key="item.key" :to="item.to || '#'"
-          class="group relative flex items-center justify-center" :aria-label="item.label"
+          class="group relative flex flex-1 sm:flex-initial items-center justify-center" :aria-label="item.label"
           @click.prevent="handleItemClick(item)">
-          <div class="nav-pill mr-1 flex items-center rounded-[28px] text-white"
+          <div class="nav-pill flex flex-col sm:flex-row items-center sm:mr-1 rounded-[28px] text-white p-2 sm:p-0"
             :class="{ 'bg-white/10 shadow-inner': isActive(item) }">
             <div class="flex h-8 w-8 items-center justify-center rounded-2xl hover:bg-white/10 transition-colors">
               <i :class="item.icon + ' text-xl text-white/90'" />
             </div>
-            <span class="nav-label font-medium" :class="{ 'nav-label-active': isActive(item) }">
+            <span class="nav-label text-xs sm:text-base font-medium color-white mt-1 sm:mt-0" :class="{ 'nav-label-visible': true, 'nav-label-active': isActive(item) }">
               {{ item.label }}
             </span>
           </div>
         </NuxtLink>
-
-        <button v-if="loggedIn && userRole" type="button"
-          class="ml-2 flex h-11 items-center gap-2 rounded-2xl bg-white/10 px-4 hover:bg-white/20 transition-colors"
-          aria-label="Upload" @click="triggerUpload">
-          <i class="i-tabler-upload text-xl" />
-          <span class="hidden md:inline font-medium">Upload</span>
-        </button>
       </div>
     </div>
   </nav>
@@ -33,10 +26,16 @@
 <script lang="ts" setup>
 import { useImageUpload } from '~/composables/image/useImageUpload'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
+
 const route = useRoute()
 const { loggedIn, user } = useUserSession()
 const imageUpload = useImageUpload()
 const { openSearch } = useGlobalSearch()
+
+const userRole = computed(() => (user.value as any)?.role)
+function triggerUpload() {
+  imageUpload.triggerFileUpload()
+}
 
 type Item = {
   key: string
@@ -47,13 +46,24 @@ type Item = {
   action?: () => void
 }
 
-const baseItems = computed<Item[]>(() => [
-  { key: 'home', to: '/', label: 'Home', icon: 'i-tabler-smart-home', match: (p) => p === '/' },
-  { key: 'collections', to: '/collections', label: 'Collection', icon: 'i-ph-squares-four', match: (p) => p.startsWith('/collections') },
-  // Search opens dialog on desktop
-  { key: 'search', to: '#', label: 'Search', icon: 'i-ph-magnifying-glass', match: () => false, action: () => openSearch() },
-  { key: 'about', to: '/about', label: 'About', icon: 'i-ph-info', match: (p) => p.startsWith('/about') },
-])
+const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth < 640)
+
+const baseItems = computed<Item[]>(() => {
+  const items: Item[] = [
+    { key: 'home', to: '/', label: 'Home', icon: 'i-tabler-smart-home', match: (p) => p === '/' },
+    { key: 'collections', to: '/collections', label: 'Collection', icon: 'i-ph-squares-four', match: (p) => p.startsWith('/collections') },
+    // Search: redirects to /search on mobile, opens dialog on desktop
+    { key: 'search', to: isMobile.value ? '/search' : '#', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: isMobile.value ? undefined : () => openSearch() },
+  ]
+  
+  // Add upload button for admin users on mobile
+  if (loggedIn.value && userRole.value === 'admin') {
+    items.push({ key: 'upload', to: '#', label: 'Upload', icon: 'i-tabler-upload', match: () => false, action: () => triggerUpload() })
+  }
+  
+  items.push({ key: 'settings', to: '/settings', label: 'Settings', icon: 'i-ph-gear', match: (p) => p.startsWith('/settings') })
+  return items
+})
 
 const adminItem = computed<Item>(() => ({
   key: 'admin',
@@ -86,10 +96,6 @@ function handleItemClick(item: Item) {
   }
 }
 
-const userRole = computed(() => (user.value as any)?.role)
-function triggerUpload() {
-  imageUpload.triggerFileUpload()
-}
 </script>
 
 <style scoped>
@@ -101,17 +107,24 @@ a { min-height: 44px; min-width: 44px; }
   transition: background-color 160ms ease;
 }
 
+/* Mobile: always show labels */
 .nav-label {
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
   white-space: nowrap;
-  margin-right: 0.5rem; /* keeps spacing similar to pill */
   transition: max-width 220ms ease, opacity 180ms ease;
 }
 
-.nav-label-active {
-  max-width: 10rem; /* enough to show any label */
-  opacity: 1;
+/* Desktop: hide labels by default, show on active */
+@media (min-width: 640px) {
+  .nav-label {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-right: 0.5rem;
+  }
+  
+  .nav-label-active {
+    max-width: 10rem;
+    opacity: 1;
+  }
 }
 </style>
