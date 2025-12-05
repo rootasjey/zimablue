@@ -47,10 +47,10 @@ END;
 -- ============================================================================
 
 -- Add file_size column for storage analytics (in bytes)
-ALTER TABLE images ADD COLUMN file_size INTEGER DEFAULT 0;
+-- ALTER TABLE images ADD COLUMN file_size INTEGER DEFAULT 0;
 
 -- Create index for storage queries
-CREATE INDEX IF NOT EXISTS idx_images_file_size ON images(file_size);
+-- CREATE INDEX IF NOT EXISTS idx_images_file_size ON images(file_size);
 
 -- ============================================================================
 -- 4. Add last_login_at to users table for active user tracking
