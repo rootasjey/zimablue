@@ -20,8 +20,23 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const isValidPassword = await verifyPassword(userData.password as string, password)
-  
+  // verifyPassword is provided by `nuxt-auth-utils` (exposed by module).
+  // Be defensive: make sure the helper exists and catch unexpected exceptions so
+  // we return a clear 500 error and log the underlying cause in production.
+  if (typeof verifyPassword !== 'function') {
+    console.error('verifyPassword helper is not available. Is `nuxt-auth-utils` installed?')
+    throw createError({ statusCode: 500, message: 'Server Error' })
+  }
+
+  let isValidPassword: boolean
+  try {
+    isValidPassword = await verifyPassword(userData.password as string, password)
+  } catch (err: any) {
+    console.error('Error while verifying password:', err)
+    // Internal error — avoid leaking details to clients
+    throw createError({ statusCode: 500, message: 'Server Error' })
+  }
+
   if (!isValidPassword) {
     throw createError({
       statusCode: 401,

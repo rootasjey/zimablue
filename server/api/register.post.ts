@@ -39,7 +39,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Hash the password using nuxt-auth-utils script.
-    const hashedPassword = await hashPassword(password)
+    if (typeof hashPassword !== 'function') {
+      console.error('hashPassword helper is not available. Is `nuxt-auth-utils` installed?')
+      throw createError({ statusCode: 500, message: 'Server Error' })
+    }
+
+    let hashedPassword: string
+    try {
+      hashedPassword = await hashPassword(password)
+    } catch (err: any) {
+      console.error('Error while hashing password:', err)
+      throw createError({ statusCode: 500, message: 'Server Error' })
+    }
 
     // Insert new user
     const result = await hubDatabase()
