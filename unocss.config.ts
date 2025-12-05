@@ -13,6 +13,34 @@ import {
 } from 'unocss'
 
 export default {
+  theme: {
+    colors: {
+      white: {
+        DEFAULT: '#ffffff',
+        50: '#F9FAFB',
+        100: '#F3F4F6',
+        400: '#9CA3AF',
+        500: '#6B7280',
+        600: '#4B5563',
+        900: '#111827',
+        950: '#030712',
+      },
+      black: {
+        DEFAULT: '#111827',
+        100: '#F3F4F6',
+        400: '#9CA3AF',
+        500: '#6B7280',
+        600: '#4B5563',
+        900: '#111827',
+      },
+      // neutral tokens used by una-ui (n-*) — map them to sensible defaults
+      'n-white': '#ffffff',
+      'n-gray-950': '#030712',
+      'n-gray-50': '#F9FAFB',
+      'n-gray-600': '#4B5563',
+      'n-disabled': '#9CA3AF',
+    },
+  },
   presets: [
     presetWind3(),
     presetAttributify(),
@@ -40,6 +68,9 @@ export default {
   ],
   shortcuts: [
     {
+      // tiny utility missing from una-ui shortcuts usage — map color-white to a
+      // text color utility so classes like `class="color-white"` resolve.
+      "color-white": "text-white",
       "btn-glowing": "from-primary-500 via-primary-600 to-primary-700 bg-gradient-to-r text-white shadow-lg shadow-primary-500/50 hover:bg-gradient-to-br dark:shadow-lg dark:shadow-primary-800/80 dark:focus:ring-primary-800",
       "btn-glowing-outline": "border border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white dark:border-primary-500 dark:text-primary-500 dark:hover:bg-primary-500 dark:hover:text-white",
       "btn-text-gray-500": "text-gray-500 hover:text-gray-600 focus-visible:ring-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:focus-visible:ring-gray-400",
