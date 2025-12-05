@@ -57,10 +57,10 @@ END;
 -- ============================================================================
 
 -- Add last_login_at column for active user analytics
-ALTER TABLE users ADD COLUMN last_login_at DATETIME;
+-- ALTER TABLE users ADD COLUMN last_login_at DATETIME;
 
 -- Create index for active user queries
-CREATE INDEX IF NOT EXISTS idx_users_last_login_at ON users(last_login_at);
+-- CREATE INDEX IF NOT EXISTS idx_users_last_login_at ON users(last_login_at);
 
 -- ============================================================================
 -- Migration complete
