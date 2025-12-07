@@ -3,7 +3,7 @@
 
   <header class="hidden sm:flex mb-8 flex-col items-center justify-center">
     <h1 class="font-text text-4xl font-400 text-gray-800 dark:text-gray-200">
-      <NuxtLink to="/about">
+      <NuxtLink :to="linkTo" class="header-link" :aria-label="linkAriaLabel">
         zimablue
       </NuxtLink>
     </h1>
@@ -239,6 +239,20 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopClock()
+})
+
+// Toggle /about <-> / depending on current route
+const route = useRoute()
+
+const linkTo = computed(() => {
+  // If we're on the about page (or a child), clicking should go home
+  if (route.path.startsWith('/about')) return '/'
+  // otherwise go to about
+  return '/about'
+})
+
+const linkAriaLabel = computed(() => {
+  return route.path.startsWith('/about') ? 'Go to home' : 'Learn more about zimablue'
 })
 </script>
 

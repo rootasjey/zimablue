@@ -1,23 +1,14 @@
 <template>
   <div class="about-wrapper mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14 animate-in fade-in duration-500">
-    <!-- Hero / Title -->
-    <header class="text-center mb-10 sm:mb-14">
+    <div class="text-center">
+    </div>
       <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 mb-4 animate-in zoom-in-95">
         <span class="i-ph-sparkle mr-1"></span>
         About this project • v{{ version }}
       </div>
-      <NLink to="/" class="no-underline">
-        <h1 class="font-title font-200 text-4xl sm:text-5xl md:text-6xl tracking-tight text-gray-900 dark:text-gray-100 leading-tight animate-in slide-in-from-bottom-2">
-          zima blue
-        </h1>
-      </NLink>
-      <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto animate-in fade-in-50">
-        A handmade, ever-evolving gallery at the crossroads of code and illustration.
-      </p>
-    </header>
 
     <!-- Content -->
-    <article class="mt-24 space-y-10 sm:space-y-12 text-left">
+    <article class="mt-6 space-y-10 sm:space-y-12 text-left">
       <!-- Who am I -->
       <section class="prose-section animate-in slide-in-from-bottom-2">
         <h2 class="text-xl sm:text-2xl font-700 text-gray-900 dark:text-gray-100 mb-3">
@@ -67,12 +58,12 @@
             </div>
 
             <div class="flex items-center gap-2 self-stretch sm:self-auto">
-              <NButton btn="solid-blue" size="md" class="w-full sm:w-auto" @click="openContact">
+              <NButton btn="soft-blue" size="md" class="w-full sm:w-auto" @click="openContact">
                 <span class="i-ph-paper-plane-right mr-2"></span>
                 Contact me
               </NButton>
               <NLink to="/contact" class="hidden sm:inline-flex">
-                <NButton btn="ghost-gray" size="md" class="">
+                <NButton btn="ghost-amber" size="md" class="">
                   Full contact page
                 </NButton>
               </NLink>
