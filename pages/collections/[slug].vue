@@ -6,6 +6,7 @@
       <div class="h-6 w-52 rounded-md bg-gray-200/60 dark:bg-gray-800/60 animate-pulse"></div>
       <div class="h-4 w-80 rounded-md bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
     </div>
+    
     <CollectionHeader 
       v-else
       :collection="store.collection"
@@ -134,23 +135,97 @@
       :total-images="store.images.length"
       :can-navigate-previous="canNavigatePrevious"
       :can-navigate-next="canNavigateNext"
-      :show-edit-modal="false"
-      :edit-form="{ name: '', description: '', slug: '', tags: [] }"
-      :available-tags="[]"
-      :is-updating="false"
-      :is-edit-form-valid="false"
       @update-image-modal-open="onUpdateImageModalOpen"
       @navigate-previous="navigateToPrevious"
       @navigate-next="navigateToNext"
       @navigate-to-first="navigateToFirst"
       @navigate-to-last="navigateToLast"
+      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
+        image: item,
+        openImagePageFn: openFullPage,
+        openAddToCollectionModalFn: addToCollection.openModal,
+        replacementFileInput,
+      })"
       @open-full-page="openFullPage"
+    />
+
+    <!-- Image edit modal (was missing) - re-use the same imageActions composable as index.vue -->
+    <ImageEditModal
+      :is-open="imageActions.showEditModal.value"
+      :edit-form="imageActions.editForm.value"
+      :available-tags="imageActions.availableTags"
+      :is-updating="imageActions.isUpdating.value"
+      :is-form-valid="imageActions.isEditFormValid.value"
+      @close="imageActions.closeEditModal"
+      @submit="imageActions.handleEditSubmit"
+      @update-field="imageActions.updateEditFormField"
+      @is-open="imageActions.showEditModal.value = $event"
+    />
+    
+    <AddToCollectionModal
+      v-model:is-open="addToCollection.isOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
+    
+    <ImageEditDrawer
+      v-model:is-open="imageActions.showEditDrawer.value"
+      :edit-form="imageActions.editForm.value"
+      :available-tags="imageActions.availableTags"
+      :is-updating="imageActions.isUpdating.value"
+      :is-form-valid="imageActions.isEditFormValid.value"
+      @close="imageActions.closeEditDrawer"
+      @submit="imageActions.handleEditSubmit"
+      @update-field="imageActions.updateEditFormField"
+      @update:isOpen="imageActions.showEditDrawer.value = $event"
+    />
+
+    <AddToCollectionDrawer
+      v-model:is-open="addToCollection.isDrawerOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
+    
+    <ImageMobileDrawer
+      :is-image-drawer-open="isImageDrawerOpen"
+      :selected-modal-image="selectedImage"
+      :current-position="currentImageIndex + 1"
+      :total-images="store.images.length"
+      :can-navigate-previous="canNavigatePrevious"
+      :can-navigate-next="canNavigateNext"
+      :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
+        image: item,
+        openImagePageFn: openFullPage,
+        openAddToCollectionModalFn: addToCollection.openModal,
+        replacementFileInput,
+      })"
+      @open-full-page="openFullPage"
+      @navigate-previous="navigateToPrevious"
+      @navigate-next="navigateToNext"
+      @update-image-drawer-open="onUpdateImageDrawerOpen"
+      @open-edit-drawer="(img: Image) => imageActions.openEditDrawer(img)"
+      @open-add-to-collection-drawer="(img: Image) => addToCollection.openDrawer(img)"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useCollectionActions } from '~/composables/collection/useCollectionActions'
+import { useImageActions } from '~/composables/image/useImageActions'
+import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
+import { useImageUpload } from '~/composables/image/useImageUpload'
 import type { Image } from '~/types/image'
 
 const route = useRoute()
@@ -158,8 +233,14 @@ const router = useRouter()
 const { toast } = useToast()
 const { loggedIn, user } = useUserSession()
 
-// Initialize the store
 const store = useCollectionDetailStore()
+
+// Ensure we render a loading state on first render when the store
+// doesn't yet have collection data. This prevents a brief flash of the
+// empty state ("nothing here yet") before fetchCollection runs.
+if (!store.collection && store.images.length === 0) {
+  store.isLoading = true
+}
 const slug = route.params.slug as string
 
 // Initialize actions composable
@@ -175,8 +256,16 @@ const isOwner = computed(() => {
 })
 
 const isImageModalOpen = ref(false)
+const isImageDrawerOpen = ref(false)
 const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
+
+// Image actions & add-to-collection modal used by the modal menu
+const imageActions = useImageActions()
+const addToCollection = useAddToCollectionModal()
+const imageUpload = useImageUpload()
+const replacementFileInput = imageUpload.replacementFileInput
+const pageHeader = usePageHeader()
 
 // Computed properties for navigation
 const canNavigatePrevious = computed(() => currentImageIndex.value > 0)
@@ -184,6 +273,10 @@ const canNavigateNext = computed(() => currentImageIndex.value < store.images.le
 
 // Load collection data on mount
 onMounted(async () => {
+  pageHeader.setPageHeader({
+    show: false
+  })
+
   try {
     await store.fetchCollection(slug)
   } catch (err) {
@@ -198,6 +291,7 @@ onMounted(async () => {
 
 // Reset store when component unmounts
 onUnmounted(() => {
+  pageHeader.resetPageHeader()
   store.resetStore()
 })
 
@@ -209,46 +303,60 @@ const navigateToUpload = () => {
 const navigateToPrevious = () => {
   if (canNavigatePrevious.value) {
     currentImageIndex.value--
-    selectedImage.value = store.images[currentImageIndex.value]
+    selectedImage.value = store.images[currentImageIndex.value] ?? null
   }
 }
 
 const navigateToNext = () => {
   if (canNavigateNext.value) {
     currentImageIndex.value++
-    selectedImage.value = store.images[currentImageIndex.value]
+    selectedImage.value = store.images[currentImageIndex.value] ?? null
   }
 }
 
 const navigateToFirst = () => {
   if (store.images.length === 0) return
   currentImageIndex.value = 0
-  selectedImage.value = store.images[currentImageIndex.value]
+  selectedImage.value = store.images[currentImageIndex.value] ?? null
 }
 
 const navigateToLast = () => {
   if (store.images.length === 0) return
   currentImageIndex.value = store.images.length - 1
-  selectedImage.value = store.images[currentImageIndex.value]
+  selectedImage.value = store.images[currentImageIndex.value] ?? null
 }
 
 // Add this new method for the ImageModal component
 const openFullPage = () => {
   if (selectedImage.value) {
+    // close modal/drawer before navigating for a smooth UX
+    isImageModalOpen.value = false
+    isImageDrawerOpen.value = false
     router.push(`/illustrations/${selectedImage.value.slug}`)
   }
 }
 
-const openImageModal = (image: any) => {
+const openImageModal = (image: Image, event?: MouseEvent | PointerEvent) => {
   selectedImage.value = image
-  currentImageIndex.value = store.images.findIndex(img => img.id === image.id)
-  isImageModalOpen.value = true
+  const idx = store.images.findIndex(img => img.id === image.id)
+  currentImageIndex.value = idx > -1 ? idx : 0
+
+  // Detect mobile viewport and open drawer instead of modal
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
+  if (isMobile) {
+    isImageDrawerOpen.value = true
+  } else {
+    isImageModalOpen.value = true
+  }
 }
 
 const onUpdateImageModalOpen = (value: boolean) => {
   isImageModalOpen.value = value
 }
 
+const onUpdateImageDrawerOpen = (value: boolean) => {
+  isImageDrawerOpen.value = value
+}
 </script>
 
 <style scoped>

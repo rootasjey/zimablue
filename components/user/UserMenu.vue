@@ -6,17 +6,19 @@
           <UButton
             btn="ghost-gray"
             icon
-            label="i-ph-user"
-            aria-label="Account menu">
-          </UButton>
+            label="i-ph-identification-badge"
+            aria-label="Account menu"
+          />
         </template>
       </UDropdownMenu>
 
       <template #fallback v-if="loggedIn">
-        <button
-          class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center opacity-50">
-          <span class="i-ph-user text-white text-lg"></span>
-        </button>
+        <UButton
+          btn="ghost-gray"
+          icon
+          label="i-ph-identification-badge"
+          aria-label="Account menu"
+        />
       </template>
 
       <UButton
@@ -24,7 +26,7 @@
         btn="soft-white"
         size="sm"
         to="/login">
-        <UIcon name="i-ph-signpost" />
+        <UIcon name="i-ph-user-focus-duotone" />
       </UButton>
     </ClientOnly>
   </div>

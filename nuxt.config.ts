@@ -99,6 +99,12 @@ export default defineNuxtConfig({
           800: '#0031B2',
           900: '#002A99',
         },
+        // neutral tokens used by una-ui (n-*) — map them to sensible defaults
+        'n-white': '#ffffff',
+        'n-gray-950': '#030712',
+        'n-gray-50': '#F9FAFB',
+        'n-gray-600': '#4B5563',
+        'n-disabled': '#9CA3AF',
       },
     },
   },

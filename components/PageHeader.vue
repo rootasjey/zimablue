@@ -1,18 +1,10 @@
 <template>
-  <!-- Mobile Header -->
-  <MobileHeader
-    :is-mobile-menu-open="isMobileMenuOpen"
-    @toggle-menu="toggleMobileMenu"
-  />
+  <MobileHeader />
 
-  <!-- Mobile Menu Drawer -->
-  <MobileMenuDrawer v-model:open="isMobileMenuOpen" />
-
-  <!-- Desktop Header -->
   <header class="hidden sm:flex mb-8 flex-col items-center justify-center">
-    <h1 class="font-title text-xl font-400 text-gray-800 dark:text-gray-200">
+    <h1 class="font-text text-4xl font-400 text-gray-800 dark:text-gray-200">
       <NuxtLink to="/about">
-        zima blue
+        zimablue
       </NuxtLink>
     </h1>
 
@@ -113,8 +105,10 @@
 
 <script lang="ts" setup>
 interface Props {
-  userMenuItems?: Array<{ label: string, onClick?: () => void } | {}>
+  userMenuItems?: Array<{ label: string, onClick?: () => void } | {}> | Ref<Array<{ label: string, onClick?: () => void } | {}>>
 }
+
+import type { Ref } from 'vue'
 
 const props = withDefaults(defineProps<Props>(), {
   userMenuItems: () => []

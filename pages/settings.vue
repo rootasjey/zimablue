@@ -8,8 +8,7 @@
     </div>
 
     <section class="space-y-6">
-      <!-- User profile (edit) -->
-      <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
+      <div v-if="loggedIn" class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
         <div class="mt-4">
           <UserInfo
             v-if="user"
@@ -38,13 +37,25 @@
       </div>
 
       <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
           <div class="flex-1">
             <h2 class="text-lg font-700 text-gray-900 dark:text-white">App theme</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred theme. System will follow the OS preference.</p>
           </div>
-            <div class="shrink-0 w-48">
+          <div class="shrink-0 w-48">
             <USelect v-model="selectedTheme" :items="themeOptions" item-key="label" value-key="label" size="sm" />
+          </div>
+        </div>
+      </div>
+      
+      <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30 mt-6">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <h2 class="text-lg font-700 text-gray-900 dark:text-white">App version</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">The current application version built into runtime config.</p>
+          </div>
+          <div class="shrink-0 flex items-center text-sm text-gray-700 dark:text-gray-300">
+            {{ version || '—' }}
           </div>
         </div>
       </div>
@@ -56,6 +67,9 @@
 import { useAppSettings } from '~/composables/useAppSettings'
 const settings = useAppSettings()
 const { fireworksEnabled, theme } = settings
+const config = useRuntimeConfig()
+
+const version = config.public.appVersion
 
 import { computed, ref, reactive, onMounted } from 'vue'
 import UserInfo from '~/components/user/UserInfo.vue'

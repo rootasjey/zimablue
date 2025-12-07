@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed p-2 w-full h-screen flex justify-center items-center inset-0 bg-black/90 z-2">
+  <div class="fixed p-2 w-full h-screen flex justify-center items-center inset-0 bg-black z-14">
     <!-- Image container that fills the screen -->
     <div class="relative w-full h-full flex justify-center items-center">
       <NuxtImg
@@ -12,10 +12,10 @@
       />
       
       <!-- Controls overlay -->
-      <div class="absolute top-4 right-4 flex flex-row gap-4">
+      <div class="absolute bottom-4 flex flex-row gap-4 justify-center items-center">
         <button 
           @click="downloadImage"
-          class="text-white hover:scale-110 active:scale-90 transition bg-black/30 p-2 rounded-full"
+          class="text-white hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
           title="Download image"
         >
           <div class="i-ph-download text-2xl" />
@@ -24,7 +24,7 @@
         <button 
           v-if="loggedIn"
           @click="showEditDrawer = true"
-          class="text-white hover:scale-110 active:scale-90 transition bg-black/30 p-2 rounded-full"
+          class="text-white hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
           title="Edit image"
         >
           <div class="i-ph-pencil-simple text-2xl" />
@@ -32,7 +32,7 @@
         
         <button 
           @click="router.back()"
-          class="text-white hover:scale-110 active:scale-90 transition bg-black/30 p-2 rounded-full"
+          class="text-white hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
           title="Close"
         >
           <div class="i-ph-x text-2xl" />
@@ -88,8 +88,8 @@
               >
                 <template #trigger>
                   {{ editForm.tags?.length > 0
-                    ? editForm.tags.map(val => {
-                      const tag = availableTags.find(f => f.value === val)
+                    ? editForm.tags.map((val: string) => {
+                      const tag = availableTags.find((f: { label: string, value: string }) => f.value === val)
                       return tag ? tag.label : val
                     }).join(", ")
                     : "Select tags..." }}
@@ -124,6 +124,7 @@
 <script setup lang="ts">
 import { useGridStore } from '@/stores/useGridStore';
 import type { VariantType } from '~/types/image';
+import useParseVariants from '~/composables/image/useParseVariants'
 
 const router = useRouter()
 const route = useRoute()
@@ -180,9 +181,11 @@ if (import.meta.server) {
   await fetchImage()
 }
 
+const { parse: parseVariants } = useParseVariants()
+
 const downloadImage = () => {
   if (!image.value) return
-  const variants: Array<VariantType> = JSON.parse(image.value.variants)
+  const variants: Array<VariantType> = parseVariants(image.value.variants)
   const originalVariant = variants.find(variant => variant.size === 'original')
 
   const link = document.createElement('a')

@@ -1,12 +1,13 @@
 import type { Image, VariantType } from '~/types/image'
+import useParseVariants from './useParseVariants'
 
 export const useImageActions = () => {
   const { loggedIn } = useUserSession()
   const { toast } = useToast()
   const gridStore = useGridStore()
 
-  // Edit modal state
   const showEditModal = ref(false)
+  const showEditDrawer = ref(false)
   const editForm = ref({
     name: '',
     description: '',
@@ -40,8 +41,18 @@ export const useImageActions = () => {
     showEditModal.value = true
   }
 
+  const openEditDrawer = (image: Image) => {
+    // set selected image for the edit form and show the drawer
+    gridStore.selectedImage = image
+    showEditDrawer.value = true
+  }
+
   const closeEditModal = () => {
     showEditModal.value = false
+    resetEditForm()
+  }
+  const closeEditDrawer = () => {
+    showEditDrawer.value = false
     resetEditForm()
   }
   const resetEditForm = () => {
@@ -76,13 +87,7 @@ export const useImageActions = () => {
       })
       
       closeEditModal()
-      toast({
-        title: 'Update Success',
-        description: 'Image details updated successfully',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-success'
-      })
+      closeEditDrawer()
     } catch (error) {
       console.error('Update error:', error)
       toast({
@@ -127,10 +132,11 @@ export const useImageActions = () => {
     }
   }
 
-  // Download image
+  const { parse: parseVariants } = useParseVariants()
+
   const downloadImage = (image: Image) => {
     try {
-      const variants: Array<VariantType> = JSON.parse(image.variants)
+      const variants: Array<VariantType> = parseVariants(image.variants)
       const originalVariant = variants.find(variant => variant.size === 'original')
 
       const link = document.createElement('a')
@@ -273,6 +279,7 @@ export const useImageActions = () => {
   return {
     // State
     showEditModal,
+    showEditDrawer,
     editForm,
     availableTags,
     isDeleting: readonly(isDeleting),
@@ -284,7 +291,9 @@ export const useImageActions = () => {
     
     // Modal actions
     openEditModal,
+    openEditDrawer,
     closeEditModal,
+    closeEditDrawer,
     resetEditForm,
     handleEditSubmit,
     

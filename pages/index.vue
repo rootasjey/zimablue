@@ -6,11 +6,6 @@
     @dragover.prevent="imageUpload.handleDragOver"
     @dragleave.prevent="imageUpload.handleDragLeave"
   >
-
-    <PageHeader
-      :user-menu-items="imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)"
-    />
-
     <ImageUploadProgress
       :session="imageUpload.currentUploadSession.value"
       @close="imageUpload.clearUploadSession"
@@ -91,6 +86,8 @@
       @navigate-previous="imageModal.navigateToPrevious"
       @navigate-next="imageModal.navigateToNext"
       @update-image-drawer-open="imageModal.isImageDrawerOpen.value = $event"
+      @open-edit-drawer="(img: Image) => imageActions.openEditDrawer(img)"
+      @open-add-to-collection-drawer="(img: Image) => addToCollection.openDrawer(img)"
     />
 
     <ImageEditModal
@@ -107,6 +104,30 @@
 
     <AddToCollectionModal
       v-model:is-open="addToCollection.isOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
+
+    <ImageEditDrawer
+      v-model:is-open="imageActions.showEditDrawer.value"
+      :edit-form="imageActions.editForm.value"
+      :available-tags="imageActions.availableTags"
+      :is-updating="imageActions.isUpdating.value"
+      :is-form-valid="imageActions.isEditFormValid.value"
+      @close="imageActions.closeEditDrawer"
+      @submit="imageActions.handleEditSubmit"
+      @update-field="imageActions.updateEditFormField"
+      @update:isOpen="imageActions.showEditDrawer.value = $event"
+    />
+
+    <AddToCollectionDrawer
+      v-model:is-open="addToCollection.isDrawerOpen.value"
       :selected-image="addToCollection.selectedImage.value"
       :collections="addToCollection.collections.value"
       :selected-collection="addToCollection.selectedCollection.value"
@@ -165,6 +186,23 @@ const imageModal = useImageModal()
 const imageUpload = useImageUpload()
 const addToCollection = useAddToCollectionModal()
 const multiSelect = useHomeMultiSelect()
+
+// Register header state (layout will render PageHeader)
+import usePageHeader from '~/composables/usePageHeader'
+const pageHeader = usePageHeader()
+
+// provide the same menu items that the page previously passed directly
+import { onMounted, onBeforeUnmount } from 'vue'
+
+onMounted(() => {
+  pageHeader.setPageHeader({
+    userMenuItems: () => imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)
+  })
+})
+
+onBeforeUnmount(() => {
+  pageHeader.resetPageHeader()
+})
 
 const replacementFileInput = imageUpload.replacementFileInput
 const fileInput = imageUpload.fileInput
@@ -340,7 +378,6 @@ const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: str
 const navigateToCreateCollection = () => {
   navigateTo('/collections/create')
 }
-
 </script>
 
 <style scoped>
@@ -348,7 +385,6 @@ const navigateToCreateCollection = () => {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  min-height: 100vh;
   width: 100%;
   border-radius: 0.75rem;
   transition: all 500ms;

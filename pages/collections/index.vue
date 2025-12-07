@@ -1,20 +1,20 @@
 <template>
   <div class="page max-w-[1400px] mx-auto px-4 sm:px-6 pt-5 pb-16">
-    <!-- Top bar: back • title • new -->
-    <header class="topbar grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4 animate-fade-in-down">
-      <ULink to="/" class="back-btn w-9 h-9 inline-flex items-center justify-center rounded-md text-[rgba(var(--una-gray-600),1)]" aria-label="Back to home">
-        <span class="i-ph-arrow-left"></span>
-      </ULink>
+    <div class="mt-6 ml-4 flex items-center">
+      <div class="font-500 color-gray-400 text-size-4 uppercase">
+        <template v-if="isLoading">
+          <span class="inline-flex items-center gap-2 opacity-80">
+            <span class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+            Loading
+          </span>
+        </template>
+        <template v-else>
+          {{ collectionStore.collections.length.toLocaleString() }} Collections
+        </template>
+      </div>
 
-      <h1 class="justify-self-center font-title text-size-4 font-400 text-gray-500 flex items-center gap-2">
-        <ULink to="/" class="text-inherit no-underline hover:underline decoration-offset-4">
-          <span>zima blue</span>
-        </ULink>
-        <span>•</span>
-        <span>collections</span>
-      </h1>
-
-      <div class="justify-self-end">
+      <div class="flex items-center">
+        <UIcon name="i-ph-dot" class="text-gray-500 ml-6 mr-2 text-size-5" />
         <UButton
           v-if="loggedIn"
           btn="link-gray"
@@ -22,20 +22,30 @@
           class="hover:scale-101 active:scale-99 transition"
           @click="collectionStore.openCreateDialog()"
         >
-          <i class="i-ph-plus-bold"></i>
-          <span>New</span>
+          <span class="uppercase">Create new</span>
         </UButton>
       </div>
-    </header>
+    </div>
+    
+    <!-- Loading skeleton (client-only) -->
+    <section v-if="isLoading" class="relative animate-fade-in-up animation-delay-200">
+      <div class="flex flex-col gap-6 sm:grid sm:grid-flow-col sm:auto-cols-[minmax(240px,380px)] sm:gap-[28px] p-3 sm:mx-6">
+        <article v-for="n in 4" :key="`skeleton-${n}`" class="hcard sm:snap-start w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]">
+          <div class="rounded-[4px] overflow-hidden shadow-lg hcover bg-gradient-to-tr from-gray-200/50 to-gray-200/30 dark:from-black/5 dark:to-black/2 w-full aspect-[16/9] sm:aspect-[3/4] animate-pulse"></div>
+          <div class="mt-3 h-4 bg-gray-200/60 dark:bg-white/5 rounded w-3/4 animate-pulse"></div>
+          <div class="mt-2 h-3 bg-gray-200/40 dark:bg-white/3 rounded w-1/2 animate-pulse"></div>
+        </article>
+      </div>
+    </section>
 
     <!-- Vertical Cards on Mobile, Horizontal Carousel on Desktop -->
-    <section v-if="collectionStore.collections.length > 0" class="relative mt-12 sm:mt-24 animate-fade-in-up animation-delay-200">
+    <section v-else-if="!isLoading && collectionStore.collections.length > 0" class="relative animate-fade-in-up animation-delay-200">
       <!-- Navigation buttons - hidden on mobile -->
-      <button class="hidden sm:inline-flex nav left absolute top-1/2 -translate-y-1/2 w-9 h-9 color-black
-        rounded-full border border-[rgba(0,0,0,0.08)] bg-white/85 backdrop-blur-md 
+      <button class="hidden sm:inline-flex nav left absolute top-1/2 -translate-y-1/2 w-9 h-9 
+        rounded-full border border-[rgba(0,0,0,0.08)] backdrop-blur-md 
         items-center justify-center cursor-pointer shadow-lg left-[-10px] z-10 animate-fade-in-left animation-delay-400" 
         aria-label="Previous" @click="scrollByAmount(-1)">
-        <span class="i-ph-caret-left"></span>
+        <UIcon name="i-ph-caret-left" />
       </button>
 
       <div ref="scrollEl" 
@@ -78,7 +88,7 @@
               
               <!-- Public/Private chip -->
               <UBadge v-if="loggedIn"
-                badge="solid-blue"
+                :badge="collection.is_public ? 'solid-blue' : 'solid-gray'"
                 :label="collection.is_public ? 'Public' : 'Private'" 
                 :icon="collection.is_public ? 'i-ph-globe' : 'i-ph-lock'" 
                 class="absolute top-2 left-2"
@@ -108,7 +118,7 @@
 
       <!-- Right navigation button - hidden on mobile -->
       <button class="hidden sm:inline-flex right absolute top-1/2 -translate-y-1/2 w-9 h-9 
-        rounded-full border border-[rgba(0,0,0,0.08)] bg-white/85 color-black backdrop-blur-md 
+        rounded-full border border-[rgba(0,0,0,0.08)] backdrop-blur-md 
         items-center justify-center cursor-pointer shadow-lg right-[-10px] z-10 animate-fade-in-right animation-delay-400" aria-label="Next" @click="scrollByAmount(1)">
         <span class="i-ph-caret-right"></span>
       </button>
@@ -129,17 +139,6 @@
         </UButton>
       </div>
     </section>
-
-    <!-- Bottom bar: stats + scrollbar (hidden on mobile) -->
-    <footer class="hidden mb-12 md:mb-0 sm:grid bottombar mt-12 mx-4 animate-fade-in-up animation-delay-500" v-if="collectionStore.collections.length > 0">
-      <div class="font-500 color-gray-400 text-size-3 uppercase">
-        {{ collectionStore.collections.length.toLocaleString() }} Collections
-      </div>
-      <div class="progress">
-        <div class="track"><div class="thumb" :style="{ width: progressWidth + '%', transform: `translateX(${progressTranslate}%)` }"></div></div>
-      </div>
-      <div class="h-1px" />
-    </footer>
 
     <!-- Dialogs -->
     <CollectionCreateDialog
@@ -174,18 +173,63 @@ const { loggedIn } = useUserSession()
 const collectionStore = useCollectionStore()
 const { lightModeColors } = useRandomColors()
 
-// Initialize collections on page load
-await collectionStore.fetchCollections(loggedIn.value)
+// We render a cached, server-side snapshot for unauthenticated users to get
+// a fast, cacheable HTML response from the edge/CDN. Authenticated users won't
+// receive a cached page and will load collections on the client.
+const isLoading = ref(true)
 
-// Handle collection store error
-if (collectionStore.error) {
-  toast({
-    title: 'Error',
-    description: collectionStore.error,
-    toast: 'soft-error',
-    duration: 5000
-  })
+// Server: for anonymous visitors fetch collections during SSR and attach
+// caching headers so CDNs can cache the snapshot. For authenticated users
+// skip SSR fetch so private data doesn't get cached.
+if (import.meta.server) {
+  // loggedIn is a computed ref that works during SSR (session plugin will
+  // populate session state server-side using the incoming request cookies).
+  if (!loggedIn.value) {
+    // Fetch public collections during SSR so the initial HTML contains data.
+    await collectionStore.fetchCollections(false)
+
+    // Attach cache headers to allow CDN/edge to cache this anonymous snapshot.
+    // s-maxage controls edge caching while stale-while-revalidate lets us serve
+    // slightly stale pages while revalidating in the background.
+    const event = useRequestEvent()
+    try {
+      if (event) setHeader(event, 'cache-control', 'public, s-maxage=60, stale-while-revalidate=30')
+    } catch (e) {
+      // Best-effort - if header can't be set we still continue.
+    }
+
+    // We fetched data on the server so mark loading as finished for SSR output.
+    isLoading.value = false
+  }
 }
+
+// Client: refresh on mount. Avoid forcing the skeleton for visitors who already
+// received an SSR snapshot (prevents flicker). When logged-in or there are no
+// server-populated collections, show loading until the fetch completes.
+onMounted(async () => {
+  const needLoading = loggedIn.value || collectionStore.collections.length === 0
+
+  if (needLoading) {
+    isLoading.value = true
+    await collectionStore.fetchCollections(loggedIn.value)
+
+    // Client-only error handling
+    if (collectionStore.error) {
+      toast({
+        title: 'Error',
+        description: collectionStore.error,
+        toast: 'soft-error',
+        duration: 5000
+      })
+    }
+
+    isLoading.value = false
+  } else {
+    // We have an SSR snapshot (anonymous cached). Refresh in the background
+    // without showing the loading skeleton to avoid UI flicker.
+    collectionStore.fetchCollections(loggedIn.value).catch(() => {})
+  }
+})
 
 // Helpers
 const ensureLeadingSlash = (p?: string | null): string | undefined => {
@@ -264,6 +308,8 @@ const handleCreateCollection = async () => {
   })
 }
 
+// Note: we load collections on mount in the block above (client-only).
+
 const handleUpdateCollection = async (data: CollectionFormData) => {
   const result = await collectionStore.updateCollection(data)
   
@@ -313,11 +359,6 @@ const getGradientStyle = (collection: any) => {
 .empty-card .icon { font-size: 2rem; color: rgba(var(--una-gray-400), 1); margin: 0 auto 0.75rem; }
 .empty-card .heading { font-weight: 700; font-size: 1.25rem; margin-bottom: 0.25rem; }
 .empty-card .copy { color: rgba(var(--una-gray-500), 1); max-width: 48ch; margin: 0 auto 1rem; }
-
-/* Bottom bar kept — small visual rules remain */
-.bottombar { display: grid; grid-template-columns: 1fr minmax(260px, 420px) 1fr; align-items: center; gap: 1rem; }
-.progress .track { position: relative; height: 6px; background: rgba(0,0,0,0.08); border-radius: 9999px; overflow: hidden; }
-.progress .thumb { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #3D3BF3, #8b5cf6); border-radius: 9999px; }
 
 .dark .back-btn:hover { background: rgba(31,41,55, 1); color: rgba(var(--una-gray-100), 1); }
 

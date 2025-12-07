@@ -7,7 +7,6 @@
     <UToaster />
     <GlobalSearchDialog />
     <HiddenFileInputs />
-    <DesktopBottomNav />
     <UserMenu />
     <ClickFireworks v-if="fireworksEnabled" />
   </div>

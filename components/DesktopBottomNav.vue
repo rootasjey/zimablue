@@ -1,17 +1,20 @@
 <template>
-  <nav class="fixed bottom-0 sm:bottom-4 left-0 right-0 z-40" role="navigation" aria-label="Main navigation">
+  <nav class="fixed bottom-0 sm:bottom-4 left-0 right-0 z-12" role="navigation" aria-label="Main navigation">
     <div class="pointer-events-none flex w-full justify-center">
       <div
-        class="pointer-events-auto flex items-center gap-2 sm:gap-6 w-full sm:w-auto rounded-none sm:rounded-[32px] px-4 sm:px-3 py-3 sm:py-1  shadow-lg shadow-black/10 border-t sm:border border-white/10 bg-black text-white/90 dark:bg-black/90 backdrop-blur-md">
-        <NuxtLink v-for="item in visibleItems" :key="item.key" :to="item.to || '#'"
+        class="pointer-events-auto flex items-center gap-2 sm:gap-6 w-[min(96%,720px)] sm:w-auto 
+          rounded-[32px] px-4 sm:px-3 py-3 sm:py-1 shadow-lg shadow-black/10 mb-2 
+          border sm:border border-white/10 bg-black text-white/90 dark:bg-black/90 backdrop-blur-md">
+        <NuxtLink v-for="item in navItems" :key="item.key" :to="item.to || '#'"
           class="group relative flex flex-1 sm:flex-initial items-center justify-center" :aria-label="item.label"
           @click.prevent="handleItemClick(item)">
-          <div class="nav-pill flex flex-col sm:flex-row items-center sm:mr-1 rounded-[28px] text-white p-2 sm:p-0"
+          <div class="nav-pill flex flex-row sm:flex-row items-center sm:mr-1 rounded-[28px] text-white p-2 sm:p-0"
             :class="{ 'bg-white/10 shadow-inner': isActive(item) }">
             <div class="flex h-8 w-8 items-center justify-center rounded-2xl hover:bg-white/10 transition-colors">
               <i :class="item.icon + ' text-xl text-white/90'" />
             </div>
-            <span class="nav-label text-xs sm:text-base font-medium color-white mt-1 sm:mt-0" :class="{ 'nav-label-visible': true, 'nav-label-active': isActive(item) }">
+            <span class="nav-label text-xs sm:text-base font-medium color-white" 
+              :class="{ 'nav-label-visible': true, 'nav-label-active': isActive(item) }">
               {{ item.label }}
             </span>
           </div>
@@ -48,36 +51,24 @@ type Item = {
 
 const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth < 640)
 
-const baseItems = computed<Item[]>(() => {
+const navItems = computed<Item[]>(() => {
   const items: Item[] = [
     { key: 'home', to: '/', label: 'Home', icon: 'i-tabler-smart-home', match: (p) => p === '/' },
     { key: 'collections', to: '/collections', label: 'Collection', icon: 'i-ph-squares-four', match: (p) => p.startsWith('/collections') },
-    // Search: redirects to /search on mobile, opens dialog on desktop
-    { key: 'search', to: isMobile.value ? '/search' : '#', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: isMobile.value ? undefined : () => openSearch() },
+    { key: 'search', to: '/search', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: !isMobile.value ? () => openSearch() : undefined },
   ]
   
   // Add upload button for admin users on mobile
   if (loggedIn.value && userRole.value === 'admin') {
     items.push({ key: 'upload', to: '#', label: 'Upload', icon: 'i-tabler-upload', match: () => false, action: () => triggerUpload() })
   }
+
+  // Add admin panel link for admin users
+  // if (loggedIn.value && userRole.value === 'admin') {
+  //   items.push({ key: 'admin', to: '/admin', label: 'Admin', icon: 'i-tabler-shield', match: (p) => p.startsWith('/admin') })
+  // }
   
   items.push({ key: 'settings', to: '/settings', label: 'Settings', icon: 'i-ph-gear', match: (p) => p.startsWith('/settings') })
-  return items
-})
-
-const adminItem = computed<Item>(() => ({
-  key: 'admin',
-  to: '/admin',
-  label: 'Admin',
-  icon: 'i-tabler-shield',
-  match: (p: string) => p.startsWith('/admin'),
-}))
-
-const visibleItems = computed(() => {
-  const items = [...baseItems.value]
-  if (loggedIn.value && (user.value as any)?.role === 'admin') {
-    items.push(adminItem.value)
-  }
   return items
 })
 
@@ -110,21 +101,15 @@ a { min-height: 44px; min-width: 44px; }
 /* Mobile: always show labels */
 .nav-label {
   white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-right: 0.5rem;
   transition: max-width 220ms ease, opacity 180ms ease;
 }
 
-/* Desktop: hide labels by default, show on active */
-@media (min-width: 640px) {
-  .nav-label {
-    max-width: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin-right: 0.5rem;
-  }
-  
-  .nav-label-active {
-    max-width: 10rem;
-    opacity: 1;
-  }
+.nav-label-active {
+  max-width: 10rem;
+  opacity: 1;
 }
 </style>

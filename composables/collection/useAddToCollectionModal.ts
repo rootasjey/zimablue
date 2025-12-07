@@ -2,8 +2,8 @@ import type { Collection } from '~/types/collection'
 import type { Image } from '~/types/image'
 
 export const useAddToCollectionModal = () => {
-  // Modal state
   const isOpen = ref(false)
+  const isDrawerOpen = ref(false)
   const selectedImage = ref<Image | null>(null)
   
   // Collections state
@@ -17,11 +17,13 @@ export const useAddToCollectionModal = () => {
   // Error state
   const error = ref<string | null>(null)
 
+  // Auth state
+  const { loggedIn } = useUserSession()
+
   // Computed properties
   const hasSelectedCollection = computed(() => selectedCollection.value !== null)
   const hasCollections = computed(() => collections.value.length > 0)
 
-  // Open modal with specific image
   const openModal = (image: Image) => {
     selectedImage.value = image
     selectedCollection.value = null
@@ -34,8 +36,27 @@ export const useAddToCollectionModal = () => {
     }
   }
 
+  // Open drawer (mobile) with specific image
+  const openDrawer = (image: Image) => {
+    selectedImage.value = image
+    selectedCollection.value = null
+    error.value = null
+    isDrawerOpen.value = true
+
+    if (collections.value.length === 0) {
+      fetchCollections()
+    }
+  }
+
   const closeModal = () => {
     isOpen.value = false
+    selectedImage.value = null
+    selectedCollection.value = null
+    error.value = null
+  }
+
+  const closeDrawer = () => {
+    isDrawerOpen.value = false
     selectedImage.value = null
     selectedCollection.value = null
     error.value = null
@@ -46,7 +67,8 @@ export const useAddToCollectionModal = () => {
       isLoading.value = true
       error.value = null
       
-      const data = await $fetch('/api/collections')
+      const includePrivateQuery = loggedIn?.value ? '?includePrivate=1' : ''
+      const data = await $fetch(`/api/collections${includePrivateQuery}`)
       collections.value = (data.collections || []) as unknown as Collection[]
     } catch (err) {
       console.error('Error fetching collections:', err)
@@ -85,6 +107,7 @@ export const useAddToCollectionModal = () => {
       })
 
       closeModal()
+      closeDrawer()
       return true
     } catch (err: any) {
       console.error('Error adding image to collection:', err)
@@ -118,6 +141,7 @@ export const useAddToCollectionModal = () => {
   return {
     // State
     isOpen,
+    isDrawerOpen,
     selectedImage,
     collections,
     selectedCollection,
@@ -131,7 +155,9 @@ export const useAddToCollectionModal = () => {
     
     // Actions
     openModal,
+    openDrawer,
     closeModal,
+    closeDrawer,
     selectCollection,
     addImageToCollection,
     refreshCollections,

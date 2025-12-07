@@ -45,7 +45,7 @@
           </div>
 
           <div
-            class="font-500 text-gray-900 dark:text-white transition-all duration-200 ellipsis"
+            class="hidden sm:flex font-500 text-gray-900 dark:text-white transition-all duration-200 ellipsis"
             :class="isCompact ? 'text-sm' : 'text-sm md:text-base'"
             style="min-width: 0"
           >
@@ -77,27 +77,26 @@
         <!-- Right: actions -->
         <div class="inline-flex items-center justify-self-end gap-2 pr-2 transition-all duration-200" :class="isCompact ? 'text-[12px]' : ''">
           <template v-if="canEdit">
-            <UBadge badge="solid-gray" class="whitespace-nowrap cursor-pointer" :class="isCompact ? 'py-1' : ''" @click="$emit('addImages')">
+            <UBadge badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('addImages')">
               <UIcon name="i-ph-plus" class="mr-1" />
               <span>Add Images</span>
             </UBadge>
 
-            <UBadge v-if="canEdit" badge="solid-gray" class="whitespace-nowrap cursor-pointer" :class="isCompact ? 'py-1' : ''" @click="$emit('edit')">
+            <UBadge v-if="canEdit" badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('edit')">
               <UIcon name="i-ph-pencil" class="mr-1" />
               <span>Edit</span>
             </UBadge>
 
             <ClientOnly>
               <UDropdownMenu
-                v-if="imageCount > 0"
-                :items="reorderMenuItems"
+                :items="menuItems"
                 size="xs"
                 menu-label=""
                 :_dropdown-menu-content="{ class: 'w-44', align: 'end', side: 'bottom' }"
                 :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-ph-dots-three', class: 'bg-transparent scale-75' }"
               />
               <template #fallback>
-                <div v-if="imageCount > 0" class="flex items-center justify-center w-8 h-8 bg-transparent scale-75 opacity-50">
+                <div class="flex items-center justify-center w-8 h-8 bg-transparent scale-75 opacity-50">
                   <UIcon name="i-ph-dots-three" />
                 </div>
               </template>
@@ -180,7 +179,7 @@ onMounted(() => {
     (entries) => {
       const entry = entries[0]
       // When header is not intersecting (scrolled past), enable compact mode
-      isCompact.value = !entry.isIntersecting
+      isCompact.value = entry?.isIntersecting ?? false
     },
     { threshold: 0.01 }
   )
@@ -194,13 +193,28 @@ onBeforeUnmount(() => {
   }
 })
 
-// Dropdown items for actions
-const reorderMenuItems = computed(() => [
-  {
-    label: 'Reorder images',
-    onClick: () => emit('reorder'),
-  },
-])
+// Dropdown items for actions (includes add/edit + reorder if there are images)
+const menuItems = computed(() => {
+  const items: Array<any> = [
+    {
+      label: 'Add images',
+      onClick: () => emit('addImages'),
+    },
+    {
+      label: 'Edit collection',
+      onClick: () => emit('edit'),
+    },
+  ]
+
+  if ((props.imageCount || 0) > 0) {
+    items.push({
+      label: 'Reorder images',
+      onClick: () => emit('reorder'),
+    })
+  }
+
+  return items
+})
 </script>
 
 <style scoped>

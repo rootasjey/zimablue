@@ -237,6 +237,17 @@ definePageMeta({
 })
 
 const searchStore = useGlobalSearchStore()
+import usePageHeader from '~/composables/usePageHeader'
+const pageHeader = usePageHeader()
+
+onMounted(() => {
+  // this page has a custom search header so disable the global PageHeader from layout
+  pageHeader.setPageHeader({ show: false })
+})
+
+onBeforeUnmount(() => {
+  pageHeader.resetPageHeader()
+})
 const router = useRouter()
 const route = useRoute()
 const { $colorMode } = useNuxtApp()

@@ -43,24 +43,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Floating upload button -->
-    <div v-if="loggedIn && !showEmptyState" 
-         class="fixed bottom-6 left-0 right-0 flex justify-center items-center z-40">
-      <div class="border backdrop-blur-md bg-white/20 dark:bg-black/20 shadow-lg rounded-full flex justify-center items-center gap-4">
-        <UButton 
-          icon
-          rounded="full"
-          btn="ghost"
-          label="i-ph-plus-bold"
-          @click="$emit('upload')"
-          :loading="isUploading"
-          :disabled="isUploading"
-        />
-      </div>
-    </div>
-
-
   </div>
 </template>
 

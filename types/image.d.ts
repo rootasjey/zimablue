@@ -31,7 +31,9 @@ export interface Image {
   sum: number;
   sum_abs: number;
   updated_at: string;
-  variants: string;
+  // `variants` may be a JSON string when read directly from the DB, or
+  // an already-parsed VariantType[] when returned from some API endpoints.
+  variants: string | VariantType[];
   w: number;
   x: number;
   y: number;

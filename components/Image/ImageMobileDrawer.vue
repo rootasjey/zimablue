@@ -66,7 +66,7 @@
           <ClientOnly>
             <UDropdownMenu 
               v-if="selectedModalImage && imageMenuItems"
-              :items="imageMenuItems(selectedModalImage)"
+              :items="wrappedMenuItems"
               size="md"
               menu-label=""
               :_dropdown-menu-content="{
@@ -141,6 +141,8 @@ interface Emits {
   navigatePrevious: []
   navigateNext: []
   updateImageDrawerOpen: [value: boolean]
+  openEditDrawer: [image: Image]
+  openAddToCollectionDrawer: [image: Image]
 }
 
 const props = defineProps<Props>()
@@ -161,7 +163,7 @@ const SWIPE_THRESHOLD = 80 // pixels needed to trigger navigation
 const VERTICAL_THRESHOLD = 30 // max vertical movement before canceling swipe
 
 const handleTouchStart = (e: TouchEvent) => {
-  const touch = e.touches[0]
+  const touch = e.touches[0] ; if (!touch) return
   touchStartX.value = touch.clientX
   touchStartY.value = touch.clientY
   isSwiping.value = true
@@ -170,7 +172,7 @@ const handleTouchStart = (e: TouchEvent) => {
 const handleTouchMove = (e: TouchEvent) => {
   if (!isSwiping.value) return
   
-  const touch = e.touches[0]
+  const touch = e.touches[0] ; if (!touch) return
   const deltaX = touch.clientX - touchStartX.value
   const deltaY = Math.abs(touch.clientY - touchStartY.value)
   
@@ -203,4 +205,39 @@ const handleTouchEnd = () => {
   swipeOffset.value = 0
   isSwiping.value = false
 }
+
+const wrappedMenuItems = computed(() => {
+  if (!props.imageMenuItems || !props.selectedModalImage) return []
+
+  const items = props.imageMenuItems(props.selectedModalImage)
+  return items.map(item => {
+    if (!item || typeof item !== 'object' || !('label' in item)) return item
+
+    if (item.label === 'Edit') {
+      return {
+        ...item,
+        onClick: () => {
+          const image = props.selectedModalImage
+          if (!image) return
+          isOpen.value = false
+          nextTick(() => emit('openEditDrawer', image))
+        }
+      }
+    }
+
+    if (item.label === 'Add to collection') {
+      return {
+        ...item,
+        onClick: () => {
+          const image = props.selectedModalImage
+          if (!image) return
+          isOpen.value = false
+          nextTick(() => emit('openAddToCollectionDrawer', image))
+        }
+      }
+    }
+
+    return item
+  })
+})
 </script>
