@@ -9,7 +9,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-          <UInput
+          <NInput
             v-model="searchQuery"
             placeholder="Search..."
             @keyup.enter="handleSearch"
@@ -19,9 +19,9 @@
             <template #leading>
               <span class="i-ph-magnifying-glass"></span>
             </template>
-          </UInput>
+          </NInput>
           
-          <UButton
+          <NButton
             @click="$emit('refresh')"
             :loading="loading"
             btn="soft-gray"
@@ -29,7 +29,7 @@
           >
             <span class="i-ph-arrow-clockwise mr-2"></span>
             Refresh
-          </UButton>
+          </NButton>
         </div>
       </div>
 
@@ -39,7 +39,7 @@
           {{ selectedRows.length }} selected
         </span>
         <slot name="bulk-actions" :selected="selectedRows">
-          <UButton
+          <NButton
             v-for="action in bulkActions"
             :key="action.id"
             @click="$emit('bulk-action', action.id, selectedRows)"
@@ -48,7 +48,7 @@
           >
             <span v-if="action.icon" :class="[action.icon, 'mr-2']"></span>
             {{ action.label }}
-          </UButton>
+          </NButton>
         </slot>
       </div>
     </div>
@@ -122,20 +122,20 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
               <slot name="actions" :row="row">
                 <div class="flex items-center gap-2">
-                  <UButton
+                  <NButton
                     @click.stop="$emit('edit', row)"
                     btn="soft-gray"
                     size="xs"
                   >
                     <span class="i-ph-pencil"></span>
-                  </UButton>
-                  <UButton
+                  </NButton>
+                  <NButton
                     @click.stop="$emit('delete', row)"
                     btn="soft-red"
                     size="xs"
                   >
                     <span class="i-ph-trash"></span>
-                  </UButton>
+                  </NButton>
                 </div>
               </slot>
             </td>
@@ -154,27 +154,27 @@
         </div>
         
         <div class="flex items-center gap-2">
-          <UButton
+          <NButton
             @click="$emit('page-change', pagination.page - 1)"
             :disabled="!pagination.hasPrev"
             btn="soft-gray"
             size="sm"
           >
             <span class="i-ph-caret-left"></span>
-          </UButton>
+          </NButton>
           
           <span class="text-sm text-gray-600 dark:text-gray-400 px-3">
             Page {{ pagination.page }} of {{ pagination.totalPages }}
           </span>
           
-          <UButton
+          <NButton
             @click="$emit('page-change', pagination.page + 1)"
             :disabled="!pagination.hasNext"
             btn="soft-gray"
             size="sm"
           >
             <span class="i-ph-caret-right"></span>
-          </UButton>
+          </NButton>
         </div>
       </div>
     </div>

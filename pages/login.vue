@@ -108,7 +108,7 @@
                   <div v-if="!isLogin">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
                     <div class="relative">
-                      <UInput
+                      <NInput
                         input="~"
                         v-model="name"
                         type="text"
@@ -123,7 +123,7 @@
                   <!-- Email -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
-                    <UInput
+                    <NInput
                       input="~"
                       v-model="email"
                       type="email"
@@ -137,7 +137,7 @@
                   <!-- Password -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-                    <UInput
+                    <NInput
                       input="~"
                       v-model="password"
                       type="password"
@@ -152,7 +152,7 @@
                   <!-- Master Password (signup only) -->
                   <div v-if="!isLogin">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Master Password</label>
-                    <UInput
+                    <NInput
                       input="~"
                       v-model="masterPassword"
                       type="password"
@@ -181,7 +181,7 @@
                     <div v-if="!isLogin && showOptionalFields" class="space-y-4 pt-2">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
-                        <UInput
+                        <NInput
                           input="~"
                           type="textarea"
                           v-model="biography"
@@ -193,7 +193,7 @@
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Job</label>
-                          <UInput
+                          <NInput
                             input="~"
                             v-model="job"
                             type="text"
@@ -203,7 +203,7 @@
                         </div>
                         <div>
                           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-                          <UInput
+                          <NInput
                             input="~"
                             v-model="location"
                             type="text"

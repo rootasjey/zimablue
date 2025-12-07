@@ -6,7 +6,7 @@
         <span class="font-600">{{ user?.name }}</span>
       </h2>
       
-      <UButton 
+      <NButton 
         v-if="!isEditing"
         btn="soft-blue"
         size="sm"
@@ -15,8 +15,8 @@
       >
         <span class="i-ph-pencil"></span>
         Edit Profile
-      </UButton>
-      <UButton 
+      </NButton>
+      <NButton 
         v-else
         btn="soft-gray"
         size="sm"
@@ -25,7 +25,7 @@
       >
         <span class="i-ph-x"></span>
         Cancel
-      </UButton>
+      </NButton>
     </div>
     
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
@@ -131,7 +131,7 @@
         </div>
 
         <div class="flex gap-3 pt-4">
-          <UButton 
+          <NButton 
             type="button"
             btn="soft-gray"
             size="sm"
@@ -141,9 +141,9 @@
           >
             <span class="i-ph-x"></span>
             Cancel
-          </UButton>
+          </NButton>
 
-          <UButton 
+          <NButton 
             type="submit"
             btn="soft-blue"
             size="sm"
@@ -152,7 +152,7 @@
             <span v-if="isSaving" class="i-ph-spinner animate-spin"></span>
             <span v-else class="i-ph-check"></span>
             {{ isSaving ? 'Saving...' : 'Save Changes' }}
-          </UButton>
+          </NButton>
         </div>
       </form>
     </div>

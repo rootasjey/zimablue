@@ -1,5 +1,5 @@
 <template>
-  <UDialog
+  <NDialog
     title="Create New Collection"
     description="Create a new collection to organize your images"
     v-model:open="isOpen"
@@ -8,9 +8,9 @@
     <div class="grid gap-4 py-4">
       <div class="grid gap-6">
         <div class="grid grid-cols-3 items-start gap-4">
-          <ULabel for="collection-name">
+          <NLabel for="collection-name">
             Name 
-            <UTooltip :_tooltip-content="{
+            <NTooltip :_tooltip-content="{
               side: 'right',
             }">
               <template #default>
@@ -23,9 +23,9 @@
                   The name is required and must not be empty.
                 </div>
               </template>
-            </UTooltip>
-          </ULabel>
-          <UInput
+            </NTooltip>
+          </NLabel>
+          <NInput
             autofocus
             id="collection-name"
             v-model="formData.name"
@@ -38,10 +38,10 @@
         </div>
         
         <div class="grid grid-cols-3 items-start gap-4">
-          <ULabel for="collection-description">
+          <NLabel for="collection-description">
             Description
-          </ULabel>
-          <UInput
+          </NLabel>
+          <NInput
             id="collection-description"
             type="textarea"
             size="sm"
@@ -54,11 +54,11 @@
         </div>
         
         <div class="grid grid-cols-3 items-start gap-4">
-          <ULabel for="collection-slug">
+          <NLabel for="collection-slug">
             Slug
-          </ULabel>
+          </NLabel>
           <div class="col-span-2">
-            <UInput
+            <NInput
               id="collection-slug"
               v-model="formData.slug"
               size="sm"
@@ -74,11 +74,11 @@
         </div>
         
         <div class="mt-2 grid grid-cols-3 items-center gap-4">
-          <ULabel for="collection-public">
+          <NLabel for="collection-public">
             Public
-          </ULabel>
+          </NLabel>
           <div class="col-span-2">
-            <USwitch
+            <NSwitch
               id="collection-public"
               switch-checked="blue"
               v-model="formData.isPublic"
@@ -89,14 +89,14 @@
     </div>
     
     <div class="flex justify-end gap-3 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-      <UButton btn="ghost-gray" @click="handleCancel">
+      <NButton btn="ghost-gray" @click="handleCancel">
         Cancel
-      </UButton>
-      <UButton btn="solid-gray" class="px-6" @click="emit('create')">
+      </NButton>
+      <NButton btn="solid-gray" class="px-6" @click="emit('create')">
         Create Collection
-      </UButton>
+      </NButton>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script setup lang="ts">

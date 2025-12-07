@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('isOpen', $event)"
     :ui="{ width: 'sm:max-w-md' }" 
@@ -15,33 +15,33 @@
     </template>
 
     <div class="space-y-4">
-      <UFormGroup label="Name" name="name">
-        <UInput 
+      <NFormGroup label="Name" name="name">
+        <NInput 
           :model-value="editForm.name" 
           @update:model-value="$emit('updateField', 'name', $event)"
           placeholder="Image name" 
         />
-      </UFormGroup>
+      </NFormGroup>
       
-      <UFormGroup label="Slug" name="slug">
-        <UInput 
+      <NFormGroup label="Slug" name="slug">
+        <NInput 
           :model-value="editForm.slug"
           @update:model-value="$emit('updateField', 'slug', $event)"
           placeholder="URL-friendly slug" 
         />
-      </UFormGroup>
+      </NFormGroup>
       
-      <UFormGroup label="Description" name="description">
-        <UInput 
+      <NFormGroup label="Description" name="description">
+        <NInput 
           :model-value="editForm.description"
           @update:model-value="$emit('updateField', 'description', $event)"
           type="textarea" 
           placeholder="Image description" 
         />
-      </UFormGroup>
+      </NFormGroup>
       
-      <UFormGroup label="Tags" name="tags">
-          <UCombobox
+      <NFormGroup label="Tags" name="tags">
+          <NCombobox
             :model-value="editForm.tags"
             @update:model-value="$emit('updateField', 'tags', $event)"
             :items="availableTags"
@@ -65,23 +65,23 @@
             </template>
 
             <template #item="{ item, selected }">
-              <UCheckbox
+              <NCheckbox
                 :model-value="selected"
                 tabindex="-1"
                 aria-hidden="true"
               />
               {{ item.label }}
             </template>
-          </UCombobox>
-      </UFormGroup>
+          </NCombobox>
+      </NFormGroup>
     </div>
 
     <template #footer>
       <div class="w-100% flex justify-end gap-3">
-        <UButton btn="ghost-pink" class="h-32px py-0 dark:bg-[#4ED7F1]/20 dark:text-[#4ED7F1] dark:hover:bg-[#4ED7F1]/30" @click="$emit('close')">
+        <NButton btn="ghost-pink" class="h-32px py-0 dark:bg-[#4ED7F1]/20 dark:text-[#4ED7F1] dark:hover:bg-[#4ED7F1]/30" @click="$emit('close')">
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           btn="solid dark:soft-blue" 
           class="h-32px py-0"
           @click="$emit('submit')"
@@ -89,10 +89,10 @@
           :disabled="!isFormValid"
         >
           Save Changes
-        </UButton>
+        </NButton>
       </div>
     </template>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

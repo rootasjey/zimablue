@@ -78,7 +78,6 @@ const multiSelect = useHomeMultiSelect()
 
 ### Styling
 - UnoCSS atomic classes with custom theme (purple primary)
-- UnaUI components with `u-` prefix
 - Responsive: Mobile-first with `sm:` breakpoints
 - View transitions: `view-transition-name: shared-image-${item.id}`
 
@@ -93,7 +92,7 @@ const multiSelect = useHomeMultiSelect()
 ### External Dependencies
 - **Jimp**: Server-side image processing (variants generation)
 - **grid-layout-plus**: Draggable grid system
-- **UnaUI**: Component library with accessibility focus
+- **UnaUI**: Component library with accessibility focus — in this project UnaUI components are registered with the `N` prefix (e.g. `NButton`, `NDialog`).
 
 ## Data Flow Examples
 

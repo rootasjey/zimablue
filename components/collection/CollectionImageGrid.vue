@@ -12,13 +12,13 @@
           'opacity-0': !hasSelectedImages,
         }"
       >
-        <UButton size="12px" btn="soft-gray" @click="$emit('clearSelection')">
+        <NButton size="12px" btn="soft-gray" @click="$emit('clearSelection')">
           <i class="i-ph-x"></i>
           <span>Cancel</span>
-        </UButton>
-        <UButton size="12px" btn="soft-error" @click="$emit('removeImages')">
+        </NButton>
+        <NButton size="12px" btn="soft-error" @click="$emit('removeImages')">
           Remove {{ selectionCount }} Images
-        </UButton>
+        </NButton>
       </div>
     </div>
 
@@ -39,7 +39,7 @@
             'opacity-100': hasSelectedImages
           }"
         >
-          <UCheckbox v-model:model-value="selectedImagesMap[image.id]" />
+          <NCheckbox v-model:model-value="selectedImagesMap[image.id]" />
         </div>
         
         <!-- Set as cover button for owner -->
@@ -48,7 +48,7 @@
           class="opacity-0 group-hover:opacity-100 absolute top-2 left-2 z-10" 
           @click.stop
         >
-          <UButton 
+          <NButton 
             v-if="coverImageId !== image.id"
             size="xs" 
             icon 
@@ -57,7 +57,7 @@
             @click="$emit('setCover', image.id)"
           >
             <span class="i-ph-star"></span>
-          </UButton>
+          </NButton>
           <span v-else class="i-ph-star-fill text-amber-400"></span>
         </div>
         

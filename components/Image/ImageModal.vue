@@ -1,6 +1,6 @@
 <template>
   <div class="hidden sm:block">
-    <UDialog 
+    <NDialog 
       :open="isImageModalOpen" 
       @update:open="$emit('updateImageModalOpen', $event)"
       :ui="{ width: 'max-w-7xl' }"
@@ -27,14 +27,14 @@
             <span>{{ selectedModalImage?.stats_views }} views</span>
             <span>{{ selectedModalImage?.stats_downloads }} downloads</span>
             <span>•</span>
-            <UButton btn="text-gray-500" size="xs" 
+            <NButton btn="text-gray-500" size="xs" 
               class="p-0 h-auto underline underline-dashed decoration-offset-4 hover:decoration-green-500" 
               label="view in fullscreen" 
               @click="$emit('openFullPage')" 
             />
             
             <ClientOnly>
-              <UDropdownMenu 
+              <NDropdownMenu 
                 v-if="selectedModalImage && imageMenuItems"
                 :items="imageMenuItems(selectedModalImage)"
                 size="xs" 
@@ -51,7 +51,7 @@
                 <span class="dp-menu-trigger-text cursor-pointer">
                   more
                 </span>
-              </UDropdownMenu>
+              </NDropdownMenu>
               <template #fallback>
                 <span v-if="selectedModalImage && imageMenuItems" class="dp-menu-trigger-text cursor-pointer opacity-50">
                   more
@@ -91,7 +91,7 @@
         
         <!-- Modal footer with navigation -->
         <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-          <UButton 
+          <NButton 
             btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigatePrevious"
@@ -99,13 +99,13 @@
           >
             <span class="i-ph-arrow-left mr-1"></span>
             Previous
-          </UButton>
+          </NButton>
           
           <span class="text-sm text-gray-500 dark:text-gray-400">
             {{ currentPosition }} of {{ totalImages }}
           </span>
           
-          <UButton 
+          <NButton 
             btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigateNext"
@@ -113,10 +113,10 @@
           >
             Next
             <span class="i-ph-arrow-right ml-1"></span>
-          </UButton>
+          </NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 

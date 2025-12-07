@@ -4,13 +4,13 @@
     <p class="text-gray-600 dark:text-gray-400 mb-4">
       {{ message }}
     </p>
-    <UButton 
+    <NButton 
       v-if="showAction" 
       btn="outline" 
       @click="$emit('action')"
     >
       {{ actionText }}
-    </UButton>
+    </NButton>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('update:isOpen', $event)"
     title="Add to Collection"
@@ -67,34 +67,34 @@
       <div v-else class="text-center py-8">
         <span class="i-ph-folder-simple text-gray-400 text-6xl mb-4 block"></span>
         <p class="text-gray-500 dark:text-gray-400 mb-4">No collections found</p>
-        <UButton 
+        <NButton 
           btn="soft-blue" 
           size="sm"
           @click="$emit('createCollection')"
         >
           Create Collection
-        </UButton>
+        </NButton>
       </div>
       
       <div class="mt-6 flex justify-end gap-2 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-        <UButton 
+        <NButton 
           btn="ghost-gray" 
           @click="$emit('update:isOpen', false)"
           :disabled="isAdding"
         >
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           btn="solid-blue" 
           @click="handleConfirm"
           :loading="isAdding"
           :disabled="isAdding || !selectedCollection"
         >
           {{ isAdding ? 'Adding...' : `Add to ${selectedCollection?.name || 'Collection'}` }}
-        </UButton>
+        </NButton>
       </div>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

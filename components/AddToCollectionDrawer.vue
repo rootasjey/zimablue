@@ -1,10 +1,10 @@
 <template>
-  <UDrawer v-model:open="open" class="sm:hidden">
-    <UDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
-      <UDrawerHeader>
-        <UDrawerTitle>Add to Collection</UDrawerTitle>
-        <UDrawerDescription>Select a collection to add this image to.</UDrawerDescription>
-      </UDrawerHeader>
+  <NDrawer v-model:open="open" class="sm:hidden">
+    <NDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
+      <NDrawerHeader>
+        <NDrawerTitle>Add to Collection</NDrawerTitle>
+        <NDrawerDescription>Select a collection to add this image to.</NDrawerDescription>
+      </NDrawerHeader>
 
       <div class="space-y-4 p-4">
         <div v-if="error" class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -12,7 +12,7 @@
         </div>
 
         <div v-if="isLoading" class="flex justify-center py-8">
-          <UIcon name="i-lucide-loader-2" class="animate-spin h-6 w-6" />
+          <NIcon name="i-lucide-loader-2" class="animate-spin h-6 w-6" />
         </div>
 
         <div v-else-if="collections.length === 0" class="text-center py-8 text-gray-500">
@@ -33,30 +33,30 @@
                   <h4 class="font-medium">{{ collection.name }}</h4>
                   <p v-if="collection.description" class="text-sm text-gray-500 mt-1">{{ collection.description }}</p>
                 </div>
-                <UTooltip content="Private collection">
-                  <UBadge
+                <NTooltip content="Private collection">
+                  <NBadge
                     v-if="collection.is_public === false"
                     badge="solid-gray"
                     icon="i-ph-lock"
                     class="h-6 px-2 py-0.5 text-xs rounded-full"
                   />
-                </UTooltip>
+                </NTooltip>
               </div>
 
-              <UIcon v-if="selectedCollection?.id === collection.id" name="i-lucide-check" class="h-5 w-5 text-primary" />
+              <NIcon v-if="selectedCollection?.id === collection.id" name="i-lucide-check" class="h-5 w-5 text-primary" />
             </div>
           </div>
         </div>
 
         <div class="flex justify-end space-x-2 mt-6">
-          <UButton btn="ghost-gray" @click="$emit('update:isOpen', false)">Cancel</UButton>
-          <UButton @click="$emit('addToCollection')" btn="solid-black" :disabled="!selectedCollection || isAdding" :loading="isAdding">Add to Collection</UButton>
+          <NButton btn="ghost-gray" @click="$emit('update:isOpen', false)">Cancel</NButton>
+          <NButton @click="$emit('addToCollection')" btn="solid-black" :disabled="!selectedCollection || isAdding" :loading="isAdding">Add to Collection</NButton>
         </div>
       </div>
 
-      <UDrawerFooter />
-    </UDrawerContent>
-  </UDrawer>
+      <NDrawerFooter />
+    </NDrawerContent>
+  </NDrawer>
 </template>
 
 <script lang="ts" setup>

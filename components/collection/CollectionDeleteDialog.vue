@@ -1,5 +1,5 @@
 <template>
-  <UDialog
+  <NDialog
     v-model:open="isOpen"
     @update:open="handleOpenChange"
     title="Delete Collection"
@@ -11,22 +11,22 @@
       </p>
       
       <div class="mt-6 flex justify-end gap-2 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-        <UButton 
+        <NButton 
           btn="ghost-gray" 
           @click="handleCancel"
         >
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           btn="solid-black" 
           :loading="isDeleting"
           @click="confirmDelete"
         >
           {{ isDeleting ? 'Deleting...' : 'Delete Collection' }}
-        </UButton>
+        </NButton>
       </div>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script setup lang="ts">

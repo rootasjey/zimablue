@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
       <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Analytics Dashboard -->
@@ -16,10 +16,10 @@
           <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Analytics</h1>
           <p class="text-gray-600 dark:text-gray-300 mt-1">Insights and performance metrics for your content</p>
         </div>
-        <UButton @click="refreshAll" :loading="isRefreshing" btn="light:soft-blue dark:solid-gray" rounded="6" size="xs">
-          <UIcon name="i-ph-arrows-clockwise" class="mr-2" />
+        <NButton @click="refreshAll" :loading="isRefreshing" btn="light:soft-blue dark:solid-gray" rounded="6" size="xs">
+          <NIcon name="i-ph-arrows-clockwise" class="mr-2" />
           <span>Refresh</span>
-        </UButton>
+        </NButton>
       </div>
 
         <div class="flex flex-wrap gap-6">
@@ -104,7 +104,7 @@
           <div class="flex items-center gap-6 justify-between mb-4">
             <div class="shrink-0 text-lg font-700 text-gray-900 dark:text-white">Top Images</div>
             <div>
-              <USelect v-model="imageMetric" :items="metricOptions" item-key="label" value-key="label" size="sm"
+              <NSelect v-model="imageMetric" :items="metricOptions" item-key="label" value-key="label" size="sm"
                 select="light:soft-blue dark:soft-gray" @change="fetchTopImages" :una="{ selectTrigger: 'rounded-6!' }" />
             </div>
           </div>
@@ -131,7 +131,7 @@
                   {{ formatMetricValue(image, imageMetric.value) }}
                 </div>
               </div>
-              <UIcon name="i-ph-arrow-square-out-bold" />
+              <NIcon name="i-ph-arrow-square-out-bold" />
             </NuxtLink>
           </div>
         </div>
@@ -141,7 +141,7 @@
           <div class="flex items-center justify-between gap-6 mb-4">
             <div class="shrink-0 text-lg font-700 text-gray-900 dark:text-white">Top Collections</div>
             <div>
-              <USelect v-model="collectionMetric" :items="metricOptions" item-key="label" value-key="label" size="sm"
+              <NSelect v-model="collectionMetric" :items="metricOptions" item-key="label" value-key="label" size="sm"
                 select="light:soft-blue dark:soft-gray" @change="fetchTopCollections" :una="{ selectTrigger: 'rounded-6!' }" />
             </div>
           </div>
@@ -168,7 +168,7 @@
                   {{ formatMetricValue(collection, collectionMetric.value) }}
                 </div>
               </div>
-              <UIcon name="i-ph-arrow-square-out-bold" />
+              <NIcon name="i-ph-arrow-square-out-bold" />
             </NuxtLink>
           </div>
         </div>

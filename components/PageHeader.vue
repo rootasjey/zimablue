@@ -11,7 +11,7 @@
     <!-- Greeting with Date and Time -->
     <ClientOnly>
       <div class="flex justify-center items-center flex-wrap gap-2 mt-2">
-        <UTooltip content="Toggle theme" :_tooltip-content="{
+        <NTooltip content="Toggle theme" :_tooltip-content="{
           side: 'right',
         }">
           <template #default>
@@ -31,7 +31,7 @@
               System theme
             </button>
           </template>
-        </UTooltip>
+        </NTooltip>
 
         <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
           {{ greeting }}
@@ -46,7 +46,7 @@
         </span>
 
         <!-- Low-power toggle -->
-        <UTooltip :content="lowPowerMode ? 'Resume live time' : 'Pause live time'" :_tooltip-content="{ side: 'right' }">
+        <NTooltip :content="lowPowerMode ? 'Resume live time' : 'Pause live time'" :_tooltip-content="{ side: 'right' }">
           <template #default>
             <button
               aria-label="Toggle low-power mode"
@@ -56,11 +56,11 @@
               <div :class="lowPowerMode ? 'i-ph-play-circle-duotone' : 'i-ph-pause-circle-duotone'" class="text-[18px]"></div>
             </button>
           </template>
-        </UTooltip>
+        </NTooltip>
       </div>
       <template #fallback>
         <div class="flex justify-center items-center flex-wrap gap-2 mt-2">
-          <UTooltip content="Toggle theme" :_tooltip-content="{
+          <NTooltip content="Toggle theme" :_tooltip-content="{
             side: 'right',
           }">
             <template #default>
@@ -79,7 +79,7 @@
                 System theme
               </button>
             </template>
-          </UTooltip>
+          </NTooltip>
 
           <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
             Welcome

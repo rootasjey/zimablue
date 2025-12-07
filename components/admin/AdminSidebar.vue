@@ -27,14 +27,14 @@
     >
       <!-- Header/Logo -->
       <div class="flex items-center justify-center py-6 px-4">
-        <ULink to="/" class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
+        <NLink to="/" class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
           <span class="text-black text-xl font-bold">zb</span>
-        </ULink>
+        </NLink>
       </div>
 
       <!-- Navigation -->
       <nav class="flex-1 flex flex-col items-center gap-2 px-4 py-4">
-        <UTooltip
+        <NTooltip
           v-for="item in navItems"
           :key="item.path"
           :_tooltip-content="{
@@ -65,12 +65,12 @@
               {{ item.label }}
             </div>
           </template>
-        </UTooltip>
+        </NTooltip>
       </nav>
 
       <!-- Footer/Settings -->
       <div class="px-4 py-4 border-t border-white/10">
-        <UTooltip :_tooltip-content="{
+        <NTooltip :_tooltip-content="{
           side: 'right',
         }" :disabled="isMobile">
           <NuxtLink
@@ -88,7 +88,7 @@
               Settings
             </div>
           </template>
-        </UTooltip>
+        </NTooltip>
       </div>
     </aside>
   </Transition>

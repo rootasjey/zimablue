@@ -7,7 +7,7 @@
         <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
         <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
         <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-        <UButton to="/user" class="mt-4">Go to Profile</UButton>
+        <NButton to="/user" class="mt-4">Go to Profile</NButton>
       </div>
 
       <!-- Dashboard Content -->
@@ -27,7 +27,7 @@
               <span class="i-ph-bell text-gray-700 dark:text-gray-300 text-lg"></span>
             </button>
             <ClientOnly>
-              <UDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
+              <NDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
                 :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
                 <template #trigger>
                   <button
@@ -35,7 +35,7 @@
                     <span class="i-ph-user text-white text-lg"></span>
                   </button>
                 </template>
-              </UDropdownMenu>
+              </NDropdownMenu>
               <template #fallback>
                 <button
                   class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center opacity-50">
@@ -155,7 +155,7 @@
             <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-lg font-700 text-gray-900 dark:text-white">Recent messages</div>
-                <UButton to="/admin/messages" btn="light:soft-blue dark:soft-blue" rounded="6" size="sm">View all</UButton>
+                <NButton to="/admin/messages" btn="light:soft-blue dark:soft-blue" rounded="6" size="sm">View all</NButton>
               </div>
 
               <div v-if="isLoadingMessages" class="space-y-3">
@@ -208,18 +208,18 @@
                 <span class="i-ph-clock"></span>
                 <span>{{ getStatusLabel(nextTodo.status) }}</span>
               </div>
-              <UButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
+              <NButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
                 View all tasks
-              </UButton>
+              </NButton>
             </div>
 
             <!-- No upcoming tasks -->
             <div v-else-if="!isLoadingNextTodo" class="rounded-[28px] bg-black text-white p-6">
               <div class="text-lg font-700 mb-2">Next Project</div>
               <div class="text-sm text-gray-300 mb-4">No upcoming tasks</div>
-              <UButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
+              <NButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
                 Create a task
-              </UButton>
+              </NButton>
             </div>
 
             <!-- Loading state -->

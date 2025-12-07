@@ -48,10 +48,10 @@
 
     <!-- Back to Home -->
     <div class="mt-8 text-center">
-      <ULink to="/" class="text-size-3 font-500 hover:scale-102 active:scale-99 transition">
+      <NLink to="/" class="text-size-3 font-500 hover:scale-102 active:scale-99 transition">
         <span class="i-ph-arrow-left mr-1"></span>
         <span>Back to Home</span>
-      </ULink>
+      </NLink>
     </div>
   </div>
 </template>

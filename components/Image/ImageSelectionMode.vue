@@ -15,31 +15,31 @@
       </div>
       
       <div class="flex gap-2">
-        <UButton 
+        <NButton 
           size="12px" 
           btn="outline-gray" 
           :disabled="images.length === 0"
           @click="$emit('toggleSelectAll')"
         >
           {{ isAllSelected ? 'Deselect All' : 'Select All' }}
-        </UButton>
+        </NButton>
         
-        <UButton 
+        <NButton 
           size="12px" 
           btn="outline-gray" 
           @click="$emit('cancel')"
         >
           Cancel
-        </UButton>
+        </NButton>
         
-        <UButton 
+        <NButton 
           btn="solid-gray" 
           size="12px" 
           :disabled="!hasSelectedImages" 
           @click="$emit('confirm')"
         >
           {{ confirmButtonText }}
-        </UButton>
+        </NButton>
       </div>
     </div>
     
@@ -86,14 +86,14 @@
       <span class="text-sm">
         Range selection: {{ rangeSelection.count }} images
       </span>
-      <UButton 
+      <NButton 
         size="xs" 
         btn="ghost" 
         class="ml-2 text-white hover:bg-blue-700"
         @click="cancelRangeSelection"
       >
         <span class="i-ph-x"></span>
-      </UButton>
+      </NButton>
     </div>
     
     <!-- Empty state -->

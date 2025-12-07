@@ -1,19 +1,19 @@
 <template>
   <div class="hidden sm:flex fixed right-4 top-3 items-center z-12 pointer-events-auto">
     <ClientOnly>
-      <UDropdownMenu v-if="loggedIn" :items="userMenuItems" dropdown-menu="link-gray" :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
+      <NDropdownMenu v-if="loggedIn" :items="userMenuItems" dropdown-menu="link-gray" :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
         <template #default>
-          <UButton
+          <NButton
             btn="ghost-gray"
             icon
             label="i-ph-identification-badge"
             aria-label="Account menu"
           />
         </template>
-      </UDropdownMenu>
+      </NDropdownMenu>
 
       <template #fallback v-if="loggedIn">
-        <UButton
+        <NButton
           btn="ghost-gray"
           icon
           label="i-ph-identification-badge"
@@ -21,13 +21,13 @@
         />
       </template>
 
-      <UButton
+      <NButton
         v-if="!loggedIn"
         btn="soft-white"
         size="sm"
         to="/login">
-        <UIcon name="i-ph-user-focus-duotone" />
-      </UButton>
+        <NIcon name="i-ph-user-focus-duotone" />
+      </NButton>
     </ClientOnly>
   </div>
 </template>

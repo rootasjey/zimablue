@@ -18,7 +18,7 @@
 
     <!-- Selection checkbox -->
     <div class="absolute top-2 right-2 z-10" @click.stop="handleToggle">
-      <UCheckbox 
+      <NCheckbox 
         checkbox="success" 
         :model-value="selected"
       />

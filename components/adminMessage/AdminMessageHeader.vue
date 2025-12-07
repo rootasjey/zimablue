@@ -1,13 +1,13 @@
 <template>
   <div class="relative rounded-6 mb-6">
     <!-- Stats Row -->
-    <UTooltip>
+    <NTooltip>
       <template #default>
-        <UButton @click="$emit('refresh')" :loading="isLoading" btn="light:soft-indigo dark:solid-gray" size="xs"
+        <NButton @click="$emit('refresh')" :loading="isLoading" btn="light:soft-indigo dark:solid-gray" size="xs"
           rounded="6" class="absolute right-4 top-4">
           <span class="i-ph-info mr-2"></span>
           <span class="hidden md:inline">Stats</span>
-        </UButton>
+        </NButton>
       </template>
       <template #content>
         <div class="flex gap-3 items-center px-3 py-1">
@@ -16,88 +16,88 @@
           <p>{{ unreadCount }} unread</p>
         </div>
       </template>
-    </UTooltip>
+    </NTooltip>
 
     <!-- Bulk Actions Row -->
     <div class="flex flex-wrap gap-4 pt-4 border-t b-dashed border-gray-200 dark:border-gray-700">
       <div>
-        <UInput v-model="searchQuery" placeholder="Search messages..." @keyup.enter="handleSearch"
+        <NInput v-model="searchQuery" placeholder="Search messages..." @keyup.enter="handleSearch"
           @input="debouncedSearch" size="sm" rounded=6
           class="shadow-lg border border-white focus:border-blue-500 dark:border-gray-700">
           <template #leading>
             <span class="i-ph-magnifying-glass"></span>
           </template>
-        </UInput>
+        </NInput>
       </div>
       <div>
-        <USelect v-model="readFilter" :items="readFilterOptions" @update:model-value="handleFilterChange"
+        <NSelect v-model="readFilter" :items="readFilterOptions" @update:model-value="handleFilterChange"
           select="soft-gray" size="xs" placeholder="Filter by status" item-key="label" value-key="label" />
       </div>
-      <UTooltip>
+      <NTooltip>
         <template #default>
-          <UButton @click="$emit('toggle-multiselect')" size="xs" :btn="multiSelectActive ? 'soft-blue' : 'soft-gray'"
+          <NButton @click="$emit('toggle-multiselect')" size="xs" :btn="multiSelectActive ? 'soft-blue' : 'soft-gray'"
             rounded="6">
             <span class="i-ph-list mr-1"></span>
             <span class="hidden md:inline">Multi-select</span>
-          </UButton>
+          </NButton>
         </template>
         <template #content>
           <div class="px-3 py-1">{{ multiSelectActive ? 'Deactivate' : 'Activate' }} multi-select mode</div>
         </template>
-      </UTooltip>
+      </NTooltip>
 
-      <UTooltip v-if="multiSelectActive">
+      <NTooltip v-if="multiSelectActive">
         <template #default>
-          <UButton @click="$emit('select-all')" size="xs" btn="soft-gray" rounded="6">
+          <NButton @click="$emit('select-all')" size="xs" btn="soft-gray" rounded="6">
             <span class="i-ph-check-square-offset mr-1"></span>
             <span class="hidden md:inline">{{ isAllSelected ? 'Deselect all' : 'Select all' }}</span>
-          </UButton>
+          </NButton>
         </template>
         <template #content>
           <div class="px-3 py-1">Toggle select all messages</div>
         </template>
-      </UTooltip>
+      </NTooltip>
 
       <div v-if="selectedCount > 0" class="flex flex-wrap gap-2">
-        <UTooltip>
+        <NTooltip>
           <template #default>
-            <UButton @click="$emit('bulk-action', 'mark_read')" size="xs" btn="soft-gray" rounded="6">
+            <NButton @click="$emit('bulk-action', 'mark_read')" size="xs" btn="soft-gray" rounded="6">
               <span class="i-ph-check mr-2"></span>
               <span class="hidden md:inline">Read </span>
               <span>({{ selectedCount }})</span>
-            </UButton>
+            </NButton>
           </template>
           <template #content>
             <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as read</div>
           </template>
-        </UTooltip>
+        </NTooltip>
 
-        <UTooltip>
+        <NTooltip>
           <template #default>
-            <UButton @click="$emit('bulk-action', 'mark_unread')" size="xs" btn="soft-gray" rounded="6">
+            <NButton @click="$emit('bulk-action', 'mark_unread')" size="xs" btn="soft-gray" rounded="6">
               <span class="i-ph-circle mr-2"></span>
               <span class="hidden md:inline">Unread </span>
               <span>({{ selectedCount }})</span>
-            </UButton>
+            </NButton>
           </template>
           <template #content>
             <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as unread</div>
           </template>
-        </UTooltip>
+        </NTooltip>
 
-        <UTooltip>
+        <NTooltip>
           <template #default>
-            <UButton @click="$emit('bulk-action', 'confirm_delete')" size="xs" btn="light:soft-pink dark:outline-pink"
+            <NButton @click="$emit('bulk-action', 'confirm_delete')" size="xs" btn="light:soft-pink dark:outline-pink"
               rounded="6">
               <span class="i-ph-trash mr-2"></span>
               <span class="hidden md:inline">Delete </span>
               <span>({{ selectedCount }})</span>
-            </UButton>
+            </NButton>
           </template>
           <template #content>
             <div class="px-3 py-1">Delete {{ selectedCount }} selected messages</div>
           </template>
-        </UTooltip>
+        </NTooltip>
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('update:isOpen', $event)"
     title="Delete Images"
@@ -26,24 +26,24 @@
       </div>
       
       <div class="mt-6 flex justify-end gap-2 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-        <UButton 
+        <NButton 
           btn="ghost-gray" 
           @click="$emit('update:isOpen', false)"
           :disabled="isDeleting"
         >
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           btn="solid-red" 
           @click="handleConfirm"
           :loading="isDeleting"
           :disabled="isDeleting"
         >
           {{ isDeleting ? 'Deleting...' : `Delete ${imageCount} ${imageCount === 1 ? 'Image' : 'Images'}` }}
-        </UButton>
+        </NButton>
       </div>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

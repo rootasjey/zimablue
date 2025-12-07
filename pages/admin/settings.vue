@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
       <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Settings Content -->
@@ -62,7 +62,7 @@
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Username</label>
-              <UInput
+              <NInput
                 v-model="formData.username"
                 placeholder="Enter your username"
                 size="lg"
@@ -72,7 +72,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Email</label>
-              <UInput
+              <NInput
                 v-model="formData.email"
                 type="email"
                 placeholder="Enter your email"
@@ -85,7 +85,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Job Title</label>
-              <UInput
+              <NInput
                 v-model="formData.job"
                 placeholder="e.g., Administrator"
                 size="lg"
@@ -95,7 +95,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Location</label>
-              <UInput
+              <NInput
                 v-model="formData.location"
                 placeholder="e.g., New York, USA"
                 size="lg"
@@ -117,7 +117,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Current Password</label>
-              <UInput
+              <NInput
                 v-model="formData.currentPassword"
                 type="password"
                 placeholder="Enter current password"
@@ -128,7 +128,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">New Password</label>
-              <UInput
+              <NInput
                 v-model="formData.newPassword"
                 type="password"
                 placeholder="Enter new password"
@@ -139,7 +139,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2 dark:text-gray-300">Confirm New Password</label>
-              <UInput
+              <NInput
                 v-model="formData.confirmPassword"
                 type="password"
                 placeholder="Confirm new password"
@@ -153,21 +153,21 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-end gap-3 pt-4">
-        <UButton
+        <NButton
           btn="soft-gray"
           size="lg"
           @click="resetForm"
         >
           Cancel
-        </UButton>
-        <UButton
+        </NButton>
+        <NButton
           btn="solid-black"
           size="lg"
           @click="saveSettings"
           :loading="isSaving"
         >
           Save Changes
-        </UButton>
+        </NButton>
       </div>
     </div>
   </div>

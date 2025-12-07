@@ -6,7 +6,7 @@
           <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
           <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
           <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-          <UButton to="/user" class="mt-4">Go to Profile</UButton>
+          <NButton to="/user" class="mt-4">Go to Profile</NButton>
         </div>
 
         <!-- Messages Management -->
@@ -75,12 +75,12 @@
       </main>
 
     <!-- Mobile drawer for message details -->
-    <UDrawer v-model:open="isDrawerOpen">
-      <UDrawerContent class="w-full max-w-[95vw] bottom-0">
-        <UDrawerHeader>
-          <UDrawerTitle>Message Details</UDrawerTitle>
-          <UDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">Details and actions</UDrawerDescription>
-        </UDrawerHeader>
+    <NDrawer v-model:open="isDrawerOpen">
+      <NDrawerContent class="w-full max-w-[95vw] bottom-0">
+        <NDrawerHeader>
+          <NDrawerTitle>Message Details</NDrawerTitle>
+          <NDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">Details and actions</NDrawerDescription>
+        </NDrawerHeader>
 
         <div class="p-4">
           <AdminMessageDetail
@@ -92,9 +92,9 @@
           />
         </div>
 
-        <UDrawerFooter />
-      </UDrawerContent>
-    </UDrawer>
+        <NDrawerFooter />
+      </NDrawerContent>
+    </NDrawer>
 
     <AdminMessageDeleteDialog
       v-if="selectedMessage"

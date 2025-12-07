@@ -41,7 +41,7 @@
     </div>
 
     <!-- Edit Drawer -->
-    <UDrawer 
+    <NDrawer 
       v-model:open="showEditDrawer" :ui="{ width: 'sm:max-w-md' }" side="right">
       <template #body>
         <div class="mx-auto max-w-sm w-full">
@@ -50,7 +50,7 @@
               <h3 class="text-lg font-semibold">Edit illustration's details</h3>
               <h4 class="text-3 font-semibold color-gray-500 dark:color-gray-500">Don't forget to save your changes</h4>
             </div>
-            <UButton 
+            <NButton 
               icon
               label="i-ph-x" 
               btn="ghost" 
@@ -60,20 +60,20 @@
           </div>
         
           <div class="space-y-6">
-            <UFormGroup label="Name" name="name">
-              <UInput v-model="editForm.name" placeholder="Illustration name" />
-            </UFormGroup>
+            <NFormGroup label="Name" name="name">
+              <NInput v-model="editForm.name" placeholder="Illustration name" />
+            </NFormGroup>
             
-            <UFormGroup label="Slug" name="slug">
-              <UInput v-model="editForm.slug" placeholder="URL-friendly slug" />
-            </UFormGroup>
+            <NFormGroup label="Slug" name="slug">
+              <NInput v-model="editForm.slug" placeholder="URL-friendly slug" />
+            </NFormGroup>
             
-            <UFormGroup label="Description" name="description">
-              <UInput v-model="editForm.description" type="textarea" placeholder="Illustration description" />
-            </UFormGroup>
+            <NFormGroup label="Description" name="description">
+              <NInput v-model="editForm.description" type="textarea" placeholder="Illustration description" />
+            </NFormGroup>
 
-            <UFormGroup label="Tags" name="tags">
-              <UCombobox
+            <NFormGroup label="Tags" name="tags">
+              <NCombobox
                 v-model="editForm.tags"
                 :items="availableTags"
                 by="value"
@@ -96,28 +96,28 @@
                 </template>
 
                 <template #item="{ item, selected }">
-                  <UCheckbox
+                  <NCheckbox
                     :model-value="selected"
                     tabindex="-1"
                     aria-hidden="true"
                   />
                   {{ item.label }}
                 </template>
-              </UCombobox>
-            </UFormGroup>
+              </NCombobox>
+            </NFormGroup>
 
             <div class="flex flex-col gap-3 mt-8">
-              <UButton btn="solid-gray" size="xs" @click="showEditDrawer = false">
+              <NButton btn="solid-gray" size="xs" @click="showEditDrawer = false">
                 Cancel
-              </UButton>
-              <UButton btn="solid-blue" @click="handleEditSubmit">
+              </NButton>
+              <NButton btn="solid-blue" @click="handleEditSubmit">
                 Save Changes
-              </UButton>
+              </NButton>
             </div>
           </div>
         </div>
       </template>
-    </UDrawer>
+    </NDrawer>
   </div>
 </template>
 

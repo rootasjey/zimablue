@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
       <p class="text-gray-600">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Tags Management -->
@@ -16,16 +16,16 @@
           <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">Tag Management</h1>
           <p class="text-gray-600 dark:text-gray-300 mt-1">Manage tags used throughout the system</p>
         </div>
-        <UButton btn="solid-black" size="sm" @click="showCreateModal = true">
+        <NButton btn="solid-black" size="sm" @click="showCreateModal = true">
           <span class="i-ph-plus mr-2"></span>
           Create Tag
-        </UButton>
+        </NButton>
       </div>
 
       <!-- Search and Actions Card -->
       <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <UInput
+          <NInput
             v-model="searchQuery"
             placeholder="Search tags..."
             @keyup.enter="handleSearch(searchQuery)"
@@ -37,13 +37,13 @@
             <template #leading>
               <span class="i-ph-magnifying-glass"></span>
             </template>
-          </UInput>
+          </NInput>
 
           <div>
-            <USelect v-model="selectedSortLabel" :items="sortLabels" size="sm" />
+            <NSelect v-model="selectedSortLabel" :items="sortLabels" size="sm" />
           </div>
 
-          <UButton
+          <NButton
             @click="fetchTags"
             :loading="isLoading"
             btn="light:soft-blue dark:solid-gray"
@@ -52,7 +52,7 @@
           >
             <span class="i-ph-arrow-clockwise mr-2"></span>
             Refresh
-          </UButton>
+          </NButton>
         </div>
 
         <!-- Bulk Actions -->
@@ -60,21 +60,21 @@
           <span class="text-sm font-600 text-gray-700">
             {{ selectedTags.length }} selected
           </span>
-          <UButton btn="soft-gray" size="sm" @click="openBulkColorDialog">
+          <NButton btn="soft-gray" size="sm" @click="openBulkColorDialog">
             <span class="i-ph-palette mr-2"></span>
             Set Color
-          </UButton>
-          <UButton btn="soft-error" size="sm" @click="handleBulkDelete">
+          </NButton>
+          <NButton btn="soft-error" size="sm" @click="handleBulkDelete">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
-          </UButton>
+          </NButton>
         </div>
       </div>
 
       <!-- Table Card -->
       <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
         <div class="p-6">
-          <UTable
+          <NTable
           :columns="unaColumns"
           :data="tags"
           :loading="isLoading"
@@ -95,7 +95,7 @@
         >
           <template #row_actions-cell="{ cell }">
             <ClientOnly>
-              <UDropdownMenu
+              <NDropdownMenu
                 :items="tagRowMenuItems(cell.row.original)"
                 size="xs"
                 dropdown-menu="link-pink"
@@ -135,7 +135,7 @@
               </template>
             </ClientOnly>
           </template>
-        </UTable>
+        </NTable>
         </div>
 
         <!-- Pagination -->
@@ -148,17 +148,17 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-left"></span>
-              </UButton>
+              </NButton>
 
               <span class="text-sm text-gray-600 px-3">
                 Page {{ pagination.page }} of {{ pagination.totalPages }}
               </span>
 
-              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-right"></span>
-              </UButton>
+              </NButton>
             </div>
           </div>
         </div>
@@ -166,28 +166,28 @@
     </div>
 
     <!-- Create/Edit Modal -->
-    <UDialog v-model:open="showCreateModal" :title="editingTag ? 'Edit Tag' : 'Create Tag'">
+    <NDialog v-model:open="showCreateModal" :title="editingTag ? 'Edit Tag' : 'Create Tag'">
       <div class="space-y-4 p-2">
-        <UFormGroup label="Name" required>
-          <UInput v-model="tagForm.name" placeholder="Enter tag name" />
-        </UFormGroup>
-        <UFormGroup label="Description">
-          <UInput type="textarea" v-model="tagForm.description" placeholder="Optional description" />
-        </UFormGroup>
-        <UFormGroup label="Color">
-          <UInput v-model="tagForm.color" type="color" />
-        </UFormGroup>
+        <NFormGroup label="Name" required>
+          <NInput v-model="tagForm.name" placeholder="Enter tag name" />
+        </NFormGroup>
+        <NFormGroup label="Description">
+          <NInput type="textarea" v-model="tagForm.description" placeholder="Optional description" />
+        </NFormGroup>
+        <NFormGroup label="Color">
+          <NInput v-model="tagForm.color" type="color" />
+        </NFormGroup>
       </div>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton btn="soft-gray" @click="showCreateModal = false">Cancel</UButton>
-          <UButton btn="soft-blue" :loading="isSubmitting" @click="submitTag">{{ editingTag ? 'Update' : 'Create' }}</UButton>
+          <NButton btn="soft-gray" @click="showCreateModal = false">Cancel</NButton>
+          <NButton btn="soft-blue" :loading="isSubmitting" @click="submitTag">{{ editingTag ? 'Update' : 'Create' }}</NButton>
         </div>
       </template>
-    </UDialog>
+    </NDialog>
 
     <!-- Delete Confirmation Modal -->
-    <UDialog v-model:open="showDeleteModal" title="Delete Tag">
+    <NDialog v-model:open="showDeleteModal" title="Delete Tag">
       <div class="p-2">
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           Are you sure you want to delete the tag "{{ tagToDelete?.name }}"?
@@ -198,26 +198,26 @@
       </div>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton btn="soft-gray" @click="showDeleteModal = false">Cancel</UButton>
-          <UButton color="red" :loading="isDeleting" @click="confirmDelete">Delete</UButton>
+          <NButton btn="soft-gray" @click="showDeleteModal = false">Cancel</NButton>
+          <NButton color="red" :loading="isDeleting" @click="confirmDelete">Delete</NButton>
         </div>
       </template>
-    </UDialog>
+    </NDialog>
 
-    <UDialog v-model:open="isBulkColorOpen" title="Set Tags Color">
+    <NDialog v-model:open="isBulkColorOpen" title="Set Tags Color">
       <div class="p-2 space-y-3">
-        <UFormGroup label="Color">
-          <UInput v-model="bulkColor" type="color" />
-        </UFormGroup>
+        <NFormGroup label="Color">
+          <NInput v-model="bulkColor" type="color" />
+        </NFormGroup>
         <p class="text-xs text-gray-500 dark:text-gray-400">This will update the color of {{ selectedTags.length }} selected tag(s).</p>
       </div>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton btn="soft-gray" @click="isBulkColorOpen = false">Cancel</UButton>
-          <UButton btn="soft-blue" @click="applyBulkColor">Apply</UButton>
+          <NButton btn="soft-gray" @click="isBulkColorOpen = false">Cancel</NButton>
+          <NButton btn="soft-blue" @click="applyBulkColor">Apply</NButton>
         </div>
       </template>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 

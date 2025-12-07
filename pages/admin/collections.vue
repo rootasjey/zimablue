@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
       <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Collections Management -->
@@ -21,7 +21,7 @@
       <!-- Search and Actions Card -->
       <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <UInput
+          <NInput
             v-model="filters.search"
             placeholder="Search collections..."
             @keyup.enter="handleSearch(filters.search)"
@@ -33,12 +33,12 @@
             <template #leading>
               <span class="i-ph-magnifying-glass"></span>
             </template>
-          </UInput>
+          </NInput>
 
-          <UButton @click="fetchCollections" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
+          <NButton @click="fetchCollections" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
             <span class="i-ph-arrow-clockwise mr-2"></span>
             Refresh
-          </UButton>
+          </NButton>
         </div>
 
         <!-- Bulk Actions -->
@@ -46,25 +46,25 @@
           <span class="text-sm font-600 text-gray-700">
             {{ selectedCollections.length }} selected
           </span>
-          <UButton btn="soft-gray" size="sm" @click="bulkMakePublic">
+          <NButton btn="soft-gray" size="sm" @click="bulkMakePublic">
             <span class="i-ph-globe mr-2"></span>
             Make Public
-          </UButton>
-          <UButton btn="soft-gray" size="sm" @click="bulkMakePrivate">
+          </NButton>
+          <NButton btn="soft-gray" size="sm" @click="bulkMakePrivate">
             <span class="i-ph-lock mr-2"></span>
             Make Private
-          </UButton>
-          <UButton btn="soft-error" size="sm" @click="deleteSelected">
+          </NButton>
+          <NButton btn="soft-error" size="sm" @click="deleteSelected">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
-          </UButton>
+          </NButton>
         </div>
       </div>
 
   <!-- Table Card -->
   <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
         <div class="p-6">
-          <UTable
+          <NTable
           :columns="unaColumns"
           :data="collections"
           :loading="isLoading"
@@ -85,7 +85,7 @@
         >
           <template #row_actions-cell="{ cell }">
             <ClientOnly>
-              <UDropdownMenu
+              <NDropdownMenu
                 :items="collectionRowMenuItems(cell.row.original)"
                 size="xs"
                 dropdown-menu="link-black"
@@ -115,7 +115,7 @@
           <template #user_name-cell="{ cell }">
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                <UIcon name="i-ph-user" size="xs" class="text-white" />
+                <NIcon name="i-ph-user" size="xs" class="text-white" />
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.getValue() }}</p>
@@ -166,7 +166,7 @@
               </template>
             </ClientOnly>
           </template>
-        </UTable>
+        </NTable>
         </div>
 
         <!-- Pagination -->
@@ -179,17 +179,17 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-left"></span>
-              </UButton>
+              </NButton>
 
               <span class="text-sm text-gray-600 px-3">
                 Page {{ pagination.page }} of {{ pagination.totalPages }}
               </span>
 
-              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-right"></span>
-              </UButton>
+              </NButton>
             </div>
           </div>
         </div>
@@ -197,7 +197,7 @@
     </div>
 
     <!-- View Collection Dialog -->
-    <UDialog v-model:open="isViewDialogOpen" title="Collection Details">
+    <NDialog v-model:open="isViewDialogOpen" title="Collection Details">
       <div v-if="selectedCollection" class="p-6">
         <div class="space-y-6">
           <!-- Collection Info -->
@@ -247,25 +247,25 @@
           </div>
           
           <div class="flex gap-3 pt-4">
-            <UButton 
+            <NButton 
               :to="`/collections/${selectedCollection.slug}`" 
               target="_blank"
               btn="soft-blue"
             >
               <span class="i-ph-arrow-square-out mr-2"></span>
               View Public Page
-            </UButton>
-            <UButton @click="editCollection(selectedCollection)" btn="soft-gray">
+            </NButton>
+            <NButton @click="editCollection(selectedCollection)" btn="soft-gray">
               <span class="i-ph-pencil mr-2"></span>
               Edit
-            </UButton>
+            </NButton>
           </div>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <UDialog v-model:open="isDeleteDialogOpen" title="Delete Collection">
+    <NDialog v-model:open="isDeleteDialogOpen" title="Delete Collection">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -280,11 +280,11 @@
         </div>
 
         <div class="flex justify-end gap-3">
-          <UButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</UButton>
-          <UButton @click="deleteCollection" :loading="isDeleting" btn="soft-red">Delete Collection</UButton>
+          <NButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</NButton>
+          <NButton @click="deleteCollection" :loading="isDeleting" btn="soft-red">Delete Collection</NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 
@@ -330,7 +330,7 @@ const filters = ref({
   userId: undefined as string | undefined
 })
 
-// Table columns (UTable)
+// Table columns (NTable)
 const unaColumns = [
   { id: 'row_actions', header: '', enableSorting: false },
   { accessorKey: 'name', header: 'Collection', enableSorting: true },

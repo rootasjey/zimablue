@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('update:isOpen', $event)"
     :ui="{ width: 'w-full sm:max-w-md' }"
@@ -23,7 +23,7 @@
       </div>
 
       <div v-if="isLoading" class="flex justify-center py-8">
-        <UIcon name="i-lucide-loader-2" class="animate-spin h-6 w-6" />
+        <NIcon name="i-lucide-loader-2" class="animate-spin h-6 w-6" />
       </div>
 
       <div v-else-if="collections.length === 0" class="text-center py-8 text-gray-500">
@@ -47,16 +47,16 @@
                 </p>
               </div>
 
-              <UTooltip content="Private collection">
-                <UBadge
+              <NTooltip content="Private collection">
+                <NBadge
                   v-if="collection.is_public === false"
                   badge="solid-gray"
                   icon="i-ph-lock"
                   class="h-6 px-2 py-0.5 text-xs rounded-full"
                 />
-              </UTooltip>
+              </NTooltip>
             </div>
-            <UIcon 
+            <NIcon 
               v-if="selectedCollection?.id === collection.id"
               name="i-lucide-check" 
               class="h-5 w-5 text-primary" 
@@ -68,20 +68,20 @@
 
     <template #footer>
       <div class="flex justify-end space-x-2 mt-6">
-        <UButton btn="ghost-gray" @click="$emit('update:isOpen', false)">
+        <NButton btn="ghost-gray" @click="$emit('update:isOpen', false)">
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           @click="$emit('addToCollection')" 
           btn="solid-black"
           :disabled="!selectedCollection || isAdding"
           :loading="isAdding"
         >
           Add to Collection
-        </UButton>
+        </NButton>
       </div>
     </template>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

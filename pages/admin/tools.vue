@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
       <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <div v-else class="space-y-8">
@@ -20,11 +20,11 @@
           <h3 class="text-lg font-semibold mb-2">Regenerate thumbnails</h3>
           <p class="text-gray-600 dark:text-gray-400 mb-4">Rebuild resized variants for one image or all images. Useful after updating processing or when a variant is missing.</p>
           <div class="flex gap-3 items-end">
-            <UInput v-model.number="imageId" type="number" placeholder="Image ID (optional)" class="w-48" />
-            <UButton :loading="regenLoading" btn="soft-blue" @click="regenerate">
+            <NInput v-model.number="imageId" type="number" placeholder="Image ID (optional)" class="w-48" />
+            <NButton :loading="regenLoading" btn="soft-blue" @click="regenerate">
               <span class="i-ph-arrows-clockwise mr-2"></span>
               <span>{{ imageId ? 'Regenerate image' : 'Regenerate all (batch)' }}</span>
-            </UButton>
+            </NButton>
           </div>
           <p v-if="regenResult" class="text-xs text-gray-500 mt-3">{{ regenResult }}</p>
         </div>
@@ -34,13 +34,13 @@
           <h3 class="text-lg font-semibold mb-2">Data import / export</h3>
           <p class="text-gray-600 dark:text-gray-400 mb-3">Export entities to JSON or import from a JSON file.</p>
           <div class="flex flex-wrap gap-3 items-center">
-            <UButton :loading="exporting" btn="soft-gray" @click="exportAll">
+            <NButton :loading="exporting" btn="soft-gray" @click="exportAll">
               <span class="i-ph-cloud-arrow-down mr-2" /> Export JSON
-            </UButton>
+            </NButton>
             <label class="inline-flex items-center gap-2 cursor-pointer">
-              <UButton btn="soft-purple">
+              <NButton btn="soft-purple">
                 <span class="i-ph-cloud-arrow-up mr-2" /> Import JSON
-              </UButton>
+              </NButton>
               <input ref="fileInput" type="file" accept="application/json" class="hidden" @change="importJson">
             </label>
           </div>
