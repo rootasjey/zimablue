@@ -1,14 +1,14 @@
 <template>
-  <UDrawer v-model:open="isOpen" class="sm:hidden">
-    <UDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
-      <UDrawerHeader>
-        <UDrawerTitle class="max-w-[80vw] overflow-hidden text-ellipsis whitespace-nowrap">
+  <NDrawer v-model:open="isOpen" class="sm:hidden">
+    <NDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
+      <NDrawerHeader>
+        <NDrawerTitle class="max-w-[80vw] overflow-hidden text-ellipsis whitespace-nowrap">
           {{ selectedModalImage?.name || 'Image' }}
-        </UDrawerTitle>
-        <UDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">
+        </NDrawerTitle>
+        <NDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">
           {{ selectedModalImage?.description || '' }}
-        </UDrawerDescription>
-      </UDrawerHeader>
+        </NDrawerDescription>
+      </NDrawerHeader>
       
       <div class="p-4">
         <!-- Image with swipe gestures -->
@@ -53,7 +53,7 @@
 
         <!-- Actions -->
         <div class="flex flex-row gap-2">
-          <UButton 
+          <NButton 
             btn="solid-gray" 
             size="md" 
             class="flex-1 justify-center"
@@ -61,10 +61,10 @@
           >
             <span class="i-ph-arrows-out mr-2"></span>
             View fullscreen
-          </UButton>
+          </NButton>
           
           <ClientOnly>
-            <UDropdownMenu 
+            <NDropdownMenu 
               v-if="selectedModalImage && imageMenuItems"
               :items="wrappedMenuItems"
               size="md"
@@ -75,20 +75,20 @@
                 side: 'top',
               }"
             >
-              <UButton 
+              <NButton 
                 btn="ghost-gray" 
                 size="md" 
                 class="justify-center"
               >
                 <span class="i-ph-dots-three-vertical mr-2"></span>
-              </UButton>
-            </UDropdownMenu>
+              </NButton>
+            </NDropdownMenu>
           </ClientOnly>
         </div>
 
         <!-- Navigation -->
         <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <UButton 
+          <NButton 
             btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigatePrevious"
@@ -96,13 +96,13 @@
           >
             <span class="i-ph-arrow-left mr-1"></span>
             Previous
-          </UButton>
+          </NButton>
           
           <span class="text-sm text-gray-500 dark:text-gray-400">
             {{ currentPosition }} of {{ totalImages }}
           </span>
           
-          <UButton 
+          <NButton 
             btn="ghost-gray" 
             size="sm" 
             :disabled="!canNavigateNext"
@@ -110,13 +110,13 @@
           >
             Next
             <span class="i-ph-arrow-right ml-1"></span>
-          </UButton>
+          </NButton>
         </div>
       </div>
       
-      <UDrawerFooter />
-    </UDrawerContent>
-  </UDrawer>
+      <NDrawerFooter />
+    </NDrawerContent>
+  </NDrawer>
 </template>
 
 <script lang="ts" setup>

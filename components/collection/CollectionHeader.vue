@@ -21,10 +21,10 @@
       >
         <!-- Left: back + avatar + name (truncate) -->
         <div class="inline-flex items-center gap-2 min-w-0 pl-2">
-          <ULink to="/collections" class="w-8 h-8 inline-flex items-center justify-center rounded-md text-[rgba(var(--una-gray-600),1)] hover:bg-black/5 dark:hover:bg-white/5" aria-label="Back to collections">
+          <NLink to="/collections" class="w-8 h-8 inline-flex items-center justify-center rounded-md text-[rgba(var(--una-gray-600),1)] hover:bg-black/5 dark:hover:bg-white/5" aria-label="Back to collections">
             <span class="i-ph-arrow-left" aria-hidden="true"></span>
             <span class="sr-only">Back</span>
-          </ULink>
+          </NLink>
 
           <div
             v-if="collection?.owner"
@@ -77,18 +77,18 @@
         <!-- Right: actions -->
         <div class="inline-flex items-center justify-self-end gap-2 pr-2 transition-all duration-200" :class="isCompact ? 'text-[12px]' : ''">
           <template v-if="canEdit">
-            <UBadge badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('addImages')">
-              <UIcon name="i-ph-plus" class="mr-1" />
+            <NBadge badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('addImages')">
+              <NIcon name="i-ph-plus" class="mr-1" />
               <span>Add Images</span>
-            </UBadge>
+            </NBadge>
 
-            <UBadge v-if="canEdit" badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('edit')">
-              <UIcon name="i-ph-pencil" class="mr-1" />
+            <NBadge v-if="canEdit" badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('edit')">
+              <NIcon name="i-ph-pencil" class="mr-1" />
               <span>Edit</span>
-            </UBadge>
+            </NBadge>
 
             <ClientOnly>
-              <UDropdownMenu
+              <NDropdownMenu
                 :items="menuItems"
                 size="xs"
                 menu-label=""
@@ -97,7 +97,7 @@
               />
               <template #fallback>
                 <div class="flex items-center justify-center w-8 h-8 bg-transparent scale-75 opacity-50">
-                  <UIcon name="i-ph-dots-three" />
+                  <NIcon name="i-ph-dots-three" />
                 </div>
               </template>
             </ClientOnly>

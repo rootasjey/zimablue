@@ -35,7 +35,7 @@
             <div class="flex-1">
               <h3 class="text-size-5 font-600 text-gray-800 dark:text-gray-200 mb-1">Something went wrong</h3>
               <p class="text-gray-600 dark:text-gray-400 mb-3">{{ store.error }}</p>
-              <UButton size="12px" btn="soft-gray" @click="store.fetchCollection(slug)">Try again</UButton>
+              <NButton size="12px" btn="soft-gray" @click="store.fetchCollection(slug)">Try again</NButton>
             </div>
           </div>
         </div>
@@ -100,19 +100,19 @@
                 <span class="font-600">{{ store.selectionCount }}</span> selected
               </div>
               <div class="flex items-center gap-2">
-                <UButton size="12px" btn="soft-gray" @click="store.clearSelection">Clear</UButton>
-                <UButton
+                <NButton size="12px" btn="soft-gray" @click="store.clearSelection">Clear</NButton>
+                <NButton
                   v-if="store.isAddingImages"
                   size="12px"
                   btn="soft-blue"
                   @click="actions.addImages"
-                >Add</UButton>
-                <UButton
+                >Add</NButton>
+                <NButton
                   v-else
                   size="12px"
                   btn="soft-error"
                   @click="actions.removeImages"
-                >Remove</UButton>
+                >Remove</NButton>
               </div>
             </div>
           </div>

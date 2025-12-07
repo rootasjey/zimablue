@@ -1,5 +1,5 @@
 <template>
-  <UDialog
+  <NDialog
     :open="searchStore.isDialogOpen"
     @update:open="handleDialogToggle"
     :ui="{ 
@@ -14,7 +14,7 @@
       <!-- Search Header -->
       <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
         <div class="relative">
-          <UInput
+          <NInput
             ref="searchInputRef"
             v-model="searchQuery"
             placeholder="Search images and collections..."
@@ -40,17 +40,17 @@
                 >
                   ESC
                 </kbd>
-                <UButton
+                <NButton
                   v-if="searchQuery"
                   btn="ghost-gray"
                   size="xs"
                   @click="clearSearch"
                 >
                   <span class="i-ph-x w-3 h-3"></span>
-                </UButton>
+                </NButton>
               </div>
             </template>
-          </UInput>
+          </NInput>
         </div>
 
         <!-- Search hints -->
@@ -87,7 +87,7 @@
           <div class="text-center">
             <span class="i-ph-warning-circle w-8 h-8 text-red-500 mx-auto mb-2"></span>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ searchStore.error }}</p>
-            <UButton
+            <NButton
               btn="soft-gray"
               size="sm"
               @click="handleRetry"
@@ -95,7 +95,7 @@
             >
               <span class="i-ph-arrow-clockwise w-3 h-3 mr-1"></span>
               Try Again
-            </UButton>
+            </NButton>
           </div>
         </div>
 
@@ -162,7 +162,7 @@
         </div>
       </div>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

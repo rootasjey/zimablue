@@ -14,8 +14,8 @@
       </div>
 
       <div class="flex items-center">
-        <UIcon name="i-ph-dot" class="text-gray-500 ml-6 mr-2 text-size-5" />
-        <UButton
+        <NIcon name="i-ph-dot" class="text-gray-500 ml-6 mr-2 text-size-5" />
+        <NButton
           v-if="loggedIn"
           btn="link-gray"
           size="sm"
@@ -23,7 +23,7 @@
           @click="collectionStore.openCreateDialog()"
         >
           <span class="uppercase">Create new</span>
-        </UButton>
+        </NButton>
       </div>
     </div>
     
@@ -45,7 +45,7 @@
         rounded-full border border-[rgba(0,0,0,0.08)] backdrop-blur-md 
         items-center justify-center cursor-pointer shadow-lg left-[-10px] z-10 animate-fade-in-left animation-delay-400" 
         aria-label="Previous" @click="scrollByAmount(-1)">
-        <UIcon name="i-ph-caret-left" />
+        <NIcon name="i-ph-caret-left" />
       </button>
 
       <div ref="scrollEl" 
@@ -87,7 +87,7 @@
               </div>
               
               <!-- Public/Private chip -->
-              <UBadge v-if="loggedIn"
+              <NBadge v-if="loggedIn"
                 :badge="collection.is_public ? 'solid-blue' : 'solid-gray'"
                 :label="collection.is_public ? 'Public' : 'Private'" 
                 :icon="collection.is_public ? 'i-ph-globe' : 'i-ph-lock'" 
@@ -97,7 +97,7 @@
               <!-- Inline menu for owners/admins -->
               <div v-if="loggedIn" class="absolute top-2 right-2 z-2">
                 <ClientOnly>
-                  <UDropdownMenu
+                  <NDropdownMenu
                     :items="collectionStore.getCollectionMenuItems(collection)"
                     size="xs"
                     dropdown-menu="ghost-black"
@@ -133,10 +133,10 @@
           You haven't created any image collections yet. Collections help you organize your images into themed groups.
         </p>
 
-        <UButton btn="outline" class="mx-auto animate-fade-in-up animation-delay-800" @click="collectionStore.openCreateDialog()">
+        <NButton btn="outline" class="mx-auto animate-fade-in-up animation-delay-800" @click="collectionStore.openCreateDialog()">
           <span class="i-ph-plus mr-2"></span>
           Create your first collection
-        </UButton>
+        </NButton>
       </div>
     </section>
 

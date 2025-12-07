@@ -109,7 +109,7 @@ export default defineNuxtConfig({
     },
   },
   una: {
-    prefix: "u",
+    prefix: "N",
     themeable: true,
   },
 })

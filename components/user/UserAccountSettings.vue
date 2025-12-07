@@ -6,7 +6,7 @@
     </h2>
     
     <div class="space-y-4">
-      <UButton 
+      <NButton 
         btn="soft-orange"
         size="sm"
         class="px-6"
@@ -14,7 +14,7 @@
       >
         <span class="i-ph-sign-out-bold"></span>
         Sign Out
-      </UButton>
+      </NButton>
     </div>
   </section>
 </template>

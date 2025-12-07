@@ -28,7 +28,7 @@
           class="absolute top-2 right-2 z-20"
           @click.stop="$emit('imageToggle', item.id, index, $event)"
         >
-          <UCheckbox
+          <NCheckbox
             :model-value="selectedImagesMap?.[item.id] || false"
             checkbox="success"
           />
@@ -127,7 +127,7 @@
             class="absolute top-2 right-2 z-20"
             @click.stop="$emit('imageToggle', item.id, index, $event)"
           >
-            <UCheckbox
+            <NCheckbox
               :model-value="selectedImagesMap?.[item.id] || false"
               checkbox="success"
             />
@@ -176,7 +176,7 @@
           </div>
 
           <ClientOnly>
-            <UDropdownMenu
+            <NDropdownMenu
               v-if="!isSelectionMode"
               :items="imageMenuItems(item)"
               size="xs"
@@ -190,7 +190,7 @@
               <div class="dp-menu-trigger w-32px h-32px flex items-center justify-center">
                 <span class="i-ph-chat-teardrop-dots-bold"></span>
               </div>
-            </UDropdownMenu>
+            </NDropdownMenu>
             <template #fallback>
               <div v-if="!isSelectionMode" class="dp-menu-trigger w-32px h-32px flex items-center justify-center opacity-50">
                 <span class="i-ph-chat-teardrop-dots-bold"></span>

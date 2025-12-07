@@ -4,7 +4,7 @@
       <NuxtPage />
     </NuxtLayout>
     
-    <UToaster />
+    <NToaster />
     <GlobalSearchDialog />
     <HiddenFileInputs />
     <UserMenu />

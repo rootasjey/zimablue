@@ -31,7 +31,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Toggle the global click fireworks effect in the application (triggered on clicks).</p>
           </div>
             <div class="shrink-0 flex items-center">
-            <USwitch v-model="fireworksEnabled" />
+            <NSwitch v-model="fireworksEnabled" />
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred theme. System will follow the OS preference.</p>
           </div>
           <div class="shrink-0 w-48">
-            <USelect v-model="selectedTheme" :items="themeOptions" item-key="label" value-key="label" size="sm" />
+            <NSelect v-model="selectedTheme" :items="themeOptions" item-key="label" value-key="label" size="sm" />
           </div>
         </div>
       </div>

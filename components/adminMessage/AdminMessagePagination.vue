@@ -8,7 +8,7 @@
     <!-- Pagination Controls -->
     <div class="flex items-center gap-2">
       <!-- First Page -->
-      <UButton
+      <NButton
         @click="$emit('page-change', 1)"
         :disabled="!pagination.hasPrev"
         size="sm"
@@ -16,10 +16,10 @@
         title="First page"
       >
         <span class="i-ph-caret-double-left"></span>
-      </UButton>
+      </NButton>
 
       <!-- Previous Page -->
-      <UButton
+      <NButton
         @click="$emit('page-change', pagination.page - 1)"
         :disabled="!pagination.hasPrev"
         size="sm"
@@ -27,7 +27,7 @@
         title="Previous page"
       >
         <span class="i-ph-caret-left"></span>
-      </UButton>
+      </NButton>
 
       <!-- Page Numbers -->
       <div class="flex items-center gap-1">
@@ -38,7 +38,7 @@
           >
             ...
           </span>
-          <UButton
+          <NButton
             v-else
             @click="$emit('page-change', typeof page === 'number' ? page : -1)"
             :btn="page === pagination.page ? 'solid' : 'ghost'"
@@ -46,12 +46,12 @@
             class="min-w-8"
           >
             {{ page }}
-          </UButton>
+          </NButton>
         </template>
       </div>
 
       <!-- Next Page -->
-      <UButton
+      <NButton
         @click="$emit('page-change', pagination.page + 1)"
         :disabled="!pagination.hasNext"
         size="sm"
@@ -59,10 +59,10 @@
         title="Next page"
       >
         <span class="i-ph-caret-right"></span>
-      </UButton>
+      </NButton>
 
       <!-- Last Page -->
-      <UButton
+      <NButton
         @click="$emit('page-change', pagination.totalPages)"
         :disabled="!pagination.hasNext"
         size="sm"
@@ -70,13 +70,13 @@
         title="Last page"
       >
         <span class="i-ph-caret-double-right"></span>
-      </UButton>
+      </NButton>
     </div>
 
     <!-- Items per page selector -->
     <div class="flex items-center gap-2">
       <span class="text-sm text-gray-600 dark:text-gray-400">Per page:</span>
-      <USelect
+      <NSelect
         :model-value="pagination.limit"
         :options="limitOptions"
         @change="handleLimitChange"

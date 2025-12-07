@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('close')"
     :ui="{ width: 'sm:max-w-2xl' }"
@@ -7,7 +7,7 @@
       btn: 'solid-gray',
     }"
   >
-    <UCard>
+    <NCard>
       <!-- Header -->
       <template #header>
         <div class="flex items-center justify-between">
@@ -104,7 +104,7 @@
       <template #footer>
         <div class="flex items-center gap-4 justify-between">
           <div class="flex gap-4">
-            <UButton
+            <NButton
               v-if="!message.read"
               @click="handleMarkRead(true)"
               btn="soft"
@@ -112,9 +112,9 @@
             >
               <span class="i-ph-check mr-2"></span>
               Mark as Read
-            </UButton>
+            </NButton>
             
-            <UButton
+            <NButton
               v-else
               @click="handleMarkRead(false)"
               btn="soft"
@@ -122,11 +122,11 @@
             >
               <span class="i-ph-circle mr-2"></span>
               Mark as Unread
-            </UButton>
+            </NButton>
           </div>
 
           <div class="flex gap-4">
-            <UButton
+            <NButton
               @click="emit('delete', props.message)"
               btn="soft-pink"
               size="sm"
@@ -134,20 +134,20 @@
             >
               <span class="i-ph-trash mr-2"></span>
               Delete
-            </UButton>
+            </NButton>
             
-            <UButton
+            <NButton
               @click="$emit('close')"
               btn="ghost-gray"
               class="px-6"
             >
               Close
-            </UButton>
+            </NButton>
           </div>
         </div>
       </template>
-    </UCard>
-  </UDialog>
+    </NCard>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

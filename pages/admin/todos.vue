@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
       <p class="text-gray-600">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Todos Management -->
@@ -16,20 +16,20 @@
             <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-white">To-Do List</h1>
             <p class="text-gray-600 dark:text-gray-300 mt-1">Manage your art projects and upcoming tasks.</p>
         </div>
-        <UButton
+        <NButton
           @click="openCreateDialog"
           btn="solid-black"
           size="xs"
         >
           <span class="i-ph-plus mr-2"></span>
           New Task
-        </UButton>
+        </NButton>
       </div>
 
       <!-- Filters -->
       <div class="rounded-[28px] p-4 bg-[#D1E0E9] dark:bg-gray-800">
         <div class="flex flex-wrap gap-3">
-          <UButton
+          <NButton
             v-for="statusFilter in statusFilters"
             :key="statusFilter.value"
             @click="selectedStatus = selectedStatus === statusFilter.value ? '' : statusFilter.value"
@@ -39,10 +39,10 @@
           >
             <span :class="statusFilter.icon" class="mr-2"></span>
             {{ statusFilter.label }}
-          </UButton>
+          </NButton>
           
           <div class="ml-auto flex gap-2">
-            <UButton
+            <NButton
               v-for="priorityFilter in priorityFilters"
               :key="priorityFilter.value"
               @click="selectedPriority = selectedPriority === priorityFilter.value ? '' : priorityFilter.value"
@@ -51,7 +51,7 @@
               rounded="6"
             >
               {{ priorityFilter.label }}
-            </UButton>
+            </NButton>
           </div>
         </div>
       </div>
@@ -66,10 +66,10 @@
         <span class="i-ph-check-square text-2xl mb-4"></span>
         <h3 class="text-xl font-600">No tasks found</h3>
         <p class="mb-4">Create your first task to get started!</p>
-        <UButton @click="openCreateDialog" btn="solid-black">
+        <NButton @click="openCreateDialog" btn="solid-black">
           <span class="i-ph-plus mr-2"></span>
           Create Task
-        </UButton>
+        </NButton>
       </div>
 
       <!-- Todos List -->
@@ -108,12 +108,12 @@
                   </span>
                   
                   <!-- Actions -->
-                  <UButton @click="openEditDialog(todo)" btn="soft-gray" size="sm">
+                  <NButton @click="openEditDialog(todo)" btn="soft-gray" size="sm">
                     <span class="i-ph-pencil"></span>
-                  </UButton>
-                  <UButton @click="openDeleteDialog(todo)" btn="soft-error" size="sm">
+                  </NButton>
+                  <NButton @click="openDeleteDialog(todo)" btn="soft-error" size="sm">
                     <span class="i-ph-trash"></span>
-                  </UButton>
+                  </NButton>
                 </div>
               </div>
 
@@ -136,30 +136,30 @@
 
       <!-- Pagination -->
       <div v-if="pagination.totalPages > 1" class="flex items-center justify-center gap-2">
-        <UButton
+        <NButton
           @click="handlePageChange(pagination.page - 1)"
           :disabled="!pagination.hasPrev"
           btn="soft-gray"
           size="sm"
         >
           <span class="i-ph-caret-left"></span>
-        </UButton>
+        </NButton>
         <span class="text-sm text-gray-600">
           Page {{ pagination.page }} of {{ pagination.totalPages }}
         </span>
-        <UButton
+        <NButton
           @click="handlePageChange(pagination.page + 1)"
           :disabled="!pagination.hasNext"
           btn="soft-gray"
           size="sm"
         >
           <span class="i-ph-caret-right"></span>
-        </UButton>
+        </NButton>
       </div>
     </div>
 
     <!-- Create/Edit Dialog -->
-    <UDialog v-model:open="isDialogOpen">
+    <NDialog v-model:open="isDialogOpen">
       <div class="p-6">
         <h2 class="text-2xl font-700 text-gray-900 dark:text-white mb-4">
           {{ editingTodo ? 'Edit Task' : 'Create New Task' }}
@@ -168,7 +168,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-600 text-gray-700 mb-2">Title *</label>
-            <UInput
+            <NInput
               v-model="formData.title"
               placeholder="Enter task title"
               size="lg"
@@ -178,7 +178,7 @@
 
           <div>
             <label class="block text-sm font-600 text-gray-700 mb-2">Description</label>
-            <UTextarea
+            <NTextarea
               v-model="formData.description"
               placeholder="Enter task description (optional)"
               rows="3"
@@ -189,7 +189,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2">Due Date *</label>
-              <UInput
+              <NInput
                 v-model="formData.due_date"
                 type="date"
                 size="lg"
@@ -199,7 +199,7 @@
 
             <div>
               <label class="block text-sm font-600 text-gray-700 mb-2">Priority</label>
-              <USelect
+              <NSelect
                 v-model="formData.priority"
                 :items="priorityOptions"
                 size="lg"
@@ -210,7 +210,7 @@
 
           <div v-if="editingTodo">
             <label class="block text-sm font-600 text-gray-700 mb-2">Status</label>
-            <USelect
+            <NSelect
               v-model="formData.status"
               :items="statusOptions"
               size="lg"
@@ -220,43 +220,43 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 mt-6">
-          <UButton @click="closeDialog" btn="soft-gray" size="lg">
+          <NButton @click="closeDialog" btn="soft-gray" size="lg">
             Cancel
-          </UButton>
-          <UButton
+          </NButton>
+          <NButton
             @click="saveTodo"
             btn="solid-black"
             size="lg"
             :loading="isSaving"
           >
             {{ editingTodo ? 'Update' : 'Create' }}
-          </UButton>
+          </NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <UDialog v-model:open="isDeleteDialogOpen">
+    <NDialog v-model:open="isDeleteDialogOpen">
       <div class="p-6">
           <h2 class="text-2xl font-700 text-gray-900 dark:text-white mb-4">Delete Task</h2>
         <p class="text-gray-600 mb-6">
           Are you sure you want to delete "{{ deletingTodo?.title }}"? This action cannot be undone.
         </p>
         <div class="flex items-center justify-end gap-3">
-          <UButton @click="closeDeleteDialog" btn="soft-gray" size="lg">
+          <NButton @click="closeDeleteDialog" btn="soft-gray" size="lg">
             Cancel
-          </UButton>
-          <UButton
+          </NButton>
+          <NButton
             @click="confirmDelete"
             btn="solid-error"
             size="lg"
             :loading="isDeleting"
           >
             Delete
-          </UButton>
+          </NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 

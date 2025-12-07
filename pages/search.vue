@@ -15,7 +15,7 @@
 
         <!-- Search Input -->
         <div class="flex-1 relative">
-          <UInput
+          <NInput
             ref="searchInputRef"
             v-model="searchQuery"
             placeholder="Search images and collections..."
@@ -34,7 +34,7 @@
               <span class="i-ph-magnifying-glass w-4 h-4 text-gray-400"></span>
             </template>
             <template #trailing>
-              <UButton
+              <NButton
                 v-if="searchQuery"
                 btn="ghost-gray"
                 size="xs"
@@ -42,9 +42,9 @@
                 aria-label="Clear search"
               >
                 <span class="i-ph-x w-3 h-3"></span>
-              </UButton>
+              </NButton>
             </template>
-          </UInput>
+          </NInput>
         </div>
       </div>
     </header>
@@ -64,7 +64,7 @@
 
           <!-- Search Input -->
           <div class="flex-1 max-w-2xl">
-            <UInput
+            <NInput
               ref="searchInputRef"
               v-model="searchQuery"
               placeholder="Search images and collections..."
@@ -85,7 +85,7 @@
               </template>
               <template #trailing>
                 <div class="flex items-center gap-2">
-                  <UButton
+                  <NButton
                     v-if="searchQuery"
                     btn="ghost-gray"
                     size="xs"
@@ -93,13 +93,13 @@
                     aria-label="Clear search"
                   >
                     <span class="i-ph-x w-4 h-4"></span>
-                  </UButton>
+                  </NButton>
                   <div class="hidden lg:flex items-center gap-1 text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                     <span>⌘K</span>
                   </div>
                 </div>
               </template>
-            </UInput>
+            </NInput>
           </div>
 
           <!-- Theme Toggle -->
@@ -159,9 +159,9 @@
         <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
           {{ searchStore.error }}
         </p>
-        <UButton @click="handleRetry" size="sm">
+        <NButton @click="handleRetry" size="sm">
           Try Again
-        </UButton>
+        </NButton>
       </div>
 
       <!-- No Results -->

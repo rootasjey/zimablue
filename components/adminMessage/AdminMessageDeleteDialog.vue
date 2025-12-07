@@ -1,5 +1,5 @@
 <template>
-  <UDialog 
+  <NDialog 
     :open="isOpen"
     @update:open="$emit('close')"
 
@@ -16,21 +16,21 @@
       </p>
       
       <div class="mt-6 flex justify-end gap-2 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-        <UButton 
+        <NButton 
           btn="ghost-gray" 
           @click="$emit('close')"
         >
           Cancel
-        </UButton>
-        <UButton 
+        </NButton>
+        <NButton 
           btn="solid-black" 
           @click="$emit('confirm', messageId)"
         >
           <span>Delete message</span>
-        </UButton>
+        </NButton>
       </div>
     </div>
-  </UDialog>
+  </NDialog>
 </template>
 
 <script lang="ts" setup>

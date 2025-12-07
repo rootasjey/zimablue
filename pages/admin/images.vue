@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
       <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Images Management -->
@@ -21,7 +21,7 @@
       <!-- Search and Actions Card -->
       <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <UInput
+          <NInput
             v-model="searchQuery"
             placeholder="Search images..."
             @keyup.enter="handleSearch(searchQuery)"
@@ -33,9 +33,9 @@
             <template #leading>
               <span class="i-ph-magnifying-glass"></span>
             </template>
-          </UInput>
+          </NInput>
 
-          <UButton
+          <NButton
             @click="fetchImages"
             :loading="isLoading"
             btn="light:soft-blue dark:solid-gray"
@@ -44,7 +44,7 @@
           >
             <span class="i-ph-arrow-clockwise mr-2"></span>
             Refresh
-          </UButton>
+          </NButton>
         </div>
 
         <!-- Bulk Actions -->
@@ -52,7 +52,7 @@
           <span class="text-sm font-600 text-gray-700">
             {{ selectedImages.length }} selected
           </span>
-          <UButton
+          <NButton
             v-for="action in bulkActions"
             :key="action.id"
             @click="handleBulkAction(action.id)"
@@ -61,14 +61,14 @@
           >
             <span v-if="action.icon" :class="[action.icon, 'mr-2']"></span>
             {{ action.label }}
-          </UButton>
+          </NButton>
         </div>
       </div>
 
       <!-- Table Card -->
       <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
         <div class="p-6">
-          <UTable
+          <NTable
             :columns="unaColumns"
             :data="images"
             :loading="isLoading"
@@ -90,7 +90,7 @@
               <!-- Left actions dropdown -->
               <template #row_actions-cell="{ cell }">
                 <ClientOnly>
-                  <UDropdownMenu
+                  <NDropdownMenu
                     :items="imageRowMenuItems(cell.row.original)"
                     size="xs"
                     dropdown-menu="link-black"
@@ -130,7 +130,7 @@
               <template #user_name-cell="{ cell }">
                 <div class="flex items-center gap-2">
                   <div class="w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                    <UIcon name="i-ph-user" class="text-white" size="xs" />
+                    <NIcon name="i-ph-user" class="text-white" size="xs" />
                   </div>
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ cell.getValue() }}</p>
@@ -142,21 +142,21 @@
               <!-- Stats cells -->
               <template #stats_views-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <UIcon name="i-ph-eye-bold" size="sm" />
+                  <NIcon name="i-ph-eye-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
 
               <template #stats_downloads-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <UIcon name="i-ph-download-bold" size="sm" />
+                  <NIcon name="i-ph-download-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
 
               <template #stats_likes-cell="{ cell }">
                 <div class="flex items-center gap-1">
-                  <UIcon name="i-ph-heart-bold" size="sm" />
+                  <NIcon name="i-ph-heart-bold" size="sm" />
                   <span class="text-sm">{{ Number(cell.getValue()).toLocaleString() }}</span>
                 </div>
               </template>
@@ -170,7 +170,7 @@
                 </ClientOnly>
               </template>
 
-            </UTable>
+            </NTable>
         </div>
 
         <!-- Pagination -->
@@ -183,27 +183,27 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <UButton
+              <NButton
                 @click="handlePageChange(pagination.page - 1)"
                 :disabled="!pagination.hasPrev"
                 btn="soft-gray"
                 size="sm"
               >
                 <span class="i-ph-caret-left"></span>
-              </UButton>
+              </NButton>
 
               <span class="text-sm text-gray-600 px-3">
                 Page {{ pagination.page }} of {{ pagination.totalPages }}
               </span>
 
-              <UButton
+              <NButton
                 @click="handlePageChange(pagination.page + 1)"
                 :disabled="!pagination.hasNext"
                 btn="soft-gray"
                 size="sm"
               >
                 <span class="i-ph-caret-right"></span>
-              </UButton>
+              </NButton>
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@
     </div>
 
     <!-- View Image Dialog -->
-    <UDialog v-model:open="isViewDialogOpen" title="Image Details">
+    <NDialog v-model:open="isViewDialogOpen" title="Image Details">
       <div v-if="selectedImage" class="p-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Image Preview -->
@@ -226,18 +226,18 @@
             />
             
             <div class="flex flex-col gap-3 pt-4">
-              <UButton 
+              <NButton 
                 :to="`/illustrations/${selectedImage.slug}`" 
                 target="_blank"
                 btn="soft-blue"
               >
                 <span class="i-ph-arrow-square-out mr-2"></span>
                 View Public Page
-              </UButton>
-              <UButton @click="editImage(selectedImage)" btn="soft-gray">
+              </NButton>
+              <NButton @click="editImage(selectedImage)" btn="soft-gray">
                 <span class="i-ph-pencil mr-2"></span>
                 Edit
-              </UButton>
+              </NButton>
             </div>
           </div>
           
@@ -277,10 +277,10 @@
           </div>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <UDialog v-model:open="isDeleteDialogOpen" title="Delete Image">
+    <NDialog v-model:open="isDeleteDialogOpen" title="Delete Image">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -295,37 +295,37 @@
         </div>
         
         <div class="flex justify-end gap-3">
-          <UButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</UButton>
-          <UButton @click="deleteImage" :loading="isDeleting" btn="soft-red">Delete Image</UButton>
+          <NButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</NButton>
+          <NButton @click="deleteImage" :loading="isDeleting" btn="soft-red">Delete Image</NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Edit Image Dialog -->
-    <UDialog v-model:open="isEditDialogOpen" title="Edit Image">
+    <NDialog v-model:open="isEditDialogOpen" title="Edit Image">
       <div class="p-6 space-y-4">
-        <UFormGroup label="Name" name="name">
-          <UInput v-model="editForm.name" placeholder="Image name" />
-        </UFormGroup>
+        <NFormGroup label="Name" name="name">
+          <NInput v-model="editForm.name" placeholder="Image name" />
+        </NFormGroup>
 
-        <UFormGroup label="Slug" name="slug">
-          <UInput v-model="editForm.slug" placeholder="url-friendly-slug" @input="slugTouched = true" />
+        <NFormGroup label="Slug" name="slug">
+          <NInput v-model="editForm.slug" placeholder="url-friendly-slug" @input="slugTouched = true" />
           <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 pt-2">
-            <UCheckbox v-model="autoSlug" />
+            <NCheckbox v-model="autoSlug" />
             <span>Auto-update from name</span>
           </div>
-        </UFormGroup>
+        </NFormGroup>
 
-        <UFormGroup label="Description" name="description">
-          <UInput v-model="editForm.description" type="textarea" placeholder="Image description" />
-        </UFormGroup>
+        <NFormGroup label="Description" name="description">
+          <NInput v-model="editForm.description" type="textarea" placeholder="Image description" />
+        </NFormGroup>
 
         <div class="flex justify-end gap-3 pt-2">
-          <UButton @click="isEditDialogOpen = false" btn="soft-gray">Cancel</UButton>
-          <UButton @click="saveEditedImage" :loading="isSavingEdit" :disabled="!editForm.name || !editForm.slug" btn="soft-blue">Save Changes</UButton>
+          <NButton @click="isEditDialogOpen = false" btn="soft-gray">Cancel</NButton>
+          <NButton @click="saveEditedImage" :loading="isSavingEdit" :disabled="!editForm.name || !editForm.slug" btn="soft-blue">Save Changes</NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 

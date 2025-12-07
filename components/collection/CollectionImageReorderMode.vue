@@ -5,13 +5,13 @@
         Reorder images
       </h3>
       <div class="flex gap-2">
-        <UButton size="12px" btn=" dark:border-green-500 hover:outline-pink" @click="$emit('cancel')"
+        <NButton size="12px" btn=" dark:border-green-500 hover:outline-pink" @click="$emit('cancel')"
           class="dark:border-green-500">
           Cancel
-        </UButton>
-        <UButton size="12px" btn="solid-black" @click="handleSave">
+        </NButton>
+        <NButton size="12px" btn="solid-black" @click="handleSave">
           Save Order
-        </UButton>
+        </NButton>
       </div>
     </div>
     

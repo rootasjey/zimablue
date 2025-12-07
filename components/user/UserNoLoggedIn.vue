@@ -6,11 +6,11 @@
     </h2>
     <p class="text-gray-600 dark:text-gray-400 mb-6">
       You need to be 
-      <ULink to="/login" class="underline underline-dashed decoration-offset-6 hover:underline-rose hover:text-rose-5">signed in</ULink> 
+      <NLink to="/login" class="underline underline-dashed decoration-offset-6 hover:underline-rose hover:text-rose-5">signed in</NLink> 
       to view your profile and manage your gallery.
     </p>
-    <ULink to="/" class="arrow">
+    <NLink to="/" class="arrow">
       <span>Go back to gallery</span>
-    </ULink>
+    </NLink>
   </section>
 </template>

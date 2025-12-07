@@ -4,7 +4,7 @@
       <label for="about-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Your Email <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
       </label>
-      <UInput
+      <NInput
         id="about-email"
         type="email"
         :model-value="email"
@@ -24,7 +24,7 @@
       <label for="about-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Subject <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
       </label>
-      <UInput
+      <NInput
         id="about-subject"
         type="text"
         :model-value="subject"
@@ -44,7 +44,7 @@
       <label for="about-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Message <span class="text-[#EC7FA9] dark:text-[#FFB8E0]">*</span>
       </label>
-      <UInput
+      <NInput
         id="about-message"
         type="textarea"
         :model-value="message"
@@ -62,10 +62,10 @@
     </div>
 
     <div class="pt-1">
-      <UButton type="submit" :loading="loading" :disabled="loading" class="w-full sm:w-auto" btn="outline">
+      <NButton type="submit" :loading="loading" :disabled="loading" class="w-full sm:w-auto" btn="outline">
         <span class="i-ph-paper-plane-right mr-2"></span>
         Send Message
-      </UButton>
+      </NButton>
     </div>
   </form>
 </template>

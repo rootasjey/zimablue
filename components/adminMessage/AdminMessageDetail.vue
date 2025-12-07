@@ -1,5 +1,5 @@
 <template>
-  <UCard v-if="message" class="bg-white/70 dark:bg-gray-900" border="0" shadow="lg" rounded="xl">
+  <NCard v-if="message" class="bg-white/70 dark:bg-gray-900" border="0" shadow="lg" rounded="xl">
     <!-- Header -->
     <template #header>
       <div class="flex items-center justify-between">
@@ -12,9 +12,9 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <UTooltip>
+          <NTooltip>
             <template #default>
-              <UButton
+              <NButton
                 @click="handleMarkRead(!message.read)"
                 :btn="message.read ? 'soft-blue' : 'solid-blue'"
                 :label="message.read ? 'i-ph-circle' : 'i-ph-check'" size="xs" icon
@@ -23,25 +23,25 @@
             <template #content>
               <div class="px-3 py-1">{{ message.read ? 'Mark this message as unread' : 'Mark this message as read' }}</div>
             </template>
-          </UTooltip>
+          </NTooltip>
 
-          <UTooltip>
+          <NTooltip>
             <template #default>
-              <UButton @click="$emit('delete', message)" btn="soft-pink" icon label="i-tabler-trash" size="xs" />
+              <NButton @click="$emit('delete', message)" btn="soft-pink" icon label="i-tabler-trash" size="xs" />
             </template>
             <template #content>
               <div class="px-3 py-1">Delete this message</div>
             </template>
-          </UTooltip>
+          </NTooltip>
 
-          <UTooltip>
+          <NTooltip>
             <template #default>
-              <UButton size="xs" icon btn="soft-lime" label="i-tabler-x" aria-label="Close" @click="$emit('close')" />
+              <NButton size="xs" icon btn="soft-lime" label="i-tabler-x" aria-label="Close" @click="$emit('close')" />
             </template>
             <template #content>
               <div class="px-3 py-1">Close message detail view</div>
             </template>
-          </UTooltip>
+          </NTooltip>
         </div>
       </div>
     </template>
@@ -81,7 +81,7 @@
     <!-- Footer Actions -->
     <template #footer>
     </template>
-  </UCard>
+  </NCard>
 </template>
 
 <script lang="ts" setup>

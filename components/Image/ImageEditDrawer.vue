@@ -1,38 +1,38 @@
 <template>
-  <UDrawer v-model:open="open" class="sm:hidden">
-    <UDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
-      <UDrawerHeader>
-        <UDrawerTitle>Edit Image Details</UDrawerTitle>
-      </UDrawerHeader>
+  <NDrawer v-model:open="open" class="sm:hidden">
+    <NDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
+      <NDrawerHeader>
+        <NDrawerTitle>Edit Image Details</NDrawerTitle>
+      </NDrawerHeader>
 
       <div class="space-y-4 p-4">
-        <UFormGroup label="Name" name="name">
-          <UInput 
+        <NFormGroup label="Name" name="name">
+          <NInput 
             :model-value="editForm.name" 
             @update:model-value="$emit('updateField', 'name', $event)"
             placeholder="Image name" 
           />
-        </UFormGroup>
+        </NFormGroup>
 
-        <UFormGroup label="Slug" name="slug">
-          <UInput 
+        <NFormGroup label="Slug" name="slug">
+          <NInput 
             :model-value="editForm.slug"
             @update:model-value="$emit('updateField', 'slug', $event)"
             placeholder="URL-friendly slug" 
           />
-        </UFormGroup>
+        </NFormGroup>
 
-        <UFormGroup label="Description" name="description">
-          <UInput 
+        <NFormGroup label="Description" name="description">
+          <NInput 
             :model-value="editForm.description"
             @update:model-value="$emit('updateField', 'description', $event)"
             type="textarea" 
             placeholder="Image description" 
           />
-        </UFormGroup>
+        </NFormGroup>
 
-        <UFormGroup label="Tags" name="tags">
-          <UCombobox
+        <NFormGroup label="Tags" name="tags">
+          <NCombobox
             :model-value="editForm.tags"
             @update:model-value="$emit('updateField', 'tags', $event)"
             :items="availableTags"
@@ -51,15 +51,15 @@
             </template>
 
             <template #item="{ item, selected }">
-              <UCheckbox :model-value="selected" tabindex="-1" aria-hidden="true" />
+              <NCheckbox :model-value="selected" tabindex="-1" aria-hidden="true" />
               {{ item.label }}
             </template>
-          </UCombobox>
-        </UFormGroup>
+          </NCombobox>
+        </NFormGroup>
 
         <div class="flex justify-end space-x-3 mt-2">
-          <UButton btn="ghost-pink" class="h-32px py-0" @click="$emit('close')">Cancel</UButton>
-          <UButton
+          <NButton btn="ghost-pink" class="h-32px py-0" @click="$emit('close')">Cancel</NButton>
+          <NButton
             btn="solid dark:soft-blue"
             class="h-32px py-0"
             @click="$emit('submit')"
@@ -67,13 +67,13 @@
             :disabled="!isFormValid"
           >
             Save Changes
-          </UButton>
+          </NButton>
         </div>
       </div>
 
-      <UDrawerFooter />
-    </UDrawerContent>
-  </UDrawer>
+      <NDrawerFooter />
+    </NDrawerContent>
+  </NDrawer>
 </template>
 
 <script lang="ts" setup>

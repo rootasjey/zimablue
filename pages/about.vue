@@ -6,11 +6,11 @@
         <span class="i-ph-sparkle mr-1"></span>
         About this project • v{{ version }}
       </div>
-      <ULink to="/" class="no-underline">
+      <NLink to="/" class="no-underline">
         <h1 class="font-title font-200 text-4xl sm:text-5xl md:text-6xl tracking-tight text-gray-900 dark:text-gray-100 leading-tight animate-in slide-in-from-bottom-2">
           zima blue
         </h1>
-      </ULink>
+      </NLink>
       <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto animate-in fade-in-50">
         A handmade, ever-evolving gallery at the crossroads of code and illustration.
       </p>
@@ -28,9 +28,9 @@
           I'm a self-taught illustrator and software engineer based in France. My work explores the intersection of
           technology and art, creating digital illustrations that blend technical precision with creative expression.
         </p>
-        <ULink to="https://www.rootasjey.dev/resume" class="arrow mt-3 inline-flex" target="_blank" rel="noopener noreferrer">
+        <NLink to="https://www.rootasjey.dev/resume" class="arrow mt-3 inline-flex" target="_blank" rel="noopener noreferrer">
           <span>Learn more about my work experiences.</span>
-        </ULink>
+        </NLink>
       </section>
 
       <!-- Licensing -->
@@ -67,53 +67,53 @@
             </div>
 
             <div class="flex items-center gap-2 self-stretch sm:self-auto">
-              <UButton btn="solid-blue" size="md" class="w-full sm:w-auto" @click="openContact">
+              <NButton btn="solid-blue" size="md" class="w-full sm:w-auto" @click="openContact">
                 <span class="i-ph-paper-plane-right mr-2"></span>
                 Contact me
-              </UButton>
-              <ULink to="/contact" class="hidden sm:inline-flex">
-                <UButton btn="ghost-gray" size="md" class="">
+              </NButton>
+              <NLink to="/contact" class="hidden sm:inline-flex">
+                <NButton btn="ghost-gray" size="md" class="">
                   Full contact page
-                </UButton>
-              </ULink>
+                </NButton>
+              </NLink>
             </div>
           </div>
 
           <div class="mt-6 flex flex-wrap gap-3">
-            <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer"
+            <NLink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer"
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <div class="i-ph-github-logo"></div>
               <span class="font-600 text-size-3">GitHub</span>
-            </ULink>
-            <ULink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
+            </NLink>
+            <NLink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <div class="i-ph-instagram-logo"></div>
               <span class="font-600 text-size-3">Instagram</span>
-            </ULink>
-            <ULink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
+            </NLink>
+            <NLink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <div class="i-ph-linkedin-logo"></div>
               <span class="font-600 text-size-3">LinkedIn</span>
-            </ULink>
+            </NLink>
           </div>
         </div>
 
         <!-- Success message -->
-        <UAlert v-if="showSuccess" class="mt-4" color="green" variant="soft" title="Message Sent!"
+        <NAlert v-if="showSuccess" class="mt-4" color="green" variant="soft" title="Message Sent!"
           icon="i-ph-check-circle" :close-button="{ icon: 'i-ph-x', color: 'gray' }" @close="showSuccess = false">
           Thank you for reaching out. I'll get back to you as soon as possible.
-        </UAlert>
+        </NAlert>
 
         <!-- Error message -->
-        <UAlert v-if="hasError" class="mt-4" color="red" variant="soft" title="Something went wrong"
+        <NAlert v-if="hasError" class="mt-4" color="red" variant="soft" title="Something went wrong"
           icon="i-ph-warning-circle" :close-button="{ icon: 'i-ph-x', color: 'gray' }" @close="hasError = false">
           There was an error sending your message. Please try again later or contact me directly.
-        </UAlert>
+        </NAlert>
       </section>
     </article>
 
     <!-- Desktop dialog -->
-    <UDialog
+    <NDialog
       v-model:open="isContactOpen"
       :ui="{ width: 'sm:max-w-lg' }"
       class="hidden sm:block"
@@ -131,15 +131,15 @@
           @submit="submitForm"
         />
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Mobile bottom drawer -->
-    <UDrawer v-model:open="isDrawerOpen" class="sm:hidden">
-      <UDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
-        <UDrawerHeader>
-          <UDrawerTitle>Send a message</UDrawerTitle>
-          <UDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">I'll get back to you as soon as possible</UDrawerDescription>
-        </UDrawerHeader>
+    <NDrawer v-model:open="isDrawerOpen" class="sm:hidden">
+      <NDrawerContent class="w-full max-w-[100vw] bottom-0 animate-in slide-in-from-bottom-2">
+        <NDrawerHeader>
+          <NDrawerTitle>Send a message</NDrawerTitle>
+          <NDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">I'll get back to you as soon as possible</NDrawerDescription>
+        </NDrawerHeader>
         <div class="p-4">
           <AboutContactForm
             :email="formData.email"
@@ -152,9 +152,9 @@
             @submit="submitForm"
           />
         </div>
-        <UDrawerFooter />
-      </UDrawerContent>
-    </UDrawer>
+        <NDrawerFooter />
+      </NDrawerContent>
+    </NDrawer>
 
     <Footer class="mt-14" />
   </div>

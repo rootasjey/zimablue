@@ -3,9 +3,9 @@
     <!-- Header -->
     <header class="mt-12 mb-8">
       <div class="flex gap-2">
-        <ULink to="/" class="hover:scale-102 active:scale-99 transition">
+        <NLink to="/" class="hover:scale-102 active:scale-99 transition">
           <span class="i-ph-house-simple-duotone"></span>
-        </ULink>
+        </NLink>
         <span>•</span>
         <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
           Contact
@@ -36,8 +36,8 @@
         or just want to say hello, I'd love to hear from you.
       </p>
       <p class="text-gray-700 dark:text-gray-300">
-        You can learn more <ULink to="/about" class="arrow"><span>about me</span></ULink> and 
-        <ULink to="/resume" class="arrow"><span>my work experiences.</span></ULink>
+        You can learn more <NLink to="/about" class="arrow"><span>about me</span></NLink> and 
+        <NLink to="/resume" class="arrow"><span>my work experiences.</span></NLink>
       </p>
     </section>
 
@@ -47,21 +47,21 @@
         Connect
       </h2>
       <div class="flex flex-wrap gap-4">
-        <ULink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
+        <NLink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
           <div class="i-ph-github-logo"></div>
           <span class="font-600 text-size-3">GitHub</span>
-        </ULink>
-        <ULink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
+        </NLink>
+        <NLink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
           <div class="i-ph-instagram-logo"></div>
           <span class="font-600 text-size-3">Instagram</span>
-        </ULink>
-        <ULink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
+        </NLink>
+        <NLink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
           <div class="i-ph-linkedin-logo"></div>
           <span class="font-600 text-size-3">LinkedIn</span>
-        </ULink>
+        </NLink>
       </div>
     </section>
 
@@ -108,14 +108,14 @@
           ></textarea>
         </div>
         
-        <UButton 
+        <NButton 
           btn="soft"
           type="submit" 
           class="px-6 py-2 dark:bg-teal dark:text-black dark:hover:bg-teal-5 transition-colors"
           :disabled="submitting"
         >
           {{ submitting ? 'Sending...' : 'Send Message' }}
-        </UButton>
+        </NButton>
         
         <p v-if="formStatus && submitted" class="text-center" :class="formStatus.type === 'success' ? 'text-green-500' : 'text-red-500'">
           {{ formStatus.message }}
@@ -126,7 +126,7 @@
         <p class="text-center">
           <span class="i-ph-check-circle text-size-4 mb-1 mr-1"></span>
           <span class="color-gray-600">Thanks for your message! I'll get back to you soon.</span>
-          <UButton btn="link" @click="submitted = false">send another message</UButton>
+          <NButton btn="link" @click="submitted = false">send another message</NButton>
         </p>
       </div>
     </section>

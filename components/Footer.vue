@@ -2,23 +2,23 @@
     <!-- Footer -->
     <footer class="mt-16 text-size-3">
       <div class="footer-buttons flex gap-4 flex-wrap">
-        <ULink v-if="!isHome" to="/" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+        <NLink v-if="!isHome" to="/" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
           <span class="i-ph-house-simple-duotone text-size-4 mr-2"></span>
           <span class="font-500">Back to home</span>
-        </ULink>
-        <ULink to="/about" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+        </NLink>
+        <NLink to="/about" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
           <span class="i-ph-circle-wavy-question-duotone text-size-4 mr-2"></span>
           <span class="font-500">about</span>
-        </ULink>
-        <ULink to="/contact" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+        </NLink>
+        <NLink to="/contact" class="footer-button flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
           <span class="i-ph-envelope-simple-open-duotone text-size-4 mr-2"></span>
           <span class="font-500">contact me</span>
-        </ULink>
-        <UButton btn="~" @click="scrollToTop"
+        </NLink>
+        <NButton btn="~" @click="scrollToTop"
           class="footer-button p-0 w-auto h-auto block items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
           <span class="i-ph-arrow-up-duotone text-size-3 -mt-1 mr-2"></span>
           <span class="font-500 text-size-3 relative -top-0.5">back to top</span>
-        </UButton>
+        </NButton>
 
         <slot name="links" />
       </div>

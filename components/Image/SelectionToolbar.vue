@@ -34,7 +34,7 @@
           <!-- Action buttons -->
           <div class="flex items-center gap-2">
             <!-- Select All / Clear All -->
-            <UButton 
+            <NButton 
               btn="ghost-gray"
               size="sm"
               @click="$emit('toggleSelectAll')"
@@ -42,10 +42,10 @@
             >
               <span :class="isAllSelected ? 'i-ph-selection-slash' : 'i-ph-selection-all'"></span>
               <span>{{ isAllSelected ? 'Clear All' : 'Select All' }}</span>
-            </UButton>
+            </NButton>
             
             <!-- Add to Collection -->
-            <UButton 
+            <NButton 
               btn="soft-blue"
               size="sm"
               @click="$emit('addToCollection')"
@@ -53,10 +53,10 @@
             >
               <span class="i-ph-folder-plus"></span>
               <span>Add to Collection</span>
-            </UButton>
+            </NButton>
             
             <!-- Delete Selected -->
-            <UButton 
+            <NButton 
               btn="soft-red"
               size="sm"
               @click="$emit('deleteSelected')"
@@ -64,21 +64,21 @@
             >
               <span class="i-ph-trash"></span>
               <span>Delete Selected</span>
-            </UButton>
+            </NButton>
           </div>
           
           <!-- Divider -->
           <div class="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
           
           <!-- Close button -->
-          <UButton 
+          <NButton 
             btn="ghost-gray"
             size="sm"
             @click="$emit('clearSelection')"
             title="Clear selection"
           >
             <span class="i-ph-x"></span>
-          </UButton>
+          </NButton>
         </div>
       </div>
     </div>

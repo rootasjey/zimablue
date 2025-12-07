@@ -27,7 +27,7 @@
       </p>
 
       <!-- Action button -->
-      <UButton 
+      <NButton 
         v-if="showAction" 
         :btn="actionButtonStyle"
         @click="$emit('action')"
@@ -38,7 +38,7 @@
           class="mr-2"
         />
         {{ actionText }}
-      </UButton>
+      </NButton>
 
       <!-- Slot for custom actions -->
       <slot name="actions" />

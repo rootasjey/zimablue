@@ -5,7 +5,7 @@
       <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
       <p class="text-gray-600">You need admin privileges to access this page.</p>
-      <UButton to="/user" class="mt-4">Go to Profile</UButton>
+      <NButton to="/user" class="mt-4">Go to Profile</NButton>
     </div>
 
     <!-- Users Management -->
@@ -21,7 +21,7 @@
       <!-- Search and Actions Card -->
       <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <UInput
+          <NInput
             v-model="filters.search"
             placeholder="Search users..."
             @keyup.enter="handleSearch(filters.search)"
@@ -33,12 +33,12 @@
             <template #leading>
               <span class="i-ph-magnifying-glass"></span>
             </template>
-          </UInput>
+          </NInput>
 
-          <UButton @click="fetchUsers" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
+          <NButton @click="fetchUsers" :loading="isLoading" btn="light:soft-blue dark:solid-gray" size="sm" rounded="6">
             <span class="i-ph-arrow-clockwise mr-2"></span>
             Refresh
-          </UButton>
+          </NButton>
         </div>
 
         <!-- Bulk Actions -->
@@ -46,25 +46,25 @@
           <span class="text-sm font-600 text-gray-700">
             {{ selectedUsers.length }} selected
           </span>
-          <UButton btn="soft-gray" size="sm" @click="bulkPromote">
+          <NButton btn="soft-gray" size="sm" @click="bulkPromote">
             <span class="i-ph-crown mr-2"></span>
             Promote to Admin
-          </UButton>
-          <UButton btn="soft-gray" size="sm" @click="bulkDemote">
+          </NButton>
+          <NButton btn="soft-gray" size="sm" @click="bulkDemote">
             <span class="i-ph-user mr-2"></span>
             Demote to User
-          </UButton>
-          <UButton btn="soft-error" size="sm" @click="bulkDelete">
+          </NButton>
+          <NButton btn="soft-error" size="sm" @click="bulkDelete">
             <span class="i-ph-trash mr-2"></span>
             Delete Selected
-          </UButton>
+          </NButton>
         </div>
       </div>
 
       <!-- Table Card -->
       <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
         <div class="p-6">
-          <UTable
+          <NTable
           :columns="unaColumns"
           :data="users"
           :loading="isLoading"
@@ -85,7 +85,7 @@
         >
           <template #row_actions-cell="{ cell }">
             <ClientOnly>
-              <UDropdownMenu
+              <NDropdownMenu
                 :items="userRowMenuItems(cell.row.original)"
                 size="xs"
                 dropdown-menu="link-black"
@@ -117,15 +117,15 @@
 
           <template #actions="{ row }">
             <div class="flex items-center gap-2">
-              <UButton @click="editUser(row)" btn="soft-gray" size="xs" title="Edit user">
+              <NButton @click="editUser(row)" btn="soft-gray" size="xs" title="Edit user">
                 <span class="i-ph-pencil"></span>
-              </UButton>
-              <UButton @click="showDeleteDialog(row)" btn="soft-red" size="xs" title="Delete user" :disabled="row.id === user?.id">
+              </NButton>
+              <NButton @click="showDeleteDialog(row)" btn="soft-red" size="xs" title="Delete user" :disabled="row.id === user?.id">
                 <span class="i-ph-trash"></span>
-              </UButton>
+              </NButton>
             </div>
           </template>
-        </UTable>
+        </NTable>
         </div>
 
         <!-- Pagination -->
@@ -138,17 +138,17 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <UButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-left"></span>
-              </UButton>
+              </NButton>
 
               <span class="text-sm text-gray-600 px-3">
                 Page {{ pagination.page }} of {{ pagination.totalPages }}
               </span>
 
-              <UButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
+              <NButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
                 <span class="i-ph-caret-right"></span>
-              </UButton>
+              </NButton>
             </div>
           </div>
         </div>
@@ -156,49 +156,49 @@
     </div>
 
     <!-- Edit User Dialog -->
-    <UDialog v-model:open="isEditDialogOpen" title="Edit User">
+    <NDialog v-model:open="isEditDialogOpen" title="Edit User">
       <div class="p-6">
         <form @submit.prevent="saveUser" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
-            <UInput v-model="editForm.name" required />
+            <NInput v-model="editForm.name" required />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-            <UInput v-model="editForm.email" type="email" required />
+            <NInput v-model="editForm.email" type="email" required />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
-            <USelect v-model="editForm.role" :items="roleLabels" required />
+            <NSelect v-model="editForm.role" :items="roleLabels" required />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job</label>
-            <UInput v-model="editForm.job" />
+            <NInput v-model="editForm.job" />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
-            <UInput v-model="editForm.location" />
+            <NInput v-model="editForm.location" />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Biography</label>
-            <UTextarea v-model="editForm.biography" rows="3" />
+            <NTextarea v-model="editForm.biography" rows="3" />
           </div>
 
           <div class="flex justify-end gap-3 pt-4">
-            <UButton @click="isEditDialogOpen = false" btn="soft-gray">Cancel</UButton>
-            <UButton type="submit" :loading="isSaving">Save Changes</UButton>
+            <NButton @click="isEditDialogOpen = false" btn="soft-gray">Cancel</NButton>
+            <NButton type="submit" :loading="isSaving">Save Changes</NButton>
           </div>
         </form>
       </div>
-    </UDialog>
+    </NDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <UDialog v-model:open="isDeleteDialogOpen" title="Delete User">
+    <NDialog v-model:open="isDeleteDialogOpen" title="Delete User">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -213,11 +213,11 @@
         </div>
         
         <div class="flex justify-end gap-3">
-          <UButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</UButton>
-          <UButton @click="deleteUser" :loading="isDeleting" btn="soft-red">Delete User</UButton>
+          <NButton @click="isDeleteDialogOpen = false" btn="soft-gray">Cancel</NButton>
+          <NButton @click="deleteUser" :loading="isDeleting" btn="soft-red">Delete User</NButton>
         </div>
       </div>
-    </UDialog>
+    </NDialog>
   </div>
 </template>
 
@@ -267,7 +267,7 @@ const editForm = ref<UserFormData>({
   biography: ''
 })
 
-// Columns for UTable
+// Columns for NTable
 const unaColumns = [
   { id: 'row_actions', header: '', enableSorting: false },
   { accessorKey: 'name', header: 'Name', enableSorting: true },

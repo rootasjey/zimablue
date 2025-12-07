@@ -1,5 +1,5 @@
 <template>
-  <UDialog
+  <NDialog
     :title="title"
     :description="description"
     v-model:open="isOpen"
@@ -10,10 +10,10 @@
         <div class="grid gap-4">
           <!-- Collection Name -->
           <div class="grid grid-cols-3 items-center gap-4">
-            <ULabel for="edit-collection-name">
+            <NLabel for="edit-collection-name">
               Name
-            </ULabel>
-            <UInput
+            </NLabel>
+            <NInput
               autofocus
               id="edit-collection-name"
               v-model="formData.name"
@@ -28,10 +28,10 @@
           
           <!-- Collection Description -->
           <div class="grid grid-cols-3 items-center gap-4">
-            <ULabel for="edit-collection-description">
+            <NLabel for="edit-collection-description">
               Description
-            </ULabel>
-            <UInput
+            </NLabel>
+            <NInput
               id="edit-collection-description"
               type="textarea"
               v-model="formData.description"
@@ -45,10 +45,10 @@
           
           <!-- Collection Slug -->
           <div class="grid grid-cols-3 items-center gap-4">
-            <ULabel for="edit-collection-slug">
+            <NLabel for="edit-collection-slug">
               Slug
-            </ULabel>
-            <UInput
+            </NLabel>
+            <NInput
               id="edit-collection-slug"
               v-model="formData.slug"
               placeholder="Collection unique slug"
@@ -61,11 +61,11 @@
           
           <!-- Collection Visibility -->
           <div class="grid grid-cols-3 items-centerx gap-4">
-            <ULabel for="edit-collection-public">
+            <NLabel for="edit-collection-public">
               Public
-            </ULabel>
+            </NLabel>
             <div class="flex gap-4 items-center col-span-2">
-              <USwitch
+              <NSwitch
                 switch-checked="blue"
                 id="edit-collection-public"
                 v-model="formData.isPublic"
@@ -80,7 +80,7 @@
       
       <!-- Action Buttons -->
       <div class="flex justify-between gap-3 mt-4 border-t b-dashed border-gray-200 dark:border-gray-800 pt-4">
-        <UButton 
+        <NButton 
           type="button"
           btn="light:soft-error dark:soft-gray" 
           :disabled="isLoading"
@@ -88,19 +88,19 @@
         >
           <span class="i-ph-trash mr-1"></span>
           Delete
-        </UButton>
+        </NButton>
         
         <!-- Cancel and Save Buttons -->
         <div class="flex gap-2">
-          <UButton 
+          <NButton 
             type="button"
             btn="ghost-gray" 
             :disabled="isLoading"
             @click="handleCancel"
           >
             Cancel
-          </UButton>
-          <UButton 
+          </NButton>
+          <NButton 
             type="submit"
             btn="solid-black" 
             class="px-6"
@@ -108,7 +108,7 @@
             :loading="isLoading"
           >
             {{ isLoading ? 'Updating...' : 'Update' }}
-          </UButton>
+          </NButton>
         </div>
       </div>
     </form>
@@ -118,7 +118,7 @@
       :collection="collection"
       @delete="confirmDelete"
     />
-  </UDialog>
+  </NDialog>
 </template>
 
 <script setup lang="ts">
