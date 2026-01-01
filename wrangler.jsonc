@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zimablue",
+  "main": "./.output/server/index.mjs",
+  "compatibility_date": "2025-12-31",
+  "assets": {
+    "directory": "./.output/public/",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "BLOB",
+      "bucket_name": "zimablue"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "edaf7e5728a04fb9b23523ae164b98e6"
+    },
+    {
+      "binding": "KV",
+      "id": "ef01455d4a6844df859e066c738e79da"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "97b74403-e97a-47e9-b32a-83d705bc1b21"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 // POST /api/tags
 // Create a new tag
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { TagCreateRequest } from "~/types/tag"
 
 export default defineEventHandler(async (event) => {
@@ -27,8 +29,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Tag name is required'
     })
   }
-
-  const db = hubDatabase()
   
   try {
     const name = body.name.trim()
@@ -36,9 +36,9 @@ export default defineEventHandler(async (event) => {
     const color = body.color || '#3B82F6'
 
     // Check if tag already exists
-    const existingTag = await db.prepare(`
-      SELECT id FROM tags WHERE name = ?
-    `).bind(name).first()
+    const existingTag = await db.get(sql`
+      SELECT id FROM tags WHERE name = ${name}
+    `)
 
     if (existingTag) {
       throw createError({
@@ -60,9 +60,9 @@ export default defineEventHandler(async (event) => {
     let counter = 1
     
     while (true) {
-      const existingSlug = await db.prepare(`
-        SELECT id FROM tags WHERE slug = ?
-      `).bind(finalSlug).first()
+      const existingSlug = await db.get(sql`
+        SELECT id FROM tags WHERE slug = ${finalSlug}
+      `)
       
       if (!existingSlug) break
       finalSlug = `${slug}-${counter}`
@@ -70,23 +70,16 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create tag
-    const insertResult = await db.prepare(`
+    const insertResult = await db.run(sql`
       INSERT INTO tags (name, slug, description, color, created_at, updated_at)
-      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(name, finalSlug, description, color).run()
-
-    if (!insertResult.success) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to create tag'
-      })
-    }
+      VALUES (${name}, ${finalSlug}, ${description}, ${color}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `)
 
     // Get the created tag
-    const createdTag = await db.prepare(`
+    const createdTag = await db.get(sql`
       SELECT id, name, slug, description, color, usage_count, created_at, updated_at
-      FROM tags WHERE id = ?
-    `).bind(insertResult.meta.last_row_id).first()
+      FROM tags WHERE id = ${Number(insertResult.lastInsertRowid)}
+    `)
 
     return {
       success: true,

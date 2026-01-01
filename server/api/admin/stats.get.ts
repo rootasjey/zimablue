@@ -1,6 +1,9 @@
 // GET /api/admin/stats
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { AdminStats } from "~/types/admin"
+import { isAdminSession } from '~/server/utils/auth'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -11,7 +14,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (session.user.role !== 'admin') {
+  if (!isAdminSession(session)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -19,45 +22,43 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Get user stats
-    const userStats = await db.prepare(`
+    const userStats = await db.get(sql`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins,
         SUM(CASE WHEN created_at >= date('now', '-30 days') THEN 1 ELSE 0 END) as newThisMonth
       FROM users
-    `).first()
+    `)
 
     // Get image stats
-    const imageStats = await db.prepare(`
+    const imageStats = await db.get(sql`
       SELECT 
         COUNT(*) as total,
         SUM(stats_views) as totalViews,
         SUM(stats_downloads) as totalDownloads,
         SUM(stats_likes) as totalLikes
       FROM images
-    `).first()
+    `)
 
     // Get collection stats
-    const collectionStats = await db.prepare(`
+    const collectionStats = await db.get(sql`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN is_public = 1 THEN 1 ELSE 0 END) as public,
         SUM(CASE WHEN is_public = 0 THEN 1 ELSE 0 END) as private,
         SUM(stats_views) as totalViews
       FROM collections
-    `).first()
+    `)
 
     // Get message stats
-    const messageStats = await db.prepare(`
+    const messageStats = await db.get(sql`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN read = 0 THEN 1 ELSE 0 END) as unread,
         SUM(CASE WHEN created_at >= date('now') THEN 1 ELSE 0 END) as newToday
       FROM messages
-    `).first()
+    `)
 
     const stats: AdminStats = {
       users: {

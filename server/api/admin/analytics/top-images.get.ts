@@ -1,6 +1,8 @@
 // GET /api/admin/analytics/top-images
 // Returns top performing images by views, likes, or downloads
 
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -22,14 +24,12 @@ export default eventHandler(async (event) => {
   const limit = parseInt((query.limit as string) || '5')
 
   try {
-    const db = hubDatabase()
-
     const orderByColumn = metric === 'likes' ? 'stats_likes' 
       : metric === 'downloads' ? 'stats_downloads' 
       : 'stats_views'
 
     const images = await db
-      .prepare(`
+      .all(sql.raw(`
         SELECT 
           id,
           name,
@@ -41,13 +41,11 @@ export default eventHandler(async (event) => {
         FROM images
         ORDER BY ${orderByColumn} DESC
         LIMIT ?
-      `)
-      .bind(limit)
-      .all()
+      `), [limit])
 
     return {
       success: true,
-      data: images.results || []
+      data: images.rows || []
     }
   } catch (error) {
     console.error('Error fetching top images:', error)

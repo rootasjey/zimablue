@@ -43,7 +43,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     try {
       isLoading.value = true
       error.value = null
-      const data = await $fetch(`/api/collections/${slug}`)
+      const data = await $fetch(`/api/collections/${slug}`) as any
       
       collection.value = data?.collection as Collection
       images.value = data?.images || []

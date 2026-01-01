@@ -1,5 +1,8 @@
 // DELETE /api/admin/images/[id]
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -25,10 +28,8 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Check if image exists
-    const existingImage = await db.prepare('SELECT id, pathname FROM images WHERE id = ?').bind(imageId).first()
+    const existingImage = await db.get(sql`SELECT id, pathname FROM images WHERE id = ${imageId}`)
     if (!existingImage) {
       throw createError({
         statusCode: 404,
@@ -37,7 +38,7 @@ export default eventHandler(async (event) => {
     }
 
     // Delete image from database (this will cascade to related data due to foreign key constraints)
-    await db.prepare('DELETE FROM images WHERE id = ?').bind(imageId).run()
+    await db.run(sql`DELETE FROM images WHERE id = ${imageId}`)
 
     // TODO: Also delete the actual image files from storage
     // This would depend on your storage implementation (hubBlob, etc.)

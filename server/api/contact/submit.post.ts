@@ -1,6 +1,9 @@
 // POST /api/contact/submit
 // Handles contact form submissions and saves them to the messages table
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default defineEventHandler(async (event) => {
   // Get the form data from the request body
   const body = await readBody(event)
@@ -14,15 +17,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-    const result = await db.prepare(`
+    const result = await db.get(sql`
       INSERT INTO messages (sender_email, subject, message)
-      VALUES (?, ?, ?)
+      VALUES (${body.email}, ${body.subject}, ${body.message})
+      RETURNING *
     `)
-    .bind(body.email, body.subject, body.message)
-    .run()
     
-    if (!result.success) {
+    if (!result) {
       throw new Error('Failed to save message')
     }
     

@@ -1,5 +1,8 @@
 // GET /api/user/stats
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   // Get user session (you'll need to implement this based on your auth system)
   const session = await getUserSession(event)
@@ -12,25 +15,20 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = await hubDatabase()
-    
     // Get total images count
-    const totalImagesResult: { count: number } | null = await db
-      .prepare('SELECT COUNT(*) as count FROM images WHERE user_id = ?')
-      .bind(session.user.id)
-      .first()
+    const totalImagesResult: { count: number } | null = await db.get(sql`
+      SELECT COUNT(*) as count FROM images WHERE user_id = ${session.user.id}
+    `)
     
     // Get total collections count (if you have collections)
-    const totalCollectionsResult: { count: number } | null = await db
-      .prepare('SELECT COUNT(*) as count FROM collections WHERE user_id = ?')
-      .bind(session.user.id)
-      .first()
+    const totalCollectionsResult: { count: number } | null = await db.get(sql`
+      SELECT COUNT(*) as count FROM collections WHERE user_id = ${session.user.id}
+    `)
     
     // Get recent uploads (last 7 days)
-    const recentUploadsResult: { count: number } | null = await db
-      .prepare('SELECT COUNT(*) as count FROM images WHERE user_id = ? AND created_at >= datetime("now", "-7 days")')
-      .bind(session.user.id)
-      .first()
+    const recentUploadsResult: { count: number } | null = await db.get(sql`
+      SELECT COUNT(*) as count FROM images WHERE user_id = ${session.user.id} AND created_at >= datetime("now", "-7 days")
+    `)
 
     return {
       data: {

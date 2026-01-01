@@ -399,8 +399,8 @@ const saveUser = async () => {
     if (response.success) {
       // Update local state
       const userIndex = users.value.findIndex(u => u.id === selectedUser.value!.id)
-      if (userIndex > -1) {
-        users.value[userIndex] = response.data as unknown as User
+      if (userIndex > -1 && (response as any).data) {
+        users.value[userIndex] = (response as any).data as unknown as User
       }
 
       isEditDialogOpen.value = false

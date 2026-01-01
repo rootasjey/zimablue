@@ -1,6 +1,8 @@
 // GET /api/admin/analytics/user-growth
 // Returns user growth metrics (this month vs last month)
 
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -18,10 +20,8 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     const result = await db
-      .prepare(`
+      .get(sql`
         SELECT 
           COUNT(CASE WHEN created_at >= date('now', 'start of month') THEN 1 END) as this_month,
           COUNT(CASE WHEN created_at >= date('now', '-1 month', 'start of month') 
@@ -29,7 +29,6 @@ export default eventHandler(async (event) => {
           COUNT(*) as total
         FROM users
       `)
-      .first()
 
     const thisMonth = (result as any)?.this_month || 0
     const lastMonth = (result as any)?.last_month || 0

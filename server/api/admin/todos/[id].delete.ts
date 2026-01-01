@@ -1,5 +1,7 @@
 // DELETE /api/admin/todos/:id
 
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -25,13 +27,9 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Check if todo exists
     const existingTodo = await db
-      .prepare('SELECT * FROM todos WHERE id = ?')
-      .bind(id)
-      .first()
+      .get(sql`SELECT * FROM todos WHERE id = ${id}`)
 
     if (!existingTodo) {
       throw createError({
@@ -42,9 +40,7 @@ export default eventHandler(async (event) => {
 
     // Delete the todo
     const result = await db
-      .prepare('DELETE FROM todos WHERE id = ?')
-      .bind(id)
-      .run()
+      .run(sql`DELETE FROM todos WHERE id = ${id}`)
 
     if (!result.success) {
       throw createError({

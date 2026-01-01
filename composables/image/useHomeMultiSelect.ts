@@ -118,11 +118,14 @@ export const useHomeMultiSelect = () => {
     
     for (let i = start; i <= end; i++) {
       if (i < images.length) {
-        const imageId = images[i].id
-        if (selected) {
-          selectedImagesMap.value[imageId] = true
-        } else {
-          delete selectedImagesMap.value[imageId]
+        const image = images[i]
+        if (image) {
+          const imageId = image.id
+          if (selected) {
+            selectedImagesMap.value[imageId] = true
+          } else {
+            delete selectedImagesMap.value[imageId]
+          }
         }
       }
     }

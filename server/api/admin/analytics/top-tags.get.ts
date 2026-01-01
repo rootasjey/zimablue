@@ -1,6 +1,9 @@
 // GET /api/admin/analytics/top-tags
 // Returns most used tags by usage_count
 
+import { sql } from 'drizzle-orm'
+import { isAdminSession } from '~/server/utils/auth'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -10,7 +13,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (session.user.role !== 'admin') {
+  if (!isAdminSession(session)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -21,10 +24,8 @@ export default eventHandler(async (event) => {
   const limit = parseInt((query.limit as string) || '10')
 
   try {
-    const db = hubDatabase()
-
     const tags = await db
-      .prepare(`
+      .all(sql`
         SELECT 
           id,
           name,
@@ -34,14 +35,12 @@ export default eventHandler(async (event) => {
           created_at
         FROM tags
         ORDER BY usage_count DESC
-        LIMIT ?
+        LIMIT ${limit}
       `)
-      .bind(limit)
-      .all()
 
     return {
       success: true,
-      data: tags.results || []
+      data: tags.rows || []
     }
   } catch (error) {
     console.error('Error fetching top tags:', error)

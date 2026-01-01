@@ -1,6 +1,9 @@
 // GET /api/admin/messages
 
-import { Message } from "~/types/message"
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+import type { Message } from "~/types/message"
+import { isAdminSession } from '~/server/utils/auth'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -11,7 +14,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (session.user.role !== 'admin') {
+  if (!isAdminSession(session)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -47,9 +50,9 @@ export default eventHandler(async (event) => {
     }
 
     // Get total count for pagination
-    const countQuery = `SELECT COUNT(*) as total FROM messages ${whereClause}`
-    const countResult = await hubDatabase().prepare(countQuery).bind(...params).first()
-    const total = countResult?.total as number || 0
+    const countQuery = sql.raw(`SELECT COUNT(*) as total FROM messages ${whereClause}`)
+    const countResult = await db.get(countQuery, params)
+    const total = (countResult?.total as number) || 0
 
     // Get messages with pagination
     const messagesQuery = `
@@ -67,15 +70,13 @@ export default eventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `
     
-    const messages = await hubDatabase()
-      .prepare(messagesQuery)
-      .bind(...params, limit, offset)
-      .all()
+    const messagesResult = await db
+      .all(sql.raw(messagesQuery), [...params, limit, offset])
 
     return {
       success: true,
       data: {
-        messages: messages.results as unknown as Message[],
+        messages: messagesResult.rows as unknown as Message[],
         pagination: {
           page,
           limit,

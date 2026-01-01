@@ -422,7 +422,7 @@ const bulkMakePublic = async () => {
       success += 1
       // update local
       const idx = collections.value.findIndex(c => c.id === r.id)
-      if (idx !== -1) collections.value[idx].is_public = true
+      if (idx !== -1 && collections.value[idx]) collections.value[idx].is_public = true
     } catch {}
   }
   toast({ title: 'Updated', description: `Made ${success} collection(s) public.`, toast: 'soft-success' })
@@ -437,7 +437,7 @@ const bulkMakePrivate = async () => {
       await $fetch(`/api/collections/${r.slug}`, { method: 'PUT', body: { is_public: false } })
       success += 1
       const idx = collections.value.findIndex(c => c.id === r.id)
-      if (idx !== -1) collections.value[idx].is_public = false
+      if (idx !== -1 && collections.value[idx]) collections.value[idx].is_public = false
     } catch {}
   }
   toast({ title: 'Updated', description: `Made ${success} collection(s) private.`, toast: 'soft-success' })

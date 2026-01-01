@@ -1,5 +1,8 @@
 // DELETE /api/admin/users/[id]
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -33,10 +36,8 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Check if user exists
-    const existingUser = await db.prepare('SELECT id, role FROM users WHERE id = ?').bind(userId).first()
+    const existingUser = await db.get(sql`SELECT id, role FROM users WHERE id = ${userId}`)
     if (!existingUser) {
       throw createError({
         statusCode: 404,
@@ -46,7 +47,7 @@ export default eventHandler(async (event) => {
 
     // Check if this is the last admin user
     if (existingUser.role === 'admin') {
-      const adminCount = await db.prepare('SELECT COUNT(*) as count FROM users WHERE role = ?').bind('admin').first()
+      const adminCount = await db.get(sql`SELECT COUNT(*) as count FROM users WHERE role = 'admin'`)
       if ((adminCount?.count as number) <= 1) {
         throw createError({
           statusCode: 400,
@@ -56,7 +57,7 @@ export default eventHandler(async (event) => {
     }
 
     // Delete user (this will cascade to related data due to foreign key constraints)
-    await db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+    await db.run(sql`DELETE FROM users WHERE id = ${userId}`)
 
     return {
       success: true,

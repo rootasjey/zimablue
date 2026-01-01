@@ -1,6 +1,7 @@
 // GET /api/admin/messages
 
-import { Message } from "~/types/message"
+import { sql } from 'drizzle-orm'
+import type { Message } from "~/types/message"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -28,8 +29,8 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const message = await hubDatabase()
-      .prepare(`
+    const message = await db
+      .get(sql`
         SELECT 
           id,
           sender_email,
@@ -39,10 +40,8 @@ export default eventHandler(async (event) => {
           created_at,
           updated_at
         FROM messages 
-        WHERE id = ?
+        WHERE id = ${parseInt(messageId)}
       `)
-      .bind(parseInt(messageId))
-      .first()
 
     if (!message) {
       throw createError({

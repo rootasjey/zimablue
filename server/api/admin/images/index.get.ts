@@ -1,5 +1,7 @@
 // GET /api/admin/images
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { ImageWithTags } from "~/types/image"
 
 export default eventHandler(async (event) => {
@@ -51,13 +53,13 @@ export default eventHandler(async (event) => {
     }
 
     // Get total count for pagination
-    const countQuery = `
+    const countQuery = sql.raw(`
       SELECT COUNT(DISTINCT i.id) as total
       FROM images i
       LEFT JOIN users u ON i.user_id = u.id
       ${whereClause}
-    `
-    const countResult = await hubDatabase().prepare(countQuery).bind(...params).first()
+    `)
+    const countResult = await db.get(countQuery, params)
     const total = countResult?.total as number || 0
 
     // Get images with pagination and user info
@@ -88,18 +90,16 @@ export default eventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `
 
-    const imagesResult = await hubDatabase()
-      .prepare(imagesQuery)
-      .bind(...params, limit, offset)
-      .all()
+    const imagesResult = await db
+      .all(sql.raw(imagesQuery), [...params, limit, offset])
 
-    const imageRows = imagesResult.results as any[]
+    const imageRows = imagesResult.rows as any[]
     const imageIds = imageRows.map(img => img.id)
 
     // Get tags for all images
     let imageTagsMap = new Map<number, any[]>()
     if (imageIds.length > 0) {
-      const tagsResult = await hubDatabase().prepare(`
+      const tagsResult = await db.all(sql.raw(`
         SELECT
           it.image_id,
           t.id, t.name, t.slug, t.description, t.color, t.usage_count,
@@ -108,10 +108,10 @@ export default eventHandler(async (event) => {
         JOIN tags t ON it.tag_id = t.id
         WHERE it.image_id IN (${imageIds.map(() => '?').join(',')})
         ORDER BY t.name
-      `).bind(...imageIds).all()
+      `), imageIds)
 
       // Group tags by image_id
-      for (const tagRow of (tagsResult.results as any[])) {
+      for (const tagRow of (tagsResult.rows as any[])) {
         if (!imageTagsMap.has(tagRow.image_id)) {
           imageTagsMap.set(tagRow.image_id, [])
         }

@@ -231,8 +231,9 @@ const handleRangeSelection = (currentIndex: number, event: MouseEvent | Keyboard
   // Get all image IDs in the range
   const imageIdsInRange: number[] = []
   for (let i = start; i <= end; i++) {
-    if (props.images[i]) {
-      imageIdsInRange.push(props.images[i].id)
+    const image = props.images[i]
+    if (image) {
+      imageIdsInRange.push(image.id)
     }
   }
   
@@ -301,12 +302,14 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
       event.preventDefault()
       if (focusedIndex.value >= 0) {
         const image = props.images[focusedIndex.value]
-        if (event.shiftKey && lastClickedIndex.value !== -1) {
-          handleRangeSelection(focusedIndex.value, event)
-        } else {
-          emit('toggleImage', image.id)
-          lastClickedIndex.value = focusedIndex.value
-          cancelRangeSelection()
+        if (image) {
+          if (event.shiftKey && lastClickedIndex.value !== -1) {
+            handleRangeSelection(focusedIndex.value, event)
+          } else {
+            emit('toggleImage', image.id)
+            lastClickedIndex.value = focusedIndex.value
+            cancelRangeSelection()
+          }
         }
       }
       break

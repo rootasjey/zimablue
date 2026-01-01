@@ -1,5 +1,9 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
-import { VariantType } from '~/types/image'
+import type { VariantType } from '~/types/image'
+import { sql } from 'drizzle-orm'
+import { blob } from 'hub:blob'
+import { kv } from 'hub:kv'
 
 const bulkDeleteSchema = z.object({
   imageIds: z.array(z.number()).min(1, 'At least one image ID is required').max(50, 'Cannot delete more than 50 images at once')
@@ -26,23 +30,18 @@ export default eventHandler(async (event) => {
     })
   }
 
-  const db = hubDatabase()
   const userId = session.user.id
   const deletedImages: any[] = []
   const failedDeletes: { id: number, error: string }[] = []
 
   try {
-    // Start a transaction-like operation by collecting all images first
-    const placeholders = imageIds.map(() => '?').join(',')
-    
     // Get all images that exist and belong to the user
-    const imagesResponse = await db.prepare(`
+    const imageIdsStr = imageIds.join(',')
+    const existingImages = await db.all(sql.raw(`
       SELECT id, pathname, variants, user_id
       FROM images 
-      WHERE id IN (${placeholders}) AND user_id = ?
-    `).bind(...imageIds, userId).all()
-
-    const existingImages = imagesResponse.results as any[]
+      WHERE id IN (${imageIdsStr}) AND user_id = ${userId}
+    `))
     
     if (existingImages.length === 0) {
       throw createError({
@@ -63,32 +62,25 @@ export default eventHandler(async (event) => {
         }
 
         // Delete from database first
-        const deleteResult = await db.prepare(`
-          DELETE FROM images WHERE id = ? AND user_id = ?
-        `).bind(image.id, userId).run()
+        await db.run(sql`
+          DELETE FROM images WHERE id = ${image.id} AND user_id = ${userId}
+        `)
 
-        if (deleteResult.success) {
-          deletedImages.push({
-            id: image.id,
-            pathname: image.pathname
-          })
+        deletedImages.push({
+          id: image.id,
+          pathname: image.pathname
+        })
 
-          // Delete blob files (don't fail the whole operation if blob deletion fails)
-          for (const variant of variants) {
-            try {
-              if (variant.pathname) {
-                await hubBlob().del(variant.pathname)
-              }
-            } catch (blobError) {
-              console.warn(`Failed to delete blob ${variant.pathname} for image ${image.id}:`, blobError)
-              // Continue with other variants
+        // Delete blob files (don't fail the whole operation if blob deletion fails)
+        for (const variant of variants) {
+          try {
+            if (variant.pathname) {
+              await blob.del(variant.pathname)
             }
+          } catch (blobError) {
+            console.warn(`Failed to delete blob ${variant.pathname} for image ${image.id}:`, blobError)
+            // Continue with other variants
           }
-        } else {
-          failedDeletes.push({
-            id: image.id,
-            error: 'Database deletion failed'
-          })
         }
       } catch (error) {
         console.error(`Error deleting image ${image.id}:`, error)
@@ -100,7 +92,7 @@ export default eventHandler(async (event) => {
     }
 
     // Check for images that weren't found or don't belong to user
-    const foundImageIds = existingImages.map(img => img.id)
+    const foundImageIds = existingImages.map((img: any) => img.id)
     const notFoundIds = imageIds.filter(id => !foundImageIds.includes(id))
     
     notFoundIds.forEach(id => {
@@ -113,10 +105,10 @@ export default eventHandler(async (event) => {
     // Update grid layout in KV store (remove deleted images)
     if (deletedImages.length > 0) {
       try {
-        const layout = (await hubKV().get('grid:main') ?? []) as any[]
+        const layout = (await kv.get('grid:main') ?? []) as any[]
         const deletedImageIds = deletedImages.map(img => img.id)
         const updatedLayout = layout.filter(item => !deletedImageIds.includes(item.id))
-        await hubKV().set('grid:main', updatedLayout)
+        await kv.set('grid:main', updatedLayout)
       } catch (kvError) {
         console.warn('Failed to update grid layout in KV store:', kvError)
         // Don't fail the whole operation if KV update fails

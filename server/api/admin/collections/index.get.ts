@@ -1,5 +1,7 @@
 // GET /api/admin/collections
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { Collection } from "~/types/collection"
 
 export default eventHandler(async (event) => {
@@ -53,13 +55,13 @@ export default eventHandler(async (event) => {
     }
 
     // Get total count for pagination
-    const countQuery = `
+    const countQuery = sql.raw(`
       SELECT COUNT(*) as total 
       FROM collections c
       LEFT JOIN users u ON c.user_id = u.id
       ${whereClause}
-    `
-    const countResult = await hubDatabase().prepare(countQuery).bind(...params).first()
+    `)
+    const countResult = await db.get(countQuery, params)
     const total = countResult?.total as number || 0
 
     // Get collections with pagination and user info
@@ -87,15 +89,13 @@ export default eventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `
     
-    const collections = await hubDatabase()
-      .prepare(collectionsQuery)
-      .bind(...params, limit, offset)
-      .all()
+    const collections = await db
+      .all(sql.raw(collectionsQuery), [...params, limit, offset])
 
     return {
       success: true,
       data: {
-        collections: collections.results as unknown as (Collection & { user_name: string; user_email: string })[],
+        collections: collections.rows as unknown as (Collection & { user_name: string; user_email: string })[],
         pagination: {
           page,
           limit,

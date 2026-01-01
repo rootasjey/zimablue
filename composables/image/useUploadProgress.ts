@@ -61,6 +61,8 @@ export const useUploadProgress = () => {
     if (fileIndex === -1) return
 
     const file = currentSession.value.files[fileIndex]
+    if (!file) return
+    
     file.progress = Math.min(100, Math.max(0, progress))
     
     if (status) {
@@ -79,6 +81,8 @@ export const useUploadProgress = () => {
     if (fileIndex === -1) return
 
     const file = currentSession.value.files[fileIndex]
+    if (!file) return
+    
     file.progress = 100
     file.status = 'completed'
     file.uploadedImage = uploadedImage
@@ -96,6 +100,8 @@ export const useUploadProgress = () => {
     if (fileIndex === -1) return
 
     const file = currentSession.value.files[fileIndex]
+    if (!file) return
+    
     file.status = 'error'
     file.error = error
 

@@ -260,6 +260,8 @@ const getMobileGridItemClass = (index: number): string => {
   const patternIndex = index % mobileGridPatterns.length
   const pattern = mobileGridPatterns[patternIndex]
   
+  if (!pattern) return 'mobile-grid-cell'
+  
   // Build class string for grid placement
   const classes = ['mobile-grid-cell']
   

@@ -699,8 +699,9 @@ const saveEditedImage = async () => {
     if (resp?.success) {
       // Update local selected image and list minimally to preserve extra fields (owner info)
       const idx = images.value.findIndex(img => img.id === id)
-      if (idx !== -1) {
-        images.value[idx] = { ...images.value[idx], name: payload.name, description: payload.description, slug: payload.slug }
+      if (idx !== -1 && images.value[idx]) {
+        const existing = images.value[idx]
+        images.value[idx] = { ...existing, name: payload.name, description: payload.description, slug: payload.slug }
       }
       if (selectedImage.value) {
         selectedImage.value = { ...selectedImage.value, name: payload.name, description: payload.description, slug: payload.slug }

@@ -318,9 +318,12 @@ const userMenuItems = [
 
 // Helper functions
 const getInitials = (email: string) => {
-  const parts = email.split('@')[0].split('.')
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase()
+  const parts = email.split('@')
+  if (!parts[0]) return email.substring(0, 2).toUpperCase()
+  
+  const nameParts = parts[0].split('.')
+  if (nameParts.length >= 2 && nameParts[0] && nameParts[0][0] && nameParts[1] && nameParts[1][0]) {
+    return (nameParts[0][0] + nameParts[1][0]).toUpperCase()
   }
   return email.substring(0, 2).toUpperCase()
 }

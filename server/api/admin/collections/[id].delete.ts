@@ -1,5 +1,8 @@
 // DELETE /api/admin/collections/[id]
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -25,10 +28,8 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Check if collection exists
-    const existingCollection = await db.prepare('SELECT id FROM collections WHERE id = ?').bind(collectionId).first()
+    const existingCollection = await db.get(sql`SELECT id FROM collections WHERE id = ${collectionId}`)
     if (!existingCollection) {
       throw createError({
         statusCode: 404,
@@ -37,7 +38,7 @@ export default eventHandler(async (event) => {
     }
 
     // Delete collection (this will cascade to collection_images due to foreign key constraints)
-    await db.prepare('DELETE FROM collections WHERE id = ?').bind(collectionId).run()
+    await db.run(sql`DELETE FROM collections WHERE id = ${collectionId}`)
 
     return {
       success: true,

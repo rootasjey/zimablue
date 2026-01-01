@@ -2,7 +2,7 @@
 declare module '#auth-utils' {
   interface User {
     biography: string
-    createdAt: string;
+    createdAt: string
     id: number
     job: string
     language: string

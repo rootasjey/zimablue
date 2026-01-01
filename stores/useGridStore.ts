@@ -243,7 +243,14 @@ export const useGridStore = defineStore('grid', () => {
       // Update the image in the layout
       const index = layout.value.findIndex(img => img.id === imageData.id)
       if (index !== -1) {
-        layout.value[index] = { ...layout.value[index], ...imageData }
+        // Only update defined fields to avoid overwriting with undefined
+        const updates: any = {}
+        Object.keys(imageData).forEach(key => {
+          if (imageData[key as keyof typeof imageData] !== undefined) {
+            updates[key] = imageData[key as keyof typeof imageData]
+          }
+        })
+        layout.value[index] = { ...layout.value[index], ...updates }
       }
       
       return response

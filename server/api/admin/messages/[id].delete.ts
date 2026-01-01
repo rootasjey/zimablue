@@ -1,5 +1,7 @@
 // DELETE /api/admin/messages/[id]
 
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -27,10 +29,8 @@ export default eventHandler(async (event) => {
 
   try {
     // Check if message exists
-    const existingMessage = await hubDatabase()
-      .prepare('SELECT id FROM messages WHERE id = ?')
-      .bind(parseInt(messageId))
-      .first()
+    const existingMessage = await db
+      .get(sql`SELECT id FROM messages WHERE id = ${parseInt(messageId)}`)
 
     if (!existingMessage) {
       throw createError({
@@ -40,10 +40,8 @@ export default eventHandler(async (event) => {
     }
 
     // Delete message
-    await hubDatabase()
-      .prepare('DELETE FROM messages WHERE id = ?')
-      .bind(parseInt(messageId))
-      .run()
+    await db
+      .run(sql`DELETE FROM messages WHERE id = ${parseInt(messageId)}`)
 
     return {
       success: true,

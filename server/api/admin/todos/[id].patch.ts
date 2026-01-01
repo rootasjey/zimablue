@@ -1,7 +1,9 @@
 // PATCH /api/admin/todos/:id
 
 import { z } from 'zod'
-import { Todo } from '~/types/todo'
+import { sql } from 'drizzle-orm'
+import type { Todo } from '~/types/todo'
+import { isAdminSession } from '~/server/utils/auth'
 
 const updateTodoSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -20,7 +22,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (session.user.role !== 'admin') {
+  if (!isAdminSession(session)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -43,7 +45,7 @@ export default eventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid input',
-      data: validationResult.error.errors
+      data: validationResult.error.issues
     })
   }
 
@@ -58,13 +60,9 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     // Check if todo exists
     const existingTodo = await db
-      .prepare('SELECT * FROM todos WHERE id = ?')
-      .bind(id)
-      .first()
+      .get(sql`SELECT * FROM todos WHERE id = ${id}`)
 
     if (!existingTodo) {
       throw createError({
@@ -101,16 +99,14 @@ export default eventHandler(async (event) => {
     // Add the ID as the last parameter
     params.push(id)
 
-    const updateQuery = `
+    const updateQuery = sql.raw(`
       UPDATE todos 
       SET ${updates.join(', ')}
       WHERE id = ?
-    `
+    `)
 
     const result = await db
-      .prepare(updateQuery)
-      .bind(...params)
-      .run()
+      .run(updateQuery, params)
 
     if (!result.success) {
       throw createError({
@@ -121,9 +117,7 @@ export default eventHandler(async (event) => {
 
     // Get the updated todo
     const updatedTodo = await db
-      .prepare('SELECT * FROM todos WHERE id = ?')
-      .bind(id)
-      .first()
+      .get(sql`SELECT * FROM todos WHERE id = ${id}`)
 
     return {
       success: true,

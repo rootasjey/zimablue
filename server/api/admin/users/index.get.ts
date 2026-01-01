@@ -1,5 +1,7 @@
 // GET /api/admin/users
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { User } from "~/types/user"
 
 export default eventHandler(async (event) => {
@@ -47,8 +49,8 @@ export default eventHandler(async (event) => {
     }
 
     // Get total count for pagination
-    const countQuery = `SELECT COUNT(*) as total FROM users ${whereClause}`
-    const countResult = await hubDatabase().prepare(countQuery).bind(...params).first()
+    const countQuery = sql.raw(`SELECT COUNT(*) as total FROM users ${whereClause}`)
+    const countResult = await db.get(countQuery, params)
     const total = countResult?.total as number || 0
 
     // Get users with pagination
@@ -71,15 +73,13 @@ export default eventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `
     
-    const users = await hubDatabase()
-      .prepare(usersQuery)
-      .bind(...params, limit, offset)
-      .all()
+    const users = await db
+      .all(sql.raw(usersQuery), [...params, limit, offset])
 
     return {
       success: true,
       data: {
-        users: users.results as unknown as User[],
+        users: users.rows as unknown as User[],
         pagination: {
           page,
           limit,

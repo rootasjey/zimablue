@@ -1,6 +1,8 @@
 // GET /api/admin/todos
 
-import { Todo } from "~/types/todo"
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+import type { Todo } from "~/types/todo"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -53,8 +55,8 @@ export default eventHandler(async (event) => {
     }
 
     // Get total count for pagination
-    const countQuery = `SELECT COUNT(*) as total FROM todos ${whereClause}`
-    const countResult = await hubDatabase().prepare(countQuery).bind(...params).first()
+    const countQuery = sql.raw(`SELECT COUNT(*) as total FROM todos ${whereClause}`)
+    const countResult = await db.get(countQuery, params)
     const total = countResult?.total as number || 0
 
     // Get todos with pagination
@@ -86,15 +88,13 @@ export default eventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `
     
-    const todos = await hubDatabase()
-      .prepare(todosQuery)
-      .bind(...params, limit, offset)
-      .all()
+    const todos = await db
+      .all(sql.raw(todosQuery), [...params, limit, offset])
 
     return {
       success: true,
       data: {
-        todos: todos.results as unknown as Todo[],
+        todos: todos.rows as unknown as Todo[],
         pagination: {
           page,
           limit,

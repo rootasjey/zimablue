@@ -1,8 +1,10 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
+import { sql } from 'drizzle-orm'
 
 const bodySchema = z.object({
   name: z.string().min(2).max(50),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
   masterPassword: z.string().min(1),
   biography: z.string().optional(),
@@ -26,10 +28,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if user already exists
-    const existingUser = await hubDatabase()
-      .prepare('SELECT id FROM users WHERE email = ?1 OR name = ?2 LIMIT 1')
-      .bind(email, name)
-      .first()
+    const existingUser = await db.get(sql`
+      SELECT id FROM users WHERE email = ${email} OR name = ${name} LIMIT 1
+    `)
 
     if (existingUser) {
       throw createError({
@@ -42,26 +43,11 @@ export default defineEventHandler(async (event) => {
     const hashedPassword = await hashPassword(password)
 
     // Insert new user
-    const result = await hubDatabase()
-      .prepare(`
-        INSERT INTO users (name, email, password, biography, job, language, location, socials, role)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'user')
-      `)
-      .bind(name, email, hashedPassword, biography || null, job || null, language || null, location || null, socials || null)
-      .run()
-
-    if (!result.success) {
-      throw createError({
-        statusCode: 500,
-        message: 'Failed to create user account'
-      })
-    }
-
-    // Fetch the created user
-    const newUser = await hubDatabase()
-      .prepare('SELECT * FROM users WHERE id = ?1 LIMIT 1')
-      .bind(result.meta.last_row_id)
-      .first()
+    const newUser = await db.get(sql`
+      INSERT INTO users (name, email, password, biography, job, language, location, socials, role)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${biography || null}, ${job || null}, ${language || null}, ${location || null}, ${socials || null}, 'user')
+      RETURNING *
+    `)
 
     if (!newUser) {
       throw createError({

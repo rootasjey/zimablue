@@ -1,9 +1,11 @@
-import { User } from '#auth-utils'
+import { db } from '~/server/utils/database'
+import type { User } from '#auth-utils'
 import { z } from 'zod'
+import { sql } from 'drizzle-orm'
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long').optional(),
-  email: z.string().email('Invalid email format').optional(),
+  email: z.email('Invalid email format').optional(),
   biography: z.string().max(1000, 'Biography too long').optional(),
   job: z.string().max(100, 'Job title too long').optional(),
   location: z.string().max(100, 'Location too long').optional(),
@@ -15,14 +17,14 @@ export default eventHandler(async (event) => {
   try {
     // Check authentication
     const session = await requireUserSession(event)
-    if (!session.user?.id) {
+    if (!session.user || (session.user as any).id == null) {
       throw createError({
         statusCode: 401,
         statusMessage: 'Authentication required'
       })
     }
 
-    const userId = session.user.id
+    const userId = (session.user as any).id as number
     const body = await readBody(event)
 
     // Validate input data
@@ -70,17 +72,17 @@ export default eventHandler(async (event) => {
     // Add userId and updated_at to the query
     updateValues.push(new Date().toISOString(), userId)
 
-    const updateQuery = `
+    const updateQueryString = `
       UPDATE users 
       SET ${updateFields.join(', ')}, updated_at = ?
       WHERE id = ?
     `
 
+    const updateQuery = sql.raw(updateQueryString)
+
     // Execute update
-    const db = hubDatabase()
-    
     try {
-      await db.prepare(updateQuery).bind(...updateValues).run()
+      await (db as any).run(updateQuery, updateValues)
     } catch (error: any) {
       // Handle unique constraint violations
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -106,21 +108,18 @@ export default eventHandler(async (event) => {
     }
 
     // Fetch updated user data
-    const userRecord = await db.prepare(`
+    const updatedUser = await db.get(sql`
       SELECT id, name, email, biography, job, location, language, socials, created_at, updated_at
       FROM users 
-      WHERE id = ?
-    `).bind(userId).run()
+      WHERE id = ${userId}
+    `)
 
-
-    if (!userRecord.success) {
+    if (!updatedUser) {
       throw createError({
         statusCode: 404,
         statusMessage: 'User not found'
       })
     }
-
-    const updatedUser = userRecord.results[0] as unknown as User
 
     // Update session with new user data
     await replaceUserSession(event, {
@@ -132,7 +131,7 @@ export default eventHandler(async (event) => {
 
     return {
       success: true,
-      data: updatedUser,
+      data: updatedUser as unknown as User,
       message: 'Profile updated successfully'
     }
 

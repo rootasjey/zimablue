@@ -1,6 +1,9 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
 import { Jimp } from 'jimp'
 import type { VariantType } from '~/types/image'
+import { sql } from 'drizzle-orm'
+import { blob } from 'hub:blob'
 
 const sizes = [
   { width: 160, suffix: 'xxs' },
@@ -39,7 +42,7 @@ export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({ id: z.string().min(1) }).parse)
 
   // Fetch image row
-  const imageRow = await hubDatabase().prepare(`SELECT * FROM images WHERE id = ?1`).bind(id).first()
+  const imageRow = await db.get(sql`SELECT * FROM images WHERE id = ${id}`)
   if (!imageRow) {
     throw createError({ statusCode: 404, statusMessage: 'Image not found' })
   }
@@ -60,7 +63,7 @@ export default eventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'No source variant available to regenerate' })
   }
 
-  const sourceBlob = await hubBlob().get(sourcePath)
+  const sourceBlob = await blob.get(sourcePath)
   if (!sourceBlob) {
     throw createError({ statusCode: 404, statusMessage: 'Source blob not found' })
   }
@@ -74,7 +77,7 @@ export default eventHandler(async (event) => {
   // Re-upload original to the same path to refresh metadata
   const originalBuffer = await image.getBuffer(mime)
   const originalArray = new Uint8Array(originalBuffer)
-  await hubBlob().put((original?.pathname) || sourcePath, new Blob([originalArray], { type: mime }), { addRandomSuffix: false })
+  await blob.put((original?.pathname) || sourcePath, new Blob([originalArray], { type: mime }), { addRandomSuffix: false })
 
   const newVariants: VariantType[] = []
   newVariants.push({ size: 'original', width: image.width, height: image.height, pathname: (original?.pathname) || sourcePath })
@@ -90,14 +93,14 @@ export default eventHandler(async (event) => {
     const existing = variants.find(v => v.size === s.suffix)
     const targetPath = existing?.pathname || `${prefix}/${s.suffix}.${ext}`
     const resizedArray = new Uint8Array(resizedBuffer)
-    await hubBlob().put(targetPath, new Blob([resizedArray], { type: mime }), { addRandomSuffix: false })
+    await blob.put(targetPath, new Blob([resizedArray], { type: mime }), { addRandomSuffix: false })
     newVariants.push({ size: s.suffix, width: resized.width, height: resized.height, pathname: targetPath })
   }
 
   // Update DB
-  const updated = await hubDatabase().prepare(`
-    UPDATE images SET variants = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2 RETURNING *
-  `).bind(JSON.stringify(newVariants), id).first()
+  const updated = await db.get(sql`
+    UPDATE images SET variants = ${JSON.stringify(newVariants)}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id} RETURNING *
+  `)
 
   return { success: true, data: updated }
 })

@@ -1,3 +1,6 @@
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user || session.user.role !== 'admin') {
@@ -12,17 +15,16 @@ export default eventHandler(async (event) => {
 
   const text = new TextDecoder().decode(file)
   const payload = JSON.parse(text)
-  const db = hubDatabase()
 
   const counts = { images: 0, collections: 0, tags: 0 }
 
   // Import tags
   if (Array.isArray(payload.tags)) {
     for (const t of payload.tags) {
-      await db.prepare(`
+      await db.run(sql`
         INSERT OR REPLACE INTO tags (id, name, slug, description, color, usage_count, created_at, updated_at)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, COALESCE(?7, CURRENT_TIMESTAMP), COALESCE(?8, CURRENT_TIMESTAMP))
-      `).bind(t.id, t.name, t.slug, t.description ?? '', t.color ?? '#3B82F6', t.usage_count ?? 0, t.created_at, t.updated_at).run()
+        VALUES (${t.id}, ${t.name}, ${t.slug}, ${t.description ?? ''}, ${t.color ?? '#3B82F6'}, ${t.usage_count ?? 0}, COALESCE(${t.created_at}, CURRENT_TIMESTAMP), COALESCE(${t.updated_at}, CURRENT_TIMESTAMP))
+      `)
       counts.tags++
     }
   }
@@ -30,10 +32,10 @@ export default eventHandler(async (event) => {
   // Import images (metadata only)
   if (Array.isArray(payload.images)) {
     for (const i of payload.images) {
-      await db.prepare(`
+      await db.run(sql`
         INSERT OR REPLACE INTO images (id, name, description, pathname, slug, w, h, x, y, stats_views, stats_downloads, stats_likes, created_at, updated_at, user_id, variants)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, COALESCE(?13, CURRENT_TIMESTAMP), COALESCE(?14, CURRENT_TIMESTAMP), COALESCE(?15, 1), COALESCE(?16, '[]'))
-      `).bind(i.id, i.name, i.description ?? '', i.pathname, i.slug, i.w ?? 6, i.h ?? 6, i.x ?? 0, i.y ?? 0, i.stats_views ?? 0, i.stats_downloads ?? 0, i.stats_likes ?? 0, i.created_at, i.updated_at, i.user_id, typeof i.variants === 'string' ? i.variants : JSON.stringify(i.variants ?? [])).run()
+        VALUES (${i.id}, ${i.name}, ${i.description ?? ''}, ${i.pathname}, ${i.slug}, ${i.w ?? 6}, ${i.h ?? 6}, ${i.x ?? 0}, ${i.y ?? 0}, ${i.stats_views ?? 0}, ${i.stats_downloads ?? 0}, ${i.stats_likes ?? 0}, COALESCE(${i.created_at}, CURRENT_TIMESTAMP), COALESCE(${i.updated_at}, CURRENT_TIMESTAMP), COALESCE(${i.user_id}, 1), COALESCE(${typeof i.variants === 'string' ? i.variants : JSON.stringify(i.variants ?? [])}, '[]'))
+      `)
       counts.images++
     }
   }
@@ -41,10 +43,10 @@ export default eventHandler(async (event) => {
   // Import collections
   if (Array.isArray(payload.collections)) {
     for (const c of payload.collections) {
-      await db.prepare(`
+      await db.run(sql`
         INSERT OR REPLACE INTO collections (id, name, description, slug, is_public, stats_likes, stats_views, stats_downloads, user_id, cover_image_id, created_at, updated_at)
-        VALUES (?1, ?2, ?3, ?4, COALESCE(?5, 1), COALESCE(?6, 0), COALESCE(?7, 0), COALESCE(?8, 0), COALESCE(?9, 1), ?10, COALESCE(?11, CURRENT_TIMESTAMP), COALESCE(?12, CURRENT_TIMESTAMP))
-      `).bind(c.id, c.name, c.description ?? '', c.slug, c.is_public ?? 1, c.stats_likes ?? 0, c.stats_views ?? 0, c.stats_downloads ?? 0, c.user_id, c.cover_image_id ?? null, c.created_at, c.updated_at).run()
+        VALUES (${c.id}, ${c.name}, ${c.description ?? ''}, ${c.slug}, COALESCE(${c.is_public ?? 1}, 1), COALESCE(${c.stats_likes ?? 0}, 0), COALESCE(${c.stats_views ?? 0}, 0), COALESCE(${c.stats_downloads ?? 0}, 0), COALESCE(${c.user_id}, 1), ${c.cover_image_id ?? null}, COALESCE(${c.created_at}, CURRENT_TIMESTAMP), COALESCE(${c.updated_at}, CURRENT_TIMESTAMP))
+      `)
       counts.collections++
     }
   }
@@ -52,13 +54,13 @@ export default eventHandler(async (event) => {
   // Relations
   if (Array.isArray(payload.image_tags)) {
     for (const it of payload.image_tags) {
-      await db.prepare(`INSERT OR IGNORE INTO image_tags (image_id, tag_id, created_at) VALUES (?1, ?2, COALESCE(?3, CURRENT_TIMESTAMP))`).bind(it.image_id, it.tag_id, it.created_at).run()
+      await db.run(sql`INSERT OR IGNORE INTO image_tags (image_id, tag_id, created_at) VALUES (${it.image_id}, ${it.tag_id}, COALESCE(${it.created_at}, CURRENT_TIMESTAMP))`)
     }
   }
 
   if (Array.isArray(payload.collection_images)) {
     for (const ci of payload.collection_images) {
-      await db.prepare(`INSERT OR IGNORE INTO collection_images (collection_id, image_id, position, added_at) VALUES (?1, ?2, COALESCE(?3, 0), COALESCE(?4, CURRENT_TIMESTAMP))`).bind(ci.collection_id, ci.image_id, ci.position, ci.added_at).run()
+      await db.run(sql`INSERT OR IGNORE INTO collection_images (collection_id, image_id, position, added_at) VALUES (${ci.collection_id}, ${ci.image_id}, COALESCE(${ci.position}, 0), COALESCE(${ci.added_at}, CURRENT_TIMESTAMP))`)
     }
   }
 

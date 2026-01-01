@@ -1,5 +1,8 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
-import { VariantType } from '~/types/image'
+import { sql } from 'drizzle-orm'
+import type { VariantType } from '~/types/image'
+import { blob } from 'hub:blob'
 
 /**
  * Handles the GET request for the `/images/{pathname}` route. 
@@ -21,25 +24,24 @@ export default eventHandler(async (event) => {
   // Extract the image ID and variant from the pathname if it follows our new pattern
   const pathParts = pathname.split('/')
   const imageId = pathParts[0]
-  const variantRequested = pathParts.length > 1 ? pathParts[1].split('.')[0] : null
+  const variantRequested = pathParts.length > 1 && pathParts[1] ? pathParts[1].split('.')[0] : null
 
   // If a specific variant is requested, try to serve it directly
   if (variantRequested) {
     const fullPath = `images/${pathname}`
-    const blob = await hubBlob().get(fullPath)
+    const blobData = await blob.get(fullPath)
     
-    if (blob) {
-      const buffer = Buffer.from(await blob.arrayBuffer())
-      setHeader(event, 'Content-Type', blob.type)
+    if (blobData) {
+      const buffer = Buffer.from(await blobData.arrayBuffer())
+      setHeader(event, 'Content-Type', blobData.type)
       return buffer
     }
   }
   
   // Check if we have pre-generated variants for this image
-  const imageData = await hubDatabase()
-    .prepare(`SELECT * FROM images WHERE pathname = ? LIMIT 1`)
-    .bind(`images/${pathname}`)
-    .first()
+  const imageData = await db.get(sql`
+    SELECT * FROM images WHERE pathname = ${'images/' + pathname} LIMIT 1
+  `)
 
   if (!imageData || typeof imageData.variants !== 'string') {
     throw createError({
@@ -59,22 +61,24 @@ export default eventHandler(async (event) => {
     
     if (suitableVariants.length > 0) {
       const bestVariant = suitableVariants[0]
-      const blob = await hubBlob().get(bestVariant.pathname)
-      
-      if (blob) {
-        const buffer = Buffer.from(await blob.arrayBuffer())
-        setHeader(event, 'Content-Type', blob.type)
-        return buffer
+      if (bestVariant) {
+        const blobData = await blob.get(bestVariant.pathname)
+        
+        if (blobData) {
+          const buffer = Buffer.from(await blobData.arrayBuffer())
+          setHeader(event, 'Content-Type', blobData.type)
+          return buffer
+        }
       }
     }
   }
 
   const largeVariant = variants.find(v => v.size === 'lg')
   if (largeVariant) {
-    const blob = await hubBlob().get(largeVariant.pathname)
-    if (blob) {
-      const buffer = Buffer.from(await blob.arrayBuffer())
-      setHeader(event, 'Content-Type', blob.type)
+    const blobData = await blob.get(largeVariant.pathname)
+    if (blobData) {
+      const buffer = Buffer.from(await blobData.arrayBuffer())
+      setHeader(event, 'Content-Type', blobData.type)
       return buffer
     }
   }

@@ -20,7 +20,7 @@ function computeVersion(): string {
 }
 
 export default defineNuxtConfig({
-  compatibilityDate: "2025-01-27",
+  compatibilityDate: "2025-12-31",
   devtools: { enabled: true },
 
   app: {
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
   hub: {
     blob: true,
     cache: true,
-    database: true,
+    db: 'sqlite',
     kv: true,
   },
 

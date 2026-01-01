@@ -1,17 +1,18 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
+import { sql } from 'drizzle-orm'
 
 const bodySchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8)
 })
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-  const userData = await hubDatabase()
-    .prepare('SELECT * FROM users WHERE email = ?1 LIMIT 1')
-    .bind(email)
-    .first()
+  const userData = await db.get(sql`
+    SELECT * FROM users WHERE email = ${email} LIMIT 1
+  `)
 
   if (!userData) {
     throw createError({

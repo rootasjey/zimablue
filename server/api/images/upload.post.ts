@@ -1,10 +1,13 @@
+import { db } from '~/server/utils/database'
 import { Jimp } from 'jimp'
 import { generateUniquePathname } from '~/server/api/images/utils/generateUniquePathname'
 import { generateUniqueSlug } from './utils/generateUniqueSlug'
+import { sql } from 'drizzle-orm'
+import { blob } from 'hub:blob'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const userId = session.user.id
+  const userId = (session.user as any).id as number
 
   const formData = await readMultipartFormData(event)
   const file = formData?.find(item => item.name === 'file')?.data
@@ -33,9 +36,9 @@ export default eventHandler(async (event) => {
   }
 
   // Create a unique ID for the image folder
-  const extension = type.split('/')[1]
+  const extension = type.split('/')[1] || 'jpg'
   const baseName = fileName.substring(0, fileName.lastIndexOf('.'))
-  const imagePrefix = await generateUniquePathname(baseName, extension)
+  const imagePrefix = await generateUniquePathname(baseName, extension || 'jpg')
 
 
   // Process the original image with Jimp
@@ -55,9 +58,9 @@ export default eventHandler(async (event) => {
   
   // Upload original image
   const originalBuffer = await originalImage.getBuffer(type)
-  const originalBlob = new Blob([originalBuffer], { type })
+  const originalBlob = new Blob([originalBuffer as any], { type })
 
-  const originalResponse = await hubBlob().put(`${imagePrefix}/original.${extension}`, originalBlob, {
+  const originalResponse = await blob.put(`${imagePrefix}/original.${extension}`, originalBlob, {
     addRandomSuffix: false,
   })
 
@@ -72,8 +75,8 @@ export default eventHandler(async (event) => {
   for (const size of sizes) {
     const resized = originalImage.clone().resize({ w: size.width })
     const buffer = await resized.getBuffer(type)
-    const blob = new Blob([buffer], { type })
-    const response = await hubBlob().put(`${imagePrefix}/${size.suffix}.${extension}`, blob, {
+    const blobData = new Blob([buffer as any], { type })
+    const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
       addRandomSuffix: false,
     })
 
@@ -88,41 +91,20 @@ export default eventHandler(async (event) => {
   const slug = await generateUniqueSlug(fileName)
 
   // Store the image metadata in the database
-  const insertResponse = await hubDatabase()
-    .prepare(`
-      INSERT INTO images (name, pathname, x, y, w, h, slug, user_id, variants)
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-    `)
-    .bind(
-      fileName,
-      imagePrefix,
-      x,
-      y,
-      w,
-      h,
-      slug,
-      userId,
-      JSON.stringify(generatedVariants)
-    )
-    .run()
-
-  if (!insertResponse.success) {
-    throw createError({
-      statusCode: 500,
-      message: 'Failed to insert image into database',
-    })
-  }
-
-  const selectResponse = await hubDatabase()
-  .prepare(`
-    SELECT * FROM images
-    WHERE id = ?1
+  const insertResponse = await db.run(sql`
+    INSERT INTO images (name, pathname, x, y, w, h, slug, user_id, variants)
+    VALUES (${fileName}, ${imagePrefix}, ${x}, ${y}, ${w}, ${h}, ${slug}, ${userId}, ${JSON.stringify(generatedVariants)})
   `)
-  .bind(insertResponse.meta.last_row_id)
-  .run()
+
+  const newImageId = Number(insertResponse.lastInsertRowid)
+
+  const selectResponse = await db.get(sql`
+    SELECT * FROM images
+    WHERE id = ${newImageId}
+  `)
 
   return {
-    ...selectResponse,
+    ...(selectResponse as any),
     ok: true,
   }
 })

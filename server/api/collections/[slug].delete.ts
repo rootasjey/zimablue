@@ -1,5 +1,8 @@
 // DELETE /api/collections/:slug
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   
@@ -20,17 +23,13 @@ export default defineEventHandler(async (event) => {
     })
   }
   
-  const db = hubDatabase()
-  
   try {
     // Check if collection exists and belongs to the user
-    const { results: existingCollections } = await db.prepare(`
-      SELECT id, user_id FROM collections WHERE slug = ?
+    const collection = await db.get(sql`
+      SELECT id, user_id, name FROM collections WHERE slug = ${slug}
     `)
-    .bind(slug)
-    .run()
 
-    if (!existingCollections.length) {
+    if (!collection) {
       throw createError({
         statusCode: 404,
         message: 'Collection not found'
@@ -38,7 +37,6 @@ export default defineEventHandler(async (event) => {
     }
     
     // Check if user owns the collection or is an admin
-    const collection = existingCollections[0]
     const id = collection.id
     if (collection.user_id !== user.id && user.role !== 'admin') {
       throw createError({
@@ -48,39 +46,25 @@ export default defineEventHandler(async (event) => {
     }
     
     // Count how many images were in the collection for the response
-    const { results: imageCountResult } = await db.prepare(`
-      SELECT COUNT(*) as count FROM collection_images WHERE collection_id = ?
+    const imageCountResult = await db.get(sql`
+      SELECT COUNT(*) as count FROM collection_images WHERE collection_id = ${id}
     `)
-    .bind(id)
-    .run()
     
-    const imageCount = imageCountResult[0]?.count || 0
-    
-    // Prepare batch operations
-    const batchOperations = []
-    
-    // Delete the collection 
-    // (this will cascade to collection_images if you have foreign key constraints)
-    const deleteCollectionStmt = db.prepare(`
-      DELETE FROM collections
-      WHERE id = ?
-    `)
-    .bind(id)
-    
-    batchOperations.push(deleteCollectionStmt)
-    
-    // If you don't have CASCADE constraints, 
-    // you might need to explicitly delete the collection_images
-    const deleteImagesStmt = db.prepare(`
-      DELETE FROM collection_images
-      WHERE collection_id = ?
-    `)
-    .bind(id)
-    
-    batchOperations.push(deleteImagesStmt)
+    const imageCount = imageCountResult?.count || 0
     
     // Execute all operations in a batch
-    await db.batch(batchOperations)
+    await db.batch([
+      // Delete collection_images first
+      db.run(sql`
+        DELETE FROM collection_images
+        WHERE collection_id = ${id}
+      `),
+      // Then delete the collection
+      db.run(sql`
+        DELETE FROM collections
+        WHERE id = ${id}
+      `)
+    ])
 
     return {
       success: true,

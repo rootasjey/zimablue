@@ -1,7 +1,8 @@
 // POST /api/admin/todos
 
 import { z } from 'zod'
-import { Todo } from '~/types/todo'
+import { sql } from 'drizzle-orm'
+import type { Todo } from '~/types/todo'
 
 const createTodoSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
@@ -35,32 +36,19 @@ export default eventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid input',
-      data: validationResult.error.errors
+      data: validationResult.error.issues
     })
   }
 
   const data = validationResult.data
 
   try {
-    const db = hubDatabase()
-
     // Insert the todo
-    const insertQuery = `
-      INSERT INTO todos (title, description, due_date, status, priority, user_id)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `
-    
     const result = await db
-      .prepare(insertQuery)
-      .bind(
-        data.title,
-        data.description,
-        data.due_date,
-        data.status,
-        data.priority,
-        session.user.id
-      )
-      .run()
+      .run(sql`
+        INSERT INTO todos (title, description, due_date, status, priority, user_id)
+        VALUES (${data.title}, ${data.description}, ${data.due_date}, ${data.status}, ${data.priority}, ${session.user.id})
+      `)
 
     if (!result.success) {
       throw createError({
@@ -72,9 +60,7 @@ export default eventHandler(async (event) => {
     // Get the created todo
     const todoId = result.meta.last_row_id
     const todo = await db
-      .prepare('SELECT * FROM todos WHERE id = ?')
-      .bind(todoId)
-      .first()
+      .get(sql`SELECT * FROM todos WHERE id = ${todoId}`)
 
     return {
       success: true,

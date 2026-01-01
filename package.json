@@ -1,6 +1,6 @@
 {
   "name": "zimablue",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "description": "Handmade illustrations",
   "private": true,
   "type": "module",
@@ -10,6 +10,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
     "bump:version": "node ./scripts/bump-version.mjs patch",
     "bump:fix": "node ./scripts/bump-version.mjs fix",
     "bump:minor": "node ./scripts/bump-version.mjs minor",
@@ -18,20 +19,25 @@
   },
   "devDependencies": {
     "@iconify-json/icon-park-outline": "^1.2.4",
-    "@iconify-json/line-md": "^1.2.11",
-    "@iconify-json/lucide": "^1.2.78",
+    "@iconify-json/line-md": "^1.2.12",
+    "@iconify-json/lucide": "^1.2.82",
     "@iconify-json/ph": "^1.2.2",
-    "@iconify-json/radix-icons": "^1.2.5",
-    "@iconify-json/tabler": "^1.2.23",
+    "@iconify-json/radix-icons": "^1.2.6",
+    "@iconify-json/tabler": "^1.2.26",
     "@nuxt/image": "^1.11.0",
-    "@nuxthub/core": "^0.9.1",
+    "@nuxthub/core": "^0.10.4",
     "@pinia/nuxt": "^0.11.3",
     "@una-ui/nuxt": "^0.66.0",
     "grid-layout-plus": "^1.1.1",
     "jimp": "^1.6.0",
-    "nuxt": "^4.2.1",
-    "nuxt-auth-utils": "^0.5.25",
+    "nuxt": "^4.2.2",
+    "nuxt-auth-utils": "^0.5.26",
     "pinia": "^3.0.4",
-    "wrangler": "^4.53.0"
+    "wrangler": "^4.54.0"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "drizzle-kit": "^0.31.8",
+    "drizzle-orm": "^0.45.1"
   }
 }

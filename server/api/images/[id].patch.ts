@@ -1,4 +1,7 @@
-import { ImageWithTags } from "~/types/image"
+import { db } from '~/server/utils/database'
+import type { ImageWithTags } from "~/types/image"
+import { sql } from 'drizzle-orm'
+import { kv } from 'hub:kv'
 
 // /api/images/[id].patch.ts
 export default defineEventHandler(async (event) => {
@@ -17,12 +20,10 @@ export default defineEventHandler(async (event) => {
 
   // Helper function to ensure tag exists and return its ID
   async function ensureTag(tagName: string): Promise<number> {
-    const db = hubDatabase()
-
     // Check if tag exists
-    const existingTag = await db.prepare(`
-      SELECT id FROM tags WHERE name = ?
-    `).bind(tagName).first()
+    const existingTag = await db.get(sql`
+      SELECT id FROM tags WHERE name = ${tagName}
+    `)
 
     if (existingTag) {
       return existingTag.id as number
@@ -42,38 +43,32 @@ export default defineEventHandler(async (event) => {
 
     // Ensure slug uniqueness
     while (true) {
-      const existingSlug = await db.prepare(`
-        SELECT id FROM tags WHERE slug = ?
-      `).bind(finalSlug).first()
+      const existingSlug = await db.get(sql`
+        SELECT id FROM tags WHERE slug = ${finalSlug}
+      `)
 
       if (!existingSlug) break
       finalSlug = `${slug}-${counter}`
       counter++
     }
 
-    const insertResult = await db.prepare(`
+    const insertResult = await db.run(sql`
       INSERT INTO tags (name, slug, created_at, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(tagName, finalSlug).run()
+      VALUES (${tagName}, ${finalSlug}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `)
 
-    if (!insertResult.success) {
-      throw new Error(`Failed to create tag: ${tagName}`)
-    }
-
-    return insertResult.meta.last_row_id as number
+    return Number(insertResult.lastInsertRowid)
   }
   
   try {
-    const db = hubDatabase()
-
     // Validate slug uniqueness if provided
     if (slug) {
-      const existingResponse = await db.prepare(`
+      const existingImage = await db.get(sql`
         SELECT id FROM images
-        WHERE slug = ?1 AND id != ?2
-      `).bind(slug, id).run()
+        WHERE slug = ${slug} AND id != ${id}
+      `)
 
-      if (existingResponse.results && existingResponse.results.length > 0) {
+      if (existingImage) {
         throw createError({
           statusCode: 400,
           message: 'Slug already exists'
@@ -82,35 +77,28 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update basic image fields
-    const updateResponse = await db.prepare(`
+    await db.run(sql`
       UPDATE images
-      SET name = ?1, description = ?2, slug = ?3, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?4
-    `).bind(name, description, slug, id).run()
-
-    if (!updateResponse.success) {
-      throw createError({
-        statusCode: 500,
-        message: 'Failed to update image'
-      })
-    }
+      SET name = ${name}, description = ${description}, slug = ${slug}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+    `)
 
     // Handle tags update if provided
     if (tags && Array.isArray(tags)) {
       // Remove existing tag relationships
-      await db.prepare(`
-        DELETE FROM image_tags WHERE image_id = ?
-      `).bind(id).run()
+      await db.run(sql`
+        DELETE FROM image_tags WHERE image_id = ${id}
+      `)
 
       // Add new tag relationships
       for (const tagName of tags) {
         if (tagName && typeof tagName === 'string' && tagName.trim()) {
           try {
             const tagId = await ensureTag(tagName.trim())
-            await db.prepare(`
+            await db.run(sql`
               INSERT OR IGNORE INTO image_tags (image_id, tag_id, created_at)
-              VALUES (?, ?, CURRENT_TIMESTAMP)
-            `).bind(id, tagId).run()
+              VALUES (${id}, ${tagId}, CURRENT_TIMESTAMP)
+            `)
           } catch (error) {
             console.error(`Failed to process tag "${tagName}":`, error)
           }
@@ -119,14 +107,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get updated image with tags for grid layout
-    const imageResult = await db.prepare(`
+    const imageResult = await db.get(sql`
       SELECT
         i.id, i.name, i.description, i.pathname, i.slug, i.variants,
         i.w, i.h, i.x, i.y, i.stats_views, i.stats_downloads, i.stats_likes,
         i.created_at, i.updated_at, i.user_id
       FROM images i
-      WHERE i.id = ?
-    `).bind(id).first()
+      WHERE i.id = ${id}
+    `)
 
     if (!imageResult) {
       throw createError({
@@ -136,23 +124,23 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get tags for the image
-    const tagsResult = await db.prepare(`
+    const tagsArray = await db.all(sql`
       SELECT
         t.id, t.name, t.slug, t.description, t.color, t.usage_count,
         t.created_at, t.updated_at
       FROM image_tags it
       JOIN tags t ON it.tag_id = t.id
-      WHERE it.image_id = ?
+      WHERE it.image_id = ${id}
       ORDER BY t.name
-    `).bind(id).all()
+    `)
 
     const imageWithTags = {
       ...imageResult,
-      tags: tagsResult.results || []
+      tags: tagsArray || []
     } as unknown as ImageWithTags
 
-    // Update grid layout (in hubKV) - keeping legacy format for now
-    const layout = (await hubKV().get('grid:main') ?? []) as any[]
+    // Update grid layout (in KV) - keeping legacy format for now
+    const layout = (await kv.get('grid:main') ?? []) as any[]
     const updatedLayout = layout.map((item) => {
       if (item.id === parseInt(id)) {
         return {
@@ -167,7 +155,7 @@ export default defineEventHandler(async (event) => {
       return item
     })
 
-    await hubKV().set('grid:main', updatedLayout)
+    await kv.set('grid:main', updatedLayout)
 
     return {
       success: true,

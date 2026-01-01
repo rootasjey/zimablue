@@ -1,6 +1,7 @@
 // PATCH /api/admin/messages/[id]
 
-import { Message } from "~/types/message"
+import { sql } from 'drizzle-orm'
+import type { Message } from "~/types/message"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -38,10 +39,8 @@ export default eventHandler(async (event) => {
 
   try {
     // Check if message exists
-    const existingMessage = await hubDatabase()
-      .prepare('SELECT id FROM messages WHERE id = ?')
-      .bind(parseInt(messageId))
-      .first()
+    const existingMessage = await db
+      .get(sql`SELECT id FROM messages WHERE id = ${parseInt(messageId)}`)
 
     if (!existingMessage) {
       throw createError({
@@ -51,14 +50,12 @@ export default eventHandler(async (event) => {
     }
 
     // Update read status
-    await hubDatabase()
-      .prepare('UPDATE messages SET read = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-      .bind(body.read ? 1 : 0, parseInt(messageId))
-      .run()
+    await db
+      .run(sql`UPDATE messages SET read = ${body.read ? 1 : 0}, updated_at = CURRENT_TIMESTAMP WHERE id = ${parseInt(messageId)}`)
 
     // Fetch updated message
-    const updatedMessage = await hubDatabase()
-      .prepare(`
+    const updatedMessage = await db
+      .get(sql`
         SELECT 
           id,
           sender_email,
@@ -68,10 +65,8 @@ export default eventHandler(async (event) => {
           created_at,
           updated_at
         FROM messages 
-        WHERE id = ?
+        WHERE id = ${parseInt(messageId)}
       `)
-      .bind(parseInt(messageId))
-      .first()
 
     return {
       success: true,

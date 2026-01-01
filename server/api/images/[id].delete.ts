@@ -1,5 +1,8 @@
-import { VariantType } from "~/types/image"
+import { db } from '~/server/utils/database'
+import type { VariantType } from "~/types/image"
 import { z } from 'zod'
+import { sql } from 'drizzle-orm'
+import { blob } from 'hub:blob'
 
 export default eventHandler(async (event) => {
   await requireUserSession(event)
@@ -19,45 +22,35 @@ export default eventHandler(async (event) => {
     })
   }
 
-  const dbResponse = await hubDatabase()
-  .prepare(`
+  const imageData = await db.get(sql`
     SELECT * 
     FROM images
-    WHERE id = ?1
+    WHERE id = ${id}
   `)
-  .bind(id)
-  .run()
 
-  // return {
-  //   ok: true,
-  // }
-
-  await hubDatabase()
-  .prepare(`
-    DELETE FROM images
-    WHERE id = ?1
-  `)
-  .bind(id)
-  .run()
-
-  if (!dbResponse.success) {
+  if (!imageData) {
     throw createError({
-      statusCode: 500,
-      message: 'Failed to delete image from database',
+      statusCode: 404,
+      message: 'Image not found',
     })
   }
 
-  const imageData = dbResponse.results[0]
   console.log('0. get image data : id', id)
   
   // Parse variants
   const variants: Array<VariantType> = JSON.parse(imageData.variants as string || '[]')
 
-  // Delete all variants
+  // Delete all variants from blob storage
   for (const variant of variants) {
-  console.log('0. delete blob: variant', variant.pathname)
-    await hubBlob().del(variant.pathname)
+    console.log('0. delete blob: variant', variant.pathname)
+    await blob.del(variant.pathname)
   }
+
+  // Delete from database
+  await db.run(sql`
+    DELETE FROM images
+    WHERE id = ${id}
+  `)
 
   return {
     ...imageData,

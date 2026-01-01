@@ -1,6 +1,8 @@
 // POST /api/collections
 
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
+import { sql } from 'drizzle-orm'
 
 const createCollectionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -33,11 +35,9 @@ export default defineEventHandler(async (event) => {
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
     
-    const db = hubDatabase()
-    
     try {
       // 1. Create the collection
-      const collectionStmt = db.prepare(`
+      const collectionResult = await db.get(sql`
         INSERT INTO collections (
           name, 
           description, 
@@ -46,23 +46,16 @@ export default defineEventHandler(async (event) => {
           user_id,
           cover_image_id
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (
+          ${validatedData.name},
+          ${validatedData.description},
+          ${validatedData.is_public ? 1 : 0},
+          ${slug},
+          ${user.id},
+          ${validatedData.cover_image_id || null}
+        )
         RETURNING id, name, description, is_public, slug, created_at
       `)
-      .bind(
-        validatedData.name,
-        validatedData.description,
-        validatedData.is_public ? 1 : 0,
-        slug,
-        user.id,
-        validatedData.cover_image_id || null
-      )
-      
-      // Prepare batch operations
-      const batchOperations = [collectionStmt]
-      
-      // Execute the first statement to get the collection ID
-      const collectionResult = await collectionStmt.first()
       
       if (!collectionResult) {
         throw new Error('Failed to create collection')
@@ -70,62 +63,55 @@ export default defineEventHandler(async (event) => {
       
       const collectionId = collectionResult.id
       
+      // Prepare batch operations
+      const batchOperations = []
+      
       // 2. Add images to the collection if provided
       if (validatedData.image_ids && validatedData.image_ids.length > 0) {
         // Verify all images exist
         const imageIdsStr = validatedData.image_ids.join(',')
-        const existingImagesResult = await db.prepare(`
+        const existingImagesResult = await db.all(sql.raw(`
           SELECT id FROM images 
           WHERE id IN (${imageIdsStr})
-        `)
-        .run()
+        `))
         
-        if (!existingImagesResult.success) {
-          throw new Error('Failed to verify image existence')
-        }
-        
-        const existingImageIds = existingImagesResult.results.map(img => img.id)
+        const existingImageIds = existingImagesResult.map((img: any) => img.id as number)
         
         // Add each image to the collection with incremental position
-        const imageInsertStatements = existingImageIds.map((imageId, i) => {
-          return db.prepare(`
-            INSERT INTO collection_images (collection_id, image_id, position)
-            VALUES (?, ?, ?)
-          `)
-          .bind(collectionId, imageId, i)
+        existingImageIds.forEach((imageId: number, i: number) => {
+          batchOperations.push(
+            db.run(sql`
+              INSERT INTO collection_images (collection_id, image_id, position)
+              VALUES (${collectionId}, ${imageId}, ${i})
+            `)
+          )
         })
-        
-        // Add image insert statements to batch operations
-        batchOperations.push(...imageInsertStatements)
         
         // If no cover image was specified but images were added, use the first image as cover
         if (!validatedData.cover_image_id && existingImageIds.length > 0) {
-          const updateCoverStmt = db.prepare(`
-            UPDATE collections
-            SET cover_image_id = ?
-            WHERE id = ?
-          `)
-          .bind(existingImageIds[0], collectionId)
-          
-          batchOperations.push(updateCoverStmt)
+          batchOperations.push(
+            db.run(sql`
+              UPDATE collections
+              SET cover_image_id = ${existingImageIds[0]}
+              WHERE id = ${collectionId}
+            `)
+          )
         }
       }
       
       // Execute all operations in a batch (transaction)
-      if (batchOperations.length > 1) {
-        await db.batch(batchOperations.slice(1)) // Skip the first one as we already executed it
+      if (batchOperations.length > 0) {
+        await db.batch(batchOperations)
       }
       
       // Fetch the complete collection with image count
-      const finalCollection = await db.prepare(`
+      const finalCollection = await db.get(sql`
         SELECT 
           c.*,
           (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count
         FROM collections c
-        WHERE c.id = ?
+        WHERE c.id = ${collectionId}
       `)
-      .bind(collectionId)
-      .first()
       
       return {
         success: true,
@@ -147,7 +133,7 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         message: 'Validation error',
-        data: error.errors
+        data: error.issues
       })
     }
     

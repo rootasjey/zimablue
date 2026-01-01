@@ -1,6 +1,9 @@
 // GET /api/admin/analytics/content-activity
 // Returns content creation activity (images uploaded in last 7/30 days)
 
+import { sql } from 'drizzle-orm'
+import { isAdminSession } from '~/server/utils/auth'
+
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -10,7 +13,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (session.user.role !== 'admin') {
+  if (!isAdminSession(session)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -18,17 +21,14 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const db = hubDatabase()
-
     const result = await db
-      .prepare(`
+      .get(sql`
         SELECT 
           COUNT(CASE WHEN created_at >= date('now', '-7 days') THEN 1 END) as last_7_days,
           COUNT(CASE WHEN created_at >= date('now', '-30 days') THEN 1 END) as last_30_days,
           COUNT(*) as total
         FROM images
       `)
-      .first()
 
     return {
       success: true,

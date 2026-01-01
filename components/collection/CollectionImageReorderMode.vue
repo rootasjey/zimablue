@@ -165,6 +165,8 @@ const handleDrop = (targetIndex: number, event: DragEvent) => {
   const newImages = [...localImages.value]
   const draggedImage = newImages[draggedIndex.value]
   
+  if (!draggedImage) return
+  
   // Remove the dragged image from its original position
   newImages.splice(draggedIndex.value, 1)
   
@@ -189,9 +191,12 @@ const handleKeyDown = (event: KeyboardEvent, index: number) => {
       // Move image up/left
       const newImages = [...localImages.value]
       const temp = newImages[index]
-      newImages[index] = newImages[index - 1]
-      newImages[index - 1] = temp
-      localImages.value = newImages
+      const prevImage = newImages[index - 1]
+      if (temp && prevImage) {
+        newImages[index] = prevImage
+        newImages[index - 1] = temp
+        localImages.value = newImages
+      }
     }
   } else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
     event.preventDefault()
@@ -199,9 +204,12 @@ const handleKeyDown = (event: KeyboardEvent, index: number) => {
       // Move image down/right
       const newImages = [...localImages.value]
       const temp = newImages[index]
-      newImages[index] = newImages[index + 1]
-      newImages[index + 1] = temp
-      localImages.value = newImages
+      const nextImage = newImages[index + 1]
+      if (temp && nextImage) {
+        newImages[index] = nextImage
+        newImages[index + 1] = temp
+        localImages.value = newImages
+      }
     }
   }
 }

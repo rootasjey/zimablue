@@ -1,7 +1,11 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
-import { Image, VariantType } from '~/types/image'
+import { sql } from 'drizzle-orm'
+import type { Image, VariantType } from '~/types/image'
 import { Jimp } from 'jimp'
 import { generateUniquePathname } from '~/server/api/images/utils/generateUniquePathname'
+import { blob } from 'hub:blob'
+import { kv } from 'hub:kv'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -12,13 +16,10 @@ export default eventHandler(async (event) => {
   }).parse)
 
   // Get existing image entry
-  const existingImage: Image | null = await hubDatabase()
-    .prepare(`
-      SELECT * FROM images
-      WHERE id = ?1
-    `)
-    .bind(id)
-    .first()
+  const existingImage: Image | null = await db.get(sql`
+    SELECT * FROM images
+    WHERE id = ${id}
+  `)
 
   if (!existingImage) {
     throw createError({
@@ -50,10 +51,10 @@ export default eventHandler(async (event) => {
   }
 
   try { // Delete old blob files
-    const variants = JSON.parse(existingImage.variants)
+    const variants = typeof existingImage.variants === 'string' ? JSON.parse(existingImage.variants) : existingImage.variants
     for (const variant of variants) {
       if (variant.pathname) {
-        await hubBlob().delete(variant.pathname)
+        await blob.del(variant.pathname)
       }
     }
   } catch (error) {
@@ -62,11 +63,11 @@ export default eventHandler(async (event) => {
   }
 
   // Create a unique ID for the image folder (reuse existing prefix if possible)
-    const extension = type.split('/')[1]
+    const extension = type.split('/')[1] || 'jpg'
     const baseName = fileName.substring(0, fileName.lastIndexOf('.'))
     const imagePrefix = existingImage.pathname && existingImage.pathname.includes('/')
     ? existingImage.pathname
-    : await generateUniquePathname(baseName, extension)
+    : await generateUniquePathname(baseName, extension || 'jpg')
 
   // Process the original image with Jimp
   const originalImage = await Jimp.fromBuffer(file)
@@ -85,9 +86,9 @@ export default eventHandler(async (event) => {
   
   // Upload original image
   const originalBuffer = await originalImage.getBuffer(type)
-  const originalBlob = new Blob([originalBuffer], { type })
+  const originalBlob = new Blob([new Uint8Array(originalBuffer)], { type })
   
-  const originalResponse = await hubBlob().put(`${imagePrefix}/original.${extension}`, originalBlob, {
+  const originalResponse = await blob.put(`${imagePrefix}/original.${extension}`, originalBlob, {
     addRandomSuffix: false,
   })
 
@@ -102,8 +103,8 @@ export default eventHandler(async (event) => {
   for (const size of sizes) {
     const resized = originalImage.clone().resize({ w: size.width })
     const buffer = await resized.getBuffer(type)
-    const blob = new Blob([buffer], { type })
-    const response = await hubBlob().put(`${imagePrefix}/${size.suffix}.${extension}`, blob, {
+    const blobData = new Blob([new Uint8Array(buffer)], { type })
+    const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
       addRandomSuffix: false,
     })
 
@@ -116,20 +117,17 @@ export default eventHandler(async (event) => {
   }
 
   // Update database entry with new variants
-  const updateResponse = await hubDatabase()
-    .prepare(`
-      UPDATE images 
-      SET pathname = ?1,
-          variants = ?2,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?3
-      RETURNING *
-    `)
-    .bind(imagePrefix, JSON.stringify(generatedVariants), id)
-    .first()
+  const updateResponse = await db.get(sql`
+    UPDATE images 
+    SET pathname = ${imagePrefix},
+        variants = ${JSON.stringify(generatedVariants)},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `)
 
   // Update grid layout
-  const layout = (await hubKV().get('grid:main') ?? []) as Image[]
+  const layout = (await kv.get('grid:main') ?? []) as Image[]
   const updatedLayout = layout.map((item) => {
     if (item.id === parseInt(id)) {
       return {
@@ -142,7 +140,7 @@ export default eventHandler(async (event) => {
     return item
   })
 
-  await hubKV().set('grid:main', updatedLayout)
+  await kv.set('grid:main', updatedLayout)
 
   return {
     success: true,

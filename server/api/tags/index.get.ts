@@ -1,6 +1,8 @@
 // GET /api/tags
 // Get all tags with optional search and pagination
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { TagSearchResponse, TagSearchParams } from "~/types/tag"
 
 export default defineEventHandler(async (event): Promise<TagSearchResponse> => {
@@ -11,16 +13,13 @@ export default defineEventHandler(async (event): Promise<TagSearchResponse> => {
   const page = Math.floor(offset / limit) + 1
   const sortBy = query.sort_by || 'usage_count'
   const sortOrder = query.sort_order || 'desc'
-
-  const db = hubDatabase()
   
   try {
     let whereClause = ''
-    const params: any[] = []
 
     if (searchTerm.trim()) {
-      whereClause = 'WHERE name LIKE ? OR description LIKE ?'
-      params.push(`%${searchTerm}%`, `%${searchTerm}%`)
+      const searchPattern = `%${searchTerm}%`
+      whereClause = `WHERE name LIKE '${searchPattern}' OR description LIKE '${searchPattern}'`
     }
 
     // Validate sort parameters
@@ -30,26 +29,26 @@ export default defineEventHandler(async (event): Promise<TagSearchResponse> => {
     const finalSortOrder = validSortOrders.includes(sortOrder) ? sortOrder : 'desc'
 
     // Get total count
-    const countResult = await db.prepare(`
+    const countResult = await db.get(sql.raw(`
       SELECT COUNT(*) as total FROM tags ${whereClause}
-    `).bind(...params).first()
+    `))
     
     const total = countResult?.total as number || 0
     const totalPages = Math.ceil(total / limit)
 
     // Get tags with pagination
-    const tagsResult = await db.prepare(`
+    const tagsResult = await db.all(sql.raw(`
       SELECT 
         id, name, slug, description, color, usage_count,
         created_at, updated_at
       FROM tags 
       ${whereClause}
       ORDER BY ${finalSortBy} ${finalSortOrder.toUpperCase()}, name ASC
-      LIMIT ? OFFSET ?
-    `).bind(...params, limit, offset).all()
+      LIMIT ${limit} OFFSET ${offset}
+    `))
 
     return {
-      tags: tagsResult.results as any[] || [],
+      tags: tagsResult as any[] || [],
       total,
       pagination: {
         page,

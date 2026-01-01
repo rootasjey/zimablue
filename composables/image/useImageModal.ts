@@ -65,34 +65,39 @@ export const useImageModal = () => {
   const navigateToPrevious = () => {
     if (canNavigatePrevious.value) {
       currentImageIndex.value--
-      selectedModalImage.value = gridStore.layout[currentImageIndex.value]
+      const prevImage = gridStore.layout[currentImageIndex.value]
+      if (prevImage) selectedModalImage.value = prevImage
     }
   }
 
   const navigateToNext = () => {
     if (canNavigateNext.value) {
       currentImageIndex.value++
-      selectedModalImage.value = gridStore.layout[currentImageIndex.value]
+      const nextImage = gridStore.layout[currentImageIndex.value]
+      if (nextImage) selectedModalImage.value = nextImage
     }
   }
 
   const navigateToFirst = () => {
     if (gridStore.layout.length === 0) return
     currentImageIndex.value = 0
-    selectedModalImage.value = gridStore.layout[0]
+    const firstImage = gridStore.layout[0]
+    if (firstImage) selectedModalImage.value = firstImage
   }
 
   const navigateToLast = () => {
     if (gridStore.layout.length === 0) return
     currentImageIndex.value = gridStore.layout.length - 1
-    selectedModalImage.value = gridStore.layout[gridStore.layout.length - 1]
+    const lastImage = gridStore.layout[gridStore.layout.length - 1]
+    if (lastImage) selectedModalImage.value = lastImage
   }
 
   const navigateToImage = (imageId: number) => {
     const index = gridStore.layout.findIndex(img => img.id === imageId)
     if (index !== -1) {
       currentImageIndex.value = index
-      selectedModalImage.value = gridStore.layout[index]
+      const targetImage = gridStore.layout[index]
+      if (targetImage) selectedModalImage.value = targetImage
     }
   }
 

@@ -1,5 +1,7 @@
 // PATCH /api/admin/users/[id]
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
 import type { UserFormData } from "~/types/user"
 
 export default eventHandler(async (event) => {
@@ -29,10 +31,8 @@ export default eventHandler(async (event) => {
   const body = await readBody(event) as Partial<UserFormData>
 
   try {
-    const db = hubDatabase()
-
     // Check if user exists
-    const existingUser = await db.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first()
+    const existingUser = await db.get(sql`SELECT id FROM users WHERE id = ${userId}`)
     if (!existingUser) {
       throw createError({
         statusCode: 404,
@@ -88,21 +88,21 @@ export default eventHandler(async (event) => {
     updateFields.push('updated_at = CURRENT_TIMESTAMP')
     params.push(userId)
 
-    const updateQuery = `
+    const updateQuery = sql.raw(`
       UPDATE users 
       SET ${updateFields.join(', ')}
       WHERE id = ?
-    `
+    `)
 
-    await db.prepare(updateQuery).bind(...params).run()
+    await db.run(updateQuery, params)
 
     // Fetch and return updated user
-    const updatedUser = await db.prepare(`
+    const updatedUser = await db.get(sql`
       SELECT 
         id, name, email, role, biography, job, language, location, socials, created_at, updated_at
       FROM users 
-      WHERE id = ?
-    `).bind(userId).first()
+      WHERE id = ${userId}
+    `)
 
     return {
       success: true,

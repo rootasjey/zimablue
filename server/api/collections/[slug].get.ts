@@ -1,6 +1,8 @@
 // GET /api/collections/:slug
 
-import { Image } from '~/types/image'
+import { db } from '~/server/utils/database'
+import type { Image } from '~/types/image'
+import { sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -11,70 +13,55 @@ export default defineEventHandler(async (event) => {
       message: `Invalid collection slug ${slug}`,
     })
   }
-  
-  const db = hubDatabase()
 
   try {
     // Fetch the collection
-    const queryResponse = await db.prepare(`
+    const collection = await db.get(sql`
       SELECT id, name, description, cover_image_id, slug, is_public, stats_views, 
              stats_likes, stats_downloads, created_at, updated_at, user_id
       FROM collections
-      WHERE slug = ?
+      WHERE slug = ${slug}
     `)
-    .bind(slug)
-    .run()
 
-    if (!queryResponse.success || queryResponse.results.length === 0) {
+    if (!collection) {
       throw createError({
         statusCode: 404,
         message: 'Collection not found'
       })
     }
-
-    const collection = queryResponse.results[0]
     const id = collection.id
 
     // Increment the views counter
-    await db.prepare(`
+    await db.run(sql`
       UPDATE collections
       SET stats_views = stats_views + 1
-      WHERE id = ?
+      WHERE id = ${id}
     `)
-    .bind(id)
-    .run()
 
     // Fetch the associated images with their position in the collection
-    const queryImagesResponse = await db.prepare(`
+    const imagesResult = await db.all(sql`
       SELECT i.*, ci.position
       FROM images i
       JOIN collection_images ci ON i.id = ci.image_id
-      WHERE ci.collection_id = ?
+      WHERE ci.collection_id = ${id}
       ORDER BY ci.position ASC
     `)
-    .bind(id)
-    .run()
 
-    let images: Array<Image & { position: number }> = []
-    if (queryImagesResponse.success) {
-      images = queryImagesResponse.results as unknown as Array<Image & { position: number }>
-      
-      // Parse JSON fields in images
-      images = images.map(image => ({
-        ...image,
-        tags: JSON.parse(image.tags || '[]'),
-        variants: JSON.parse(image.variants || '[]')
-      }))
-    }
+    let images: Array<Image & { position: number }> = imagesResult as unknown as Array<Image & { position: number }>
+    
+    // Parse JSON fields in images
+    images = images.map(image => ({
+      ...image,
+      tags: typeof image.tags === 'string' ? JSON.parse(image.tags || '[]') : image.tags,
+      variants: typeof image.variants === 'string' ? JSON.parse(image.variants || '[]') : image.variants
+    }))
 
     // Get the owner information
-    const ownerResponse = await db.prepare(`
+    const ownerResponse = await db.get(sql`
       SELECT id, name, email
       FROM users
-      WHERE id = ?
+      WHERE id = ${collection.user_id}
     `)
-    .bind(collection.user_id)
-    .first()
 
     const owner = ownerResponse || { id: collection.user_id, name: 'Unknown' }
     

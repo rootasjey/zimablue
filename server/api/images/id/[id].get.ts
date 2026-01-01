@@ -1,35 +1,31 @@
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
-import { Image } from '~/types/image'
+import { sql } from 'drizzle-orm'
+import type { Image } from '~/types/image'
 
 export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({
     id: z.string().min(1)
   }).parse)
 
-  const dbResponse = await hubDatabase()
-  .prepare(`
+  const image = await db.get(sql`
     SELECT *
     FROM images
-    WHERE id = ?1
+    WHERE id = ${id}
   `)
-  .bind(id)
-  .run()
 
-  if (!dbResponse.success || dbResponse.results.length === 0) {
+  if (!image) {
     throw createError({
       statusCode: 404,
       message: 'Image not found',
     })
   }
 
-  await hubDatabase()
-    .prepare(`
-      UPDATE images
-      SET stats_views = stats_views + 1
-      WHERE id = ?1
-    `)
-    .bind(id)
-    .run()
+  await db.run(sql`
+    UPDATE images
+    SET stats_views = stats_views + 1
+    WHERE id = ${id}
+  `)
 
-  return dbResponse.results[0] as unknown as Image
+  return image as unknown as Image
 })

@@ -1,5 +1,8 @@
 // GET /api/collections
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   const userId = session.user?.id
@@ -10,8 +13,6 @@ export default defineEventHandler(async (event) => {
   const includePrivate = Boolean(query.includePrivate) && userId
   
   try {
-    const db = hubDatabase()
-    
     // Build the query based on user authentication
     let whereClause = 'WHERE is_public = 1'
     
@@ -21,16 +22,13 @@ export default defineEventHandler(async (event) => {
     }
     
     // Get total count for pagination
-    const countResult = await db.prepare(`
+    const countResult = await db.get(sql.raw(`
       SELECT COUNT(*) as total
       FROM collections
       ${whereClause}
-    `)
-    .run()
+    `))
     
-    const total = countResult.results[0] 
-      ? (countResult.results[0]?.total as number) 
-      : 0
+    const total = countResult?.total as number || 0
     
     // Fetch collections with image count and owner info
     const collectionsQuery = `
@@ -52,29 +50,21 @@ export default defineEventHandler(async (event) => {
       LEFT JOIN users u ON c.user_id = u.id
       ${whereClause}
       ORDER BY c.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
     
-    const collectionsResult = await db.prepare(collectionsQuery)
-      .bind(limit, offset)
-      .run()
-    
-    if (!collectionsResult.success) {
-      throw new Error('Failed to fetch collections')
-    }
+    const collectionsResult = await db.all(sql.raw(collectionsQuery))
     
     // For each collection, fetch the cover image if it exists
-    const collections = await Promise.all(collectionsResult.results.map(async (collection) => {
+    const collections = await Promise.all(collectionsResult.map(async (collection: any) => {
       let coverImage = null
       
       if (collection.cover_image_id) {
-        const coverImageResult = await db.prepare(`
+        const coverImageResult = await db.get(sql`
           SELECT id, name, pathname, w, h
           FROM images
-          WHERE id = ?
+          WHERE id = ${collection.cover_image_id}
         `)
-        .bind(collection.cover_image_id)
-        .first()
         
         if (coverImageResult) {
           coverImage = coverImageResult
@@ -84,28 +74,24 @@ export default defineEventHandler(async (event) => {
       const imageCount = collection.image_count as number
       // If no cover image is set but collection has images, try to get the first image
       if (!coverImage && imageCount > 0) {
-        const firstImageResult = await db.prepare(`
+        const firstImageResult = await db.get(sql`
           SELECT i.id, i.name, i.pathname, i.w, i.h
           FROM images i
           JOIN collection_images ci ON i.id = ci.image_id
-          WHERE ci.collection_id = ?
+          WHERE ci.collection_id = ${collection.id}
           ORDER BY ci.position ASC
           LIMIT 1
         `)
-        .bind(collection.id)
-        .first()
         
         if (firstImageResult) {
           coverImage = firstImageResult
           
           // Update the collection's cover_image_id if we found an image
-          await db.prepare(`
+          await db.run(sql`
             UPDATE collections
-            SET cover_image_id = ?
-            WHERE id = ?
+            SET cover_image_id = ${firstImageResult.id}
+            WHERE id = ${collection.id}
           `)
-          .bind(firstImageResult.id, collection.id)
-          .run()
         }
       }
       

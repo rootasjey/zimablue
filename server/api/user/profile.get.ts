@@ -1,38 +1,37 @@
-import { User } from "#auth-utils"
+import { db } from '~/server/utils/database'
+import type { User } from "#auth-utils"
+import { sql } from 'drizzle-orm'
 
 export default eventHandler(async (event) => {
   try {
     // Check authentication
     const session = await requireUserSession(event)
-    if (!session.user?.id) {
+    if (!session.user || (session.user as any).id == null) {
       throw createError({
         statusCode: 401,
         statusMessage: 'Authentication required'
       })
     }
 
-    const userId = session.user.id
+    const userId = (session.user as any).id as number
 
     // Fetch user profile data
-    const db = hubDatabase()
-    const userRecord = await db.prepare(`
+    const user = await db.get(sql`
       SELECT id, name, email, biography, job, location, language, socials, created_at, updated_at
       FROM users 
-      WHERE id = ?
-    `).bind(userId).run()
+      WHERE id = ${userId}
+    `)
 
-    if (!userRecord.success) {
+    if (!user) {
       throw createError({
         statusCode: 404,
         statusMessage: 'User not found'
       })
     }
 
-    const user = userRecord.results[0] as unknown as User
-
     return {
       success: true,
-      data: user
+      data: user as unknown as User
     }
 
   } catch (error: any) {

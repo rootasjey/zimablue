@@ -141,7 +141,7 @@ export const useImageUpload = () => {
       return
     }
 
-    if (!validateFile(file)) return
+    if (!file || !validateFile(file)) return
 
     await replaceImage(file, imageToReplace.id)
     input.value = '' // Reset input
@@ -166,7 +166,8 @@ export const useImageUpload = () => {
           let progressFileId = fileIdMapping.get(gridFileId)
           if (!progressFileId) {
             // Extract file index from grid file ID and map to progress tracker format
-            const fileIndex = parseInt(gridFileId.split('_')[1]) || 0
+            const parts = gridFileId.split('_')
+            const fileIndex = parts[1] ? parseInt(parts[1]) : 0
             progressFileId = `${sessionId}_file_${fileIndex}`
             fileIdMapping.set(gridFileId, progressFileId)
           }

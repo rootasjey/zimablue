@@ -1,7 +1,9 @@
 // PUT /api/collections/:slug
 
+import { db } from '~/server/utils/database'
 import { z } from 'zod'
-import { ServerCollection } from '~/types/collection'
+import { sql } from 'drizzle-orm'
+import type { ServerCollection } from '~/types/collection'
 
 const updateCollectionSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
@@ -28,9 +30,9 @@ export default defineEventHandler(async (event) => {
   }
   
   const session = await requireUserSession(event)
-  const user = session.user
+  const user = session.user as any
 
-  if (!user.id) {
+  if (!user || user.id == null) {
     throw createError({
       statusCode: 401,
       message: 'You must be logged in to update a collection'
@@ -49,25 +51,19 @@ export default defineEventHandler(async (event) => {
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-')
     }
-
-    const db = hubDatabase()
     
     try {
       // Check if collection exists and belongs to the user
-      const { results: existingCollections } = await db.prepare(`
-        SELECT id, user_id FROM collections WHERE slug = ?
-      `)
-      .bind(slug)
-      .run()
+      const collection = await db.get(sql`
+        SELECT id, user_id FROM collections WHERE slug = ${slug}
+      `) as any
 
-      if (!existingCollections.length) {
+      if (!collection) {
         throw createError({
           statusCode: 404,
           message: 'Collection not found'
         })
       }
-      
-      const collection = existingCollections[0]
       if (collection.user_id !== user.id && user.role !== 'admin') {
         throw createError({
           statusCode: 403,
@@ -75,14 +71,14 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      const id = collection.id
+      const id = collection.id as number
 
       // Prepare batch operations array
-      const batchOperations = []
+      const batchOperations = [] as any[]
 
       // Build the update query dynamically based on provided fields
-      const updates = []
-      const params = []
+      const updates: string[] = []
+      const params: any[] = []
 
       if (validatedData.name !== undefined) {
         updates.push('name = ?')
@@ -113,16 +109,18 @@ export default defineEventHandler(async (event) => {
       if (updates.length > 0) {
         updates.push('updated_at = CURRENT_TIMESTAMP')
         
-        const updateQuery = `
+        const updateQueryString = `
           UPDATE collections
           SET ${updates.join(', ')}
           WHERE id = ?
         `
         
         params.push(id)
+        const updateQuery = sql.raw(updateQueryString)
         
-        const updateStmt = db.prepare(updateQuery).bind(...params)
-        batchOperations.push(updateStmt)
+        batchOperations.push(
+          (db as any).run(updateQuery, params)
+        )
       }
 
       // Handle image operations if provided
@@ -132,62 +130,50 @@ export default defineEventHandler(async (event) => {
           const imageIdsToRemove = validatedData.images.remove
           
           for (const imageId of imageIdsToRemove) {
-            const removeStmt = db
-            .prepare(`
-              DELETE FROM collection_images
-              WHERE collection_id = ? AND image_id = ?
-            `)
-            .bind(id, imageId)
-            
-            batchOperations.push(removeStmt)
+            batchOperations.push(
+              db.run(sql`
+                DELETE FROM collection_images
+                WHERE collection_id = ${id} AND image_id = ${imageId}
+              `)
+            )
           }
         }
         
         // Add new images
         if (validatedData.images.add && validatedData.images.add.length > 0) {
           // Get the current highest position
-          const { results: positionResult } = await db
-          .prepare(`
+          const positionResult = await db.get(sql`
             SELECT COALESCE(MAX(position), -1) as max_position
             FROM collection_images
-            WHERE collection_id = ?
+            WHERE collection_id = ${id}
           `)
-          .bind(id)
-          .run()
           
-          const max_position = positionResult[0] ? (positionResult[0]?.max_position as number) : -1
+          const positionRow = positionResult as any
+          const max_position = (positionRow?.max_position as number) ?? -1
           let nextPosition = max_position + 1
           
           // Add each new image
           for (const imageId of validatedData.images.add) {
             // Check if image exists
-            const { results: imageExists } = await db
-            .prepare(`
-              SELECT id FROM images WHERE id = ?
+            const imageExists = await db.get(sql`
+              SELECT id FROM images WHERE id = ${imageId}
             `)
-            .bind(imageId)
-            .run()
             
-            if (imageExists.length > 0) {
+            if (imageExists) {
               // Check if this image is already in the collection
-              const { results: existingRelation } = await db
-              .prepare(`
+              const existingRelation = await db.get(sql`
                 SELECT 1 FROM collection_images
-                WHERE collection_id = ? AND image_id = ?
+                WHERE collection_id = ${id} AND image_id = ${imageId}
               `)
-              .bind(id, imageId)
-              .run()
               
-              if (existingRelation.length === 0) {
+              if (!existingRelation) {
                 // Add the image to the collection
-                const addImageStmt = db
-                .prepare(`
-                  INSERT INTO collection_images (collection_id, image_id, position)
-                  VALUES (?, ?, ?)
-                `)
-                .bind(id, imageId, nextPosition)
-                
-                batchOperations.push(addImageStmt)
+                batchOperations.push(
+                  db.run(sql`
+                    INSERT INTO collection_images (collection_id, image_id, position)
+                    VALUES (${id}, ${imageId}, ${nextPosition})
+                  `)
+                )
                 nextPosition++
               }
             }
@@ -200,35 +186,30 @@ export default defineEventHandler(async (event) => {
           
           // Update positions based on the new order
           for (let i = 0; i < newOrder.length; i++) {
-            const reorderStmt = db
-            .prepare(`
-              UPDATE collection_images
-              SET position = ?
-              WHERE collection_id = ? AND image_id = ?
-            `)
-            .bind(i, id, newOrder[i])
-            
-            batchOperations.push(reorderStmt)
+            batchOperations.push(
+              db.run(sql`
+                UPDATE collection_images
+                SET position = ${i}
+                WHERE collection_id = ${id} AND image_id = ${newOrder[i]}
+              `)
+            )
           }
         }
       }
       
       // Execute all operations in a batch if there are any
       if (batchOperations.length > 0) {
-        await db.batch(batchOperations)
+        await (db as any).batch(batchOperations)
       }
       
       // Fetch the updated collection with image count
-      const updatedCollection: ServerCollection | null = await db
-      .prepare(`
+      const updatedCollection: ServerCollection | null = await db.get(sql`
         SELECT 
           c.*,
           (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count
         FROM collections c
-        WHERE c.id = ?
+        WHERE c.id = ${id}
       `)
-      .bind(id)
-      .first()
       
       return {
         success: true,
@@ -249,7 +230,7 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         message: 'Validation error',
-        data: error.errors
+        data: error.issues
       })
     }
 

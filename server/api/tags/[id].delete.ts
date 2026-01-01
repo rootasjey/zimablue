@@ -1,6 +1,9 @@
 // DELETE /api/tags/[id]
 // Delete a tag
 
+import { db } from '~/server/utils/database'
+import { sql } from 'drizzle-orm'
+
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
   if (!session?.user) {
@@ -27,14 +30,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Tag ID is required'
     })
   }
-
-  const db = hubDatabase()
   
   try {
     // Check if tag exists
-    const existingTag = await db.prepare(`
-      SELECT id, name, usage_count FROM tags WHERE id = ?
-    `).bind(id).first()
+    const existingTag = await db.get(sql`
+      SELECT id, name, usage_count FROM tags WHERE id = ${id}
+    `)
 
     if (!existingTag) {
       throw createError({
@@ -54,21 +55,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete tag relationships first (CASCADE should handle this, but being explicit)
-    await db.prepare(`
-      DELETE FROM image_tags WHERE tag_id = ?
-    `).bind(id).run()
+    await db.run(sql`
+      DELETE FROM image_tags WHERE tag_id = ${id}
+    `)
 
     // Delete the tag
-    const deleteResult = await db.prepare(`
-      DELETE FROM tags WHERE id = ?
-    `).bind(id).run()
-
-    if (!deleteResult.success) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to delete tag'
-      })
-    }
+    await db.run(sql`
+      DELETE FROM tags WHERE id = ${id}
+    `)
 
     return {
       success: true,
