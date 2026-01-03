@@ -1,8 +1,8 @@
 // GET /api/admin/collections
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { Collection } from "~/types/collection"
+import type { Collection } from "~~/shared/types/collection"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -30,24 +30,21 @@ export default eventHandler(async (event) => {
 
   try {
     let whereClause = ''
-    const params: any[] = []
 
     // Build WHERE clause for filtering
     const conditions: string[] = []
     
     if (userId) {
-      conditions.push('c.user_id = ?')
-      params.push(userId)
+      conditions.push(`c.user_id = ${userId}`)
     }
 
     if (isPublic !== undefined) {
-      conditions.push('c.is_public = ?')
-      params.push(isPublic === 'true' ? 1 : 0)
+      conditions.push(`c.is_public = ${isPublic === 'true' ? 1 : 0}`)
     }
 
     if (search) {
-      conditions.push('(c.name LIKE ? OR c.description LIKE ?)')
-      params.push(`%${search}%`, `%${search}%`)
+      const escapedSearch = search.replace(/'/g, "''")
+      conditions.push(`(c.name LIKE '%${escapedSearch}%' OR c.description LIKE '%${escapedSearch}%')`)
     }
 
     if (conditions.length > 0) {
@@ -61,8 +58,8 @@ export default eventHandler(async (event) => {
       LEFT JOIN users u ON c.user_id = u.id
       ${whereClause}
     `)
-    const countResult = await db.get(countQuery, params)
-    const total = countResult?.total as number || 0
+    const countResult = await db.get(countQuery) as { total: number } | undefined
+    const total = countResult?.total || 0
 
     // Get collections with pagination and user info
     const collectionsQuery = `
@@ -86,16 +83,16 @@ export default eventHandler(async (event) => {
       LEFT JOIN users u ON c.user_id = u.id
       ${whereClause}
       ORDER BY c.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
     
     const collections = await db
-      .all(sql.raw(collectionsQuery), [...params, limit, offset])
+      .all(sql.raw(collectionsQuery)) as unknown as (Collection & { user_name: string; user_email: string })[]
 
     return {
       success: true,
       data: {
-        collections: collections.rows as unknown as (Collection & { user_name: string; user_email: string })[],
+        collections: collections,
         pagination: {
           page,
           limit,

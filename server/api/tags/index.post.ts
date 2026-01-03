@@ -1,9 +1,10 @@
 // POST /api/tags
 // Create a new tag
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
-import type { TagCreateRequest } from "~/types/tag"
+import { db } from 'hub:db'
+import { eq } from 'drizzle-orm'
+import type { TagCreateRequest } from "~~/shared/types/tag"
+import { tags } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -36,9 +37,10 @@ export default defineEventHandler(async (event) => {
     const color = body.color || '#3B82F6'
 
     // Check if tag already exists
-    const existingTag = await db.get(sql`
-      SELECT id FROM tags WHERE name = ${name}
-    `)
+    const existingTag = await db.select({ id: tags.id })
+      .from(tags)
+      .where(eq(tags.name, name))
+      .get()
 
     if (existingTag) {
       throw createError({
@@ -60,9 +62,10 @@ export default defineEventHandler(async (event) => {
     let counter = 1
     
     while (true) {
-      const existingSlug = await db.get(sql`
-        SELECT id FROM tags WHERE slug = ${finalSlug}
-      `)
+      const existingSlug = await db.select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, finalSlug))
+        .get()
       
       if (!existingSlug) break
       finalSlug = `${slug}-${counter}`
@@ -70,20 +73,19 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create tag
-    const insertResult = await db.run(sql`
-      INSERT INTO tags (name, slug, description, color, created_at, updated_at)
-      VALUES (${name}, ${finalSlug}, ${description}, ${color}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `)
-
-    // Get the created tag
-    const createdTag = await db.get(sql`
-      SELECT id, name, slug, description, color, usage_count, created_at, updated_at
-      FROM tags WHERE id = ${Number(insertResult.lastInsertRowid)}
-    `)
+    const insertResult = await db.insert(tags)
+      .values({
+        name,
+        slug: finalSlug,
+        description,
+        color
+      })
+      .returning()
+      .get()
 
     return {
       success: true,
-      data: createdTag
+      data: insertResult
     }
   } catch (error: any) {
     console.error('Error creating tag:', error)

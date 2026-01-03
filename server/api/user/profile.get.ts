@@ -1,6 +1,7 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import type { User } from "#auth-utils"
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
+import { users } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   try {
@@ -16,11 +17,21 @@ export default eventHandler(async (event) => {
     const userId = (session.user as any).id as number
 
     // Fetch user profile data
-    const user = await db.get(sql`
-      SELECT id, name, email, biography, job, location, language, socials, created_at, updated_at
-      FROM users 
-      WHERE id = ${userId}
-    `)
+    const user = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        biography: users.biography,
+        job: users.job,
+        location: users.location,
+        language: users.language,
+        socials: users.socials,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .get()
 
     if (!user) {
       throw createError({

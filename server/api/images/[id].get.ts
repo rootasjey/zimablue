@@ -1,18 +1,18 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
+import { images } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({
     id: z.string().min(1)
   }).parse)
 
-  const imageData = await db.get(sql`
-    SELECT * 
-    FROM images
-    WHERE id = ${id}
-  `)
+  const imageData = await db.select()
+    .from(images)
+    .where(eq(images.id, Number(id)))
+    .get()
 
   if (!imageData) {
     throw createError({
@@ -21,6 +21,6 @@ export default eventHandler(async (event) => {
     })
   }
 
-  const imagePathname = `images/${imageData.pathname}`
+  const imagePathname = `images/${(imageData as any).pathname}`
   return blob.serve(event, imagePathname)
 })

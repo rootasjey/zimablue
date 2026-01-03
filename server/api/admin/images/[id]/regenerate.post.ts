@@ -1,9 +1,10 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
 import { Jimp } from 'jimp'
-import type { VariantType } from '~/types/image'
-import { sql } from 'drizzle-orm'
+import type { VariantType } from '~~/shared/types/image'
+import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
+import { images } from '../../../../db/schema'
 
 const sizes = [
   { width: 160, suffix: 'xxs' },
@@ -42,14 +43,18 @@ export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({ id: z.string().min(1) }).parse)
 
   // Fetch image row
-  const imageRow = await db.get(sql`SELECT * FROM images WHERE id = ${id}`)
+  const imageRow = await db.select()
+    .from(images)
+    .where(eq(images.id, Number(id)))
+    .get()
+    
   if (!imageRow) {
     throw createError({ statusCode: 404, statusMessage: 'Image not found' })
   }
 
   let variants: VariantType[] = []
   try {
-    const v = (imageRow as any).variants
+    const v = imageRow.variants
     variants = JSON.parse(typeof v === 'string' ? v : '[]')
   } catch {
     variants = []
@@ -98,9 +103,14 @@ export default eventHandler(async (event) => {
   }
 
   // Update DB
-  const updated = await db.get(sql`
-    UPDATE images SET variants = ${JSON.stringify(newVariants)}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id} RETURNING *
-  `)
+  const updated = await db.update(images)
+    .set({
+      variants: JSON.stringify(newVariants),
+      updatedAt: new Date()
+    })
+    .where(eq(images.id, Number(id)))
+    .returning()
+    .get()
 
   return { success: true, data: updated }
 })

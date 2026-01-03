@@ -1,8 +1,10 @@
 // POST /api/collections
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
+import { inArray, eq, sql as sqlCount } from 'drizzle-orm'
+import type { DbCollection } from '#shared/types/database'
+import { collections, images, collectionImages } from '../../db/schema'
 
 const createCollectionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -22,6 +24,13 @@ export default defineEventHandler(async (event) => {
       message: 'You must be logged in to create a collection'
     })
   }
+  
+  if (user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      message: 'Admin access required'
+    })
+  }
 
   try {
     const body = await readBody(event)
@@ -37,25 +46,24 @@ export default defineEventHandler(async (event) => {
     
     try {
       // 1. Create the collection
-      const collectionResult = await db.get(sql`
-        INSERT INTO collections (
-          name, 
-          description, 
-          is_public, 
-          slug, 
-          user_id,
-          cover_image_id
-        )
-        VALUES (
-          ${validatedData.name},
-          ${validatedData.description},
-          ${validatedData.is_public ? 1 : 0},
-          ${slug},
-          ${user.id},
-          ${validatedData.cover_image_id || null}
-        )
-        RETURNING id, name, description, is_public, slug, created_at
-      `)
+      const collectionResult = await db.insert(collections)
+        .values({
+          name: validatedData.name,
+          description: validatedData.description,
+          isPublic: validatedData.is_public,
+          slug: slug,
+          userId: user.id,
+          coverImageId: validatedData.cover_image_id || null
+        })
+        .returning({
+          id: collections.id,
+          name: collections.name,
+          description: collections.description,
+          isPublic: collections.isPublic,
+          slug: collections.slug,
+          createdAt: collections.createdAt
+        })
+        .get() as Partial<DbCollection> | undefined
       
       if (!collectionResult) {
         throw new Error('Failed to create collection')
@@ -69,49 +77,55 @@ export default defineEventHandler(async (event) => {
       // 2. Add images to the collection if provided
       if (validatedData.image_ids && validatedData.image_ids.length > 0) {
         // Verify all images exist
-        const imageIdsStr = validatedData.image_ids.join(',')
-        const existingImagesResult = await db.all(sql.raw(`
-          SELECT id FROM images 
-          WHERE id IN (${imageIdsStr})
-        `))
+        const existingImagesResult = await db.select({ id: images.id })
+          .from(images)
+          .where(inArray(images.id, validatedData.image_ids))
+          .all()
         
-        const existingImageIds = existingImagesResult.map((img: any) => img.id as number)
+        const existingImageIds = existingImagesResult.map(img => img.id)
         
         // Add each image to the collection with incremental position
         existingImageIds.forEach((imageId: number, i: number) => {
           batchOperations.push(
-            db.run(sql`
-              INSERT INTO collection_images (collection_id, image_id, position)
-              VALUES (${collectionId}, ${imageId}, ${i})
-            `)
+            db.insert(collectionImages)
+              .values({
+                collectionId: collectionId!,
+                imageId: imageId,
+                position: i
+              })
           )
         })
         
         // If no cover image was specified but images were added, use the first image as cover
         if (!validatedData.cover_image_id && existingImageIds.length > 0) {
           batchOperations.push(
-            db.run(sql`
-              UPDATE collections
-              SET cover_image_id = ${existingImageIds[0]}
-              WHERE id = ${collectionId}
-            `)
+            db.update(collections)
+              .set({ coverImageId: existingImageIds[0] })
+              .where(eq(collections.id, collectionId!))
           )
         }
       }
       
       // Execute all operations in a batch (transaction)
       if (batchOperations.length > 0) {
-        await db.batch(batchOperations)
+        await db.batch(batchOperations as any)
       }
       
       // Fetch the complete collection with image count
-      const finalCollection = await db.get(sql`
-        SELECT 
-          c.*,
-          (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count
-        FROM collections c
-        WHERE c.id = ${collectionId}
-      `)
+      const finalCollection = await db.select()
+        .from(collections)
+        .where(eq(collections.id, collectionId!))
+        .get() as (DbCollection & { image_count: number }) | undefined
+      
+      // Get image count separately
+      const countResult = await db.select({ count: sqlCount<number>`count(*)` })
+        .from(collectionImages)
+        .where(eq(collectionImages.collectionId, collectionId!))
+        .get()
+      
+      if (finalCollection) {
+        (finalCollection as any).image_count = countResult?.count || 0
+      }
       
       return {
         success: true,

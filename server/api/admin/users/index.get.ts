@@ -1,8 +1,8 @@
 // GET /api/admin/users
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { User } from "~/types/user"
+import type { User } from "~~/shared/types/user"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -29,19 +29,17 @@ export default eventHandler(async (event) => {
 
   try {
     let whereClause = ''
-    const params: any[] = []
 
     // Build WHERE clause for filtering
     const conditions: string[] = []
     
     if (roleFilter) {
-      conditions.push('role = ?')
-      params.push(roleFilter)
+      conditions.push(`role = '${roleFilter}'`)
     }
 
     if (search) {
-      conditions.push('(name LIKE ? OR email LIKE ? OR job LIKE ? OR location LIKE ?)')
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`)
+      const escapedSearch = search.replace(/'/g, "''")
+      conditions.push(`(name LIKE '%${escapedSearch}%' OR email LIKE '%${escapedSearch}%' OR job LIKE '%${escapedSearch}%' OR location LIKE '%${escapedSearch}%')`)
     }
 
     if (conditions.length > 0) {
@@ -50,8 +48,8 @@ export default eventHandler(async (event) => {
 
     // Get total count for pagination
     const countQuery = sql.raw(`SELECT COUNT(*) as total FROM users ${whereClause}`)
-    const countResult = await db.get(countQuery, params)
-    const total = countResult?.total as number || 0
+    const countResult = await db.get(countQuery) as { total: number } | undefined
+    const total = countResult?.total || 0
 
     // Get users with pagination
     const usersQuery = `
@@ -70,16 +68,16 @@ export default eventHandler(async (event) => {
       FROM users 
       ${whereClause}
       ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
     
     const users = await db
-      .all(sql.raw(usersQuery), [...params, limit, offset])
+      .all(sql.raw(usersQuery)) as unknown as User[]
 
     return {
       success: true,
       data: {
-        users: users.rows as unknown as User[],
+        users: users,
         pagination: {
           page,
           limit,

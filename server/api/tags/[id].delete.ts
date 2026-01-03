@@ -1,8 +1,9 @@
 // DELETE /api/tags/[id]
 // Delete a tag
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { eq } from 'drizzle-orm'
+import { tags, imageTags } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -33,9 +34,14 @@ export default defineEventHandler(async (event) => {
   
   try {
     // Check if tag exists
-    const existingTag = await db.get(sql`
-      SELECT id, name, usage_count FROM tags WHERE id = ${id}
-    `)
+    const existingTag = await db.select({
+        id: tags.id,
+        name: tags.name,
+        usageCount: tags.usageCount
+      })
+      .from(tags)
+      .where(eq(tags.id, Number(id)))
+      .get()
 
     if (!existingTag) {
       throw createError({
@@ -44,25 +50,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const tag = existingTag as any
+    const tag = existingTag
 
     // Check if tag is in use
-    if (tag.usage_count > 0 && !force) {
+    if (tag.usageCount > 0 && !force) {
       throw createError({
         statusCode: 409,
-        statusMessage: `Tag "${tag.name}" is used by ${tag.usage_count} image(s). Use force=true to delete anyway.`
+        statusMessage: `Tag "${tag.name}" is used by ${tag.usageCount} image(s). Use force=true to delete anyway.`
       })
     }
 
     // Delete tag relationships first (CASCADE should handle this, but being explicit)
-    await db.run(sql`
-      DELETE FROM image_tags WHERE tag_id = ${id}
-    `)
+    await db.delete(imageTags)
+      .where(eq(imageTags.tagId, Number(id)))
 
     // Delete the tag
-    await db.run(sql`
-      DELETE FROM tags WHERE id = ${id}
-    `)
+    await db.delete(tags)
+      .where(eq(tags.id, Number(id)))
 
     return {
       success: true,

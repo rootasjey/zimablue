@@ -40,12 +40,12 @@ export default eventHandler(async (event) => {
           created_at
         FROM collections
         ORDER BY ${orderByColumn} DESC
-        LIMIT ?
-      `), [limit])
+        LIMIT ${limit}
+      `))
 
     return {
       success: true,
-      data: collections.rows || []
+      data: collections || []
     }
   } catch (error) {
     console.error('Error fetching top collections:', error)

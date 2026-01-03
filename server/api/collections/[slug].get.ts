@@ -1,8 +1,10 @@
 // GET /api/collections/:slug
 
-import { db } from '~/server/utils/database'
-import type { Image } from '~/types/image'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import type { Image } from '~~/shared/types/image'
+import { eq, sql as sqlOp } from 'drizzle-orm'
+import type { DbCollection } from '~~/shared/types/database'
+import { collections, images, collectionImages, users } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -16,12 +18,23 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Fetch the collection
-    const collection = await db.get(sql`
-      SELECT id, name, description, cover_image_id, slug, is_public, stats_views, 
-             stats_likes, stats_downloads, created_at, updated_at, user_id
-      FROM collections
-      WHERE slug = ${slug}
-    `)
+    const collection = await db.select({
+        id: collections.id,
+        name: collections.name,
+        description: collections.description,
+        coverImageId: collections.coverImageId,
+        slug: collections.slug,
+        isPublic: collections.isPublic,
+        statsViews: collections.statsViews,
+        statsLikes: collections.statsLikes,
+        statsDownloads: collections.statsDownloads,
+        createdAt: collections.createdAt,
+        updatedAt: collections.updatedAt,
+        userId: collections.userId
+      })
+      .from(collections)
+      .where(eq(collections.slug, slug))
+      .get() as any | undefined
 
     if (!collection) {
       throw createError({
@@ -32,41 +45,60 @@ export default defineEventHandler(async (event) => {
     const id = collection.id
 
     // Increment the views counter
-    await db.run(sql`
-      UPDATE collections
-      SET stats_views = stats_views + 1
-      WHERE id = ${id}
-    `)
+    await db.update(collections)
+      .set({ statsViews: sqlOp`${collections.statsViews} + 1` })
+      .where(eq(collections.id, id))
 
     // Fetch the associated images with their position in the collection
-    const imagesResult = await db.all(sql`
-      SELECT i.*, ci.position
-      FROM images i
-      JOIN collection_images ci ON i.id = ci.image_id
-      WHERE ci.collection_id = ${id}
-      ORDER BY ci.position ASC
-    `)
+    const imagesResult = await db.select({
+      id: images.id,
+      name: images.name,
+      description: images.description,
+      pathname: images.pathname,
+      slug: images.slug,
+      w: images.w,
+      h: images.h,
+      x: images.x,
+      y: images.y,
+      sum: images.sum,
+      sumAbs: images.sumAbs,
+      statsViews: images.statsViews,
+      statsDownloads: images.statsDownloads,
+      statsLikes: images.statsLikes,
+      variants: images.variants,
+      userId: images.userId,
+      createdAt: images.createdAt,
+      updatedAt: images.updatedAt,
+      position: collectionImages.position
+    })
+      .from(images)
+      .innerJoin(collectionImages, eq(images.id, collectionImages.imageId))
+      .where(eq(collectionImages.collectionId, id))
+      .orderBy(collectionImages.position)
+      .all()
 
-    let images: Array<Image & { position: number }> = imagesResult as unknown as Array<Image & { position: number }>
-    
-    // Parse JSON fields in images
-    images = images.map(image => ({
+    // Parse JSON fields in images and attach position
+    const parsedImages = imagesResult.map((image: any) => ({
       ...image,
+      position: image.position,
       tags: typeof image.tags === 'string' ? JSON.parse(image.tags || '[]') : image.tags,
       variants: typeof image.variants === 'string' ? JSON.parse(image.variants || '[]') : image.variants
     }))
 
     // Get the owner information
-    const ownerResponse = await db.get(sql`
-      SELECT id, name, email
-      FROM users
-      WHERE id = ${collection.user_id}
-    `)
+    const ownerResponse = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email
+      })
+      .from(users)
+      .where(eq(users.id, collection.userId))
+      .get() as { id: number; name: string; email?: string } | undefined
 
-    const owner = ownerResponse || { id: collection.user_id, name: 'Unknown' }
+    const owner: { id: number; name: string; email?: string } = ownerResponse || { id: collection.userId, name: 'Unknown' }
     
     // Remove sensitive information
-    if (owner) {
+    if (owner.email) {
       delete owner.email
     }
 
@@ -74,11 +106,11 @@ export default defineEventHandler(async (event) => {
       success: true,
       collection: {
         ...collection,
-        image_count: images.length,
-        is_public: collection.is_public === 1,
+        image_count: parsedImages.length,
+        is_public: collection.isPublic === true,
         owner,
       },
-      images
+      images: parsedImages
     }
   } catch (error: unknown) {
     console.error(`Error fetching collection ${slug}:`, error)

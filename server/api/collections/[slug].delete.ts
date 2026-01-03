@@ -1,7 +1,10 @@
 // DELETE /api/collections/:slug
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { eq, and } from 'drizzle-orm'
+import type { DbCollectionRow } from '~~/shared/types/database'
+import { collections, collectionImages } from '../../db/schema'
+import { sql as sqlCount } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -25,9 +28,14 @@ export default defineEventHandler(async (event) => {
   
   try {
     // Check if collection exists and belongs to the user
-    const collection = await db.get(sql`
-      SELECT id, user_id, name FROM collections WHERE slug = ${slug}
-    `)
+    const collection = await db.select({
+        id: collections.id,
+        user_id: collections.userId,
+        name: collections.name
+      })
+      .from(collections)
+      .where(eq(collections.slug, slug))
+      .get() as DbCollectionRow | undefined
 
     if (!collection) {
       throw createError({
@@ -46,24 +54,21 @@ export default defineEventHandler(async (event) => {
     }
     
     // Count how many images were in the collection for the response
-    const imageCountResult = await db.get(sql`
-      SELECT COUNT(*) as count FROM collection_images WHERE collection_id = ${id}
-    `)
+    const imageCountResult = await db.select({ count: sqlCount<number>`count(*)` })
+      .from(collectionImages)
+      .where(eq(collectionImages.collectionId, id))
+      .get() as { count: number } | undefined
     
     const imageCount = imageCountResult?.count || 0
     
     // Execute all operations in a batch
     await db.batch([
       // Delete collection_images first
-      db.run(sql`
-        DELETE FROM collection_images
-        WHERE collection_id = ${id}
-      `),
+      db.delete(collectionImages)
+        .where(eq(collectionImages.collectionId, id)),
       // Then delete the collection
-      db.run(sql`
-        DELETE FROM collections
-        WHERE id = ${id}
-      `)
+      db.delete(collections)
+        .where(eq(collections.id, id))
     ])
 
     return {
@@ -71,8 +76,8 @@ export default defineEventHandler(async (event) => {
       message: 'Collection deleted successfully',
       collection: {
         id: Number(id),
-        imagesRemoved: imageCount as number,
-        name: collection.name as string, 
+        imagesRemoved: imageCount,
+        name: collection.name,
       }
     }
   } catch (error: any) {

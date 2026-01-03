@@ -1,5 +1,5 @@
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { tags, images, collections, imageTags, collectionImages } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -21,10 +21,28 @@ export default eventHandler(async (event) => {
   // Import tags
   if (Array.isArray(payload.tags)) {
     for (const t of payload.tags) {
-      await db.run(sql`
-        INSERT OR REPLACE INTO tags (id, name, slug, description, color, usage_count, created_at, updated_at)
-        VALUES (${t.id}, ${t.name}, ${t.slug}, ${t.description ?? ''}, ${t.color ?? '#3B82F6'}, ${t.usage_count ?? 0}, COALESCE(${t.created_at}, CURRENT_TIMESTAMP), COALESCE(${t.updated_at}, CURRENT_TIMESTAMP))
-      `)
+      await db.insert(tags)
+        .values({
+          id: t.id,
+          name: t.name,
+          slug: t.slug,
+          description: t.description ?? '',
+          color: t.color ?? '#3B82F6',
+          usageCount: t.usage_count ?? 0,
+          createdAt: t.created_at ? new Date(t.created_at) : new Date(),
+          updatedAt: t.updated_at ? new Date(t.updated_at) : new Date()
+        })
+        .onConflictDoUpdate({
+          target: tags.id,
+          set: {
+            name: t.name,
+            slug: t.slug,
+            description: t.description ?? '',
+            color: t.color ?? '#3B82F6',
+            usageCount: t.usage_count ?? 0,
+            updatedAt: t.updated_at ? new Date(t.updated_at) : new Date()
+          }
+        })
       counts.tags++
     }
   }
@@ -32,10 +50,35 @@ export default eventHandler(async (event) => {
   // Import images (metadata only)
   if (Array.isArray(payload.images)) {
     for (const i of payload.images) {
-      await db.run(sql`
-        INSERT OR REPLACE INTO images (id, name, description, pathname, slug, w, h, x, y, stats_views, stats_downloads, stats_likes, created_at, updated_at, user_id, variants)
-        VALUES (${i.id}, ${i.name}, ${i.description ?? ''}, ${i.pathname}, ${i.slug}, ${i.w ?? 6}, ${i.h ?? 6}, ${i.x ?? 0}, ${i.y ?? 0}, ${i.stats_views ?? 0}, ${i.stats_downloads ?? 0}, ${i.stats_likes ?? 0}, COALESCE(${i.created_at}, CURRENT_TIMESTAMP), COALESCE(${i.updated_at}, CURRENT_TIMESTAMP), COALESCE(${i.user_id}, 1), COALESCE(${typeof i.variants === 'string' ? i.variants : JSON.stringify(i.variants ?? [])}, '[]'))
-      `)
+      await db.insert(images)
+        .values({
+          id: i.id,
+          name: i.name,
+          description: i.description ?? '',
+          pathname: i.pathname,
+          slug: i.slug,
+          w: i.w ?? 6,
+          h: i.h ?? 6,
+          x: i.x ?? 0,
+          y: i.y ?? 0,
+          statsViews: i.stats_views ?? 0,
+          statsDownloads: i.stats_downloads ?? 0,
+          statsLikes: i.stats_likes ?? 0,
+          createdAt: i.created_at ? new Date(i.created_at) : new Date(),
+          updatedAt: i.updated_at ? new Date(i.updated_at) : new Date(),
+          userId: i.user_id ?? 1,
+          variants: typeof i.variants === 'string' ? i.variants : JSON.stringify(i.variants ?? [])
+        })
+        .onConflictDoUpdate({
+          target: images.id,
+          set: {
+            name: i.name,
+            description: i.description ?? '',
+            pathname: i.pathname,
+            slug: i.slug,
+            updatedAt: i.updated_at ? new Date(i.updated_at) : new Date()
+          }
+        })
       counts.images++
     }
   }
@@ -43,10 +86,31 @@ export default eventHandler(async (event) => {
   // Import collections
   if (Array.isArray(payload.collections)) {
     for (const c of payload.collections) {
-      await db.run(sql`
-        INSERT OR REPLACE INTO collections (id, name, description, slug, is_public, stats_likes, stats_views, stats_downloads, user_id, cover_image_id, created_at, updated_at)
-        VALUES (${c.id}, ${c.name}, ${c.description ?? ''}, ${c.slug}, COALESCE(${c.is_public ?? 1}, 1), COALESCE(${c.stats_likes ?? 0}, 0), COALESCE(${c.stats_views ?? 0}, 0), COALESCE(${c.stats_downloads ?? 0}, 0), COALESCE(${c.user_id}, 1), ${c.cover_image_id ?? null}, COALESCE(${c.created_at}, CURRENT_TIMESTAMP), COALESCE(${c.updated_at}, CURRENT_TIMESTAMP))
-      `)
+      await db.insert(collections)
+        .values({
+          id: c.id,
+          name: c.name,
+          description: c.description ?? '',
+          slug: c.slug,
+          isPublic: c.is_public ?? true,
+          statsLikes: c.stats_likes ?? 0,
+          statsViews: c.stats_views ?? 0,
+          statsDownloads: c.stats_downloads ?? 0,
+          userId: c.user_id ?? 1,
+          coverImageId: c.cover_image_id ?? null,
+          createdAt: c.created_at ? new Date(c.created_at) : new Date(),
+          updatedAt: c.updated_at ? new Date(c.updated_at) : new Date()
+        })
+        .onConflictDoUpdate({
+          target: collections.id,
+          set: {
+            name: c.name,
+            description: c.description ?? '',
+            slug: c.slug,
+            isPublic: c.is_public ?? true,
+            updatedAt: c.updated_at ? new Date(c.updated_at) : new Date()
+          }
+        })
       counts.collections++
     }
   }
@@ -54,13 +118,26 @@ export default eventHandler(async (event) => {
   // Relations
   if (Array.isArray(payload.image_tags)) {
     for (const it of payload.image_tags) {
-      await db.run(sql`INSERT OR IGNORE INTO image_tags (image_id, tag_id, created_at) VALUES (${it.image_id}, ${it.tag_id}, COALESCE(${it.created_at}, CURRENT_TIMESTAMP))`)
+      await db.insert(imageTags)
+        .values({
+          imageId: it.image_id,
+          tagId: it.tag_id,
+          createdAt: it.created_at ? new Date(it.created_at) : new Date()
+        })
+        .onConflictDoNothing()
     }
   }
 
   if (Array.isArray(payload.collection_images)) {
     for (const ci of payload.collection_images) {
-      await db.run(sql`INSERT OR IGNORE INTO collection_images (collection_id, image_id, position, added_at) VALUES (${ci.collection_id}, ${ci.image_id}, COALESCE(${ci.position}, 0), COALESCE(${ci.added_at}, CURRENT_TIMESTAMP))`)
+      await db.insert(collectionImages)
+        .values({
+          collectionId: ci.collection_id,
+          imageId: ci.image_id,
+          position: ci.position ?? 0,
+          addedAt: ci.added_at ? new Date(ci.added_at) : new Date()
+        })
+        .onConflictDoNothing()
     }
   }
 

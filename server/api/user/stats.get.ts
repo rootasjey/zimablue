@@ -1,7 +1,8 @@
 // GET /api/user/stats
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { eq, sql, and, gte } from 'drizzle-orm'
+import { images, collections } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   // Get user session (you'll need to implement this based on your auth system)
@@ -16,19 +17,28 @@ export default eventHandler(async (event) => {
 
   try {
     // Get total images count
-    const totalImagesResult: { count: number } | null = await db.get(sql`
-      SELECT COUNT(*) as count FROM images WHERE user_id = ${session.user.id}
-    `)
+    const totalImagesResult = await db.select({ count: sql<number>`count(*)` })
+      .from(images)
+      .where(eq(images.userId, session.user.id))
+      .get()
     
     // Get total collections count (if you have collections)
-    const totalCollectionsResult: { count: number } | null = await db.get(sql`
-      SELECT COUNT(*) as count FROM collections WHERE user_id = ${session.user.id}
-    `)
+    const totalCollectionsResult = await db.select({ count: sql<number>`count(*)` })
+      .from(collections)
+      .where(eq(collections.userId, session.user.id))
+      .get()
     
     // Get recent uploads (last 7 days)
-    const recentUploadsResult: { count: number } | null = await db.get(sql`
-      SELECT COUNT(*) as count FROM images WHERE user_id = ${session.user.id} AND created_at >= datetime("now", "-7 days")
-    `)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    
+    const recentUploadsResult = await db.select({ count: sql<number>`count(*)` })
+      .from(images)
+      .where(and(
+        eq(images.userId, session.user.id),
+        gte(images.createdAt, sevenDaysAgo)
+      ))
+      .get()
 
     return {
       data: {

@@ -2,7 +2,6 @@
 // Returns content creation activity (images uploaded in last 7/30 days)
 
 import { sql } from 'drizzle-orm'
-import { isAdminSession } from '~/server/utils/auth'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -13,7 +12,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (!isAdminSession(session)) {
+  if (session.user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'

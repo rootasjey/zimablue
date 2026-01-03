@@ -52,14 +52,14 @@ Edge image gallery application built with Nuxt.js on NuxtHub (Cloudflare Workers
 ## Architecture
 
 ### Frontend Stack
-- **[Nuxt.js 3](https://nuxt.com/)** - Vue.js framework with SSR/SSG capabilities
+- **[Nuxt.js 4](https://nuxt.com/)** - Vue.js framework with SSR/SSG capabilities
 - **[UnaUI](https://unaui.com/)** - Modern, accessible component library
 - **[UnoCSS](https://unocss.dev/)** - Atomic CSS framework for rapid styling
 - **[Pinia](https://pinia.vuejs.org/)** - Intuitive state management
 - **TypeScript** - Full type safety and enhanced developer experience
 
 ### Backend & Infrastructure
-- **[NuxtHub](https://hub.nuxt.com/)** - Cloudflare Workers edge platform
+- [**Cloudflare Workers edge platform**](https://workers.cloudflare.com/) - Application platform at the edge
 - **Cloudflare D1** - Distributed SQLite database at the edge
 - **Cloudflare R2** - Object storage for image assets
 - **Cloudflare KV** - Key-value storage for caching and sessions
@@ -70,6 +70,9 @@ Edge image gallery application built with Nuxt.js on NuxtHub (Cloudflare Workers
 - **Automatic variant generation** in multiple optimized sizes
 - **Custom image provider** for intelligent delivery
 - **Grid layout positioning** system with persistence
+
+### Development Tools
+- **[Wrangler](https://developers.cloudflare.com/workers/wrangler/)** - CLI for Cloudflare Workers development
 
 ## Database Schema
 
@@ -97,38 +100,6 @@ The application uses a well-structured SQLite database with the following key ta
 ### Junction Tables
 - **Collection-Image relationships**: many-to-many associations
 - **Positioning**: custom ordering within collections
-
-## Tech Stack
-
-### Core Technologies
-- **[Nuxt.js 3](https://nuxt.com/)** - The Vue.js framework for production-ready applications
-- **[Vue.js 3](https://vuejs.org/)** - Progressive JavaScript framework with Composition API
-- **[TypeScript](https://www.typescriptlang.org/)** - Typed JavaScript for enhanced development experience
-
-### UI & Styling
-- **[UnaUI](https://unaui.com/)** - Modern, accessible component library
-- **[UnoCSS](https://unocss.dev/)** - Instant on-demand atomic CSS engine
-- **[Iconify](https://iconify.design/)** - Unified icon framework with extensive icon sets
-
-### State Management & Data
-- **[Pinia](https://pinia.vuejs.org/)** - Intuitive, type-safe state management
-- **[Nuxt Auth Utils](https://github.com/Atinux/nuxt-auth-utils)** - Authentication utilities for Nuxt
-
-### Infrastructure & Deployment
-- **[NuxtHub](https://hub.nuxt.com/)** - Full-stack platform on Cloudflare
-- **[Cloudflare Workers](https://workers.cloudflare.com/)** - Serverless execution environment
-- **[Cloudflare D1](https://developers.cloudflare.com/d1/)** - Serverless SQL database
-- **[Cloudflare R2](https://developers.cloudflare.com/r2/)** - Object storage compatible with S3
-- **[Cloudflare KV](https://developers.cloudflare.com/kv/)** - Global key-value data store
-
-### Image Processing & Optimization
-- **[Jimp](https://github.com/jimp-dev/jimp)** - JavaScript image processing library
-- **[Nuxt Image](https://image.nuxt.com/)** - Optimized image component with lazy loading
-- **Custom image provider** - Tailored for Cloudflare R2 integration
-
-### Development Tools
-- **[Wrangler](https://developers.cloudflare.com/workers/wrangler/)** - CLI for Cloudflare Workers development
-- **[Grid Layout Plus](https://www.npmjs.com/package/grid-layout-plus)** - Advanced grid layout system
 
 ## Getting Started
 

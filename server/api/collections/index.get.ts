@@ -1,7 +1,9 @@
 // GET /api/collections
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { sql, eq, or, count } from 'drizzle-orm'
+import type { DbCountResult, DbCollectionWithExtras, DbImageSimple } from '#shared/types/database'
+import { collections, users, images, collectionImages } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -13,99 +15,108 @@ export default defineEventHandler(async (event) => {
   const includePrivate = Boolean(query.includePrivate) && userId
   
   try {
-    // Build the query based on user authentication
-    let whereClause = 'WHERE is_public = 1'
-    
-    // If user is logged in and includePrivate is true, include their private collections
+    // Build where condition based on user authentication
+    let whereCondition
     if (userId && includePrivate) {
-      whereClause = `WHERE (is_public = 1 OR user_id = ${userId})`
+      whereCondition = or(
+        eq(collections.isPublic, true),
+        eq(collections.userId, userId)
+      )
+    } else {
+      whereCondition = eq(collections.isPublic, true)
     }
     
     // Get total count for pagination
-    const countResult = await db.get(sql.raw(`
-      SELECT COUNT(*) as total
-      FROM collections
-      ${whereClause}
-    `))
+    const countResult = await db.select({ total: count() })
+      .from(collections)
+      .where(whereCondition)
+      .get() as { total: number } | undefined
     
-    const total = countResult?.total as number || 0
+    const total = countResult?.total || 0
     
-    // Fetch collections with image count and owner info
-    const collectionsQuery = `
-      SELECT 
-        c.id, 
-        c.name, 
-        c.description, 
-        c.slug, 
-        c.is_public, 
-        c.cover_image_id,
-        c.stats_views,
-        c.stats_likes,
-        c.created_at,
-        c.updated_at,
-        u.id as owner_id,
-        u.name as owner_name,
-        (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count
-      FROM collections c
-      LEFT JOIN users u ON c.user_id = u.id
-      ${whereClause}
-      ORDER BY c.created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `
-    
-    const collectionsResult = await db.all(sql.raw(collectionsQuery))
+    // Fetch collections with owner info
+    const collectionsResult = await db.select({
+      id: collections.id,
+      name: collections.name,
+      description: collections.description,
+      slug: collections.slug,
+      isPublic: collections.isPublic,
+      coverImageId: collections.coverImageId,
+      statsViews: collections.statsViews,
+      statsLikes: collections.statsLikes,
+      createdAt: collections.createdAt,
+      updatedAt: collections.updatedAt,
+      ownerId: users.id,
+      ownerName: users.name,
+      imageCount: sql<number>`(SELECT COUNT(*) FROM collection_images WHERE collection_id = ${collections.id})`
+    })
+      .from(collections)
+      .leftJoin(users, eq(collections.userId, users.id))
+      .where(whereCondition)
+      .orderBy(sql`${collections.createdAt} DESC`)
+      .limit(limit)
+      .offset(offset)
+      .all()
     
     // For each collection, fetch the cover image if it exists
-    const collections = await Promise.all(collectionsResult.map(async (collection: any) => {
+    const collectionsData = await Promise.all(collectionsResult.map(async (collection) => {
       let coverImage = null
       
-      if (collection.cover_image_id) {
-        const coverImageResult = await db.get(sql`
-          SELECT id, name, pathname, w, h
-          FROM images
-          WHERE id = ${collection.cover_image_id}
-        `)
+      if (collection.coverImageId) {
+        const coverImageResult = await db.select({
+          id: images.id,
+          name: images.name,
+          pathname: images.pathname,
+          w: images.w,
+          h: images.h
+        })
+          .from(images)
+          .where(eq(images.id, collection.coverImageId))
+          .get()
         
         if (coverImageResult) {
           coverImage = coverImageResult
         }
       }
       
-      const imageCount = collection.image_count as number
+      const imageCount = collection.imageCount
       // If no cover image is set but collection has images, try to get the first image
       if (!coverImage && imageCount > 0) {
-        const firstImageResult = await db.get(sql`
-          SELECT i.id, i.name, i.pathname, i.w, i.h
-          FROM images i
-          JOIN collection_images ci ON i.id = ci.image_id
-          WHERE ci.collection_id = ${collection.id}
-          ORDER BY ci.position ASC
-          LIMIT 1
-        `)
+        const firstImageResult = await db.select({
+          id: images.id,
+          name: images.name,
+          pathname: images.pathname,
+          w: images.w,
+          h: images.h
+        })
+          .from(images)
+          .innerJoin(collectionImages, eq(images.id, collectionImages.imageId))
+          .where(eq(collectionImages.collectionId, collection.id))
+          .orderBy(collectionImages.position)
+          .limit(1)
+          .get()
         
         if (firstImageResult) {
           coverImage = firstImageResult
           
           // Update the collection's cover_image_id if we found an image
-          await db.run(sql`
-            UPDATE collections
-            SET cover_image_id = ${firstImageResult.id}
-            WHERE id = ${collection.id}
-          `)
+          await db.update(collections)
+            .set({ coverImageId: firstImageResult.id })
+            .where(eq(collections.id, collection.id))
         }
       }
       
       return {
         ...collection,
         cover_image: coverImage,
-        is_owner: userId === collection.owner_id,
-        is_public: collection.is_public === 1,
+        is_owner: userId === collection.ownerId,
+        is_public: collection.isPublic === true,
       }
     }))
     
     return {
       success: true,
-      collections,
+      collections: collectionsData,
       pagination: {
         total,
         limit,

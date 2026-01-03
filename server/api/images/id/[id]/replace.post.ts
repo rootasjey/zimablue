@@ -1,14 +1,23 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
-import type { Image, VariantType } from '~/types/image'
+import { eq } from 'drizzle-orm'
+import type { Image, VariantType } from '~~/shared/types/image'
 import { Jimp } from 'jimp'
-import { generateUniquePathname } from '~/server/api/images/utils/generateUniquePathname'
+import { generateUniquePathname } from '../../utils/generateUniquePathname'
 import { blob } from 'hub:blob'
 import { kv } from 'hub:kv'
+import { images } from '../../../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
+  
+  if (session.user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Admin access required'
+    })
+  }
+  
   const userId = session.user.id
 
   const { id } = await getValidatedRouterParams(event, z.object({
@@ -16,10 +25,10 @@ export default eventHandler(async (event) => {
   }).parse)
 
   // Get existing image entry
-  const existingImage: Image | null = await db.get(sql`
-    SELECT * FROM images
-    WHERE id = ${id}
-  `)
+  const existingImage = await db.select()
+    .from(images)
+    .where(eq(images.id, Number(id)))
+    .get() as unknown as Image | null
 
   if (!existingImage) {
     throw createError({
@@ -117,14 +126,15 @@ export default eventHandler(async (event) => {
   }
 
   // Update database entry with new variants
-  const updateResponse = await db.get(sql`
-    UPDATE images 
-    SET pathname = ${imagePrefix},
-        variants = ${JSON.stringify(generatedVariants)},
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = ${id}
-    RETURNING *
-  `)
+  const updateResponse = await db.update(images)
+    .set({
+      pathname: imagePrefix,
+      variants: JSON.stringify(generatedVariants),
+      updatedAt: new Date()
+    })
+    .where(eq(images.id, Number(id)))
+    .returning()
+    .get()
 
   // Update grid layout
   const layout = (await kv.get('grid:main') ?? []) as Image[]

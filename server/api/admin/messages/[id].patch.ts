@@ -1,7 +1,7 @@
 // PATCH /api/admin/messages/[id]
 
 import { sql } from 'drizzle-orm'
-import type { Message } from "~/types/message"
+import type { Message } from "~~/shared/types/message"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)

@@ -1,6 +1,6 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
+import { messages } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -16,11 +16,14 @@ export default defineEventHandler(async (event) => {
     const validatedData = messageSchema.parse(body)
 
     // Insert message into database using Drizzle
-    const result = await db.get(sql`
-      INSERT INTO messages (sender_email, subject, message)
-      VALUES (${validatedData.email}, ${validatedData.subject}, ${validatedData.message})
-      RETURNING *
-    `)
+    const result = await db.insert(messages)
+      .values({
+        senderEmail: validatedData.email,
+        subject: validatedData.subject,
+        message: validatedData.message
+      })
+      .returning()
+      .get()
 
     if (!result) {
       throw createError({

@@ -1,8 +1,9 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
-import type { VariantType } from '~/types/image'
+import { eq } from 'drizzle-orm'
+import type { VariantType } from '~~/shared/types/image'
 import { blob } from 'hub:blob'
+import { images } from '../../db/schema'
 
 /**
  * Handles the GET request for the `/images/{pathname}` route. 
@@ -39,9 +40,11 @@ export default eventHandler(async (event) => {
   }
   
   // Check if we have pre-generated variants for this image
-  const imageData = await db.get(sql`
-    SELECT * FROM images WHERE pathname = ${'images/' + pathname} LIMIT 1
-  `)
+  const imageData = await db.select({ variants: images.variants })
+    .from(images)
+    .where(eq(images.pathname, `images/${pathname}`))
+    .limit(1)
+    .get() as { variants?: string } | undefined
 
   if (!imageData || typeof imageData.variants !== 'string') {
     throw createError({

@@ -23,6 +23,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-12-31",
   devtools: { enabled: true },
 
+  css: [
+    './styles/main.css',
+    './styles/arrow-link.css',
+  ],
+
   app: {
     head: {
       htmlAttrs: {
@@ -50,7 +55,7 @@ export default defineNuxtConfig({
     providers: {
       hubblob: {
         name: 'hubblob',
-        provider: '~/providers/hubblob.ts',
+        provider: './providers/hubblob.ts',
       },
     },
   },

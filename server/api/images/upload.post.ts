@@ -1,12 +1,21 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { Jimp } from 'jimp'
-import { generateUniquePathname } from '~/server/api/images/utils/generateUniquePathname'
+import { generateUniquePathname } from './utils/generateUniquePathname'
 import { generateUniqueSlug } from './utils/generateUniqueSlug'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
+import { images } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
+  
+  if (session.user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Admin access required'
+    })
+  }
+  
   const userId = (session.user as any).id as number
 
   const formData = await readMultipartFormData(event)
@@ -91,17 +100,26 @@ export default eventHandler(async (event) => {
   const slug = await generateUniqueSlug(fileName)
 
   // Store the image metadata in the database
-  const insertResponse = await db.run(sql`
-    INSERT INTO images (name, pathname, x, y, w, h, slug, user_id, variants)
-    VALUES (${fileName}, ${imagePrefix}, ${x}, ${y}, ${w}, ${h}, ${slug}, ${userId}, ${JSON.stringify(generatedVariants)})
-  `)
+  const insertResponse = await db.insert(images).values({
+    name: fileName,
+    pathname: imagePrefix,
+    x: Number(x),
+    y: Number(y),
+    w: Number(w),
+    h: Number(h),
+    slug: slug,
+    userId: userId,
+    variants: JSON.stringify(generatedVariants)
+  }).returning({ id: images.id })
 
-  const newImageId = Number(insertResponse.lastInsertRowid)
+  const newImageId = insertResponse[0].id
 
-  const selectResponse = await db.get(sql`
-    SELECT * FROM images
-    WHERE id = ${newImageId}
-  `)
+  const selectResponse = await db.select()
+    .from(images)
+    .where(eq(images.id, newImageId))
+    .get()
+
+  console.log('Upload complete for image ID:', newImageId)
 
   return {
     ...(selectResponse as any),

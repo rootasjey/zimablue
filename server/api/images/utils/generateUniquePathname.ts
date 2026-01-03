@@ -1,6 +1,7 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import slugify from 'slugify'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
+import { images } from '../../../db/schema'
 
 /**
  * Generates a unique pathname for an uploaded image
@@ -16,7 +17,10 @@ export const generateUniquePathname = async (baseName: string, extension: string
   const proposedPathname = `images/${baseSlug}-${uniqueId}.${extension}`
   
   // Check if pathname already exists in database
-  const existingPathname = await db.get(sql`SELECT pathname FROM images WHERE pathname = ${proposedPathname}`)
+  const existingPathname = await db.select({ pathname: images.pathname })
+    .from(images)
+    .where(eq(images.pathname, proposedPathname))
+    .get()
   
   // If pathname exists, recursively try again
   if (existingPathname) {

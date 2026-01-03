@@ -1,11 +1,20 @@
-import { db } from '~/server/utils/database'
-import type { ImageWithTags } from "~/types/image"
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import type { ImageWithTags } from "~~/shared/types/image"
+import { eq, and } from 'drizzle-orm'
 import { kv } from 'hub:kv'
+import { images, tags, imageTags } from '../../db/schema'
 
 // /api/images/[id].patch.ts
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  const session = await requireUserSession(event)
+  
+  if (session.user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Admin access required'
+    })
+  }
+  
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
 
@@ -21,12 +30,13 @@ export default defineEventHandler(async (event) => {
   // Helper function to ensure tag exists and return its ID
   async function ensureTag(tagName: string): Promise<number> {
     // Check if tag exists
-    const existingTag = await db.get(sql`
-      SELECT id FROM tags WHERE name = ${tagName}
-    `)
+    const existingTag = await db.select({ id: tags.id })
+      .from(tags)
+      .where(eq(tags.name, tagName))
+      .get()
 
     if (existingTag) {
-      return existingTag.id as number
+      return existingTag.id
     }
 
     // Create new tag
@@ -43,30 +53,31 @@ export default defineEventHandler(async (event) => {
 
     // Ensure slug uniqueness
     while (true) {
-      const existingSlug = await db.get(sql`
-        SELECT id FROM tags WHERE slug = ${finalSlug}
-      `)
+      const existingSlug = await db.select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, finalSlug))
+        .get()
 
       if (!existingSlug) break
       finalSlug = `${slug}-${counter}`
       counter++
     }
 
-    const insertResult = await db.run(sql`
-      INSERT INTO tags (name, slug, created_at, updated_at)
-      VALUES (${tagName}, ${finalSlug}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `)
+    const insertResult = await db.insert(tags).values({
+      name: tagName,
+      slug: finalSlug
+    }).returning({ id: tags.id })
 
-    return Number(insertResult.lastInsertRowid)
+    return insertResult[0].id
   }
   
   try {
     // Validate slug uniqueness if provided
     if (slug) {
-      const existingImage = await db.get(sql`
-        SELECT id FROM images
-        WHERE slug = ${slug} AND id != ${id}
-      `)
+      const existingImage = await db.select({ id: images.id })
+        .from(images)
+        .where(and(eq(images.slug, slug), eq(images.id, Number(id))))
+        .get()
 
       if (existingImage) {
         throw createError({
@@ -77,28 +88,32 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update basic image fields
-    await db.run(sql`
-      UPDATE images
-      SET name = ${name}, description = ${description}, slug = ${slug}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${id}
-    `)
+    await db.update(images)
+      .set({
+        name: name,
+        description: description,
+        slug: slug,
+        updatedAt: new Date()
+      })
+      .where(eq(images.id, Number(id)))
 
     // Handle tags update if provided
     if (tags && Array.isArray(tags)) {
       // Remove existing tag relationships
-      await db.run(sql`
-        DELETE FROM image_tags WHERE image_id = ${id}
-      `)
+      await db.delete(imageTags)
+        .where(eq(imageTags.imageId, Number(id)))
 
       // Add new tag relationships
       for (const tagName of tags) {
         if (tagName && typeof tagName === 'string' && tagName.trim()) {
           try {
             const tagId = await ensureTag(tagName.trim())
-            await db.run(sql`
-              INSERT OR IGNORE INTO image_tags (image_id, tag_id, created_at)
-              VALUES (${id}, ${tagId}, CURRENT_TIMESTAMP)
-            `)
+            await db.insert(imageTags)
+              .values({
+                imageId: Number(id),
+                tagId: tagId
+              })
+              .onConflictDoNothing()
           } catch (error) {
             console.error(`Failed to process tag "${tagName}":`, error)
           }
@@ -107,14 +122,10 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get updated image with tags for grid layout
-    const imageResult = await db.get(sql`
-      SELECT
-        i.id, i.name, i.description, i.pathname, i.slug, i.variants,
-        i.w, i.h, i.x, i.y, i.stats_views, i.stats_downloads, i.stats_likes,
-        i.created_at, i.updated_at, i.user_id
-      FROM images i
-      WHERE i.id = ${id}
-    `)
+    const imageResult = await db.select()
+      .from(images)
+      .where(eq(images.id, Number(id)))
+      .get()
 
     if (!imageResult) {
       throw createError({
@@ -124,15 +135,21 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get tags for the image
-    const tagsArray = await db.all(sql`
-      SELECT
-        t.id, t.name, t.slug, t.description, t.color, t.usage_count,
-        t.created_at, t.updated_at
-      FROM image_tags it
-      JOIN tags t ON it.tag_id = t.id
-      WHERE it.image_id = ${id}
-      ORDER BY t.name
-    `)
+    const tagsArray = await db.select({
+        id: tags.id,
+        name: tags.name,
+        slug: tags.slug,
+        description: tags.description,
+        color: tags.color,
+        usageCount: tags.usageCount,
+        createdAt: tags.createdAt,
+        updatedAt: tags.updatedAt
+      })
+      .from(imageTags)
+      .innerJoin(tags, eq(imageTags.tagId, tags.id))
+      .where(eq(imageTags.imageId, Number(id)))
+      .orderBy(tags.name)
+      .all()
 
     const imageWithTags = {
       ...imageResult,

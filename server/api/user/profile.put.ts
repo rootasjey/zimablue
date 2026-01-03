@@ -1,7 +1,8 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import type { User } from '#auth-utils'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
+import { users } from '../../db/schema'
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long').optional(),
@@ -51,38 +52,46 @@ export default eventHandler(async (event) => {
       }
     }
 
-    // Build dynamic update query
-    const updateFields: string[] = []
-    const updateValues: any[] = []
+    // Build dynamic update object
+    const updateValues: Partial<typeof users.$inferInsert> = {}
     
-    Object.entries(updateData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        updateFields.push(`${key} = ?`)
-        updateValues.push(value)
-      }
-    })
+    if (updateData.name !== undefined) {
+      updateValues.name = updateData.name
+    }
+    if (updateData.email !== undefined) {
+      updateValues.email = updateData.email
+    }
+    if (updateData.biography !== undefined) {
+      updateValues.biography = updateData.biography
+    }
+    if (updateData.job !== undefined) {
+      updateValues.job = updateData.job
+    }
+    if (updateData.location !== undefined) {
+      updateValues.location = updateData.location
+    }
+    if (updateData.language !== undefined) {
+      updateValues.language = updateData.language
+    }
+    if (updateData.socials !== undefined) {
+      updateValues.socials = updateData.socials
+    }
 
-    if (updateFields.length === 0) {
+    if (Object.keys(updateValues).length === 0) {
       throw createError({
         statusCode: 400,
         statusMessage: 'No fields to update'
       })
     }
 
-    // Add userId and updated_at to the query
-    updateValues.push(new Date().toISOString(), userId)
-
-    const updateQueryString = `
-      UPDATE users 
-      SET ${updateFields.join(', ')}, updated_at = ?
-      WHERE id = ?
-    `
-
-    const updateQuery = sql.raw(updateQueryString)
-
     // Execute update
     try {
-      await (db as any).run(updateQuery, updateValues)
+      await db.update(users)
+        .set({
+          ...updateValues,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
     } catch (error: any) {
       // Handle unique constraint violations
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -108,11 +117,21 @@ export default eventHandler(async (event) => {
     }
 
     // Fetch updated user data
-    const updatedUser = await db.get(sql`
-      SELECT id, name, email, biography, job, location, language, socials, created_at, updated_at
-      FROM users 
-      WHERE id = ${userId}
-    `)
+    const updatedUser = await db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      biography: users.biography,
+      job: users.job,
+      location: users.location,
+      language: users.language,
+      socials: users.socials,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    })
+      .from(users)
+      .where(eq(users.id, userId))
+      .get()
 
     if (!updatedUser) {
       throw createError({

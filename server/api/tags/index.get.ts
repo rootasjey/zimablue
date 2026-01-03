@@ -1,9 +1,9 @@
 // GET /api/tags
 // Get all tags with optional search and pagination
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { TagSearchResponse, TagSearchParams } from "~/types/tag"
+import type { TagSearchResponse, TagSearchParams } from "~~/shared/types/tag"
 
 export default defineEventHandler(async (event): Promise<TagSearchResponse> => {
   const query = getQuery(event) as TagSearchParams
@@ -31,9 +31,9 @@ export default defineEventHandler(async (event): Promise<TagSearchResponse> => {
     // Get total count
     const countResult = await db.get(sql.raw(`
       SELECT COUNT(*) as total FROM tags ${whereClause}
-    `))
+    `)) as { total: number } | undefined
     
-    const total = countResult?.total as number || 0
+    const total = countResult?.total || 0
     const totalPages = Math.ceil(total / limit)
 
     // Get tags with pagination

@@ -1,9 +1,11 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import type { VariantType } from '~/types/image'
-import { sql } from 'drizzle-orm'
+import type { VariantType } from '~~/shared/types/image'
+import { eq, and, inArray } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { kv } from 'hub:kv'
+import type { DbImage } from '#shared/types/database'
+import { images } from '../../db/schema'
 
 const bulkDeleteSchema = z.object({
   imageIds: z.array(z.number()).min(1, 'At least one image ID is required').max(50, 'Cannot delete more than 50 images at once')
@@ -16,6 +18,13 @@ export default eventHandler(async (event) => {
     throw createError({
       statusCode: 401,
       statusMessage: 'Authentication required'
+    })
+  }
+  
+  if (session.user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Admin access required'
     })
   }
 
@@ -36,12 +45,18 @@ export default eventHandler(async (event) => {
 
   try {
     // Get all images that exist and belong to the user
-    const imageIdsStr = imageIds.join(',')
-    const existingImages = await db.all(sql.raw(`
-      SELECT id, pathname, variants, user_id
-      FROM images 
-      WHERE id IN (${imageIdsStr}) AND user_id = ${userId}
-    `))
+    const existingImages = await db.select({
+        id: images.id,
+        pathname: images.pathname,
+        variants: images.variants,
+        user_id: images.userId
+      })
+      .from(images)
+      .where(and(
+        inArray(images.id, imageIds),
+        eq(images.userId, userId)
+      ))
+      .all() as Pick<DbImage, 'id' | 'pathname' | 'variants' | 'user_id'>[]
     
     if (existingImages.length === 0) {
       throw createError({
@@ -62,9 +77,11 @@ export default eventHandler(async (event) => {
         }
 
         // Delete from database first
-        await db.run(sql`
-          DELETE FROM images WHERE id = ${image.id} AND user_id = ${userId}
-        `)
+        await db.delete(images)
+          .where(and(
+            eq(images.id, image.id),
+            eq(images.userId, userId)
+          ))
 
         deletedImages.push({
           id: image.id,

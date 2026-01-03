@@ -40,12 +40,12 @@ export default eventHandler(async (event) => {
           created_at
         FROM images
         ORDER BY ${orderByColumn} DESC
-        LIMIT ?
-      `), [limit])
+        LIMIT ${limit}
+      `))
 
     return {
       success: true,
-      data: images.rows || []
+      data: images || []
     }
   } catch (error) {
     console.error('Error fetching top images:', error)

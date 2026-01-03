@@ -2,8 +2,7 @@
 
 import { z } from 'zod'
 import { sql } from 'drizzle-orm'
-import type { Todo } from '~/types/todo'
-import { isAdminSession } from '~/server/utils/auth'
+import type { Todo } from '~~/shared/types/todo'
 
 const updateTodoSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -22,7 +21,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (!isAdminSession(session)) {
+  if (session.user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -73,47 +72,30 @@ export default eventHandler(async (event) => {
 
     // Build update query dynamically
     const updates: string[] = []
-    const params: any[] = []
 
     if (data.title !== undefined) {
-      updates.push('title = ?')
-      params.push(data.title)
+      updates.push(`title = '${data.title.replace(/'/g, "''")}'`)
     }
     if (data.description !== undefined) {
-      updates.push('description = ?')
-      params.push(data.description)
+      updates.push(`description = '${data.description.replace(/'/g, "''")}'`)
     }
     if (data.due_date !== undefined) {
-      updates.push('due_date = ?')
-      params.push(data.due_date)
+      updates.push(`due_date = '${data.due_date}'`)
     }
     if (data.status !== undefined) {
-      updates.push('status = ?')
-      params.push(data.status)
+      updates.push(`status = '${data.status}'`)
     }
     if (data.priority !== undefined) {
-      updates.push('priority = ?')
-      params.push(data.priority)
+      updates.push(`priority = '${data.priority}'`)
     }
-
-    // Add the ID as the last parameter
-    params.push(id)
 
     const updateQuery = sql.raw(`
       UPDATE todos 
       SET ${updates.join(', ')}
-      WHERE id = ?
+      WHERE id = ${id}
     `)
 
-    const result = await db
-      .run(updateQuery, params)
-
-    if (!result.success) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to update todo'
-      })
-    }
+    await db.run(updateQuery)
 
     // Get the updated todo
     const updatedTodo = await db

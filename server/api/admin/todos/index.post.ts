@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { sql } from 'drizzle-orm'
-import type { Todo } from '~/types/todo'
+import type { Todo } from '~~/shared/types/todo'
 
 const createTodoSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
@@ -44,27 +44,23 @@ export default eventHandler(async (event) => {
 
   try {
     // Insert the todo
-    const result = await db
-      .run(sql`
+    const todo = await db
+      .get(sql`
         INSERT INTO todos (title, description, due_date, status, priority, user_id)
         VALUES (${data.title}, ${data.description}, ${data.due_date}, ${data.status}, ${data.priority}, ${session.user.id})
-      `)
+        RETURNING *
+      `) as unknown as Todo | undefined
 
-    if (!result.success) {
+    if (!todo) {
       throw createError({
         statusCode: 500,
         statusMessage: 'Failed to create todo'
       })
     }
 
-    // Get the created todo
-    const todoId = result.meta.last_row_id
-    const todo = await db
-      .get(sql`SELECT * FROM todos WHERE id = ${todoId}`)
-
     return {
       success: true,
-      data: todo as unknown as Todo
+      data: todo
     }
   } catch (error) {
     console.error('Error creating todo:', error)

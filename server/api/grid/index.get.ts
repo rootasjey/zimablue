@@ -1,4 +1,4 @@
-import type { Image } from "~/types/image"
+import type { Image } from "~~/shared/types/image"
 import { kv } from 'hub:kv'
 
 export default eventHandler(async (event) => {

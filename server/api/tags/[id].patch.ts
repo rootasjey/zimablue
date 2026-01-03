@@ -1,9 +1,10 @@
 // PATCH /api/tags/[id]
 // Update a tag
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
-import type { TagUpdateRequest } from "~/types/tag"
+import { db } from 'hub:db'
+import { eq, and, ne } from 'drizzle-orm'
+import type { TagUpdateRequest } from "~~/shared/types/tag"
+import { tags } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -33,9 +34,14 @@ export default defineEventHandler(async (event) => {
   
   try {
     // Check if tag exists
-    const existingTag = await db.get(sql`
-      SELECT id, name, slug FROM tags WHERE id = ${id}
-    `)
+    const existingTag = await db.select({
+        id: tags.id,
+        name: tags.name,
+        slug: tags.slug
+      })
+      .from(tags)
+      .where(eq(tags.id, Number(id)))
+      .get()
 
     if (!existingTag) {
       throw createError({
@@ -44,16 +50,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const updates: string[] = []
+    const updates: Partial<typeof tags.$inferInsert> = {}
 
     // Build update query dynamically
     if (body.name && body.name.trim()) {
       const newName = body.name.trim()
       
       // Check if new name conflicts with existing tag
-      const nameConflict = await db.get(sql`
-        SELECT id FROM tags WHERE name = ${newName} AND id != ${id}
-      `)
+      const nameConflict = await db.select({ id: tags.id })
+        .from(tags)
+        .where(and(eq(tags.name, newName), ne(tags.id, Number(id))))
+        .get()
 
       if (nameConflict) {
         throw createError({
@@ -62,10 +69,10 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      updates.push(`name = '${newName.replace(/'/g, "''")}'`)
+      updates.name = newName
 
       // Generate new slug if name changed
-      if (newName !== (existingTag as any).name) {
+      if (newName !== existingTag!.name) {
         let newSlug = newName
           .toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
@@ -78,29 +85,29 @@ export default defineEventHandler(async (event) => {
         let counter = 1
         
         while (true) {
-          const slugConflict = await db.get(sql`
-            SELECT id FROM tags WHERE slug = ${finalSlug} AND id != ${id}
-          `)
+          const slugConflict = await db.select({ id: tags.id })
+            .from(tags)
+            .where(and(eq(tags.slug, finalSlug), ne(tags.id, Number(id))))
+            .get()
           
           if (!slugConflict) break
           finalSlug = `${newSlug}-${counter}`
           counter++
         }
 
-        updates.push(`slug = '${finalSlug}'`)
+        updates.slug = finalSlug
       }
     }
 
     if (body.description !== undefined) {
-      const desc = body.description.trim().replace(/'/g, "''")
-      updates.push(`description = '${desc}'`)
+      updates.description = body.description.trim()
     }
 
     if (body.color) {
-      updates.push(`color = '${body.color}'`)
+      updates.color = body.color
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       throw createError({
         statusCode: 400,
         statusMessage: 'No valid fields to update'
@@ -108,18 +115,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Add updated_at
-    updates.push('updated_at = CURRENT_TIMESTAMP')
+    updates.updatedAt = new Date()
 
     // Execute update
-    await db.run(sql.raw(`
-      UPDATE tags SET ${updates.join(', ')} WHERE id = ${id}
-    `))
+    await db.update(tags)
+      .set(updates)
+      .where(eq(tags.id, Number(id)))
 
     // Get updated tag
-    const updatedTag = await db.get(sql`
-      SELECT id, name, slug, description, color, usage_count, created_at, updated_at
-      FROM tags WHERE id = ${id}
-    `)
+    const updatedTag = await db.select()
+      .from(tags)
+      .where(eq(tags.id, Number(id)))
+      .get()
 
     return {
       success: true,

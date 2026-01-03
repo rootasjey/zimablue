@@ -2,7 +2,7 @@
 // Returns the next upcoming todo (earliest due_date, not completed)
 
 import { sql } from 'drizzle-orm'
-import type { Todo } from "~/types/todo"
+import type { Todo } from "~~/shared/types/todo"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)

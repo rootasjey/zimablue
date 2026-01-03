@@ -1,8 +1,8 @@
 // GET /api/admin/todos
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { Todo } from "~/types/todo"
+import type { Todo } from "~~/shared/types/todo"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -30,24 +30,21 @@ export default eventHandler(async (event) => {
 
   try {
     let whereClause = ''
-    const params: any[] = []
 
     // Build WHERE clause for filtering
     const conditions: string[] = []
     
     if (status) {
-      conditions.push('status = ?')
-      params.push(status)
+      conditions.push(`status = '${status}'`)
     }
 
     if (priority) {
-      conditions.push('priority = ?')
-      params.push(priority)
+      conditions.push(`priority = '${priority}'`)
     }
 
     if (search) {
-      conditions.push('(title LIKE ? OR description LIKE ?)')
-      params.push(`%${search}%`, `%${search}%`)
+      const escapedSearch = search.replace(/'/g, "''")
+      conditions.push(`(title LIKE '%${escapedSearch}%' OR description LIKE '%${escapedSearch}%')`)
     }
 
     if (conditions.length > 0) {
@@ -56,8 +53,8 @@ export default eventHandler(async (event) => {
 
     // Get total count for pagination
     const countQuery = sql.raw(`SELECT COUNT(*) as total FROM todos ${whereClause}`)
-    const countResult = await db.get(countQuery, params)
-    const total = countResult?.total as number || 0
+    const countResult = await db.get(countQuery) as { total: number } | undefined
+    const total = countResult?.total || 0
 
     // Get todos with pagination
     const todosQuery = `
@@ -85,16 +82,16 @@ export default eventHandler(async (event) => {
           WHEN 'medium' THEN 2
           WHEN 'low' THEN 3
         END
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
     
     const todos = await db
-      .all(sql.raw(todosQuery), [...params, limit, offset])
+      .all(sql.raw(todosQuery)) as unknown as Todo[]
 
     return {
       success: true,
       data: {
-        todos: todos.rows as unknown as Todo[],
+        todos: todos,
         pagination: {
           page,
           limit,

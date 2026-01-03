@@ -1,8 +1,9 @@
 // PATCH /api/admin/users/[id]
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
-import type { UserFormData } from "~/types/user"
+import { db } from 'hub:db'
+import { eq } from 'drizzle-orm'
+import type { UserFormData } from "~~/shared/types/user"
+import { users } from '../../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -32,7 +33,11 @@ export default eventHandler(async (event) => {
 
   try {
     // Check if user exists
-    const existingUser = await db.get(sql`SELECT id FROM users WHERE id = ${userId}`)
+    const existingUser = await db.select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, Number(userId)))
+      .get()
+      
     if (!existingUser) {
       throw createError({
         statusCode: 404,
@@ -40,69 +45,66 @@ export default eventHandler(async (event) => {
       })
     }
 
-    // Build update query dynamically based on provided fields
-    const updateFields: string[] = []
-    const params: any[] = []
+    // Build update object dynamically based on provided fields
+    const updateData: Partial<typeof users.$inferInsert> = {}
 
     if (body.name !== undefined) {
-      updateFields.push('name = ?')
-      params.push(body.name)
+      updateData.name = body.name
     }
     if (body.email !== undefined) {
-      updateFields.push('email = ?')
-      params.push(body.email)
+      updateData.email = body.email
     }
     if (body.role !== undefined) {
-      updateFields.push('role = ?')
-      params.push(body.role)
+      updateData.role = body.role as 'admin' | 'user'
     }
     if (body.biography !== undefined) {
-      updateFields.push('biography = ?')
-      params.push(body.biography)
+      updateData.biography = body.biography
     }
     if (body.job !== undefined) {
-      updateFields.push('job = ?')
-      params.push(body.job)
+      updateData.job = body.job
     }
     if (body.language !== undefined) {
-      updateFields.push('language = ?')
-      params.push(body.language)
+      updateData.language = body.language
     }
     if (body.location !== undefined) {
-      updateFields.push('location = ?')
-      params.push(body.location)
+      updateData.location = body.location
     }
     if (body.socials !== undefined) {
-      updateFields.push('socials = ?')
-      params.push(body.socials)
+      updateData.socials = body.socials
     }
 
-    if (updateFields.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       throw createError({
         statusCode: 400,
         statusMessage: 'No fields to update'
       })
     }
 
-    // Add updated_at timestamp
-    updateFields.push('updated_at = CURRENT_TIMESTAMP')
-    params.push(userId)
-
-    const updateQuery = sql.raw(`
-      UPDATE users 
-      SET ${updateFields.join(', ')}
-      WHERE id = ?
-    `)
-
-    await db.run(updateQuery, params)
+    // Update user
+    await db.update(users)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, Number(userId)))
 
     // Fetch and return updated user
-    const updatedUser = await db.get(sql`
-      SELECT 
-        id, name, email, role, biography, job, language, location, socials, created_at, updated_at
-      FROM users 
-      WHERE id = ${userId}
-    `)
+    const updatedUser = await db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      biography: users.biography,
+      job: users.job,
+      language: users.language,
+      location: users.location,
+      socials: users.socials,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    })
+      .from(users)
+      .where(eq(users.id, Number(userId)))
+      .get()
 
     return {
       success: true,

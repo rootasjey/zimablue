@@ -1,8 +1,8 @@
 // GET /api/admin/images
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { ImageWithTags } from "~/types/image"
+import type { ImageWithTags } from "~~/shared/types/image"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -29,23 +29,21 @@ export default eventHandler(async (event) => {
 
   try {
     let whereClause = ''
-    const params: any[] = []
 
     // Build WHERE clause for filtering
     const conditions: string[] = []
     
     if (userId) {
-      conditions.push('i.user_id = ?')
-      params.push(userId)
+      conditions.push(`i.user_id = ${userId}`)
     }
 
     if (search) {
-      conditions.push(`(i.name LIKE ? OR i.description LIKE ? OR EXISTS (
+      const escapedSearch = search.replace(/'/g, "''")
+      conditions.push(`(i.name LIKE '%${escapedSearch}%' OR i.description LIKE '%${escapedSearch}%' OR EXISTS (
         SELECT 1 FROM image_tags it
         JOIN tags t ON it.tag_id = t.id
-        WHERE it.image_id = i.id AND t.name LIKE ?
+        WHERE it.image_id = i.id AND t.name LIKE '%${escapedSearch}%'
       ))`)
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`)
     }
 
     if (conditions.length > 0) {
@@ -59,8 +57,8 @@ export default eventHandler(async (event) => {
       LEFT JOIN users u ON i.user_id = u.id
       ${whereClause}
     `)
-    const countResult = await db.get(countQuery, params)
-    const total = countResult?.total as number || 0
+    const countResult = await db.get(countQuery) as { total: number } | undefined
+    const total = countResult?.total || 0
 
     // Get images with pagination and user info
     const imagesQuery = `
@@ -87,13 +85,13 @@ export default eventHandler(async (event) => {
       LEFT JOIN users u ON i.user_id = u.id
       ${whereClause}
       ORDER BY i.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
 
     const imagesResult = await db
-      .all(sql.raw(imagesQuery), [...params, limit, offset])
+      .all(sql.raw(imagesQuery)) as any[]
 
-    const imageRows = imagesResult.rows as any[]
+    const imageRows = imagesResult
     const imageIds = imageRows.map(img => img.id)
 
     // Get tags for all images
@@ -106,12 +104,12 @@ export default eventHandler(async (event) => {
           t.created_at, t.updated_at
         FROM image_tags it
         JOIN tags t ON it.tag_id = t.id
-        WHERE it.image_id IN (${imageIds.map(() => '?').join(',')})
+        WHERE it.image_id IN (${imageIds.join(',')})
         ORDER BY t.name
-      `), imageIds)
+      `)) as any[]
 
       // Group tags by image_id
-      for (const tagRow of (tagsResult.rows as any[])) {
+      for (const tagRow of tagsResult) {
         if (!imageTagsMap.has(tagRow.image_id)) {
           imageTagsMap.set(tagRow.image_id, [])
         }

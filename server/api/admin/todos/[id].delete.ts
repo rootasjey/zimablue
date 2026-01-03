@@ -39,15 +39,8 @@ export default eventHandler(async (event) => {
     }
 
     // Delete the todo
-    const result = await db
+    await db
       .run(sql`DELETE FROM todos WHERE id = ${id}`)
-
-    if (!result.success) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to delete todo'
-      })
-    }
 
     return {
       success: true,

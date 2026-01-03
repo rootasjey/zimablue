@@ -1,7 +1,8 @@
 // DELETE /api/admin/users/[id]
 
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { eq, sql } from 'drizzle-orm'
+import { users } from '../../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -37,7 +38,11 @@ export default eventHandler(async (event) => {
 
   try {
     // Check if user exists
-    const existingUser = await db.get(sql`SELECT id, role FROM users WHERE id = ${userId}`)
+    const existingUser = await db.select({ id: users.id, role: users.role })
+      .from(users)
+      .where(eq(users.id, Number(userId)))
+      .get() as { id: number; role: string } | undefined
+      
     if (!existingUser) {
       throw createError({
         statusCode: 404,
@@ -47,8 +52,12 @@ export default eventHandler(async (event) => {
 
     // Check if this is the last admin user
     if (existingUser.role === 'admin') {
-      const adminCount = await db.get(sql`SELECT COUNT(*) as count FROM users WHERE role = 'admin'`)
-      if ((adminCount?.count as number) <= 1) {
+      const adminCount = await db.select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.role, 'admin'))
+        .get() as { count: number } | undefined
+        
+      if ((adminCount?.count || 0) <= 1) {
         throw createError({
           statusCode: 400,
           statusMessage: 'Cannot delete the last admin user'
@@ -57,7 +66,8 @@ export default eventHandler(async (event) => {
     }
 
     // Delete user (this will cascade to related data due to foreign key constraints)
-    await db.run(sql`DELETE FROM users WHERE id = ${userId}`)
+    await db.delete(users)
+      .where(eq(users.id, Number(userId)))
 
     return {
       success: true,

@@ -1,5 +1,5 @@
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { images, collections, users, tags, imageTags, collectionImages } from '../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -7,23 +7,35 @@ export default eventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
   }
 
-  const [images, collections, users, tags, image_tags, collection_images] = await Promise.all([
-    db.all(sql`SELECT * FROM images`),
-    db.all(sql`SELECT * FROM collections`),
-    db.all(sql`SELECT id, name, email, role, created_at, updated_at, biography, job, language, location, socials FROM users`),
-    db.all(sql`SELECT * FROM tags`),
-    db.all(sql`SELECT * FROM image_tags`),
-    db.all(sql`SELECT * FROM collection_images`),
+  const [imagesData, collectionsData, usersData, tagsData, imageTagsData, collectionImagesData] = await Promise.all([
+    db.select().from(images).all(),
+    db.select().from(collections).all(),
+    db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+      biography: users.biography,
+      job: users.job,
+      language: users.language,
+      location: users.location,
+      socials: users.socials
+    }).from(users).all(),
+    db.select().from(tags).all(),
+    db.select().from(imageTags).all(),
+    db.select().from(collectionImages).all(),
   ])
 
   const payload = {
     exported_at: new Date().toISOString(),
-    images: images.rows,
-    collections: collections.rows,
-    users: users.rows,
-    tags: tags.rows,
-    image_tags: image_tags.rows,
-    collection_images: collection_images.rows,
+    images: imagesData,
+    collections: collectionsData,
+    users: usersData,
+    tags: tagsData,
+    image_tags: imageTagsData,
+    collection_images: collectionImagesData,
   }
 
   const json = JSON.stringify(payload, null, 2)

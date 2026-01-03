@@ -2,7 +2,6 @@
 // Returns most used tags by usage_count
 
 import { sql } from 'drizzle-orm'
-import { isAdminSession } from '~/server/utils/auth'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -13,7 +12,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (!isAdminSession(session)) {
+  if (session.user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -40,7 +39,7 @@ export default eventHandler(async (event) => {
 
     return {
       success: true,
-      data: tags.rows || []
+      data: tags || []
     }
   } catch (error) {
     console.error('Error fetching top tags:', error)

@@ -1,5 +1,5 @@
-import { db } from '~/server/utils/database'
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { images } from '../../../db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -8,8 +8,11 @@ export default eventHandler(async (event) => {
   }
 
   // Fetch image ids
-  const rows = await db.all(sql`SELECT id FROM images ORDER BY id DESC`)
-  const ids = (rows.rows as any[]).map(r => r.id)
+  const rows = await db.select({ id: images.id })
+    .from(images)
+    .orderBy(images.id)
+    .all()
+  const ids = rows.map(r => r.id)
 
   // Sequentially call the single-image regenerate handler to reuse logic
   let processed = 0

@@ -1,9 +1,8 @@
 // GET /api/admin/messages
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
-import type { Message } from "~/types/message"
-import { isAdminSession } from '~/server/utils/auth'
+import type { Message } from "~~/shared/types/message"
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -14,7 +13,7 @@ export default eventHandler(async (event) => {
     })
   }
 
-  if (!isAdminSession(session)) {
+  if (session.user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'Admin access required'
@@ -30,19 +29,17 @@ export default eventHandler(async (event) => {
 
   try {
     let whereClause = ''
-    const params: any[] = []
 
     // Build WHERE clause for filtering
     const conditions: string[] = []
     
     if (readFilter !== undefined) {
-      conditions.push('read = ?')
-      params.push(readFilter === 'true' ? 1 : 0)
+      conditions.push(`read = ${readFilter === 'true' ? 1 : 0}`)
     }
 
     if (search) {
-      conditions.push('(sender_email LIKE ? OR subject LIKE ? OR message LIKE ?)')
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`)
+      const escapedSearch = search.replace(/'/g, "''")
+      conditions.push(`(sender_email LIKE '%${escapedSearch}%' OR subject LIKE '%${escapedSearch}%' OR message LIKE '%${escapedSearch}%')`)
     }
 
     if (conditions.length > 0) {
@@ -51,8 +48,8 @@ export default eventHandler(async (event) => {
 
     // Get total count for pagination
     const countQuery = sql.raw(`SELECT COUNT(*) as total FROM messages ${whereClause}`)
-    const countResult = await db.get(countQuery, params)
-    const total = (countResult?.total as number) || 0
+    const countResult = await db.get(countQuery) as { total: number } | undefined
+    const total = countResult?.total || 0
 
     // Get messages with pagination
     const messagesQuery = `
@@ -67,16 +64,16 @@ export default eventHandler(async (event) => {
       FROM messages 
       ${whereClause}
       ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
     
     const messagesResult = await db
-      .all(sql.raw(messagesQuery), [...params, limit, offset])
+      .all(sql.raw(messagesQuery)) as unknown as Message[]
 
     return {
       success: true,
       data: {
-        messages: messagesResult.rows as unknown as Message[],
+        messages: messagesResult,
         pagination: {
           page,
           limit,

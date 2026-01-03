@@ -1,6 +1,7 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import slugify from 'slugify'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
+import { images } from '../../../db/schema'
 
 /**
  * Generates a unique slug for an image by combining a base slug with a unique identifier.
@@ -14,7 +15,10 @@ export const generateUniqueSlug = async (baseName: string): Promise<string> => {
   const proposedSlug = `${baseSlug}-${uniquePart}`
   
   // Check if slug already exists
-  const existingSlug = await db.get(sql`SELECT slug FROM images WHERE slug = ${proposedSlug}`)
+  const existingSlug = await db.select({ slug: images.slug })
+    .from(images)
+    .where(eq(images.slug, proposedSlug))
+    .get()
   
   // If slug exists, recursively try again
   if (existingSlug) {

@@ -1,6 +1,8 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
+import type { DbUser } from '#shared/types/database'
+import { users } from '../db/schema'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -10,9 +12,11 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-  const userData = await db.get(sql`
-    SELECT * FROM users WHERE email = ${email} LIMIT 1
-  `)
+  const userData = await db.select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1)
+    .get() as DbUser | undefined
 
   if (!userData) {
     throw createError({
@@ -31,11 +35,17 @@ export default defineEventHandler(async (event) => {
   }
 
   const user = {
-    createdAt: userData.created_at,
-    email: userData.email,
     id: userData.id,
     name: userData.name,
+    email: userData.email,
     role: userData.role,
+    biography: userData.biography || '',
+    job: userData.job || '',
+    language: userData.language || '',
+    location: userData.location || '',
+    socials: userData.socials || '',
+    createdAt: userData.created_at,
+    updatedAt: userData.updated_at || userData.created_at,
   }
 
   await setUserSession(event, { user })

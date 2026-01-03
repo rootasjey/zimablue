@@ -45,15 +45,14 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const placeholders = validIds.map(() => '?').join(',')
     
     if (action === 'delete') {
       await db
-        .run(sql.raw(`DELETE FROM messages WHERE id IN (${placeholders})`), validIds)
+        .run(sql.raw(`DELETE FROM messages WHERE id IN (${validIds.join(',')})`))
     } else {
       const readValue = action === 'mark_read' ? 1 : 0
       await db
-        .run(sql.raw(`UPDATE messages SET read = ?, updated_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`), [readValue, ...validIds])
+        .run(sql.raw(`UPDATE messages SET read = ${readValue}, updated_at = CURRENT_TIMESTAMP WHERE id IN (${validIds.join(',')})`))
     }
 
     return {

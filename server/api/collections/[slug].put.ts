@@ -1,9 +1,10 @@
 // PUT /api/collections/:slug
 
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
-import type { ServerCollection } from '~/types/collection'
+import { eq, max, sql } from 'drizzle-orm'
+import type { ServerCollection } from '~~/shared/types/collection'
+import { collections, collectionImages, images } from '../../db/schema'
 
 const updateCollectionSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
@@ -54,9 +55,10 @@ export default defineEventHandler(async (event) => {
     
     try {
       // Check if collection exists and belongs to the user
-      const collection = await db.get(sql`
-        SELECT id, user_id FROM collections WHERE slug = ${slug}
-      `) as any
+      const collection = await db.select({ id: collections.id, userId: collections.userId })
+        .from(collections)
+        .where(eq(collections.slug, slug))
+        .get()
 
       if (!collection) {
         throw createError({
@@ -64,116 +66,94 @@ export default defineEventHandler(async (event) => {
           message: 'Collection not found'
         })
       }
-      if (collection.user_id !== user.id && user.role !== 'admin') {
+      if (collection.userId !== user.id && user.role !== 'admin') {
         throw createError({
           statusCode: 403,
           message: 'You do not have permission to update this collection'
         })
       }
 
-      const id = collection.id as number
+      const id = collection.id
 
-      // Prepare batch operations array
-      const batchOperations = [] as any[]
-
-      // Build the update query dynamically based on provided fields
-      const updates: string[] = []
-      const params: any[] = []
+      // Prepare update object
+      const updateData: Partial<typeof collections.$inferInsert> = {}
 
       if (validatedData.name !== undefined) {
-        updates.push('name = ?')
-        params.push(validatedData.name)
+        updateData.name = validatedData.name
       }
 
       if (validatedData.description !== undefined) {
-        updates.push('description = ?')
-        params.push(validatedData.description)
+        updateData.description = validatedData.description
       }
 
       if (validatedData.cover_image_id !== undefined) {
-        updates.push('cover_image_id = ?')
-        params.push(validatedData.cover_image_id)
+        updateData.coverImageId = validatedData.cover_image_id
       }
 
       if (validatedData.slug !== undefined) {
-        updates.push('slug = ?')
-        params.push(validatedData.slug)
+        updateData.slug = validatedData.slug
       }
 
       if (validatedData.is_public !== undefined) {
-        updates.push('is_public = ?')
-        params.push(validatedData.is_public ? 1 : 0)
+        updateData.isPublic = validatedData.is_public
       }
 
       // Update collection metadata if there are changes
-      if (updates.length > 0) {
-        updates.push('updated_at = CURRENT_TIMESTAMP')
-        
-        const updateQueryString = `
-          UPDATE collections
-          SET ${updates.join(', ')}
-          WHERE id = ?
-        `
-        
-        params.push(id)
-        const updateQuery = sql.raw(updateQueryString)
-        
-        batchOperations.push(
-          (db as any).run(updateQuery, params)
-        )
+      if (Object.keys(updateData).length > 0) {
+        await db.update(collections)
+          .set({
+            ...updateData,
+            updatedAt: new Date()
+          })
+          .where(eq(collections.id, id))
       }
 
       // Handle image operations if provided
       if (validatedData.images) {
         // Remove images
         if (validatedData.images.remove && validatedData.images.remove.length > 0) {
-          const imageIdsToRemove = validatedData.images.remove
-          
-          for (const imageId of imageIdsToRemove) {
-            batchOperations.push(
-              db.run(sql`
-                DELETE FROM collection_images
-                WHERE collection_id = ${id} AND image_id = ${imageId}
-              `)
-            )
+          for (const imageId of validatedData.images.remove) {
+            await db.delete(collectionImages)
+              .where(eq(collectionImages.collectionId, id))
+              .where(eq(collectionImages.imageId, imageId))
           }
         }
         
         // Add new images
         if (validatedData.images.add && validatedData.images.add.length > 0) {
           // Get the current highest position
-          const positionResult = await db.get(sql`
-            SELECT COALESCE(MAX(position), -1) as max_position
-            FROM collection_images
-            WHERE collection_id = ${id}
-          `)
+          const positionResult = await db.select({ maxPosition: max(collectionImages.position) })
+            .from(collectionImages)
+            .where(eq(collectionImages.collectionId, id))
+            .get()
           
-          const positionRow = positionResult as any
-          const max_position = (positionRow?.max_position as number) ?? -1
-          let nextPosition = max_position + 1
+          const maxPosition = positionResult?.maxPosition ?? -1
+          let nextPosition = maxPosition + 1
           
           // Add each new image
           for (const imageId of validatedData.images.add) {
             // Check if image exists
-            const imageExists = await db.get(sql`
-              SELECT id FROM images WHERE id = ${imageId}
-            `)
+            const imageExists = await db.select({ id: images.id })
+              .from(images)
+              .where(eq(images.id, imageId))
+              .get()
             
             if (imageExists) {
               // Check if this image is already in the collection
-              const existingRelation = await db.get(sql`
-                SELECT 1 FROM collection_images
-                WHERE collection_id = ${id} AND image_id = ${imageId}
-              `)
+              const existingRelation = await db.select({ imageId: collectionImages.imageId })
+                .from(collectionImages)
+                .where(eq(collectionImages.collectionId, id))
+                .where(eq(collectionImages.imageId, imageId))
+                .get()
               
               if (!existingRelation) {
                 // Add the image to the collection
-                batchOperations.push(
-                  db.run(sql`
-                    INSERT INTO collection_images (collection_id, image_id, position)
-                    VALUES (${id}, ${imageId}, ${nextPosition})
-                  `)
-                )
+                await db.insert(collectionImages)
+                  .values({
+                    collectionId: id,
+                    imageId: imageId,
+                    position: nextPosition
+                  })
                 nextPosition++
               }
             }
@@ -186,30 +166,33 @@ export default defineEventHandler(async (event) => {
           
           // Update positions based on the new order
           for (let i = 0; i < newOrder.length; i++) {
-            batchOperations.push(
-              db.run(sql`
-                UPDATE collection_images
-                SET position = ${i}
-                WHERE collection_id = ${id} AND image_id = ${newOrder[i]}
-              `)
-            )
+            await db.update(collectionImages)
+              .set({ position: i })
+              .where(eq(collectionImages.collectionId, id))
+              .where(eq(collectionImages.imageId, newOrder[i]))
           }
         }
       }
       
-      // Execute all operations in a batch if there are any
-      if (batchOperations.length > 0) {
-        await (db as any).batch(batchOperations)
-      }
-      
       // Fetch the updated collection with image count
-      const updatedCollection: ServerCollection | null = await db.get(sql`
-        SELECT 
-          c.*,
-          (SELECT COUNT(*) FROM collection_images WHERE collection_id = c.id) as image_count
-        FROM collections c
-        WHERE c.id = ${id}
-      `)
+      const updatedCollection = await db.select({
+        id: collections.id,
+        name: collections.name,
+        description: collections.description,
+        slug: collections.slug,
+        isPublic: collections.isPublic,
+        coverImageId: collections.coverImageId,
+        statsViews: collections.statsViews,
+        statsLikes: collections.statsLikes,
+        statsDownloads: collections.statsDownloads,
+        userId: collections.userId,
+        createdAt: collections.createdAt,
+        updatedAt: collections.updatedAt,
+        imageCount: sql<number>`(SELECT COUNT(*) FROM collection_images WHERE collection_id = ${collections.id})`
+      })
+        .from(collections)
+        .where(eq(collections.id, id))
+        .get()
       
       return {
         success: true,

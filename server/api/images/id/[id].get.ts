@@ -1,18 +1,18 @@
-import { db } from '~/server/utils/database'
+import { db } from 'hub:db'
 import { z } from 'zod'
-import { sql } from 'drizzle-orm'
-import type { Image } from '~/types/image'
+import { eq, sql } from 'drizzle-orm'
+import type { Image } from '~~/shared/types/image'
+import { images } from '../../../db/schema'
 
 export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({
     id: z.string().min(1)
   }).parse)
 
-  const image = await db.get(sql`
-    SELECT *
-    FROM images
-    WHERE id = ${id}
-  `)
+  const image = await db.select()
+    .from(images)
+    .where(eq(images.id, Number(id)))
+    .get()
 
   if (!image) {
     throw createError({
@@ -21,11 +21,9 @@ export default eventHandler(async (event) => {
     })
   }
 
-  await db.run(sql`
-    UPDATE images
-    SET stats_views = stats_views + 1
-    WHERE id = ${id}
-  `)
+  await db.update(images)
+    .set({ statsViews: sql`${images.statsViews} + 1` })
+    .where(eq(images.id, Number(id)))
 
   return image as unknown as Image
 })
