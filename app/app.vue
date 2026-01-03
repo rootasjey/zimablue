@@ -8,7 +8,6 @@
     <GlobalSearchDialog />
     <HiddenFileInputs />
     <UserMenu />
-    <!-- <ClickFireworks v-if="fireworksEnabled" /> -->
   </div>
 </template>
 
@@ -16,11 +15,8 @@
 import '@una-ui/preset/una.css'
 import GlobalSearchDialog from '~/components/search/GlobalSearchDialog.vue'
 import HiddenFileInputs from '~/components/HiddenFileInputs.vue'
-import ClickFireworks from '~/components/ClickFireworks.vue'
-import { useAppSettings } from '~/composables/useAppSettings'
 
 useGlobalSearch()
-// const { fireworksEnabled } = useAppSettings()
 
 useHead({
   meta: [

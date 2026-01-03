@@ -24,17 +24,6 @@
           />
         </div>
       </div>
-      <!-- <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            <h2 class="text-lg font-700 text-gray-900 dark:text-gray-200">Interactive click fireworks</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Toggle the global click fireworks effect in the application (triggered on clicks).</p>
-          </div>
-            <div class="shrink-0 flex items-center">
-            <NSwitch v-model="fireworksEnabled" />
-          </div>
-        </div>
-      </div> -->
 
       <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
         <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
