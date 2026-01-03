@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen w-full bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sm:pb-28 mb-24">
+      <div class="py-4 sm:py-6 sm:pb-28 mb-24">
         <PageHeader v-if="layoutShowHeader" :user-menu-items="pageHeader.userMenuItems" />
         <slot />
       </div>

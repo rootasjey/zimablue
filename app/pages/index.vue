@@ -388,7 +388,6 @@ const navigateToCreateCollection = () => {
   
   @media (min-width: 768px) {
     justify-content: center;
-    padding: 2rem;
   }
 }
 </style>
