@@ -7,13 +7,12 @@
           border sm:border border-white/10 bg-black text-gray-200/90 dark:bg-black/90 backdrop-blur-md">
         <template v-for="item in navItems" :key="item.key">
           <!-- Always render a link for consistent SSR/CSR output; prevent navigation and run action when needed -->
-          <NuxtLink :to="item.action ? route.fullPath : (item.to || '#')"
-            class="group relative flex flex-1 sm:flex-initial items-center justify-center" :aria-label="item.label"
+          <NuxtLink :to="item.to || '#'" class="group relative flex flex-1 sm:flex-initial items-center justify-center" :aria-label="item.label"
             @click.prevent="handleItemClick(item)"
             @auxclick.prevent="handleItemClick(item)"
             @keydown.enter.prevent="handleItemClick(item)"
             @keydown.space.prevent="handleItemClick(item)"
-            :role="item.action ? 'button' : undefined">
+            :role="isClient && item.action ? 'button' : undefined">
             <div class="nav-pill flex flex-row sm:flex-row items-center sm:mr-1 rounded-[28px] text-gray-200 p-2 sm:p-0"
               :class="{ 'bg-white/10 shadow-inner': isActive(item) }">
               <div class="flex h-8 w-8 items-center justify-center rounded-2xl hover:bg-white/10 transition-colors">
@@ -56,13 +55,15 @@ type Item = {
   action?: () => void
 }
 
-const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth < 640)
+const isClient = ref(false)
+onMounted(() => { isClient.value = true })
+const isMobile = computed(() => isClient.value ? window.innerWidth < 640 : false)
 
 const navItems = computed<Item[]>(() => {
   const items: Item[] = [
     { key: 'home', to: '/', label: 'Home', icon: 'i-tabler-smart-home', match: (p) => p === '/' },
     { key: 'collections', to: '/collections', label: 'Collection', icon: 'i-ph-squares-four', match: (p) => p.startsWith('/collections') },
-    { key: 'search', to: '/search', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: !isMobile.value ? () => openSearch() : undefined },
+    { key: 'search', to: '/search', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: (isClient.value && !isMobile.value) ? () => openSearch() : undefined },
   ]
   
   // Add upload button for admin users on mobile

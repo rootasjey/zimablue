@@ -103,9 +103,6 @@
         role="gridcell"
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
-        :style="{
-          '--delay': `${index * 0.05}s`
-        }"
       >
         <div
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
@@ -458,8 +455,8 @@ const markError = (itemKey: string | number) => {
   grid-auto-flow: dense;
   padding-bottom: 80px; /* Space for bottom nav */
 
-  /* Tablet range (480px - 639px): Simple 2-column uniform grid */
-  @media (min-width: 480px) and (max-width: 639px) {
+  /* Tablet range (400px - 639px): Simple 2-column uniform grid */
+  @media (min-width: 400px) and (max-width: 639px) {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 1fr;
     gap: 14px;
@@ -494,7 +491,7 @@ const markError = (itemKey: string | number) => {
   aspect-ratio: 1/1;
   
   /* In tablet range, all squares are uniform */
-  @media (min-width: 480px) and (max-width: 639px) {
+  @media (min-width: 400px) and (max-width: 639px) {
     aspect-ratio: 1/1;
   }
 }
@@ -505,7 +502,7 @@ const markError = (itemKey: string | number) => {
   min-height: 90px;
   
   /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 480px) and (max-width: 639px) {
+  @media (min-width: 400px) and (max-width: 639px) {
     grid-column: span 1;
     grid-row: span 1;
     min-height: auto;
@@ -519,7 +516,7 @@ const markError = (itemKey: string | number) => {
   min-height: 180px;
   
   /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 480px) and (max-width: 639px) {
+  @media (min-width: 400px) and (max-width: 639px) {
     grid-column: span 1;
     grid-row: span 1;
     min-height: auto;
@@ -533,7 +530,7 @@ const markError = (itemKey: string | number) => {
   min-height: 180px;
   
   /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 480px) and (max-width: 639px) {
+  @media (min-width: 400px) and (max-width: 639px) {
     grid-column: span 1;
     grid-row: span 1;
     min-height: auto;

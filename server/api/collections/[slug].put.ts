@@ -2,8 +2,7 @@
 
 import { db } from 'hub:db'
 import { z } from 'zod'
-import { eq, max, sql } from 'drizzle-orm'
-import type { ServerCollection } from '~~/shared/types/collection'
+import { eq, max, sql, and } from 'drizzle-orm'
 import { collections, collectionImages, images } from '../../db/schema'
 
 const updateCollectionSchema = z.object({
@@ -114,8 +113,7 @@ export default defineEventHandler(async (event) => {
         if (validatedData.images.remove && validatedData.images.remove.length > 0) {
           for (const imageId of validatedData.images.remove) {
             await db.delete(collectionImages)
-              .where(eq(collectionImages.collectionId, id))
-              .where(eq(collectionImages.imageId, imageId))
+              .where(and(eq(collectionImages.collectionId, id), eq(collectionImages.imageId, imageId)))
           }
         }
         
@@ -142,8 +140,7 @@ export default defineEventHandler(async (event) => {
               // Check if this image is already in the collection
               const existingRelation = await db.select({ imageId: collectionImages.imageId })
                 .from(collectionImages)
-                .where(eq(collectionImages.collectionId, id))
-                .where(eq(collectionImages.imageId, imageId))
+                .where(and(eq(collectionImages.collectionId, id), eq(collectionImages.imageId, imageId)))
                 .get()
               
               if (!existingRelation) {
@@ -168,8 +165,7 @@ export default defineEventHandler(async (event) => {
           for (let i = 0; i < newOrder.length; i++) {
             await db.update(collectionImages)
               .set({ position: i })
-              .where(eq(collectionImages.collectionId, id))
-              .where(eq(collectionImages.imageId, newOrder[i]))
+              .where(and(eq(collectionImages.collectionId, id), eq(collectionImages.imageId, newOrder[i]!)))
           }
         }
       }
@@ -194,12 +190,14 @@ export default defineEventHandler(async (event) => {
         .where(eq(collections.id, id))
         .get()
       
+      const collectionSnake = keysToSnake(updatedCollection)
+
       return {
         success: true,
         message: 'Collection updated successfully',
         collection: {
-          ...updatedCollection,
-          is_public: updatedCollection?.is_public === 1,
+          ...collectionSnake,
+          is_public: Boolean(collectionSnake?.is_public),
         }
       }
       

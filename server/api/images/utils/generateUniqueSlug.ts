@@ -1,7 +1,7 @@
 import { db } from 'hub:db'
-import slugify from 'slugify'
 import { eq } from 'drizzle-orm'
 import { images } from '../../../db/schema'
+import { normalizeSlug } from './normalizeSlug'
 
 /**
  * Generates a unique slug for an image by combining a base slug with a unique identifier.
@@ -10,7 +10,7 @@ import { images } from '../../../db/schema'
  * @returns A Promise resolving to a unique slug string that does not exist in the database
  */
 export const generateUniqueSlug = async (baseName: string): Promise<string> => {
-  const baseSlug = slugify(baseName, { lower: true, strict: true })
+  const baseSlug = normalizeSlug(baseName)
   const uniquePart = Date.now().toString(36) + Math.random().toString(36).substring(2, 5)
   const proposedSlug = `${baseSlug}-${uniquePart}`
   

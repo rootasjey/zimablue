@@ -3,15 +3,18 @@ import { z } from 'zod'
 import { eq, sql } from 'drizzle-orm'
 import type { Image } from '~~/shared/types/image'
 import { images } from '../../../db/schema'
+import { keysToSnake } from '../../../utils/case'
 
 export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({
     id: z.string().min(1)
   }).parse)
 
-  const image = await db.select()
-    .from(images)
+  // Increment and return the updated image
+  const image = await db.update(images)
+    .set({ statsViews: sql`${images.statsViews} + 1` })
     .where(eq(images.id, Number(id)))
+    .returning()
     .get()
 
   if (!image) {
@@ -21,9 +24,5 @@ export default eventHandler(async (event) => {
     })
   }
 
-  await db.update(images)
-    .set({ statsViews: sql`${images.statsViews} + 1` })
-    .where(eq(images.id, Number(id)))
-
-  return image as unknown as Image
+  return keysToSnake(image) as unknown as Image
 })

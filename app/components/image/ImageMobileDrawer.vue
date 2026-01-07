@@ -54,14 +54,14 @@
         <!-- Actions -->
         <div class="flex flex-row gap-2">
           <NButton 
-            btn="solid-gray" 
+            btn="soft-gray" 
             size="md" 
             class="flex-1 justify-center"
-            @click="$emit('openFullPage')"
-          >
-            <span class="i-ph-arrows-out mr-2"></span>
-            View fullscreen
-          </NButton>
+            label="Download"
+            leading="i-ph-download-simple"
+            :disabled="!selectedModalImage"
+            @click="handleDownload"
+          />
           
           <ClientOnly>
             <NDropdownMenu 
@@ -76,12 +76,12 @@
               }"
             >
               <NButton 
-                btn="ghost-gray" 
+                btn="soft-gray" 
                 size="md" 
+                icon
+                label="i-ph-dots-three-vertical"
                 class="justify-center"
-              >
-                <span class="i-ph-dots-three-vertical mr-2"></span>
-              </NButton>
+              />
             </NDropdownMenu>
           </ClientOnly>
         </div>
@@ -121,6 +121,8 @@
 
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
+import { useImageActions } from '~/composables/image/useImageActions'
+
 
 interface Props {
   isImageDrawerOpen: boolean
@@ -147,6 +149,13 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { downloadImage } = useImageActions()
+const handleDownload = () => {
+  if (!props.selectedModalImage) return
+  downloadImage(props.selectedModalImage)
+}
+
 
 const isOpen = computed({
   get: () => props.isImageDrawerOpen,

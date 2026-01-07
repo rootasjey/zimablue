@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { eq, sql } from 'drizzle-orm'
 import type { Image } from '~~/shared/types/image'
 import { images } from '../../../../db/schema'
+import { keysToSnake } from '../../../../utils/case'
 
 export default eventHandler(async (event) => {
   const { slug } = await getValidatedRouterParams(event, z.object({
@@ -24,5 +25,5 @@ export default eventHandler(async (event) => {
     })
   }
 
-  return image as unknown as Image
+  return keysToSnake(image) as unknown as Image
 })

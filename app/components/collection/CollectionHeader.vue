@@ -3,7 +3,7 @@
     <header ref="heroRef" class="mt-12 mb-8 max-w-3xl mx-auto">
       <!-- Main centered blog-like title and description -->
       <div class="text-center">
-        <h1 class="font-title text-3xl sm:text-4xl md:text-5xl font-700 leading-tight text-gray-900 dark:text-gray-200 animate-fade-in-up">
+        <h1 class="font-title text-3xl sm:text-4xl md:text-5xl font-800 leading-tight text-gray-900 dark:text-gray-200 animate-fade-in-up">
           {{ collection?.name || 'Collection' }}
         </h1>
 

@@ -2,7 +2,7 @@
   <MobileHeader />
 
   <header class="hidden sm:flex mt-12 mb-8 flex-col items-center justify-center">
-    <h1 class="font-serif text-4xl font-600 text-gray-800 dark:text-gray-200">
+    <h1 class="font-title text-size-18 font-800 text-gray-800 dark:text-gray-200">
       <NuxtLink :to="linkTo" :aria-label="linkAriaLabel">
         zimablue
       </NuxtLink>
@@ -10,7 +10,7 @@
 
     <!-- Greeting with Date and Time -->
     <ClientOnly>
-      <div class="flex justify-center items-center flex-wrap gap-2 mt-2">
+      <div class="flex justify-center items-center flex-wrap gap-2">
         <NTooltip content="Toggle theme" :_tooltip-content="{
           side: 'right',
         }">

@@ -6,6 +6,7 @@ import { like, or, eq, sql, and, desc, inArray } from 'drizzle-orm'
 import type { ImageWithTags } from "~~/shared/types/image"
 import type { Collection } from "~~/shared/types/collection"
 import { images, collections, users, tags, imageTags } from '../../db/schema'
+import { keysToSnake } from '../../utils/case'
 
 interface SearchResult {
   images: ImageWithTags[]
@@ -95,8 +96,8 @@ export default defineEventHandler(async (event): Promise<SearchResult> => {
           })
         }
 
-        // Combine images with their tags
-        imagesResult = imageResults.map(img => ({
+        // Combine images with their tags and convert to snake_case keys
+        imagesResult = imageResults.map(img => keysToSnake({
           ...(img as any),
           tags: tagsByImage.get(img.id) || []
         })) as unknown as ImageWithTags[]
@@ -123,7 +124,7 @@ export default defineEventHandler(async (event): Promise<SearchResult> => {
       totalCollections = collectionResults.length
 
       collectionsResult = collectionResults.map((row: any) => ({
-        ...row.collections,
+        ...keysToSnake(row.collections),
         owner_name: row.users?.name || 'Unknown',
         image_count: 0, // Would need separate query
         is_public: Boolean(row.collections.isPublic),

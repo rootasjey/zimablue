@@ -2,6 +2,7 @@ import { db } from 'hub:db'
 import type { ImageWithTags } from "~~/shared/types/image"
 import { inArray, eq, asc } from 'drizzle-orm'
 import { images, tags, imageTags } from '../../db/schema'
+import { keysToSnake } from '../../utils/case'
 
 export default eventHandler(async () => {
   // Get all images
@@ -73,5 +74,5 @@ export default eventHandler(async () => {
     tags: imageTagsMap.get(img.id) || []
   })) as unknown as ImageWithTags[]
 
-  return imagesWithTags
+  return imagesWithTags.map(keysToSnake)
 })

@@ -140,17 +140,29 @@ export default eventHandler(async (event) => {
       })
     }
 
+    // Sanitize nullable fields to match expected `User` type (avoid nulls)
+    const sanitizedUser = {
+      ...updatedUser,
+      biography: updatedUser.biography ?? '',
+      job: updatedUser.job ?? '',
+      location: updatedUser.location ?? '',
+      language: updatedUser.language ?? '',
+      socials: updatedUser.socials ?? '',
+      createdAt: updatedUser.createdAt instanceof Date ? updatedUser.createdAt.toISOString() : String(updatedUser.createdAt),
+      updatedAt: updatedUser.updatedAt instanceof Date ? updatedUser.updatedAt.toISOString() : String(updatedUser.updatedAt),
+    }
+
     // Update session with new user data
     await replaceUserSession(event, {
       user: {
         ...session.user,
-        ...updatedUser,
+        ...sanitizedUser,
       }
     })
 
     return {
       success: true,
-      data: updatedUser as unknown as User,
+      data: sanitizedUser as unknown as User,
       message: 'Profile updated successfully'
     }
 

@@ -92,7 +92,7 @@ export const useHomeMultiSelect = () => {
 
   const bulkAddToCollection = async (imageIds: number[], collectionSlug: string) => {
     try {
-      const response = await $fetch(`/api/collections/${collectionSlug}`, {
+      const response = await $fetch<{ success: boolean; message?: string; collection?: any }>(`/api/collections/${collectionSlug}`, {
         method: 'PUT',
         body: {
           images: {

@@ -1,16 +1,16 @@
 <template>
   <!-- Mobile Header - Only visible on mobile devices -->
-  <header :class="[isScrolled ? 'scrolled' : '', 'sm:hidden w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b b-dashed border-gray-200 dark:border-gray-700 sticky top-0 z-12']">
+  <header :class="[isScrolled ? 'scrolled' : 'py-6', 'sm:hidden w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b b-dashed border-gray-200 dark:border-gray-700 sticky top-0 z-12']">
     <div class="flex items-center justify-center px-4 py-3 safe-area-pt">
       <!-- Site Title + Short Description -->
       <div class="flex flex-col items-center">
-        <h1 class="font-serif leading-tight font-600 text-gray-800 dark:text-gray-100 mobile-title">
+        <h1 class="font-title leading-tight font-800 text-gray-800 dark:text-gray-100 mobile-title">
           <NuxtLink
             to="/about"
             class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            aria-label="zima blue - Go to about page"
+            aria-label="zimablue - Go to about page"
           >
-            zima blue
+            zimablue
           </NuxtLink>
         </h1>
 

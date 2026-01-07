@@ -17,6 +17,7 @@
     <div class="space-y-4">
       <NFormGroup label="Name" name="name">
         <NInput 
+          autofocus
           :model-value="editForm.name" 
           @update:model-value="$emit('updateField', 'name', $event)"
           placeholder="Image name" 
@@ -96,6 +97,8 @@
 </template>
 
 <script lang="ts" setup>
+import { onMounted, onUnmounted, watch } from 'vue';
+
 interface Props {
   isOpen: boolean;
   editForm: {
@@ -118,4 +121,26 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (props.isOpen && !props.isUpdating && props.isFormValid) {
+      e.preventDefault();
+      emit('submit');
+    }
+  }
+}
+
+watch(() => props.isOpen, (val) => {
+  if (val) window.addEventListener('keydown', handleKeydown);
+  else window.removeEventListener('keydown', handleKeydown);
+});
+
+onMounted(() => {
+  if (props.isOpen) window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>

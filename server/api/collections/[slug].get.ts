@@ -5,6 +5,7 @@ import type { Image } from '~~/shared/types/image'
 import { eq, sql as sqlOp } from 'drizzle-orm'
 import type { DbCollection } from '~~/shared/types/database'
 import { collections, images, collectionImages, users } from '../../db/schema'
+import { keysToSnake } from '../../utils/case'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -105,12 +106,12 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       collection: {
-        ...collection,
+        ...keysToSnake(collection),
         image_count: parsedImages.length,
         is_public: collection.isPublic === true,
         owner,
       },
-      images: parsedImages
+      images: parsedImages.map(keysToSnake)
     }
   } catch (error: unknown) {
     console.error(`Error fetching collection ${slug}:`, error)

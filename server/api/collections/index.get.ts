@@ -4,6 +4,7 @@ import { db } from 'hub:db'
 import { sql, eq, or, count } from 'drizzle-orm'
 import type { DbCountResult, DbCollectionWithExtras, DbImageSimple } from '#shared/types/database'
 import { collections, users, images, collectionImages } from '../../db/schema'
+import { keysToSnake } from '../../utils/case'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -106,9 +107,12 @@ export default defineEventHandler(async (event) => {
         }
       }
       
+      const collectionSnake = keysToSnake(collection)
+      const coverImageSnake = coverImage ? keysToSnake(coverImage) : null
+
       return {
-        ...collection,
-        cover_image: coverImage,
+        ...collectionSnake,
+        cover_image: coverImageSnake,
         is_owner: userId === collection.ownerId,
         is_public: collection.isPublic === true,
       }

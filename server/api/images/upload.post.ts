@@ -112,6 +112,10 @@ export default eventHandler(async (event) => {
     variants: JSON.stringify(generatedVariants)
   }).returning({ id: images.id })
 
+  if (!insertResponse || insertResponse.length === 0 || !insertResponse[0]?.id) {
+    throw createError({ statusCode: 500, message: 'Failed to create image record' })
+  }
+
   const newImageId = insertResponse[0].id
 
   const selectResponse = await db.select()

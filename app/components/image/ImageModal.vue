@@ -60,19 +60,6 @@
             </ClientOnly>
           </div>
         </div>
-        
-        <!-- Keyboard hints (auto-fade) -->
-        <Transition name="hint-fade">
-          <div
-            v-if="showHints"
-            class="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center"
-            aria-hidden="true"
-          >
-            <div class="rounded-full bg-black/60 text-gray-200 text-xs px-3 py-1.5 shadow-md backdrop-blur">
-              ←/→ to navigate · Esc to close · Enter to open
-            </div>
-          </div>
-        </Transition>
 
         <!-- Modal body -->
         <div class="p-4">
@@ -150,7 +137,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const modalContent = ref<HTMLElement>()
-const showHints = ref(false)
 
 // Focus the modal when it opens
 watch(() => props.isImageModalOpen, (isOpen) => {
@@ -158,9 +144,6 @@ watch(() => props.isImageModalOpen, (isOpen) => {
     nextTick(() => {
       modalContent.value?.focus()
     })
-    showHints.value = true
-    // fade out after a short delay
-    setTimeout(() => { showHints.value = false }, 1200)
   }
 })
 

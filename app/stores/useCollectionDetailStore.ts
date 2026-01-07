@@ -131,7 +131,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         throw new Error('Please select at least one image to add.')
       }
 
-      const { collection } = await $fetch(`/api/collections/${slug}`, {
+      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -147,7 +147,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: `Added ${selection.length} images to collection ${collection.name}.` 
+        message: `Added ${selection.length} images to collection ${collection?.name ?? slug}.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to add images to collection.'
@@ -162,7 +162,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         throw new Error('Please select at least one image to remove.')
       }
 
-      const { collection } = await $fetch(`/api/collections/${slug}`, {
+      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -177,7 +177,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: `Removed ${selection.length} images from collection ${collection.name}.` 
+        message: `Removed ${selection.length} images from collection ${collection?.name ?? slug}.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove images from collection.'
@@ -187,7 +187,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
   async function saveNewOrder(slug: string, newOrder: number[]) {
     try {
-      const { collection } = await $fetch(`/api/collections/${slug}`, {
+      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -201,7 +201,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: `Collection ${collection.name} order updated successfully.` ,
+        message: `Collection ${collection?.name ?? slug} order updated successfully.` ,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update image order.'
@@ -262,7 +262,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         throw new Error(`Collection name is required. Got: ${update.name}`)
       }
 
-      const { collection } = await $fetch(`/api/collections/${slug}`, {
+      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           name: update.name,
@@ -273,12 +273,12 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       })
 
       closeEditDialog()
-      const newSlug = collection.slug ?? slug
+      const newSlug = collection?.slug ?? slug
       await fetchCollection(newSlug)
 
       return { 
         success: true, 
-        message: `Collection ${collection.name} updated successfully.`,
+        message: `Collection ${collection?.name ?? slug} updated successfully.`,
         slugChanged: newSlug !== slug,
         slug: newSlug !== slug ? newSlug : "",
       }
@@ -290,13 +290,13 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
   async function deleteCollection(slug: string) {
     try {
-      const { collection } = await $fetch(`/api/collections/${slug}`, {
+      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'DELETE'
       })
 
       return {
         success: true, 
-        message: `Collection ${collection.name} deleted successfully.` ,
+        message: `Collection ${collection?.name ?? slug} deleted successfully.` ,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete collection.'

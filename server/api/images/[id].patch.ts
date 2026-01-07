@@ -1,8 +1,9 @@
 import { db } from 'hub:db'
 import type { ImageWithTags } from "~~/shared/types/image"
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { kv } from 'hub:kv'
 import { images, tags, imageTags } from '../../db/schema'
+import { normalizeSlug } from './utils/normalizeSlug' 
 
 // /api/images/[id].patch.ts
 export default defineEventHandler(async (event) => {
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, description, slug, tags } = body
+  const { name, description, slug, tags: tagsInput } = body
 
   // Helper function to ensure tag exists and return its ID
   async function ensureTag(tagName: string): Promise<number> {
@@ -68,43 +69,47 @@ export default defineEventHandler(async (event) => {
       slug: finalSlug
     }).returning({ id: tags.id })
 
+    if (!insertResult || insertResult.length === 0 || !insertResult[0]?.id) {
+      throw new Error('Failed to insert tag')
+    }
+
     return insertResult[0].id
   }
   
   try {
-    // Validate slug uniqueness if provided
+    // Validate slug uniqueness if provided (normalize and exclude current id)
+    let normalizedSlug: string | undefined = undefined
     if (slug) {
+      normalizedSlug = normalizeSlug(slug)
       const existingImage = await db.select({ id: images.id })
         .from(images)
-        .where(and(eq(images.slug, slug), eq(images.id, Number(id))))
+        .where(and(eq(images.slug, normalizedSlug), ne(images.id, Number(id))))
         .get()
 
       if (existingImage) {
         throw createError({
-          statusCode: 400,
+          statusCode: 409,
           message: 'Slug already exists'
         })
       }
     }
 
     // Update basic image fields
+    const updates: any = { name: name, description: description, updatedAt: new Date() }
+    if (normalizedSlug !== undefined) updates.slug = normalizedSlug
+
     await db.update(images)
-      .set({
-        name: name,
-        description: description,
-        slug: slug,
-        updatedAt: new Date()
-      })
+      .set(updates)
       .where(eq(images.id, Number(id)))
 
     // Handle tags update if provided
-    if (tags && Array.isArray(tags)) {
+    if (tagsInput && Array.isArray(tagsInput)) {
       // Remove existing tag relationships
       await db.delete(imageTags)
         .where(eq(imageTags.imageId, Number(id)))
 
       // Add new tag relationships
-      for (const tagName of tags) {
+      for (const tagName of tagsInput) {
         if (tagName && typeof tagName === 'string' && tagName.trim()) {
           try {
             const tagId = await ensureTag(tagName.trim())
@@ -164,8 +169,8 @@ export default defineEventHandler(async (event) => {
           ...item,
           name,
           description,
-          slug,
-          tags: JSON.stringify(tags || []), // Keep JSON format for grid compatibility
+          slug: normalizedSlug ?? slug,
+          tags: JSON.stringify(tagsInput || []), // Keep JSON format for grid compatibility
           updated_at: new Date().toISOString()
         }
       }
@@ -180,6 +185,10 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     console.error('Error updating image:', error)
+    const errMsg = String((error as any)?.message || '')
+    if (slug && (errMsg.includes('idx_images_slug') || errMsg.includes('images.slug') || errMsg.includes('UNIQUE constraint failed'))) {
+      throw createError({ statusCode: 409, message: 'Slug already exists' })
+    }
     throw createError({
       statusCode: 500,
       message: 'Failed to update image'
