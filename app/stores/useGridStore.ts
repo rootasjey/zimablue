@@ -277,24 +277,25 @@ export const useGridStore = defineStore('grid', () => {
     return await Promise.allSettled(uploads)
   }
 
-  async function updateImage(imageData: { id: number, name?: string, description?: string, slug?: string, tags?: string }) {
+  async function updateImage(imageData: { id: number, name?: string, description?: string, slug?: string, tags?: string[] }) {
     try {
       const response = await $fetch(`/api/images/${imageData.id}`, {
         method: 'PATCH',
         body: imageData
       })
       
-      // Update the image in the layout
+      // Update the image in the layout with the server response data
       const index = layout.value.findIndex(img => img.id === imageData.id)
-      if (index !== -1) {
-        // Only update defined fields to avoid overwriting with undefined
-        const updates: any = {}
-        Object.keys(imageData).forEach(key => {
-          if (imageData[key as keyof typeof imageData] !== undefined) {
-            updates[key] = imageData[key as keyof typeof imageData]
-          }
-        })
-        layout.value[index] = { ...layout.value[index], ...updates }
+      if (index !== -1 && response?.data) {
+        const target = layout.value[index]
+        if (!target) return response
+        const payload = response.data as Partial<Image> & { updatedAt?: string; updated_at?: string }
+        if (payload.name !== undefined) target.name = payload.name
+        if (payload.description !== undefined) target.description = payload.description
+        if (payload.slug !== undefined) target.slug = payload.slug
+        if (payload.tags !== undefined) target.tags = payload.tags
+        const updatedAt = payload.updated_at ?? payload.updatedAt
+        if (updatedAt) target.updated_at = updatedAt
       }
       
       return response

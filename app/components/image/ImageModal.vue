@@ -59,6 +59,16 @@
               </template>
             </ClientOnly>
           </div>
+
+          <div v-if="displayTags.length" class="mt-2 flex gap-2 overflow-x-auto whitespace-nowrap max-w-420px">
+            <span
+              v-for="tag in displayTags"
+              :key="tag.name"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs"
+            >
+              {{ tag.name }}
+            </span>
+          </div>
         </div>
 
         <!-- Modal body -->
@@ -109,6 +119,7 @@
 
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
+import { useImageActions } from '~/composables/image/useImageActions'
 
 interface Props {
   isImageModalOpen: boolean
@@ -131,23 +142,48 @@ interface Emits {
   navigateToFirst: []
   navigateToLast: []
   updateImageModalOpen: [value: boolean]
+  openEditModal: [image: Image]
+  openAddToCollectionModal: [image: Image]
+  replaceImage: [image: Image]
+  downloadImage: [image: Image]
+  requestDelete: [image: Image]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const { normalizeTags } = useImageActions()
+const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags))
+
 const modalContent = ref<HTMLElement>()
+
+const isEditableTarget = (event: KeyboardEvent) => {
+  const target = event.target as HTMLElement | null
+  if (!target) return false
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return true
+  if (target.isContentEditable) return true
+  return false
+}
+
+const focusModal = () => {
+  nextTick(() => {
+    modalContent.value?.focus()
+  })
+}
 
 // Focus the modal when it opens
 watch(() => props.isImageModalOpen, (isOpen) => {
   if (isOpen) {
-    nextTick(() => {
-      modalContent.value?.focus()
-    })
+    focusModal()
   }
 })
 
+defineExpose({ focusModal })
+
 const handleKeydown = (event: KeyboardEvent) => {
+  if (isEditableTarget(event)) return
+
+  const key = event.key.toLowerCase()
   switch (event.key) {
     case 'ArrowLeft':
     case 'ArrowUp':
@@ -178,6 +214,35 @@ const handleKeydown = (event: KeyboardEvent) => {
     case 'Enter':
       event.preventDefault()
       emit('openFullPage')
+      break
+  }
+
+  if (!props.selectedModalImage) return
+
+  switch (key) {
+    case 'e':
+      event.preventDefault()
+      emit('openEditModal', props.selectedModalImage)
+      break
+    case 'f':
+      event.preventDefault()
+      emit('openFullPage')
+      break
+    case 'r':
+      event.preventDefault()
+      emit('replaceImage', props.selectedModalImage)
+      break
+    case 'a':
+      event.preventDefault()
+      emit('openAddToCollectionModal', props.selectedModalImage)
+      break
+    case 'd':
+      event.preventDefault()
+      emit('downloadImage', props.selectedModalImage)
+      break
+    case 't':
+      event.preventDefault()
+      emit('requestDelete', props.selectedModalImage)
       break
   }
 }

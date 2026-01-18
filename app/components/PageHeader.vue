@@ -247,10 +247,10 @@ onBeforeUnmount(() => {
 const route = useRoute()
 
 const linkTo = computed(() => {
-  // If we're on the about page (or a child), clicking should go home
-  if (route.path.startsWith('/about')) return '/'
-  // otherwise go to about
-  return '/about'
+  // Go to about if we're on the home page
+  if (route.path === '/') return '/about'
+  // Otherwise, clicking should go home
+  if (route.path.startsWith('/about') || route.path.startsWith('/collections')) return '/'
 })
 
 const linkAriaLabel = computed(() => {

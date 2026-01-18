@@ -8,6 +8,15 @@
         <NDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">
           {{ selectedModalImage?.description || '' }}
         </NDrawerDescription>
+        <div v-if="displayTags.length" class="mt-2 flex gap-2 overflow-x-auto whitespace-nowrap max-w-[85vw]">
+          <span
+            v-for="tag in displayTags"
+            :key="tag.name"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
       </NDrawerHeader>
       
       <div class="p-4">
@@ -145,21 +154,84 @@ interface Emits {
   updateImageDrawerOpen: [value: boolean]
   openEditDrawer: [image: Image]
   openAddToCollectionDrawer: [image: Image]
+  replaceImage: [image: Image]
+  requestDelete: [image: Image]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { downloadImage } = useImageActions()
+const { downloadImage, normalizeTags } = useImageActions()
+const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags))
 const handleDownload = () => {
   if (!props.selectedModalImage) return
   downloadImage(props.selectedModalImage)
+}
+
+const isEditableTarget = (event: KeyboardEvent) => {
+  const target = event.target as HTMLElement | null
+  if (!target) return false
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return true
+  if (target.isContentEditable) return true
+  return false
 }
 
 
 const isOpen = computed({
   get: () => props.isImageDrawerOpen,
   set: (value) => emit('updateImageDrawerOpen', value)
+})
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (!props.isImageDrawerOpen) return
+  if (isEditableTarget(event)) return
+
+  const image = props.selectedModalImage
+  if (!image) return
+
+  const key = event.key.toLowerCase()
+  switch (key) {
+    case 'e':
+      event.preventDefault()
+      isOpen.value = false
+      nextTick(() => emit('openEditDrawer', image))
+      break
+    case 'f':
+      event.preventDefault()
+      emit('openFullPage')
+      break
+    case 'r':
+      event.preventDefault()
+      emit('replaceImage', image)
+      break
+    case 'a':
+      event.preventDefault()
+      isOpen.value = false
+      nextTick(() => emit('openAddToCollectionDrawer', image))
+      break
+    case 'd':
+      event.preventDefault()
+      handleDownload()
+      break
+    case 't':
+      event.preventDefault()
+      emit('requestDelete', image)
+      break
+  }
+}
+
+watch(() => props.isImageDrawerOpen, (isOpen) => {
+  if (!import.meta.client) return
+  if (isOpen) {
+    window.addEventListener('keydown', handleKeydown)
+  } else {
+    window.removeEventListener('keydown', handleKeydown)
+  }
+})
+
+onUnmounted(() => {
+  if (!import.meta.client) return
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 // Swipe gesture handling

@@ -129,6 +129,7 @@
     />
 
     <ImageModal
+      ref="imageModalRef"
       :is-image-modal-open="isImageModalOpen"
       :selected-modal-image="selectedImage"
       :current-position="currentImageIndex + 1"
@@ -147,13 +148,17 @@
         replacementFileInput,
       })"
       @open-full-page="openFullPage"
+      @open-edit-modal="(img: Image) => imageActions.openEditModal(img)"
+      @open-add-to-collection-modal="(img: Image) => addToCollection.openModal(img)"
+      @replace-image="(img: Image) => imageActions.triggerImageReplacement(img, replacementFileInput)"
+      @download-image="(img: Image) => imageActions.downloadImage(img)"
+      @request-delete="(img: Image) => openImageDeleteDialog(img)"
     />
 
     <!-- Image edit modal (was missing) - re-use the same imageActions composable as index.vue -->
     <ImageEditModal
       :is-open="imageActions.showEditModal.value"
       :edit-form="imageActions.editForm.value"
-      :available-tags="imageActions.availableTags"
       :is-updating="imageActions.isUpdating.value"
       :is-form-valid="imageActions.isEditFormValid.value"
       @close="imageActions.closeEditModal"
@@ -177,7 +182,6 @@
     <ImageEditDrawer
       v-model:is-open="imageActions.showEditDrawer.value"
       :edit-form="imageActions.editForm.value"
-      :available-tags="imageActions.availableTags"
       :is-updating="imageActions.isUpdating.value"
       :is-form-valid="imageActions.isEditFormValid.value"
       @close="imageActions.closeEditDrawer"
@@ -217,6 +221,15 @@
       @update-image-drawer-open="onUpdateImageDrawerOpen"
       @open-edit-drawer="(img: Image) => imageActions.openEditDrawer(img)"
       @open-add-to-collection-drawer="(img: Image) => addToCollection.openDrawer(img)"
+      @replace-image="(img: Image) => imageActions.triggerImageReplacement(img, replacementFileInput)"
+      @request-delete="(img: Image) => openImageDeleteDialog(img)"
+    />
+
+    <ImageDeleteDialog
+      v-model:is-open="showImageDeleteDialog"
+      :image-name="imageToDelete?.name"
+      :is-deleting="isDeletingImage"
+      @confirm="confirmImageDelete"
     />
   </div>
 </template>
@@ -232,6 +245,7 @@ const route = useRoute()
 const router = useRouter()
 const { toast } = useToast()
 const { loggedIn, user } = useUserSession()
+const isAdmin = computed(() => user.value?.role === 'admin')
 
 const store = useCollectionDetailStore()
 
@@ -261,6 +275,9 @@ const isOwner = computed(() => {
 
 const isImageModalOpen = ref(false)
 const isImageDrawerOpen = ref(false)
+const showImageDeleteDialog = ref(false)
+const isDeletingImage = ref(false)
+const imageToDelete = ref<Image | null>(null)
 const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
 
@@ -270,6 +287,7 @@ const addToCollection = useAddToCollectionModal()
 const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
 const pageHeader = usePageHeader()
+const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
 
 // Computed properties for navigation (circular when more than 1 image)
 const canNavigatePrevious = computed(() => store.images.length > 1)
@@ -360,6 +378,45 @@ const onUpdateImageModalOpen = (value: boolean) => {
 
 const onUpdateImageDrawerOpen = (value: boolean) => {
   isImageDrawerOpen.value = value
+}
+
+const refocusImageModal = () => {
+  if (!isImageModalOpen.value) return
+  nextTick(() => {
+    imageModalRef.value?.focusModal?.()
+  })
+}
+
+watch(() => imageActions.showEditModal.value, (isOpen, wasOpen) => {
+  if (!isOpen && wasOpen) {
+    refocusImageModal()
+  }
+})
+
+watch(() => addToCollection.isOpen.value, (isOpen, wasOpen) => {
+  if (!isOpen && wasOpen) {
+    refocusImageModal()
+  }
+})
+
+const openImageDeleteDialog = (image: Image | null) => {
+  if (!image || !isAdmin.value) return
+  imageToDelete.value = image
+  showImageDeleteDialog.value = true
+}
+
+const confirmImageDelete = async () => {
+  if (!imageToDelete.value) return
+  isDeletingImage.value = true
+  try {
+    await imageActions.deleteImage(imageToDelete.value.id)
+    showImageDeleteDialog.value = false
+    imageToDelete.value = null
+    isImageModalOpen.value = false
+    isImageDrawerOpen.value = false
+  } finally {
+    isDeletingImage.value = false
+  }
 }
 </script>
 

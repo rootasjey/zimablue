@@ -1,10 +1,10 @@
 # Zima Blue - AI Development Guide
 
-This is a modern image gallery application built with Nuxt.js 3 and deployed on Cloudflare Workers via NuxtHub.
+This is a modern image gallery application built with Nuxt.js 4 and deployed on Cloudflare Workers.
 
 ## Architecture Overview
 
-**Stack**: Nuxt 3 + UnaUI + UnoCSS + Cloudflare (D1, R2, KV, Workers)  
+**Stack**: Nuxt 4 + UnaUI + UnoCSS + Cloudflare (D1, R2, KV, Workers)  
 **Pattern**: SSR-first with progressive enhancement, composable-driven architecture
 
 ### Key Components
@@ -85,7 +85,7 @@ const multiSelect = useHomeMultiSelect()
 
 ### Cloudflare Services
 - **R2**: Image storage with custom `hubblob` provider
-- **D1**: SQLite database with migrations in `server/database/migrations/`
+- **D1**: SQLite database with migrations in `server/db/migrations/`
 - **KV**: Session storage (handled by nuxt-auth-utils)
 - **Workers**: Edge deployment target
 

@@ -3,9 +3,7 @@
 
 Discover new illustrations regularly.
 
-Edge image gallery application built with Nuxt.js on NuxtHub (Cloudflare Workers), providing image hosting and management.
-
-![zima blue screenshot](./screenshots/zimablue-screenshot-dark-2.png)
+![zima blue screenshot](./screenshots/zimablue-screenshot-dark-1.jpeg)
 
 [Go to website ↗ 🌓](https://zimablue.cc/)
 

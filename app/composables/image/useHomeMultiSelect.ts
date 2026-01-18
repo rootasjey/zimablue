@@ -1,4 +1,6 @@
 import type { Image } from '~~/shared/types/image'
+import JSZip from 'jszip'
+import useParseVariants from './useParseVariants'
 
 export const useHomeMultiSelect = () => {
   // Selection state
@@ -119,6 +121,71 @@ export const useHomeMultiSelect = () => {
     }
   }
 
+  const { parse: parseVariants } = useParseVariants()
+
+  const resolveDownloadPath = (image: Image): string => {
+    const variants = parseVariants(image.variants as any)
+    const originalVariant = variants.find(variant => variant.size === 'original')
+    return `/${originalVariant?.pathname ?? image.pathname}`
+  }
+
+  const normalizeFileName = (value: string) => {
+    return value
+      .trim()
+      .replace(/[\s/\\]+/g, '_')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/_+/g, '_')
+  }
+
+  const getDownloadFileName = (image: Image, pathname: string) => {
+    const baseName = normalizeFileName(image.name || image.slug || `image-${image.id}`)
+    const fallback = pathname.split('/').pop() || baseName
+    const extension = fallback.includes('.') ? fallback.split('.').pop() : ''
+    return extension ? `${baseName}.${extension}` : baseName
+  }
+
+  const bulkDownloadImages = async (images: Image[]) => {
+    if (!import.meta.client) {
+      return { success: false, message: 'Downloads are only available in the browser.' }
+    }
+
+    const selected = selectedImageIds.value
+      .map((id) => images.find(img => img.id === id))
+      .filter((img): img is Image => Boolean(img))
+
+    if (selected.length === 0) {
+      return { success: false, message: 'No images selected.' }
+    }
+
+    const zip = new JSZip()
+
+    try {
+      for (const image of selected) {
+        const pathname = resolveDownloadPath(image)
+        const response = await fetch(pathname)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${image.name || image.slug || image.id}`)
+        }
+        const blob = await response.blob()
+        const filename = getDownloadFileName(image, pathname)
+        zip.file(filename, blob)
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(zipBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `images-${new Date().toISOString().slice(0, 10)}.zip`
+      link.click()
+      URL.revokeObjectURL(url)
+
+      return { success: true, message: `Downloaded ${selected.length} image(s).` }
+    } catch (error) {
+      console.error('Bulk download error:', error)
+      return { success: false, message: 'Failed to create archive. Please try again.' }
+    }
+  }
+
   // Range selection support
   const lastClickedIndex = ref(-1)
   
@@ -206,6 +273,7 @@ export const useHomeMultiSelect = () => {
     // Bulk operations
     bulkDeleteImages,
     bulkAddToCollection,
+    bulkDownloadImages,
     
     // Keyboard support
     handleKeyboardShortcuts,

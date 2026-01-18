@@ -40,21 +40,13 @@
 
     <!-- Vertical Cards on Mobile, Horizontal Carousel on Desktop -->
     <section v-else-if="!isLoading && collectionStore.collections.length > 0" class="relative animate-fade-in-up animation-delay-200">
-      <!-- Navigation buttons - hidden on mobile -->
-      <button class="hidden sm:inline-flex nav left absolute top-1/2 -translate-y-1/2 w-9 h-9 
-        rounded-full border border-[rgba(0,0,0,0.08)] backdrop-blur-md 
-        items-center justify-center cursor-pointer shadow-lg left-[-10px] z-10 animate-fade-in-left animation-delay-400" 
-        aria-label="Previous" @click="scrollByAmount(-1)">
-        <NIcon name="i-ph-caret-left" />
-      </button>
-
       <div ref="scrollEl" 
-        class="flex flex-col gap-6 sm:grid sm:grid-flow-col sm:auto-cols-[minmax(240px,380px)] sm:gap-[28px] sm:overflow-x-auto sm:overscroll-contain sm:snap-x sm:snap-mandatory p-3 sm:mx-6" 
+        class="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:gap-[28px] sm:justify-start p-3 sm:mx-6" 
         @scroll.passive="onScroll">
         <article
           v-for="(collection, index) in collectionStore.collections"
           :key="collection.id"
-          class="hcard sm:snap-start animate-fade-in-scale w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]"
+          class="hcard animate-fade-in-scale w-full sm:flex-[1_1_240px] sm:max-w-[380px]"
           :style="{ animationDelay: `${300 + index * 100}ms` }"
           @mousemove="(e) => onParallax(e, collection.id)"
           @mouseleave="() => resetParallax(collection.id)"
@@ -115,13 +107,6 @@
           </NuxtLink>
         </article>
       </div>
-
-      <!-- Right navigation button - hidden on mobile -->
-      <button class="hidden sm:inline-flex right absolute top-1/2 -translate-y-1/2 w-9 h-9 
-        rounded-full border border-[rgba(0,0,0,0.08)] backdrop-blur-md 
-        items-center justify-center cursor-pointer shadow-lg right-[-10px] z-10 animate-fade-in-right animation-delay-400" aria-label="Next" @click="scrollByAmount(1)">
-        <span class="i-ph-caret-right"></span>
-      </button>
     </section>
 
     <!-- Empty State -->

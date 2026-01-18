@@ -42,6 +42,7 @@
     />    
 
     <ImageModal
+      ref="imageModalRef"
       :is-image-modal-open="imageModal.isImageModalOpen.value"
       :selected-modal-image="imageModal.selectedModalImage.value"
       :current-position="imageModal.currentPosition.value"
@@ -55,6 +56,11 @@
         replacementFileInput,
       })"
       @open-full-page="imageModal.openImagePage"
+      @open-edit-modal="(img: Image) => imageActions.openEditModal(img)"
+      @open-add-to-collection-modal="(img: Image) => addToCollection.openModal(img)"
+      @replace-image="(img: Image) => imageActions.triggerImageReplacement(img, replacementFileInput)"
+      @download-image="(img: Image) => imageActions.downloadImage(img)"
+      @request-delete="(img: Image) => openImageDeleteDialog(img)"
       @navigate-previous="imageModal.navigateToPrevious"
       @navigate-next="imageModal.navigateToNext"
       @navigate-to-first="imageModal.navigateToFirst"
@@ -81,12 +87,13 @@
       @update-image-drawer-open="imageModal.isImageDrawerOpen.value = $event"
       @open-edit-drawer="(img: Image) => imageActions.openEditDrawer(img)"
       @open-add-to-collection-drawer="(img: Image) => addToCollection.openDrawer(img)"
+      @replace-image="(img: Image) => imageActions.triggerImageReplacement(img, replacementFileInput)"
+      @request-delete="(img: Image) => openImageDeleteDialog(img)"
     />
 
     <ImageEditModal
       :is-open="imageActions.showEditModal.value"
       :edit-form="imageActions.editForm.value"
-      :available-tags="imageActions.availableTags"
       :is-updating="imageActions.isUpdating.value"
       :is-form-valid="imageActions.isEditFormValid.value"
       @close="imageActions.closeEditModal"
@@ -110,7 +117,6 @@
     <ImageEditDrawer
       v-model:is-open="imageActions.showEditDrawer.value"
       :edit-form="imageActions.editForm.value"
-      :available-tags="imageActions.availableTags"
       :is-updating="imageActions.isUpdating.value"
       :is-form-valid="imageActions.isEditFormValid.value"
       @close="imageActions.closeEditDrawer"
@@ -137,6 +143,7 @@
       :is-all-selected="multiSelect.isAllSelected(layout)"
       @toggle-select-all="multiSelect.toggleSelectAll(layout)"
       @add-to-collection="openBulkAddToCollectionDialog"
+      @download-selected="handleBulkDownload"
       @delete-selected="openBulkDeleteDialog"
       @clear-selection="multiSelect.clearSelection"
     />
@@ -157,6 +164,13 @@
       :error="bulkCollectionsError || undefined"
       @confirm="handleBulkAddToCollection"
       @create-collection="navigateToCreateCollection"
+    />
+
+    <ImageDeleteDialog
+      v-model:is-open="showImageDeleteDialog"
+      :image-name="imageToDelete?.name"
+      :is-deleting="isDeletingImage"
+      @confirm="confirmImageDelete"
     />
   </div>
 </template>
@@ -185,7 +199,7 @@ import usePageHeader from '~/composables/usePageHeader'
 const pageHeader = usePageHeader()
 
 // provide the same menu items that the page previously passed directly
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 
 onMounted(() => {
   pageHeader.setPageHeader({
@@ -200,6 +214,8 @@ onBeforeUnmount(() => {
 const replacementFileInput = imageUpload.replacementFileInput
 const fileInput = imageUpload.fileInput
 
+const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
+
 const showGrid = ref(false)
 const showGridOpacity = ref(false)
 const isDraggable = computed(() => loggedIn.value)
@@ -211,6 +227,9 @@ const rowHeight = ref(37)
 // Multi-select dialog states
 const showBulkDeleteDialog = ref(false)
 const showBulkAddToCollectionDialog = ref(false)
+const showImageDeleteDialog = ref(false)
+const isDeletingImage = ref(false)
+const imageToDelete = ref<Image | null>(null)
 
 // Bulk collections state
 const bulkCollections = ref<any[]>([])
@@ -255,15 +274,36 @@ onMounted(() => {
 
 // Global keyboard shortcuts
 const handleGlobalKeydown = (event: KeyboardEvent) => {
-  // Only handle shortcuts when logged in and not in input fields
-  if (!loggedIn.value ||
-      event.target instanceof HTMLInputElement ||
-      event.target instanceof HTMLTextAreaElement) {
-    return
-  }
+  const target = event.target as HTMLElement | null
+  const isEditable = target?.tagName === 'INPUT' ||
+    target?.tagName === 'TEXTAREA' ||
+    target?.isContentEditable
 
-  multiSelect.handleKeyboardShortcuts(event, layout.value)
+  if (isEditable) return
+
+  if (loggedIn.value) {
+    multiSelect.handleKeyboardShortcuts(event, layout.value)
+  }
 }
+
+const refocusImageModal = () => {
+  if (!imageModal.isImageModalOpen.value) return
+  nextTick(() => {
+    imageModalRef.value?.focusModal?.()
+  })
+}
+
+watch(() => imageActions.showEditModal.value, (isOpen, wasOpen) => {
+  if (!isOpen && wasOpen) {
+    refocusImageModal()
+  }
+})
+
+watch(() => addToCollection.isOpen.value, (isOpen, wasOpen) => {
+  if (!isOpen && wasOpen) {
+    refocusImageModal()
+  }
+})
 
 function layoutUpdated(newLayout: Image[]) {
   if (!loggedIn.value) return
@@ -291,6 +331,43 @@ const openBulkAddToCollectionDialog = async () => {
   if (multiSelect.selectionCount.value > 0) {
     await fetchBulkCollections()
     showBulkAddToCollectionDialog.value = true
+  }
+}
+
+const handleBulkDownload = async () => {
+  const result = await multiSelect.bulkDownloadImages(layout.value)
+  if (!result.success) {
+    useToast().toast({
+      title: 'Download Failed',
+      description: result.message,
+      toast: 'soft-warning'
+    })
+    return
+  }
+
+  useToast().toast({
+    title: 'Download Started',
+    description: result.message,
+    toast: 'soft-success'
+  })
+}
+
+const openImageDeleteDialog = (image: Image | null) => {
+  if (!image || !isAdmin.value) return
+  imageToDelete.value = image
+  showImageDeleteDialog.value = true
+}
+
+const confirmImageDelete = async () => {
+  if (!imageToDelete.value) return
+  isDeletingImage.value = true
+  try {
+    await imageActions.deleteImage(imageToDelete.value.id)
+    showImageDeleteDialog.value = false
+    imageToDelete.value = null
+    imageModal.closeModal()
+  } finally {
+    isDeletingImage.value = false
   }
 }
 

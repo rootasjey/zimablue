@@ -16,35 +16,66 @@ export const useImageActions = () => {
     tags: [] as any[],
   })
 
-  // Available tags for the combobox
-  const availableTags = [
-    { value: "abstract", label: "Abstract" },
-    { value: "anime", label: "Anime" },
-    { value: "cartoon", label: "Cartoon" },
-    { value: "comic", label: "Comic" },
-    { value: "landscape", label: "Landscape" },
-    { value: "litterature", label: "Litterature" },
-    { value: "movie", label: "Movie" },
-    { value: "music", label: "Music" },
-    { value: "poetry", label: "Poetry" },
-    { value: "portrait", label: "Portrait" },
-    { value: "tv-show", label: "TV Show" },
-    { value: "video-game", label: "Video Game" },
-  ]
+  /**
+   * Normalize tags from various formats to array of tag objects
+   * Handles: JSON strings, arrays of strings, arrays of objects, null/undefined
+   */
+  const normalizeTags = (input: any): Array<{ id?: number; name: string }> => {
+    if (!input) return []
+
+    // Handle JSON string (legacy format)
+    if (typeof input === 'string') {
+      try {
+        const parsed = JSON.parse(input)
+        return normalizeTags(parsed) // Recursively normalize parsed data
+      } catch {
+        return []
+      }
+    }
+
+    // Handle array
+    if (Array.isArray(input)) {
+      return input.map((item: any) => {
+        if (typeof item === 'string') {
+          return { name: item }
+        }
+        if (typeof item === 'object' && item.name) {
+          return { id: item.id, name: item.name }
+        }
+        return { name: String(item) }
+      })
+    }
+
+    // Handle single object
+    if (typeof input === 'object' && input.name) {
+      return [{ id: input.id, name: input.name }]
+    }
+
+    return []
+  }
 
   // Loading states for different actions
   const isDeleting = ref(false)
   const isUpdating = ref(false)
   const isReplacing = ref(false)
 
+  const populateEditForm = (image: Image) => {
+    editForm.value.name = image.name || ''
+    editForm.value.description = image.description || ''
+    editForm.value.slug = image.slug || ''
+    editForm.value.tags = normalizeTags(image.tags)
+  }
+
   const openEditModal = (image: Image) => {
     gridStore.selectedImage = image
+    populateEditForm(image)
     showEditModal.value = true
   }
 
   const openEditDrawer = (image: Image) => {
     // set selected image for the edit form and show the drawer
     gridStore.selectedImage = image
+    populateEditForm(image)
     showEditDrawer.value = true
   }
 
@@ -79,13 +110,22 @@ export const useImageActions = () => {
     isUpdating.value = true
     
     try {
-      await gridStore.updateImage({
+      // Extract tag names from editForm (handles both string and object formats)
+      const normalizedTags = normalizeTags(editForm.value.tags)
+      const tagNames = normalizedTags.map(tag => tag.name)
+      
+      const response = await gridStore.updateImage({
         id: gridStore.selectedImage.id,
         name: editForm.value.name,
         description: editForm.value.description,
         slug: editForm.value.slug,
-        tags: JSON.stringify(editForm.value.tags)
+        tags: tagNames // Send as array of strings
       })
+      
+      // Update local image with server response (includes normalized tags)
+      if (response?.data?.tags && gridStore.selectedImage) {
+        gridStore.selectedImage.tags = response.data.tags
+      }
       
       closeEditModal()
       closeEditDrawer()
@@ -238,26 +278,8 @@ export const useImageActions = () => {
     editForm.value.description = newImage.description || ''
     editForm.value.slug = newImage.slug || ''
 
-    // Handle both legacy JSON format and new normalized format
-    if (newImage.tags) {
-      if (typeof newImage.tags === 'string') {
-        // Legacy JSON format
-        try {
-          editForm.value.tags = JSON.parse(newImage.tags)
-        } catch {
-          editForm.value.tags = []
-        }
-      } else if (Array.isArray(newImage.tags)) {
-        // New normalized format - extract tag names
-        editForm.value.tags = newImage.tags.map(tag =>
-          typeof tag === 'string' ? tag : tag.name
-        )
-      } else {
-        editForm.value.tags = []
-      }
-    } else {
-      editForm.value.tags = []
-    }
+    // Use normalizeTags helper to handle all formats consistently
+    editForm.value.tags = normalizeTags(newImage.tags)
   }, { immediate: true })
 
   const isEditFormValid = computed(() => {
@@ -274,7 +296,6 @@ export const useImageActions = () => {
     showEditModal,
     showEditDrawer,
     editForm,
-    availableTags,
     isDeleting: readonly(isDeleting),
     isUpdating: readonly(isUpdating),
     isReplacing: readonly(isReplacing),
@@ -302,5 +323,8 @@ export const useImageActions = () => {
     
     // Form helpers
     updateEditFormField,
+    
+    // Tag helpers
+    normalizeTags,
   }
 }

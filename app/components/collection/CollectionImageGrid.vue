@@ -26,7 +26,9 @@
       <div  
         v-for="(image, index) in images" 
         :key="image.id" 
-        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60 dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70 transition-all duration-200 hover:shadow-md active:shadow-sm cursor-pointer animate-fade-in-up"
+        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60 
+        dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70 
+        transition-all duration-200 hover:shadow-md active:shadow-sm cursor-pointer animate-fade-in-up"
         :style="{ animationDelay: `${index * 50}ms` }"
         @click="$emit('imageClick', image)"
       >

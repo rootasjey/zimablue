@@ -54,6 +54,17 @@
               <span class="i-ph-folder-plus"></span>
               <span>Add to Collection</span>
             </NButton>
+
+            <!-- Download Selected -->
+            <NButton 
+              btn="soft-gray"
+              size="sm"
+              @click="$emit('downloadSelected')"
+              :disabled="selectionCount === 0"
+            >
+              <span class="i-ph-download"></span>
+              <span>Download</span>
+            </NButton>
             
             <!-- Delete Selected -->
             <NButton 
@@ -96,6 +107,7 @@ interface Props {
 interface Emits {
   toggleSelectAll: []
   addToCollection: []
+  downloadSelected: []
   deleteSelected: []
   clearSelection: []
 }

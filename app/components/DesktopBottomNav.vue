@@ -42,6 +42,7 @@ const imageUpload = useImageUpload()
 const { openSearch } = useGlobalSearch()
 
 const userRole = computed(() => (user.value as any)?.role)
+const isAdmin = computed(() => user.value?.role === 'admin')
 function triggerUpload() {
   imageUpload.triggerFileUpload()
 }
@@ -63,7 +64,7 @@ const navItems = computed<Item[]>(() => {
   const items: Item[] = [
     { key: 'home', to: '/', label: 'Home', icon: 'i-tabler-smart-home', match: (p) => p === '/' },
     { key: 'collections', to: '/collections', label: 'Collection', icon: 'i-ph-squares-four', match: (p) => p.startsWith('/collections') },
-    { key: 'search', to: '/search', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: (isClient.value && !isMobile.value) ? () => openSearch() : undefined },
+    { key: 'search', to: (isClient.value && !isMobile.value) ? '#' : '/search', label: 'Search', icon: 'i-ph-magnifying-glass', match: (p) => p.startsWith('/search'), action: (isClient.value && !isMobile.value) ? () => openSearch() : undefined },
   ]
   
   // Add upload button for admin users on mobile
@@ -94,6 +95,69 @@ function handleItemClick(item: Item) {
     navigateTo(item.to)
   }
 }
+
+const handleGlobalKeydown = (event: KeyboardEvent) => {
+  const target = event.target as HTMLElement | null
+  const isEditable = target?.tagName === 'INPUT' ||
+    target?.tagName === 'TEXTAREA' ||
+    target?.isContentEditable
+
+  if (isEditable) return
+
+  const key = event.key
+  const keyLower = event.key.toLowerCase()
+
+  if (event.shiftKey && (key === '1' || key === '&')) {
+    event.preventDefault()
+    navigateTo('/')
+    return
+  }
+
+  if (event.shiftKey && (key === '2' || key === 'é')) {
+    event.preventDefault()
+    navigateTo('/collections')
+    return
+  }
+
+  if (event.shiftKey && (key === '3' || key === '"')) {
+    event.preventDefault()
+    openSearch()
+    return
+  }
+
+  if (event.shiftKey && (key === '4' || key === "'")) {
+    event.preventDefault()
+    triggerUpload()
+    return
+  }
+
+  if (keyLower === 'u') {
+    event.preventDefault()
+    triggerUpload()
+    return
+  }
+
+  if (event.shiftKey && (key === '5' || key === '(')) {
+    event.preventDefault()
+    navigateTo('/settings')
+    return
+  }
+
+  if (event.shiftKey && (key === '6' || key === '§')) {
+    if (isAdmin.value) {
+      event.preventDefault()
+      navigateTo('/admin')
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleGlobalKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleGlobalKeydown)
+})
 
 </script>
 
