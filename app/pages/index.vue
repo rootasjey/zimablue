@@ -71,6 +71,8 @@
     <ImageMobileDrawer
       :is-image-drawer-open="imageModal.isImageDrawerOpen.value"
       :selected-modal-image="imageModal.selectedModalImage.value"
+      :prev-image="imageModal.prevImage.value"
+      :next-image="imageModal.nextImage.value"
       :current-position="imageModal.currentPosition.value"
       :total-images="imageModal.totalImages.value"
       :can-navigate-previous="imageModal.canNavigatePrevious.value"

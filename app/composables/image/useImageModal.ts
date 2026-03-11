@@ -28,23 +28,18 @@ export const useImageModal = () => {
     dragStartPos.value = { x: e.clientX, y: e.clientY }
   }
 
-  const openImageModal = async (item: Image, event?: MouseEvent | PointerEvent) => {
+  const openImageModal = (item: Image, event?: MouseEvent | PointerEvent) => {
     if (event) {
-      // Check if the user is dragging the image
       const moveDistance = Math.sqrt(
         Math.pow(event.clientX - dragStartPos.value.x, 2) +
         Math.pow(event.clientY - dragStartPos.value.y, 2)
       )
-
-      if (moveDistance > DRAG_THRESHOLD) {
-        return
-      }
+      if (moveDistance > DRAG_THRESHOLD) return
     }
 
     selectedModalImage.value = item
     currentImageIndex.value = gridStore.layout.findIndex(img => img.id === item.id)
-    
-    // Check if mobile (client-side only)
+
     const isMobile = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT
     if (isMobile) {
       isImageDrawerOpen.value = true
@@ -52,14 +47,16 @@ export const useImageModal = () => {
       isImageModalOpen.value = true
     }
 
-    // Update image view count
-    const updatedImage = await $fetch(`/api/images/slug/${item.slug}/views`, {
-      method: 'PUT',
-    })
-
-    selectedModalImage.value.stats_views = updatedImage.stats_views
-    selectedModalImage.value.stats_downloads = updatedImage.stats_downloads
-    selectedModalImage.value.stats_likes = updatedImage.stats_likes
+    // Fire-and-forget : n'attend pas, met à jour les stats si la réponse arrive
+    $fetch(`/api/images/slug/${item.slug}/views`, { method: 'PUT' })
+      .then((updatedImage: any) => {
+        if (selectedModalImage.value?.id === item.id) {
+          selectedModalImage.value.stats_views = updatedImage.stats_views
+          selectedModalImage.value.stats_downloads = updatedImage.stats_downloads
+          selectedModalImage.value.stats_likes = updatedImage.stats_likes
+        }
+      })
+      .catch(() => { /* silencieux — stats non critiques */ })
   }
 
   const navigateToPrevious = () => {
@@ -100,6 +97,22 @@ export const useImageModal = () => {
       if (targetImage) selectedModalImage.value = targetImage
     }
   }
+
+  const prevImage = computed(() => {
+    if (gridStore.layout.length <= 1) return null
+    const idx = currentImageIndex.value > 0
+      ? currentImageIndex.value - 1
+      : gridStore.layout.length - 1
+    return gridStore.layout[idx] ?? null
+  })
+
+  const nextImage = computed(() => {
+    if (gridStore.layout.length <= 1) return null
+    const idx = currentImageIndex.value < gridStore.layout.length - 1
+      ? currentImageIndex.value + 1
+      : 0
+    return gridStore.layout[idx] ?? null
+  })
 
   // Open image in full page with view transition
   const openImagePage = (targetImage?: Image) => {
@@ -163,6 +176,8 @@ export const useImageModal = () => {
     canNavigateNext,
     totalImages,
     currentPosition,
+    prevImage,
+    nextImage,
     
     // Methods
     openImageModal,

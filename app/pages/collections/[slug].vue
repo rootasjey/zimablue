@@ -205,6 +205,8 @@
     <ImageMobileDrawer
       :is-image-drawer-open="isImageDrawerOpen"
       :selected-modal-image="selectedImage"
+      :prev-image="prevImage"
+      :next-image="nextImage"
       :current-position="currentImageIndex + 1"
       :total-images="store.images.length"
       :can-navigate-previous="canNavigatePrevious"
@@ -292,6 +294,22 @@ const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
 // Computed properties for navigation (circular when more than 1 image)
 const canNavigatePrevious = computed(() => store.images.length > 1)
 const canNavigateNext = computed(() => store.images.length > 1)
+
+const prevImage = computed(() => {
+  if (store.images.length <= 1) return null
+  const idx = currentImageIndex.value > 0
+    ? currentImageIndex.value - 1
+    : store.images.length - 1
+  return store.images[idx] ?? null
+})
+
+const nextImage = computed(() => {
+  if (store.images.length <= 1) return null
+  const idx = currentImageIndex.value < store.images.length - 1
+    ? currentImageIndex.value + 1
+    : 0
+  return store.images[idx] ?? null
+})
 
 // Load collection data on mount
 onMounted(async () => {

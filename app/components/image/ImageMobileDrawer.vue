@@ -20,38 +20,67 @@
       </NDrawerHeader>
       
       <div class="p-4">
-        <!-- Image with swipe gestures -->
-        <div 
-          ref="swipeContainer"
-          class="flex justify-center mb-4 touch-pan-y"
-          @touchstart="handleTouchStart"
-          @touchmove="handleTouchMove"
+        <!-- Image carousel avec swipe synchronisé -->
+        <div
+          class="overflow-hidden mb-4"
+          style="touch-action: pan-y; user-select: none;"
+          @touchstart.passive="handleTouchStart"
+          @touchmove.passive="handleTouchMove"
           @touchend="handleTouchEnd"
+          @touchcancel="handleTouchCancel"
         >
-          <NuxtImg 
-            v-if="selectedModalImage"
-            :provider="selectedModalImage.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            :src="selectedModalImage.pathname"
-            :alt="selectedModalImage.name || 'Image'"
-            :width="400"
-            class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
-            :class="{ 'transition-transform duration-200': !isSwiping }"
+          <!-- Piste 3-slots (300% de large) -->
+          <div
+            class="flex"
             :style="{
-              ...(selectedModalImage ? { viewTransitionName: `image-${selectedModalImage.id}` } : {}),
-              transform: `translateX(${swipeOffset}px)`,
-              opacity: 1 - Math.abs(swipeOffset) / 500
+              width: '300%',
+              transform: `translateX(calc(-33.333% + ${swipeOffset}px))`,
+              transition: isAnimating ? 'transform 0.25s ease-out' : 'none',
+              willChange: 'transform',
             }"
-            @click="$emit('openFullPage')"
-            draggable="false"
-          />
-        </div>
+            @transitionend="onTransitionEnd"
+          >
+            <!-- Slot gauche : image précédente (préchargée) -->
+            <div class="flex justify-center items-center px-2" style="width: 33.333%;">
+              <NuxtImg
+                v-if="prevImage"
+                :src="getImageSrc(prevImage, 'drawer').src"
+                v-bind="getImageSrc(prevImage, 'drawer').provider ? { provider: getImageSrc(prevImage, 'drawer').provider } : {}"
+                :alt="prevImage.name || ''"
+                width="400"
+                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
+                draggable="false"
+              />
+            </div>
 
-        <!-- Swipe hint -->
-        <div class="flex justify-center mb-2">
-          <span class="text-xs text-gray-400 dark:text-gray-500">
-            <span class="i-ph-hand-swipe-left inline-block mr-1"></span>
-            Swipe to navigate
-          </span>
+            <!-- Slot centre : image courante -->
+            <div class="flex justify-center items-center px-2" style="width: 33.333%;">
+              <NuxtImg
+                v-if="selectedModalImage"
+                :src="getImageSrc(selectedModalImage, 'drawer').src"
+                v-bind="getImageSrc(selectedModalImage, 'drawer').provider ? { provider: getImageSrc(selectedModalImage, 'drawer').provider } : {}"
+                :alt="selectedModalImage.name || 'Image'"
+                width="400"
+                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
+                :style="{ viewTransitionName: `image-${selectedModalImage.id}` }"
+                @click="$emit('openFullPage')"
+                draggable="false"
+              />
+            </div>
+
+            <!-- Slot droit : image suivante (préchargée) -->
+            <div class="flex justify-center items-center px-2" style="width: 33.333%;">
+              <NuxtImg
+                v-if="nextImage"
+                :src="getImageSrc(nextImage, 'drawer').src"
+                v-bind="getImageSrc(nextImage, 'drawer').provider ? { provider: getImageSrc(nextImage, 'drawer').provider } : {}"
+                :alt="nextImage.name || ''"
+                width="400"
+                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
+                draggable="false"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Image stats -->
@@ -131,11 +160,15 @@
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
 import { useImageActions } from '~/composables/image/useImageActions'
+import { useImageSrc } from '~/composables/image/useImageSrc'
+const { getSrc: getImageSrc } = useImageSrc()
 
 
 interface Props {
   isImageDrawerOpen: boolean
   selectedModalImage: Image | null
+  prevImage: Image | null
+  nextImage: Image | null
   currentPosition: number
   totalImages: number
   canNavigatePrevious: boolean
@@ -234,57 +267,79 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 
-// Swipe gesture handling
-const swipeContainer = ref<HTMLElement>()
-const touchStartX = ref(0)
-const touchStartY = ref(0)
+// Carousel swipe state
 const swipeOffset = ref(0)
 const isSwiping = ref(false)
-const SWIPE_THRESHOLD = 80 // pixels needed to trigger navigation
-const VERTICAL_THRESHOLD = 30 // max vertical movement before canceling swipe
+const isAnimating = ref(false)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const pendingNavigate = ref<'prev' | 'next' | null>(null)
+
+const SWIPE_THRESHOLD = 80
+const VERTICAL_THRESHOLD = 30
+const EDGE_RESISTANCE = 0.2
 
 const handleTouchStart = (e: TouchEvent) => {
-  const touch = e.touches[0] ; if (!touch) return
+  if (isAnimating.value) return
+  const touch = e.touches[0]
+  if (!touch) return
   touchStartX.value = touch.clientX
   touchStartY.value = touch.clientY
   isSwiping.value = true
 }
 
 const handleTouchMove = (e: TouchEvent) => {
-  if (!isSwiping.value) return
-  
-  const touch = e.touches[0] ; if (!touch) return
+  if (!isSwiping.value || isAnimating.value) return
+  const touch = e.touches[0]
+  if (!touch) return
   const deltaX = touch.clientX - touchStartX.value
   const deltaY = Math.abs(touch.clientY - touchStartY.value)
-  
-  // Cancel swipe if vertical movement is too large (user is scrolling)
+
   if (deltaY > VERTICAL_THRESHOLD) {
     isSwiping.value = false
     swipeOffset.value = 0
     return
   }
-  
-  // Limit swipe distance and add resistance at edges
-  if ((deltaX > 0 && !props.canNavigatePrevious) || (deltaX < 0 && !props.canNavigateNext)) {
-    // Add resistance when trying to swipe past boundaries
-    swipeOffset.value = deltaX * 0.2
-  } else {
-    swipeOffset.value = deltaX
-  }
+
+  const atLeft = deltaX > 0 && !props.canNavigatePrevious
+  const atRight = deltaX < 0 && !props.canNavigateNext
+  swipeOffset.value = (atLeft || atRight) ? deltaX * EDGE_RESISTANCE : deltaX
 }
 
 const handleTouchEnd = () => {
   if (!isSwiping.value) return
-  
+  isSwiping.value = false
+
   if (swipeOffset.value > SWIPE_THRESHOLD && props.canNavigatePrevious) {
-    emit('navigatePrevious')
+    pendingNavigate.value = 'prev'
+    isAnimating.value = true
+    swipeOffset.value = window.innerWidth
   } else if (swipeOffset.value < -SWIPE_THRESHOLD && props.canNavigateNext) {
+    pendingNavigate.value = 'next'
+    isAnimating.value = true
+    swipeOffset.value = -window.innerWidth
+  } else {
+    isAnimating.value = true
+    swipeOffset.value = 0
+  }
+}
+
+const handleTouchCancel = () => {
+  isSwiping.value = false
+  isAnimating.value = true
+  swipeOffset.value = 0
+}
+
+const onTransitionEnd = () => {
+  isAnimating.value = false
+  if (pendingNavigate.value === 'prev') {
+    emit('navigatePrevious')
+  } else if (pendingNavigate.value === 'next') {
     emit('navigateNext')
   }
-  
-  // Reset swipe state
+  pendingNavigate.value = null
+  // Recentrer instantanément (sans transition) — l'image était déjà chargée
   swipeOffset.value = 0
-  isSwiping.value = false
 }
 
 const wrappedMenuItems = computed(() => {

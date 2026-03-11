@@ -16,7 +16,11 @@
             'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
           }
         ]"
-        :style="{ '--index': index }"
+        :style="{
+          '--index': Math.min(index, 11),
+          'opacity': index >= 12 ? 1 : undefined,
+          'animation-name': index >= 12 ? 'none' : 'mobileGridFadeIn',
+        }"
         role="gridcell"
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
@@ -43,9 +47,8 @@
           @pointerup="handleImagePointerUp"
           @pointercancel="handleImagePointerCancel"
           loading="lazy"
-          width="180"
-          :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-          :src="item.pathname"
+          :src="getImageSrc(item, 'mobile-grid').src"
+          v-bind="getImageSrc(item, 'mobile-grid').provider ? { provider: getImageSrc(item, 'mobile-grid').provider } : {}"
           :alt="''"
           :aria-label="item.name || item.pathname || 'Image'"
           class="nuxt-img-mobile"
@@ -132,11 +135,10 @@
             @pointerup="handleImagePointerUp"
             @pointercancel="handleImagePointerCancel"
             loading="lazy"
-            :provider="item.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-            :src="`${item.pathname}`"
+            :src="getImageSrc(item, 'desktop-grid').src"
+            v-bind="getImageSrc(item, 'desktop-grid').provider ? { provider: getImageSrc(item, 'desktop-grid').provider } : {}"
             :alt="''"
             :aria-label="item.name || item.pathname || 'Image'"
-            :width="240"
             class="nuxt-img"
             :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
             :style="`view-transition-name: shared-image-${item.id}`"
@@ -189,6 +191,8 @@
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
 import { GridLayout, GridItem } from 'grid-layout-plus'
+import { useImageSrc } from '~/composables/image/useImageSrc'
+const { getSrc: getImageSrc } = useImageSrc()
 
 interface Props {
   layout: Image[]
