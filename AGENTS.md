@@ -266,6 +266,28 @@ Follow the **gitmoji + conventional commits** hybrid observed in the git history
 Common gitmojis used in this repo:
 - `✨` feat  `🚑` fix  `♻️` refactor  `🔥` remove  `🔧` chore/build  `📝` docs
 
+### Version Bump Rules
+
+Après chaque groupe de commits, mettre à jour la version dans `package.json` avec le script adapté :
+
+| Type de changement | Script | Exemple |
+|---|---|---|
+| Correction de bug, optimisation interne, refactoring sans impact UX | `bun run bump:version` (patch) | `0.21.0` → `0.21.1` |
+| Nouvelle fonctionnalité visible par l'utilisateur, amélioration UX significative | `bun run bump:minor` | `0.21.0` → `0.22.0` |
+| Changement d'architecture majeur, breaking change, refonte visuelle | `bun run bump:major` | `0.21.0` → `1.0.0` |
+
+**Règle de décision rapide :**
+- L'utilisateur voit une nouvelle feature ou une amélioration UX notoire ? → **minor**
+- C'est un fix, une optimisation de perf, ou un refactoring interne ? → **patch**
+- L'API, le schéma DB, ou l'UI change de façon incompatible ? → **major**
+
+Committer le bump séparément, après le commit fonctionnel :
+```bash
+bun run bump:version   # ou bump:minor / bump:major
+git add package.json
+git commit -m "🔧 chore: bump version to X.Y.Z"
+```
+
 ### Pull requests
 - Describe **what** changed and **why**.
 - Reference any related issue or design decision.
