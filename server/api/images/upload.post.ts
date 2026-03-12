@@ -123,8 +123,6 @@ export default eventHandler(async (event) => {
     .where(eq(images.id, newImageId))
     .get()
 
-  console.log('Upload complete for image ID:', newImageId)
-
   return {
     ...(selectResponse as any),
     ok: true,

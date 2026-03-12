@@ -160,7 +160,6 @@ const handleDrop = (targetIndex: number, event: DragEvent) => {
     return
   }
   
-  console.log(`handle drop: (draggedIndex.value: ${draggedIndex.value}) • target index: ${targetIndex}`, )
   // Reorder the images
   const newImages = [...localImages.value]
   const draggedImage = newImages[draggedIndex.value]

@@ -21,9 +21,6 @@ export default eventHandler(async (event) => {
   //     pathname: z.string().min(1)
   //   }).parse)
 
-  // console.log('0. delete : pathname', pathname, ` • id`, id)
-  console.log(`0. delete : id:`, id)
-
   if (!id) {
     throw createError({
       statusCode: 400,
@@ -43,14 +40,11 @@ export default eventHandler(async (event) => {
     })
   }
 
-  console.log('0. get image data : id', id)
-  
   // Parse variants
   const variants: Array<VariantType> = JSON.parse((imageData as any).variants as string || '[]')
 
   // Delete all variants from blob storage
   for (const variant of variants) {
-    console.log('0. delete blob: variant', variant.pathname)
     await blob.del(variant.pathname)
   }
 
