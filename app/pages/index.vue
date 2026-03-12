@@ -18,6 +18,7 @@
       :layout="layout"
       :col-num="colNum"
       :row-height="rowHeight"
+      :is-loading="gridStore.isLoading"
       :is-draggable="isDraggable && !multiSelect.isSelectionMode.value"
       :is-resizable="isResizable && !multiSelect.isSelectionMode.value"
       :is-admin="isAdmin"
@@ -250,9 +251,10 @@ const updateRowHeight = () => {
   rowHeight.value = 37 // desktop
 }
 
-gridStore.fetchGrid()
-
 onMounted(() => {
+  if (!gridStore.initialized) {
+    gridStore.fetchGrid()
+  }
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
   window.addEventListener('keydown', handleGlobalKeydown)

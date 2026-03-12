@@ -35,6 +35,7 @@ export default eventHandler(async (event) => {
     if (blobData) {
       const buffer = Buffer.from(await blobData.arrayBuffer())
       setHeader(event, 'Content-Type', blobData.type)
+      setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
       return buffer
     }
   }
@@ -70,6 +71,7 @@ export default eventHandler(async (event) => {
         if (blobData) {
           const buffer = Buffer.from(await blobData.arrayBuffer())
           setHeader(event, 'Content-Type', blobData.type)
+          setHeader(event, 'Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
           return buffer
         }
       }
@@ -82,6 +84,7 @@ export default eventHandler(async (event) => {
     if (blobData) {
       const buffer = Buffer.from(await blobData.arrayBuffer())
       setHeader(event, 'Content-Type', blobData.type)
+      setHeader(event, 'Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
       return buffer
     }
   }

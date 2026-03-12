@@ -1,5 +1,22 @@
 <template>
   <div>
+    <!-- Skeleton mobile — visible pendant le chargement si layout vide -->
+    <div
+      v-if="isLoading && !layout.length"
+      class="mobile-masonry-grid mx-4 mt-12"
+      aria-hidden="true"
+    >
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-tall skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-wide skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-large skeleton-cell" />
+      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+    </div>
+
     <!-- Mobile Grid - Dynamic Masonry Layout -->
     <div
       v-if="layout.length"
@@ -212,6 +229,8 @@ interface Props {
   isSelectionMode?: boolean
   selectedImagesMap?: Record<number, boolean>
   hasSelectedImages?: boolean
+  // Loading state for skeleton
+  isLoading?: boolean
 }
 
 interface Emits {
@@ -685,5 +704,32 @@ const markError = (itemKey: string | number) => {
     filter: blur(0);
     padding: 0;
   }
+}
+
+/* Skeleton shimmer — mobile grid placeholder during initial load */
+.skeleton-cell {
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 25%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite !important;
+}
+
+.dark .skeleton-cell {
+  background: linear-gradient(
+    90deg,
+    rgb(39 39 42) 25%,
+    rgb(63 63 70) 50%,
+    rgb(39 39 42) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>
