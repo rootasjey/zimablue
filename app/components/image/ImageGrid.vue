@@ -599,7 +599,7 @@ const markError = (itemKey: string | number) => {
 
 /* Mobile grid item animation */
 .mobile-grid-item {
-  opacity: 0;
+  opacity: 1;
   animation: mobileGridFadeIn 0.5s ease-out forwards;
   animation-delay: calc(var(--index, 0) * 0.03s);
 }
@@ -646,10 +646,17 @@ const markError = (itemKey: string | number) => {
 }
 
 .grid-item {
-  opacity: 0;
+  opacity: 1;
   transform-origin: center;
   animation: fadeInUp 0.6s ease-out forwards;
   animation-delay: var(--delay);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-grid-item,
+  .grid-item {
+    animation: none;
+  }
 }
 
 .nuxt-img {

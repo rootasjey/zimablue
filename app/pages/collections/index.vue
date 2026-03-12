@@ -92,7 +92,7 @@
                   <NDropdownMenu
                     :items="collectionStore.getCollectionMenuItems(collection)"
                     size="xs"
-                    dropdown-menu="ghost-black"
+                    dropdown-menu="ghost-gray"
                     :_dropdown-menu-content="{ class: 'w-48', align: 'end', side: 'bottom' }"
                     :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis', class: 'color-white' }"
                   />
@@ -162,7 +162,9 @@ const { lightModeColors } = useRandomColors()
 // We render a cached, server-side snapshot for unauthenticated users to get
 // a fast, cacheable HTML response from the edge/CDN. Authenticated users won't
 // receive a cached page and will load collections on the client.
-const isLoading = ref(true)
+const isLoading = ref(import.meta.client
+  ? (loggedIn.value || collectionStore.collections.length === 0)
+  : true)
 
 // Server: for anonymous visitors fetch collections during SSR and attach
 // caching headers so CDNs can cache the snapshot. For authenticated users
@@ -211,6 +213,7 @@ onMounted(async () => {
 
     isLoading.value = false
   } else {
+    isLoading.value = false
     // We have an SSR snapshot (anonymous cached). Refresh in the background
     // without showing the loading skeleton to avoid UI flicker.
     collectionStore.fetchCollections(loggedIn.value).catch(() => {})

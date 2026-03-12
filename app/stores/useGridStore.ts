@@ -28,20 +28,20 @@ export const useGridStore = defineStore('grid', () => {
 
   async function fetchGrid() {
     isLoading.value = true
-    const { data } = await useFetch('/api/grid', {
-      method: 'GET',
-      key: 'grid',
-    })
 
-    if (!data.value) {
-      initialized.value = true
+    try {
+      const data = await $fetch<Image[]>('/api/grid', {
+        method: 'GET',
+      })
+
+      layout.value = Array.isArray(data) ? data : []
+    } catch (error) {
+      console.error('Failed to fetch grid:', error)
+      layout.value = []
+    } finally {
       isLoading.value = false
-      return
+      initialized.value = true
     }
-
-    layout.value = data.value || []
-    isLoading.value = false
-    initialized.value = true
   }
 
   async function deleteImage(imageId: number) {
