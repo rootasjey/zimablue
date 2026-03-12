@@ -32,6 +32,10 @@ export const useGridStore = defineStore('grid', () => {
     try {
       const data = await $fetch<Image[]>('/api/grid', {
         method: 'GET',
+        headers: {
+          'cache-control': 'no-cache',
+          pragma: 'no-cache',
+        },
       })
 
       layout.value = Array.isArray(data) ? data : []

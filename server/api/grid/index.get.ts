@@ -5,7 +5,9 @@ import { asc, eq } from 'drizzle-orm'
 import { toISOString } from '../../utils/date'
 
 export default eventHandler(async (event) => {
-  setHeader(event, 'Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+  // The home grid is mutated frequently (drag, resize, upload, delete), so it must
+  // always be fetched fresh to avoid stale edge/browser responses after edits.
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate')
 
   // Fetch all images with their tags from D1
   const imagesData = await db.select()
