@@ -45,7 +45,7 @@
               <NuxtImg
                 v-if="prevImage"
                 :src="getImageSrc(prevImage, 'drawer').src"
-                v-bind="getImageSrc(prevImage, 'drawer').provider ? { provider: getImageSrc(prevImage, 'drawer').provider } : {}"
+                :provider="getImageSrc(prevImage, 'drawer').provider"
                 :alt="prevImage.name || ''"
                 width="400"
                 class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
@@ -58,7 +58,7 @@
               <NuxtImg
                 v-if="selectedModalImage"
                 :src="getImageSrc(selectedModalImage, 'drawer').src"
-                v-bind="getImageSrc(selectedModalImage, 'drawer').provider ? { provider: getImageSrc(selectedModalImage, 'drawer').provider } : {}"
+                :provider="getImageSrc(selectedModalImage, 'drawer').provider"
                 :alt="selectedModalImage.name || 'Image'"
                 width="400"
                 class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
@@ -73,7 +73,7 @@
               <NuxtImg
                 v-if="nextImage"
                 :src="getImageSrc(nextImage, 'drawer').src"
-                v-bind="getImageSrc(nextImage, 'drawer').provider ? { provider: getImageSrc(nextImage, 'drawer').provider } : {}"
+                :provider="getImageSrc(nextImage, 'drawer').provider"
                 :alt="nextImage.name || ''"
                 width="400"
                 class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"

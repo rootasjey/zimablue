@@ -35,10 +35,11 @@ export const useImageSrc = () => {
     const best = suitable[0] ?? [...variants].sort((a: VariantType, b: VariantType) => b.width - a.width)[0]!
 
     // pathname est la clé R2 complète (ex: "images/42/sm.webp")
-    // Le proxy /images/[...pathname] sert le blob directement sans requête D1
+    // On passe toujours par hubblob pour que le provider sache construire l'URL
+    // (fonctionne en local via le proxy Nitro ET en prod via Cloudflare R2)
     return {
-      src: `/${best.pathname}`,
-      provider: undefined as undefined,
+      src: best.pathname,
+      provider: 'hubblob' as const,
       modifiers: {} as Record<string, string | number>,
     }
   }
