@@ -9,69 +9,90 @@ export default eventHandler(async (event) => {
   // always be fetched fresh to avoid stale edge/browser responses after edits.
   setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate')
 
-  // Fetch all images with their tags from D1
-  const imagesData = await db.select()
+  // Fetch all images with their tags in a single query to avoid N+1 problem
+  const rows = await db.select({
+    // Image fields
+    id: images.id,
+    i: images.i,
+    x: images.x,
+    y: images.y,
+    w: images.w,
+    h: images.h,
+    sum: images.sum,
+    sumAbs: images.sumAbs,
+    pathname: images.pathname,
+    slug: images.slug,
+    name: images.name,
+    description: images.description,
+    variants: images.variants,
+    statsViews: images.statsViews,
+    statsDownloads: images.statsDownloads,
+    statsLikes: images.statsLikes,
+    userId: images.userId,
+    createdAt: images.createdAt,
+    updatedAt: images.updatedAt,
+    // Tag fields (will be null for images without tags)
+    tagId: tags.id,
+    tagName: tags.name,
+    tagSlug: tags.slug,
+    tagDescription: tags.description,
+    tagColor: tags.color,
+    tagUsageCount: tags.usageCount,
+    tagCreatedAt: tags.createdAt,
+    tagUpdatedAt: tags.updatedAt
+  })
     .from(images)
-    .orderBy(asc(images.sumAbs))
-    .all()
+    .leftJoin(imageTags, eq(imageTags.imageId, images.id))
+    .leftJoin(tags, eq(imageTags.tagId, tags.id))
+    .orderBy(asc(images.sumAbs), asc(tags.name))
 
-  // Fetch tags for each image
-  const imagesWithTags = await Promise.all(
-    imagesData.map(async (image) => {
-      const imageTagData = await db.select({
-        id: tags.id,
-        name: tags.name,
-        slug: tags.slug,
-        description: tags.description,
-        color: tags.color,
-        usageCount: tags.usageCount,
-        createdAt: tags.createdAt,
-        updatedAt: tags.updatedAt
+  // Group tags by image
+  const imageMap = new Map<number, any>()
+  for (const row of rows) {
+    const imageId = row.id
+    if (!imageMap.has(imageId)) {
+      // Initialize image entry with default values for computed fields
+      imageMap.set(imageId, {
+        id: imageId,
+        i: row.i ?? imageId,
+        x: row.x,
+        y: row.y,
+        w: row.w,
+        h: row.h,
+        sum: row.sum ?? (row.x + row.y),
+        sum_abs: row.sumAbs ?? (Math.abs(row.x) + Math.abs(row.y)),
+        pathname: row.pathname,
+        slug: row.slug,
+        name: row.name,
+        description: row.description ?? '',
+        variants: row.variants ?? '[]',
+        stats_views: row.statsViews,
+        stats_downloads: row.statsDownloads,
+        stats_likes: row.statsLikes,
+        user_id: row.userId,
+        created_at: toISOString(row.createdAt),
+        updated_at: toISOString(row.updatedAt),
+        tags: [] as any[]
       })
-        .from(imageTags)
-        .innerJoin(tags, eq(imageTags.tagId, tags.id))
-        .where(eq(imageTags.imageId, image.id))
-        .orderBy(tags.name)
-        .all()
+    }
+    // If this row has a tag (left join may produce null tags for images without tags)
+    if (row.tagId) {
+      const tag = imageMap.get(imageId).tags
+      tag.push({
+        id: row.tagId,
+        name: row.tagName,
+        slug: row.tagSlug,
+        description: row.tagDescription ?? '',
+        color: row.tagColor ?? '#3B82F6',
+        usage_count: row.tagUsageCount,
+        created_at: toISOString(row.tagCreatedAt),
+        updated_at: toISOString(row.tagUpdatedAt)
+      })
+    }
+  }
 
-      // Map tag data to snake_case for frontend compatibility
-      const mappedTags = imageTagData.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        slug: tag.slug,
-        description: tag.description ?? '',
-        color: tag.color ?? '#3B82F6',
-        usage_count: tag.usageCount,
-        created_at: toISOString(tag.createdAt),
-        updated_at: toISOString(tag.updatedAt)
-      }))
-
-      return {
-        ...image,
-        // Map snake_case to camelCase for frontend compatibility
-        id: image.id,
-        i: image.i ?? image.id,
-        x: image.x,
-        y: image.y,
-        w: image.w,
-        h: image.h,
-        sum: image.sum ?? image.x + image.y,
-        sum_abs: image.sumAbs ?? Math.abs(image.x) + Math.abs(image.y),
-        pathname: image.pathname,
-        slug: image.slug,
-        name: image.name,
-        description: image.description ?? '',
-        variants: image.variants ?? '[]',
-        stats_views: image.statsViews,
-        stats_downloads: image.statsDownloads,
-        stats_likes: image.statsLikes,
-        user_id: image.userId,
-        created_at: toISOString(image.createdAt),
-        updated_at: toISOString(image.updatedAt),
-        tags: mappedTags
-      }
-    })
-  )
+  // Convert map to array and sort by sum_abs to match original order (though already ordered by query)
+  const imagesWithTags = Array.from(imageMap.values()).sort((a, b) => a.sum_abs - b.sum_abs)
 
   return imagesWithTags as Image[]
 })
