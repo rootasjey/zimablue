@@ -5,7 +5,6 @@ import type { Image, VariantType } from '~~/shared/types/image'
 import { Jimp } from 'jimp'
 import { generateUniquePathname } from '../../utils/generateUniquePathname'
 import { blob } from 'hub:blob'
-import { kv } from 'hub:kv'
 import { images } from '../../../../db/schema'
 
 export default eventHandler(async (event) => {
@@ -135,22 +134,6 @@ export default eventHandler(async (event) => {
     .where(eq(images.id, Number(id)))
     .returning()
     .get()
-
-  // Update grid layout
-  const layout = (await kv.get('grid:main') ?? []) as Image[]
-  const updatedLayout = layout.map((item) => {
-    if (item.id === parseInt(id)) {
-      return {
-        ...item,
-        pathname: generatedVariants.find(v => v.size === 'original')?.pathname || imagePrefix,
-        variants: JSON.stringify(generatedVariants),
-        updated_at: new Date().toISOString()
-      }
-    }
-    return item
-  })
-
-  await kv.set('grid:main', updatedLayout)
 
   return {
     success: true,

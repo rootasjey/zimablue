@@ -5,7 +5,9 @@ export type ImageContext = 'mobile-grid' | 'desktop-grid' | 'drawer' | 'modal'
 
 const CONTEXT_WIDTH: Record<ImageContext, number> = {
   'mobile-grid':  180,
-  'desktop-grid': 240,
+  // Desktop grid items can span multiple columns and be resized,
+  // so prefer a larger source to avoid visibly soft images.
+  'desktop-grid': 640,
   'drawer':       400,
   'modal':        800,
 }

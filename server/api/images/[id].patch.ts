@@ -1,7 +1,6 @@
 import { db } from 'hub:db'
 import type { ImageWithTags } from "~~/shared/types/image"
 import { eq, and, ne } from 'drizzle-orm'
-import { kv } from 'hub:kv'
 import { images, tags, imageTags } from '../../db/schema'
 import { normalizeSlug } from './utils/normalizeSlug' 
 
@@ -160,24 +159,6 @@ export default defineEventHandler(async (event) => {
       ...imageResult,
       tags: tagsArray || []
     } as unknown as ImageWithTags
-
-    // Update grid layout (in KV) - keeping legacy format for now
-    const layout = (await kv.get('grid:main') ?? []) as any[]
-    const updatedLayout = layout.map((item) => {
-      if (item.id === parseInt(id)) {
-        return {
-          ...item,
-          name,
-          description,
-          slug: normalizedSlug ?? slug,
-          tags: JSON.stringify(tagsInput || []), // Keep JSON format for grid compatibility
-          updated_at: new Date().toISOString()
-        }
-      }
-      return item
-    })
-
-    await kv.set('grid:main', updatedLayout)
 
     return {
       success: true,

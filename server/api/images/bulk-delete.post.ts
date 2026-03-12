@@ -3,7 +3,6 @@ import { z } from 'zod'
 import type { VariantType } from '~~/shared/types/image'
 import { eq, and, inArray } from 'drizzle-orm'
 import { blob } from 'hub:blob'
-import { kv } from 'hub:kv'
 import type { DbImage } from '#shared/types/database'
 import { images } from '../../db/schema'
 
@@ -118,19 +117,6 @@ export default eventHandler(async (event) => {
         error: 'Image not found or access denied'
       })
     })
-
-    // Update grid layout in KV store (remove deleted images)
-    if (deletedImages.length > 0) {
-      try {
-        const layout = (await kv.get('grid:main') ?? []) as any[]
-        const deletedImageIds = deletedImages.map(img => img.id)
-        const updatedLayout = layout.filter(item => !deletedImageIds.includes(item.id))
-        await kv.set('grid:main', updatedLayout)
-      } catch (kvError) {
-        console.warn('Failed to update grid layout in KV store:', kvError)
-        // Don't fail the whole operation if KV update fails
-      }
-    }
 
     // Return results
     const successCount = deletedImages.length

@@ -3,7 +3,6 @@ import type { VariantType } from "~~/shared/types/image"
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
-import { kv } from 'hub:kv'
 import { images } from '../../db/schema'
 
 export default eventHandler(async (event) => {
@@ -58,16 +57,6 @@ export default eventHandler(async (event) => {
   // Delete from database
   await db.delete(images)
     .where(eq(images.id, Number(id)))
-
-  // Also remove the deleted image from the grid layout stored in KV
-  try {
-    const layout = (await kv.get('grid:main') ?? []) as any[]
-    const updatedLayout = layout.filter(item => item.id !== Number(id))
-    await kv.set('grid:main', updatedLayout)
-  } catch (kvError) {
-    console.warn('Failed to update grid layout in KV store after deleting image', kvError)
-    // Do not fail the delete operation if KV update fails
-  }
 
   return {
     ...imageData,

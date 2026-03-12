@@ -1,9 +1,18 @@
-import { kv } from 'hub:kv'
 import { db } from 'hub:db'
 import { images } from '../../db/schema'
+import { eq } from 'drizzle-orm'
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  const session = await requireUserSession(event)
+
+  // Admin check
+  if (session.user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Admin access required'
+    })
+  }
+
   const body = await readBody(event) as any[]
 
   try {
@@ -19,19 +28,26 @@ export default eventHandler(async (event) => {
     })
 
     if (filteredBody.length !== body.length) {
-      console.warn('grid/save: removed unknown image IDs from layout before saving to KV')
+      console.warn('grid/save: removed unknown image IDs from layout before saving')
     }
 
-    await kv.set('grid:main', filteredBody)
-  } catch (err) {
-    console.warn('Failed to validate or save grid layout to KV store:', err)
-    // Fallback: attempt to write the provided body to KV to avoid data loss
-    try {
-      await kv.set('grid:main', body)
-    } catch (kvErr) {
-      console.error('Failed to write grid layout to KV:', kvErr)
-      throw createError({ statusCode: 500, statusMessage: 'Failed to save grid layout' })
+    // Update grid positions (x, y, w, h) in D1 for each image
+    for (const item of filteredBody) {
+      if (item.id) {
+        await db.update(images)
+          .set({
+            x: item.x ?? 0,
+            y: item.y ?? 0,
+            w: item.w ?? 6,
+            h: item.h ?? 6,
+            updatedAt: new Date()
+          })
+          .where(eq(images.id, item.id))
+      }
     }
+  } catch (err) {
+    console.error('Failed to save grid layout to database:', err)
+    throw createError({ statusCode: 500, statusMessage: 'Failed to save grid layout' })
   }
 
   return {
