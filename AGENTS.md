@@ -268,22 +268,22 @@ Common gitmojis used in this repo:
 
 ### Version Bump Rules
 
-Après chaque groupe de commits, mettre à jour la version dans `package.json` avec le script adapté :
+Update the version in `package.json` for every commit, using the appropriate script:
 
-| Type de changement | Script | Exemple |
+| Change type | Script | Example |
 |---|---|---|
-| Correction de bug, optimisation interne, refactoring sans impact UX | `bun run bump:version` (patch) | `0.21.0` → `0.21.1` |
-| Nouvelle fonctionnalité visible par l'utilisateur, amélioration UX significative | `bun run bump:minor` | `0.21.0` → `0.22.0` |
-| Changement d'architecture majeur, breaking change, refonte visuelle | `bun run bump:major` | `0.21.0` → `1.0.0` |
+| Bug fix, internal optimization, or refactor without visible UX impact | `bun run bump:version` (patch) | `0.21.0` → `0.21.1` |
+| User-visible feature or significant UX improvement | `bun run bump:minor` | `0.21.0` → `0.22.0` |
+| Major architectural change, breaking change, or visual overhaul | `bun run bump:major` | `0.21.0` → `1.0.0` |
 
-**Règle de décision rapide :**
-- L'utilisateur voit une nouvelle feature ou une amélioration UX notoire ? → **minor**
-- C'est un fix, une optimisation de perf, ou un refactoring interne ? → **patch**
-- L'API, le schéma DB, ou l'UI change de façon incompatible ? → **major**
+**Quick decision rule:**
+- If the user sees a new feature or a notable UX improvement → **minor**
+- If it is a fix, performance optimization, or internal refactor → **patch**
+- If the API, DB schema, or UI changes incompatibly → **major**
 
-Committer le bump séparément, après le commit fonctionnel :
+Prefer committing the version bump separately, immediately after the functional commit:
 ```bash
-bun run bump:version   # ou bump:minor / bump:major
+bun run bump:version   # or bump:minor / bump:major
 git add package.json
 git commit -m "🔧 chore: bump version to X.Y.Z"
 ```
