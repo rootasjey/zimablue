@@ -106,9 +106,10 @@
                 <form @submit.prevent="handleSubmit" class="space-y-4" key="form">
                   <!-- Name (signup only) -->
                   <div v-if="!isLogin">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                    <label for="login-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
                     <div class="relative">
                       <NInput
+                        id="login-name"
                         input="~"
                         v-model="name"
                         type="text"
@@ -122,8 +123,9 @@
 
                   <!-- Email -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
                     <NInput
+                      id="login-email"
                       input="~"
                       v-model="email"
                       type="email"
@@ -136,8 +138,9 @@
 
                   <!-- Password -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
                     <NInput
+                      id="login-password"
                       input="~"
                       v-model="password"
                       type="password"
@@ -165,8 +168,9 @@
                   <Transition name="collapse">
                     <div v-if="!isLogin && showOptionalFields" class="space-y-4 pt-2">
                       <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
+                        <label for="login-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
                         <NInput
+                          id="login-bio"
                           input="~"
                           type="textarea"
                           v-model="biography"
@@ -177,8 +181,9 @@
                       </div>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Job</label>
+                          <label for="login-job" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Job</label>
                           <NInput
+                            id="login-job"
                             input="~"
                             v-model="job"
                             type="text"
@@ -187,8 +192,9 @@
                           />
                         </div>
                         <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
+                          <label for="login-location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
                           <NInput
+                            id="login-location"
                             input="~"
                             v-model="location"
                             type="text"

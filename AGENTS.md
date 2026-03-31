@@ -105,6 +105,9 @@ scripts/
 docs/
   ADMIN_DASHBOARD.md       # Admin feature documentation
   TAGS_SYSTEM.md           # Normalized tag system documentation
+  AUDIT_REPORT.md          # Design audit findings and recommendations
+
+CLAUDE.md                  # Design context, brand personality, and design principles
 ```
 
 ### Architecture Notes
@@ -239,7 +242,8 @@ Images use the View Transition API for smooth navigation:
 - **Responsive**: mobile-first with UnoCSS `sm:` breakpoints. Mobile grid is fixed 3-column; desktop grid is draggable.
 - **Naming**: composables → `use<FeatureName>`, stores → `use<Name>Store`, components → `PascalCase` grouped by feature folder.
 - Follow the existing Nuxt 4 `app/` directory convention — all frontend code lives under `app/`.
-- No explicit style guide link; follow the patterns already in the codebase.
+- **Design context**: Consult `CLAUDE.md` for brand personality, aesthetic direction, and design principles before making visual changes.
+- Follow existing patterns in the codebase for consistency.
 
 ---
 

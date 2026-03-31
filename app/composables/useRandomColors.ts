@@ -1,21 +1,22 @@
 export const useRandomColors = () => {
   // Define your color palettes without prefixes
+  // Color palette: cyan/pink/yellow theme (no purple per brand guidelines)
   const lightModeColors = [
-    '#EC7FA9',
-    '#FF6B6B',
-    '#48A9A6',
-    '#9370DB',
-    '#4A90E2',
-    '#F7B801'
+    '#EC7FA9', // pink
+    '#FF6B6B', // coral
+    '#48A9A6', // teal
+    '#F472B6', // pink-400
+    '#4A90E2', // blue
+    '#F7B801'  // yellow
   ]
 
   const darkModeColors = [
-    '#66D2CE',
-    '#FF9E9E',
-    '#7FDBDA',
-    '#B19CD9',
-    '#7FB3F1',
-    '#FFD54F'
+    '#66D2CE', // teal
+    '#FF9E9E', // pink
+    '#7FDBDA', // cyan
+    '#5EEAD4', // teal-300
+    '#7FB3F1', // blue
+    '#FFD54F'  // yellow
   ]
 
   // Use useState to ensure the same random index is used on server and client

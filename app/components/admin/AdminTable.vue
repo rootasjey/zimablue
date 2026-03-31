@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-[#D1E0E9] dark:bg-gray-800 rounded-2xl border border-[#b7cbd8] dark:border-gray-700 backdrop-blur-sm">
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
     <!-- Table Header with Actions -->
-  <div class="p-6 border-b border-[#b7cbd8] dark:border-gray-700">
+  <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ title }}</h3>
@@ -97,7 +97,7 @@
             v-else
             v-for="(row, index) in data"
             :key="row.id || index"
-            class="hover:bg-[#c4d5df] dark:hover:bg-gray-800 cursor-pointer"
+            class="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
             @click="handleRowClick(row, $event)"
           >
             <td class="w-12 px-6 py-4">

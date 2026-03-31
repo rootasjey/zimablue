@@ -16,7 +16,7 @@
         }">
           <template #default>
             <div :class="timeIcon"
-              class="cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
+              class="cursor-pointer hover:scale-110 hover:accent-rose active:scale-99 transition h-10 w-10"
               @click="toggleTheme"
               @click.right="setSystemTheme"
             />
@@ -50,7 +50,7 @@
           <template #default>
             <button
               aria-label="Toggle low-power mode"
-              class="inline-flex items-center justify-center h-6 w-6 rounded-md text-gray-600 
+              class="inline-flex items-center justify-center h-10 w-10 rounded-md text-gray-600 
               dark:text-gray-400 hover:scale-105 active:scale-98 transition 
               focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-700"
               @click="toggleLowPower"
@@ -66,7 +66,7 @@
             side: 'right',
           }">
             <template #default>
-              <div class="i-ph-sun-duotone cursor-pointer hover:scale-120 hover:accent-rose active:scale-99 transition"
+              <div class="i-ph-sun-duotone cursor-pointer hover:scale-110 hover:accent-rose active:scale-99 transition"
                 @click="toggleTheme"
                 @click.right="setSystemTheme"
               />
@@ -264,3 +264,15 @@ const linkAriaLabel = computed(() => {
   animation: fadeScale 0.3s ease-in-out;
 }
 </style>
+@media (prefers-reduced-motion: reduce) {
+  .i-ph-sun-horizon,
+  .i-line-md\\:moon-to-sunny-outline-loop-transition {
+    animation: none;
+  }
+  
+  /* Disable hover scale animations for motion-sensitive users */
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
