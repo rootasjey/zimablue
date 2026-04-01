@@ -1,66 +1,67 @@
 <template>
-  <div class="bg-[#D1E0E9] dark:bg-gray-800 rounded-3 overflow-hidden">
-    <!-- List has no internal header; selection controls live in AdminMessageHeader -->
-
-    <!-- Loading State -->
-    <div v-if="isLoading" class="p-8 text-center">
-      <div class="animate-spin i-ph-spinner text-2xl text-gray-400 mb-2"></div>
-      <p class="text-gray-600 dark:text-gray-400">Loading messages...</p>
+  <div class="admin-card overflow-hidden">
+    <div class="border-b border-stone-200 px-5 py-4 dark:border-zinc-800">
+      <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Inbox list</p>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="messages.length === 0" class="p-8 text-center">
-      <div class="i-ph-envelope text-4xl text-gray-400 mb-4"></div>
-      <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No messages found</h3>
-      <p class="text-gray-600 dark:text-gray-400">There are no messages to display.</p>
+    <div v-if="isLoading" class="space-y-3 p-5">
+      <div v-for="n in 5" :key="n" class="h-24 animate-pulse rounded-2xl bg-stone-100 dark:bg-zinc-800"></div>
     </div>
 
-    <!-- Messages List -->
-    <div v-else class="space-y-4 px-4 py-2 my-2">
-      <div v-for="message in messages" :key="message.id"
-        class="relative group rounded-xl border b-transparent transition-all transition-duration-300 cursor-pointer flex items-stretch"
-        :class="{
-          'border-blue-500 border-1 ring-1 ring-blue-100 dark:ring-blue-900 bg-blue-50 dark:bg-blue-500/5': selectedMessages[message.id] || message.id === activeMessageId,
-          'bg-white/70 dark:bg-gray-900': !(selectedMessages[message.id] || message.id === activeMessageId)
-        }" @click="multiSelectActive ? $emit('select-message', message.id) : $emit('view-message', message)">
-        <!-- Selection Check Overlay (selected) -->
-        <div v-if="multiSelectActive && selectedMessages[message.id]"
-          class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-gray-200 shadow-md pointer-events-none"
-          aria-hidden="true">
-          <span class="i-ph-check-bold text-xs"></span>
-        </div>
+    <div v-else-if="messages.length === 0" class="p-10 text-center">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl bg-stone-100 text-stone-400 dark:bg-zinc-800 dark:text-zinc-500">
+        <span class="i-ph-envelope-simple text-2xl"></span>
+      </div>
+      <h3 class="mt-4 text-lg font-medium text-zinc-900 dark:text-zinc-100">No messages found</h3>
+      <p class="mt-2 text-sm text-stone-500 dark:text-zinc-400">Try another search or filter.</p>
+    </div>
 
-        <!-- Faint Check Overlay (hint when not selected) -->
-        <div v-else-if="multiSelectActive && !selectedMessages[message.id]"
-          class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-500/10 text-gray-700/50 border border-gray-400/30 pointer-events-none opacity-0 group-hover:opacity-70 transition-opacity duration-150"
-          aria-hidden="true">
-          <span class="i-ph-check text-xs"></span>
-        </div>
+    <div v-else class="max-h-[720px] space-y-3 overflow-y-auto p-4">
+      <button
+        v-for="message in messages"
+        :key="message.id"
+        class="group relative w-full rounded-2xl border p-4 text-left transition-all duration-200"
+        :class="selectedMessages[message.id] || message.id === activeMessageId
+          ? 'border-amber-300 bg-amber-50 shadow-sm dark:border-amber-900/80 dark:bg-amber-950/20'
+          : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-900'"
+        @click="multiSelectActive ? $emit('select-message', message.id) : $emit('view-message', message)"
+      >
+        <div class="flex items-start gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            {{ getInitials(message.sender_email) }}
+          </div>
 
-        <!-- Message Content -->
-        <div class="flex-1 min-w-0 py-4 pr-4 pl-2">
-          <div class="px-2 flex flex-col">
-            <div class="flex justify-between items-center gap-2">
-              <h3 class="text-size-3 font-semibold text-gray-900 dark:text-gray-200 truncate"
-                :class="{ 'font-bold': !message.read }">
-                {{ message.subject }}
-              </h3>
-              <span v-if="!message.read" class="ml-2 px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                Unread
-              </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100" :class="!message.read ? 'font-semibold' : ''">
+                  {{ message.subject }}
+                </p>
+                <p class="mt-1 truncate text-xs text-stone-500 dark:text-zinc-400">{{ message.sender_email }}</p>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span v-if="!message.read" class="admin-badge-amber">Unread</span>
+                <span class="text-[11px] text-stone-400 dark:text-zinc-500">{{ formatDate(message.created_at) }}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-size-3 font-medium text-gray-700 dark:text-gray-200 truncate">{{ message.sender_email }}</span>
-            </div>
-            <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
+
+            <p class="mt-3 line-clamp-2 text-sm leading-6 text-stone-600 dark:text-zinc-400">
               {{ truncateMessage(message.message) }}
             </p>
-            <div class="flex justify-end text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span>{{ formatDate(message.created_at) }}</span>
-            </div>
           </div>
         </div>
-      </div>
+
+        <div v-if="multiSelectActive" class="absolute right-4 top-4">
+          <span
+            class="flex h-6 w-6 items-center justify-center rounded-full border text-xs transition-colors"
+            :class="selectedMessages[message.id]
+              ? 'border-cyan-500 bg-cyan-500 text-white'
+              : 'border-stone-300 text-stone-400 dark:border-zinc-700 dark:text-zinc-500'"
+          >
+            <span :class="selectedMessages[message.id] ? 'i-ph-check-bold' : 'i-ph-check'"></span>
+          </span>
+        </div>
+      </button>
     </div>
   </div>
 </template>
@@ -92,10 +93,20 @@ interface Emits {
 const props = defineProps<Props>()
 defineEmits<Emits>()
 
-// Utility functions
 const truncateMessage = (message: string, maxLength: number = 150): string => {
   if (message.length <= maxLength) return message
   return message.substring(0, maxLength) + '...'
+}
+
+const getInitials = (email: string): string => {
+  const localPart = email.split('@')[0] || '??'
+  const segments = localPart.split(/[._-]/).filter(Boolean)
+
+  if (segments.length >= 2) {
+    return `${segments[0]?.[0] || ''}${segments[1]?.[0] || ''}`.toUpperCase()
+  }
+
+  return localPart.slice(0, 2).toUpperCase()
 }
 
 const formatDate = (dateString: string): string => {

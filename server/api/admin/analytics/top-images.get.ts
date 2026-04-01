@@ -1,7 +1,9 @@
 // GET /api/admin/analytics/top-images
 // Returns top performing images by views, likes, or downloads
 
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { desc } from 'drizzle-orm'
+import { images } from '~~/server/db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -21,31 +23,32 @@ export default eventHandler(async (event) => {
 
   const query = getQuery(event)
   const metric = (query.metric as string) || 'views' // views, likes, downloads
-  const limit = parseInt((query.limit as string) || '5')
+  const limit = Math.min(Math.max(Number.parseInt((query.limit as string) || '5', 10) || 5, 1), 20)
 
   try {
-    const orderByColumn = metric === 'likes' ? 'stats_likes' 
-      : metric === 'downloads' ? 'stats_downloads' 
-      : 'stats_views'
+    const orderByColumn = metric === 'likes'
+      ? desc(images.statsLikes)
+      : metric === 'downloads'
+        ? desc(images.statsDownloads)
+        : desc(images.statsViews)
 
-    const images = await db
-      .all(sql.raw(`
-        SELECT 
-          id,
-          name,
-          slug,
-          stats_views,
-          stats_likes,
-          stats_downloads,
-          created_at
-        FROM images
-        ORDER BY ${orderByColumn} DESC
-        LIMIT ${limit}
-      `))
+    const result = await db
+      .select({
+        id: images.id,
+        name: images.name,
+        slug: images.slug,
+        stats_views: images.statsViews,
+        stats_likes: images.statsLikes,
+        stats_downloads: images.statsDownloads,
+        created_at: images.createdAt,
+      })
+      .from(images)
+      .orderBy(orderByColumn)
+      .limit(limit)
 
     return {
       success: true,
-      data: images || []
+      data: result || []
     }
   } catch (error) {
     console.error('Error fetching top images:', error)

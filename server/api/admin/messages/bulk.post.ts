@@ -1,6 +1,8 @@
 // POST /api/admin/messages/bulk
 
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { inArray } from 'drizzle-orm'
+import { messages } from '~~/server/db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -45,14 +47,16 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    
     if (action === 'delete') {
-      await db
-        .run(sql.raw(`DELETE FROM messages WHERE id IN (${validIds.join(',')})`))
+      await db.delete(messages).where(inArray(messages.id, validIds))
     } else {
-      const readValue = action === 'mark_read' ? 1 : 0
       await db
-        .run(sql.raw(`UPDATE messages SET read = ${readValue}, updated_at = CURRENT_TIMESTAMP WHERE id IN (${validIds.join(',')})`))
+        .update(messages)
+        .set({
+          read: action === 'mark_read',
+          updatedAt: new Date(),
+        })
+        .where(inArray(messages.id, validIds))
     }
 
     return {

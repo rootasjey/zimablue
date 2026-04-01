@@ -1,232 +1,150 @@
 <template>
-  <div>
-    <!-- Access Control -->
-    <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-      <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-      <h2 class="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
-      <p class="text-gray-600">You need admin privileges to access this page.</p>
-      <NButton to="/user" class="mt-4">Go to Profile</NButton>
+  <div class="space-y-6">
+    <!-- Create tag button -->
+    <div class="flex justify-end">
+      <button
+        class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+        @click="showCreateModal = true"
+      >
+        <span class="i-ph-plus text-sm"></span>
+        New Tag
+      </button>
     </div>
 
-    <!-- Tags Management -->
-    <div v-else class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-gray-200">Tag Management</h1>
-          <p class="text-gray-600 dark:text-gray-300 mt-1">Manage tags used throughout the system</p>
+    <AdminTable
+      title="Tags"
+      description="Manage tags used throughout the system"
+      :columns="unaColumns"
+      :data="tags"
+      :loading="isLoading"
+      :pagination="pagination"
+      :bulk-actions="bulkActions"
+      empty-message="No tags found."
+      @search="handleSearch"
+      @refresh="fetchTags"
+      @page-change="handlePageChange"
+      @bulk-action="handleBulkAction"
+      @row-click="editTag"
+      @edit="editTag"
+      @delete="deleteTag"
+    >
+      <!-- Tag name with color dot -->
+      <template #name-cell="{ row }">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-3 h-3 rounded-full flex-shrink-0 border border-white/20"
+            :style="{ backgroundColor: row.color || '#94a3b8' }"
+          ></div>
+          <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ row.name }}</p>
+          <p v-if="row.description" class="text-xs text-stone-400 dark:text-zinc-500 truncate max-w-36">{{ row.description }}</p>
         </div>
-        <NButton btn="solid-black" size="sm" @click="showCreateModal = true">
-          <span class="i-ph-plus mr-2"></span>
-          Create Tag
-        </NButton>
-      </div>
+      </template>
 
-      <!-- Search and Actions Card -->
-      <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <NInput
-            v-model="searchQuery"
-            placeholder="Search tags..."
-            @keyup.enter="handleSearch(searchQuery)"
-            @input="debouncedSearch"
-            size="sm"
-            class="flex-1 b-black focus-within:border-blue-300 dark:b-gray-700"
-            rounded="6"
-          >
-            <template #leading>
-              <span class="i-ph-magnifying-glass"></span>
-            </template>
-          </NInput>
+      <!-- Usage count -->
+      <template #usage_count-cell="{ row }">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 tabular-nums">
+          {{ row.usage_count ?? 0 }}
+        </span>
+      </template>
 
-          <div>
-            <NSelect v-model="selectedSortLabel" :items="sortLabels" size="sm" />
+      <!-- Created date -->
+      <template #created_at-cell="{ row }">
+        <ClientOnly>
+          <span class="text-sm text-stone-500 dark:text-zinc-400">
+            {{ row.created_at ? new Date(typeof row.created_at === 'number' ? row.created_at * 1000 : row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—' }}
+          </span>
+        </ClientOnly>
+      </template>
+    </AdminTable>
+
+    <!-- Create / Edit Tag Dialog -->
+    <NDialog v-model:open="showCreateModal">
+      <template #content>
+        <div class="p-6 space-y-4">
+          <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+            {{ editingTag ? 'Edit Tag' : 'New Tag' }}
+          </h3>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Name *</label>
+            <input v-model="tagForm.name" type="text" placeholder="Tag name"
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
           </div>
 
-          <NButton
-            @click="fetchTags"
-            :loading="isLoading"
-            btn="light:soft-blue dark:solid-gray"
-            size="sm"
-            rounded="6"
-          >
-            <span class="i-ph-arrow-clockwise mr-2"></span>
-            Refresh
-          </NButton>
-        </div>
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Description</label>
+            <input v-model="tagForm.description" type="text" placeholder="Optional description"
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+          </div>
 
-        <!-- Bulk Actions -->
-        <div v-if="selectedTags.length > 0" class="flex items-center gap-2 mt-4 pt-4 border-t border-[#b7cbd8]">
-          <span class="text-sm font-600 text-gray-700">
-            {{ selectedTags.length }} selected
-          </span>
-          <NButton btn="soft-gray" size="sm" @click="openBulkColorDialog">
-            <span class="i-ph-palette mr-2"></span>
-            Set Color
-          </NButton>
-          <NButton btn="soft-error" size="sm" @click="handleBulkDelete">
-            <span class="i-ph-trash mr-2"></span>
-            Delete Selected
-          </NButton>
-        </div>
-      </div>
-
-      <!-- Table Card -->
-      <div class="rounded-[28px] bg-[#D1E0E9] dark:bg-gray-800 overflow-hidden">
-        <div class="p-6">
-          <NTable
-          :columns="unaColumns"
-          :data="tags"
-          :loading="isLoading"
-          row-id="id"
-          :enable-row-selection="true"
-          :enable-multi-row-selection="true"
-          v-model:rowSelection="rowSelection"
-          @row="onRowClick"
-          empty-text="No tags found."
-          :una="{
-            tableRoot: 'rounded-[28px] b-transparent',
-            tableHead: 'b-transparent',
-            tableRow: 'b-transparent cursor-pointer hover:bg-[#000000]/5',
-            tableLoadingRow: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
-            tableEmpty: 'bg-[#D1DFE9] b-[#D1DFE9] dark:bg-gray-700/50',
-            tableCell: 'table-cell',
-          }"
-        >
-          <template #row_actions-cell="{ cell }">
-            <ClientOnly>
-              <NDropdownMenu
-                :items="tagRowMenuItems(cell.row.original)"
-                size="xs"
-                dropdown-menu="link-pink"
-                :_dropdown-menu-content="{ class: 'w-40', align: 'start', side: 'bottom' }"
-                :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis-vertical' }"
-              />
-              <template #fallback>
-                <div class="w-8 h-8 grid place-items-center text-gray-500">
-                  <span class="i-lucide-ellipsis-vertical"></span>
-                </div>
-              </template>
-            </ClientOnly>
-          </template>
-
-          <template #name-cell="{ cell, row }">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Color</label>
             <div class="flex items-center gap-3">
-              <div class="w-3.5 h-3.5 rounded-full border border-gray-200 dark:border-gray-700" :style="{ backgroundColor: row.color }"></div>
-              <div class="min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ cell.getValue() }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ row.slug }}</p>
-              </div>
-            </div>
-          </template>
-
-          <template #usage_count-cell="{ cell }">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-              :class="Number(cell.getValue()) > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'">
-              {{ Number(cell.getValue()).toLocaleString() }}
-            </span>
-          </template>
-
-          <template #created_at-cell="{ cell }">
-            <ClientOnly>
-              {{ new Date(cell.getValue() as string).toLocaleDateString() }}
-              <template #fallback>
-                {{ (cell.getValue() as string).slice(0, 10) }}
-              </template>
-            </ClientOnly>
-          </template>
-        </NTable>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="pagination && pagination.totalPages > 1" class="px-6 pb-6">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-600 dark:text-gray-300">
-              Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to
-              {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of
-              {{ pagination.total }} results
-            </div>
-
-            <div class="flex items-center gap-2">
-              <NButton @click="handlePageChange(pagination.page - 1)" :disabled="!pagination.hasPrev" btn="soft-gray" size="sm">
-                <span class="i-ph-caret-left"></span>
-              </NButton>
-
-              <span class="text-sm text-gray-600 px-3">
-                Page {{ pagination.page }} of {{ pagination.totalPages }}
-              </span>
-
-              <NButton @click="handlePageChange(pagination.page + 1)" :disabled="!pagination.hasNext" btn="soft-gray" size="sm">
-                <span class="i-ph-caret-right"></span>
-              </NButton>
+              <input v-model="tagForm.color" type="color"
+                class="w-10 h-9 rounded-lg border border-stone-200 dark:border-zinc-700 cursor-pointer bg-transparent" />
+              <span class="text-sm font-mono text-stone-500 dark:text-zinc-400">{{ tagForm.color }}</span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Create/Edit Modal -->
-    <NDialog v-model:open="showCreateModal" :title="editingTag ? 'Edit Tag' : 'Create Tag'">
-      <div class="space-y-4 p-2">
-        <NFormGroup label="Name" required>
-          <NInput v-model="tagForm.name" placeholder="Enter tag name" />
-        </NFormGroup>
-        <NFormGroup label="Description">
-          <NInput type="textarea" v-model="tagForm.description" placeholder="Optional description" />
-        </NFormGroup>
-        <NFormGroup label="Color">
-          <NInput v-model="tagForm.color" type="color" />
-        </NFormGroup>
-      </div>
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <NButton btn="soft-gray" @click="showCreateModal = false">Cancel</NButton>
-          <NButton btn="soft-blue" :loading="isSubmitting" @click="submitTag">{{ editingTag ? 'Update' : 'Create' }}</NButton>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+              @click="showCreateModal = false"
+            >Cancel</button>
+            <button
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+              :disabled="!tagForm.name.trim() || isSubmitting"
+              @click="submitTag"
+            >
+              <span v-if="isSubmitting" class="i-ph-spinner-gap animate-spin mr-1.5 inline-block"></span>
+              {{ editingTag ? 'Save Changes' : 'Create Tag' }}
+            </button>
+          </div>
         </div>
       </template>
     </NDialog>
 
-    <!-- Delete Confirmation Modal -->
-    <NDialog v-model:open="showDeleteModal" title="Delete Tag">
-      <div class="p-2">
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
-          Are you sure you want to delete the tag "{{ tagToDelete?.name }}"?
-          <span v-if="tagToDelete && tagToDelete?.usage_count > 0" class="text-red-600 dark:text-red-400">
-            This tag is used by {{ tagToDelete.usage_count }} image(s).
-          </span>
-        </p>
-      </div>
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <NButton btn="soft-gray" @click="showDeleteModal = false">Cancel</NButton>
-          <NButton color="red" :loading="isDeleting" @click="confirmDelete">Delete</NButton>
-        </div>
-      </template>
-    </NDialog>
-
-    <NDialog v-model:open="isBulkColorOpen" title="Set Tags Color">
-      <div class="p-2 space-y-3">
-        <NFormGroup label="Color">
-          <NInput v-model="bulkColor" type="color" />
-        </NFormGroup>
-        <p class="text-xs text-gray-500 dark:text-gray-400">This will update the color of {{ selectedTags.length }} selected tag(s).</p>
-      </div>
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <NButton btn="soft-gray" @click="isBulkColorOpen = false">Cancel</NButton>
-          <NButton btn="soft-blue" @click="applyBulkColor">Apply</NButton>
+    <!-- Delete Tag Dialog -->
+    <NDialog v-model:open="showDeleteModal">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0">
+              <span class="i-ph-warning text-rose-600 dark:text-rose-400 text-xl"></span>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Delete Tag</h3>
+              <p class="text-sm text-stone-500 dark:text-zinc-400">
+                Delete <strong class="text-zinc-700 dark:text-zinc-300">{{ tagToDelete?.name }}</strong>?
+                <span v-if="tagToDelete && tagToDelete.usage_count > 0" class="block mt-1 text-amber-600 dark:text-amber-400">This tag is used by {{ tagToDelete.usage_count }} image(s). Deleting will remove it from all images.</span>
+              </p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+              @click="showDeleteModal = false"
+            >Cancel</button>
+            <button
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-60"
+              :disabled="isDeleting"
+              @click="confirmDelete"
+            >
+              <span v-if="isDeleting" class="i-ph-spinner-gap animate-spin mr-1.5 inline-block"></span>
+              Delete
+            </button>
+          </div>
         </div>
       </template>
     </NDialog>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import type { Tag, TagSearchResponse, TagCreateRequest } from '~~/shared/types/tag'
 import type { Pagination } from '~~/shared/types/pagination'
-import type { RowSelectionState } from '@tanstack/vue-table'
+import type { AdminBulkAction } from '~~/shared/types/admin'
 
-const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({
@@ -246,7 +164,6 @@ const showDeleteModal = ref(false)
 const editingTag = ref<Tag | null>(null)
 const tagToDelete = ref<Tag | null>(null)
 const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false })
-const rowSelection = ref<RowSelectionState>({})
 
 const tagForm = ref<TagCreateRequest>({
   name: '',
@@ -254,8 +171,6 @@ const tagForm = ref<TagCreateRequest>({
   color: '#3B82F6'
 })
 
-// Options
-const sortLabels = ['Usage Count', 'Name', 'Created Date']
 const sortLabelToKey: Record<string, string> = {
   'Usage Count': 'usage_count',
   'Name': 'name',
@@ -263,25 +178,16 @@ const sortLabelToKey: Record<string, string> = {
 }
 
 const unaColumns = [
-  { id: 'row_actions', header: '', enableSorting: false },
-  { accessorKey: 'name', header: 'Tag', enableSorting: true },
-  { accessorKey: 'usage_count', header: 'Usage', enableSorting: true },
-  { accessorKey: 'created_at', header: 'Created', enableSorting: true },
+  { accessorKey: 'name', header: 'Tag' },
+  { accessorKey: 'usage_count', header: 'Usage' },
+  { accessorKey: 'created_at', header: 'Created' },
 ]
 
-const selectedTags = computed(() => {
-  const selected = new Set(
-    Object.entries(rowSelection.value)
-      .filter(([, v]) => Boolean(v))
-      .map(([k]) => k)
-  )
-  return tags.value.filter(t => selected.has(String(t.id)))
-})
+const bulkActions: AdminBulkAction[] = [
+  { id: 'delete_selected', label: 'Delete Selected', icon: 'i-ph-trash', variant: 'soft-red' },
+]
 
-// Methods
 const fetchTags = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
-
   isLoading.value = true
   try {
     const response = await $fetch<TagSearchResponse>('/api/tags', {
@@ -293,19 +199,15 @@ const fetchTags = async () => {
         offset: (pagination.value.page - 1) * pagination.value.limit
       }
     })
-
     tags.value = response.tags
-    const total = response.total
-    const totalPages = response.pagination.total_pages
-    const page = response.pagination.page
-    const limit = response.pagination.limit
+    const { total, pagination: pag } = response
     pagination.value = {
-      page,
-      limit,
+      page: pag.page,
+      limit: pag.limit,
       total,
-      totalPages,
-      hasNext: page * limit < total,
-      hasPrev: page > 1
+      totalPages: pag.total_pages,
+      hasNext: pag.page * pag.limit < total,
+      hasPrev: pag.page > 1
     }
   } catch (error) {
     console.error('Failed to fetch tags:', error)
@@ -315,16 +217,8 @@ const fetchTags = async () => {
   }
 }
 
-let searchTimeout: any
-const debouncedSearch = () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    handleSearch()
-  }, 400)
-}
-
-const handleSearch = (term?: string) => {
-  searchQuery.value = term ?? searchQuery.value
+const handleSearch = (term: string) => {
+  searchQuery.value = term
   pagination.value.page = 1
   fetchTags()
 }
@@ -332,6 +226,23 @@ const handleSearch = (term?: string) => {
 const handlePageChange = (page: number) => {
   pagination.value.page = page
   fetchTags()
+}
+
+const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
+  const rows = selectedRows as Tag[]
+  if (rows.length === 0) return
+
+  if (actionId === 'delete_selected') {
+    const confirmed = window.confirm(`Delete ${rows.length} selected tag${rows.length > 1 ? 's' : ''}?`)
+    if (!confirmed) return
+    for (const t of rows) {
+      try {
+        await $fetch(`/api/tags/${t.id}`, { method: 'DELETE', query: { force: (t as any).usage_count > 0 ? 'true' : 'false' } })
+      } catch {}
+    }
+    toast({ title: 'Deleted', description: `Deleted ${rows.length} tag(s).`, toast: 'soft-success' })
+    await fetchTags()
+  }
 }
 
 const editTag = (tag: Tag) => {
@@ -346,26 +257,19 @@ const editTag = (tag: Tag) => {
 
 const submitTag = async () => {
   if (!tagForm.value.name.trim()) return
-  
   isSubmitting.value = true
   try {
     if (editingTag.value) {
-      await $fetch(`/api/tags/${editingTag.value.id}`, {
-        method: 'PATCH',
-        body: tagForm.value
-      })
+      await $fetch(`/api/tags/${editingTag.value.id}`, { method: 'PATCH', body: tagForm.value })
     } else {
-      await $fetch('/api/tags', {
-        method: 'POST',
-        body: tagForm.value
-      })
+      await $fetch('/api/tags', { method: 'POST', body: tagForm.value })
     }
-    
     showCreateModal.value = false
     resetForm()
     await fetchTags()
   } catch (error) {
     console.error('Failed to save tag:', error)
+    toast({ title: 'Error', description: 'Failed to save tag.', toast: 'soft-error' })
   } finally {
     isSubmitting.value = false
   }
@@ -378,89 +282,30 @@ const deleteTag = (tag: Tag) => {
 
 const confirmDelete = async () => {
   if (!tagToDelete.value) return
-  
   isDeleting.value = true
   try {
     await $fetch(`/api/tags/${tagToDelete.value.id}`, {
       method: 'DELETE',
       query: { force: tagToDelete.value.usage_count > 0 ? 'true' : 'false' }
     })
-    
     showDeleteModal.value = false
     await fetchTags()
   } catch (error) {
     console.error('Failed to delete tag:', error)
+    toast({ title: 'Error', description: 'Failed to delete tag.', toast: 'soft-error' })
   } finally {
     isDeleting.value = false
   }
 }
 
-const handleBulkDelete = async () => {
-  if (selectedTags.value.length === 0) return
-  const confirmed = window.confirm(`Delete ${selectedTags.value.length} selected tag${selectedTags.value.length > 1 ? 's' : ''}?`)
-  if (!confirmed) return
-  for (const t of selectedTags.value) {
-    try {
-      await $fetch(`/api/tags/${t.id}`, { method: 'DELETE', query: { force: (t as any).usage_count > 0 ? 'true' : 'false' } })
-      delete (rowSelection.value as any)[String(t.id)]
-    } catch (e) {
-      console.error('Failed to delete tag', t.id)
-    }
-  }
-  await fetchTags()
-}
-
-const onRowClick = (event: Event, row: Tag) => {
-  const target = event.target as HTMLElement
-  if (target.closest('button') || target.closest('a') || target.closest('input')) return
-  editTag(row)
-}
-
-// Bulk color dialog
-const isBulkColorOpen = ref(false)
-const bulkColor = ref('#3B82F6')
-const openBulkColorDialog = () => { isBulkColorOpen.value = true }
-const applyBulkColor = async () => {
-  const rows = selectedTags.value
-  let success = 0
-  for (const t of rows) {
-    try { await $fetch(`/api/tags/${t.id}`, { method: 'PATCH', body: { color: bulkColor.value } }); success += 1 } catch {}
-  }
-  isBulkColorOpen.value = false
-  toast({ title: 'Updated', description: `Updated color for ${success} tag(s).`, toast: 'soft-success' })
-  fetchTags()
-}
-
 const resetForm = () => {
   editingTag.value = null
-  tagForm.value = {
-    name: '',
-    description: '',
-    color: '#3B82F6'
-  }
+  tagForm.value = { name: '', description: '', color: '#3B82F6' }
 }
 
-const tagRowMenuItems = (row: Tag) => [
-  { label: 'Edit', onClick: () => editTag(row) },
-  { label: 'Delete', onClick: () => deleteTag(row) }
-]
-
-// Lifecycle
-onMounted(() => {
-  if (loggedIn.value && user.value?.role === 'admin') {
-    fetchTags()
-  }
-})
-
-watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
-  if (newLoggedIn && newRole === 'admin') {
-    fetchTags()
-  }
-})
-
 watch(() => showCreateModal.value, (isOpen) => {
-  if (!isOpen) {
-    resetForm()
-  }
+  if (!isOpen) resetForm()
 })
+
+onMounted(() => fetchTags())
 </script>

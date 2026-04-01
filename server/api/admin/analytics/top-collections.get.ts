@@ -1,7 +1,9 @@
 // GET /api/admin/analytics/top-collections
 // Returns top performing collections by views, likes, or downloads
 
-import { sql } from 'drizzle-orm'
+import { db } from 'hub:db'
+import { desc } from 'drizzle-orm'
+import { collections } from '~~/server/db/schema'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -21,31 +23,32 @@ export default eventHandler(async (event) => {
 
   const query = getQuery(event)
   const metric = (query.metric as string) || 'views' // views, likes, downloads
-  const limit = parseInt((query.limit as string) || '5')
+  const limit = Math.min(Math.max(Number.parseInt((query.limit as string) || '5', 10) || 5, 1), 20)
 
   try {
-    const orderByColumn = metric === 'likes' ? 'stats_likes' 
-      : metric === 'downloads' ? 'stats_downloads' 
-      : 'stats_views'
+    const orderByColumn = metric === 'likes'
+      ? desc(collections.statsLikes)
+      : metric === 'downloads'
+        ? desc(collections.statsDownloads)
+        : desc(collections.statsViews)
 
-    const collections = await db
-      .all(sql.raw(`
-        SELECT 
-          id,
-          name,
-          slug,
-          stats_views,
-          stats_likes,
-          stats_downloads,
-          created_at
-        FROM collections
-        ORDER BY ${orderByColumn} DESC
-        LIMIT ${limit}
-      `))
+    const result = await db
+      .select({
+        id: collections.id,
+        name: collections.name,
+        slug: collections.slug,
+        stats_views: collections.statsViews,
+        stats_likes: collections.statsLikes,
+        stats_downloads: collections.statsDownloads,
+        created_at: collections.createdAt,
+      })
+      .from(collections)
+      .orderBy(orderByColumn)
+      .limit(limit)
 
     return {
       success: true,
-      data: collections || []
+      data: result || []
     }
   } catch (error) {
     console.error('Error fetching top collections:', error)

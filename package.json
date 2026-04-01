@@ -1,6 +1,6 @@
 {
   "name": "zimablue",
-  "version": "0.22.3",
+  "version": "0.23.0",
   "description": "Handmade illustrations",
   "private": true,
   "type": "module",
@@ -28,12 +28,14 @@
     "@nuxthub/core": "^0.10.4",
     "@pinia/nuxt": "^0.11.3",
     "@una-ui/nuxt": "^0.66.0",
+    "chart.js": "^4.5.1",
     "grid-layout-plus": "^1.1.1",
     "jimp": "^1.6.0",
     "nuxt": "^4.2.2",
     "nuxt-auth-utils": "^0.5.26",
     "pinia": "^3.0.4",
     "typescript": "^5.9.3",
+    "vue-chartjs": "^5.3.3",
     "vue-tsc": "^3.2.2",
     "wrangler": "^4.54.0"
   },

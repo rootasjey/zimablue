@@ -195,6 +195,11 @@ if (!isAdminSession(session)) {
 <!-- ❌ Avoid :open / @update:open splits -->
 ```
 
+### Dialog layout safety
+- Always test dialogs and command palettes for overflow at desktop and mobile widths.
+- Reserve space for UnaUI close buttons and trailing keyboard hints so header controls do not collide or spill outside the dialog.
+- Prefer wrapping secondary meta rows instead of forcing single-line header layouts when dialogs contain badges, shortcuts, or status hints.
+
 ### Image component events
 Standard events emitted by image grid components:
 - `@image-click` — open modal

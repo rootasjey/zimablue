@@ -1,6 +1,7 @@
 // GET /api/admin/todos/next
 // Returns the next upcoming todo (earliest due_date, not completed)
 
+import { db } from 'hub:db'
 import { sql } from 'drizzle-orm'
 import type { Todo } from "~~/shared/types/todo"
 
@@ -22,8 +23,8 @@ export default eventHandler(async (event) => {
 
   try {
     // Get the next upcoming todo (not completed, earliest due_date)
-    const todo = await db
-      .get(sql`
+    const todos = await db
+      .all(sql`
         SELECT 
           id,
           title,
@@ -38,7 +39,9 @@ export default eventHandler(async (event) => {
         WHERE status != 'completed'
         ORDER BY due_date ASC, priority DESC
         LIMIT 1
-      `)
+      `) as unknown as Todo[]
+
+    const todo = todos[0] ?? null
 
     if (!todo) {
       return {

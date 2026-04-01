@@ -1,257 +1,251 @@
 <template>
   <div>
-    <!-- Main Content -->
     <main>
-      <!-- Access Control -->
-      <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-        <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-        <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-        <NButton to="/user" class="mt-4">Go to Profile</NButton>
+      <div v-if="!loggedIn || user?.role !== 'admin'" class="admin-card p-10 text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
+          <span class="i-ph-lock text-3xl"></span>
+        </div>
+        <h2 class="font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Access denied</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm text-stone-500 dark:text-zinc-400">
+          You need administrator access to manage the gallery workspace.
+        </p>
+        <NButton to="/user" class="mt-5">Go to profile</NButton>
       </div>
 
-      <!-- Dashboard Content -->
       <div v-else class="space-y-6">
-        <!-- Greeting/Header -->
-        <div class="flex items-start justify-between">
-          <div>
-            <h1 class="text-2xl sm:text-3xl font-700 text-gray-900 dark:text-gray-200">Good {{ greetingTime }}, {{ firstName }}!</h1>
-          </div>
+        <section class="mt-6 mb-12">
+          <h1 class="font-title text-3xl sm:text-8xl font-500 text-zinc-950 dark:text-zinc-50">
+            Good {{ greetingTime }}, {{ firstName }}.
+          </h1>
+        </section>
 
-          <!-- Quick profile / actions -->
-          <div class="hidden sm:flex items-center gap-3">
-            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition">
-              <span class="i-ph-calendar text-gray-700 dark:text-gray-300 text-lg"></span>
-            </button>
-            <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition">
-              <span class="i-ph-bell text-gray-700 dark:text-gray-300 text-lg"></span>
-            </button>
-            <ClientOnly>
-              <NDropdownMenu :items="userMenuItems" dropdown-menu="link-gray"
-                :_dropdown-menu-content="{ class: 'w-48', align: 'end' }">
-                <template #trigger>
-                  <button
-                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center hover:opacity-90 transition">
-                    <span class="i-ph-user text-gray-200 text-lg"></span>
-                  </button>
-                </template>
-              </NDropdownMenu>
-              <template #fallback>
-                <button
-                  class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center opacity-50">
-                  <span class="i-ph-user text-gray-200 text-lg"></span>
-                </button>
-              </template>
-            </ClientOnly>
-          </div>
-        </div>
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminStatsCard
+            title="Illustrations"
+            :value="stats?.images.total ?? 0"
+            icon="i-ph-image"
+            icon-color="amber"
+            :change="contentActivityChange"
+            change-label="vs previous 30-day rhythm"
+            :sparkline="contentSparkline"
+          />
+          <AdminStatsCard
+            title="Collections"
+            :value="stats?.collections.total ?? 0"
+            icon="i-ph-folders"
+            icon-color="cyan"
+            :sub-label="`${stats?.collections.public ?? 0} public / ${stats?.collections.private ?? 0} private`"
+            :sparkline="collectionSparkline"
+          />
+          <AdminStatsCard
+            title="Messages"
+            :value="stats?.messages.total ?? 0"
+            icon="i-ph-envelope"
+            icon-color="rose"
+            :change="messageFreshness"
+            change-label="new today"
+            :sparkline="messageSparkline"
+          />
+          <AdminStatsCard
+            title="Users"
+            :value="stats?.users.total ?? 0"
+            icon="i-ph-users-three"
+            icon-color="emerald"
+            :change="Math.round(userGrowth.percentage_change)"
+            change-label="month-over-month growth"
+            :sparkline="userSparkline"
+          />
+        </section>
 
-        <div class="flex gap-12">
-          <div class="flex-1 space-y-6 max-w-70%">
-            <!-- Top Stats Row -->
-            <div class="flex gap-6 overflow-x-auto">
-              <!-- Bank Balance Card -->
-              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
-                <button
-                  class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
-                </button>
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-wallet text-gray-900 dark:text-gray-300 text-2xl"></span>
-                </div>
-                <div class="text-3xl font-800 text-gray-900 dark:text-gray-200 mb-1">$143,624</div>
-                <div class="text-sm text-gray-600">Your bank balance</div>
+        <section class="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
+          <div class="admin-card p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Studio pulse</p>
+                <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">What needs attention now</h2>
               </div>
-
-              <!-- Uncategorized Transactions -->
-              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
-                <button
-                  class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
-                </button>
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-clock text-gray-900 dark:text-gray-300 text-2xl"></span>
-                </div>
-                <div class="text-3xl font-800 text-gray-900 dark:text-gray-200 mb-1">12</div>
-                <div class="text-sm text-gray-600 dark:text-gray-300">Uncategorized transactions</div>
-              </div>
-
-              <!-- Employees Working Today -->
-              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
-                <button
-                  class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
-                </button>
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-users text-gray-900 dark:text-gray-300 text-2xl"></span>
-                </div>
-                <div class="text-3xl font-800 text-gray-900 dark:text-gray-200 mb-1">7</div>
-                <div class="text-sm text-gray-600 dark:text-gray-300">Employees working today</div>
-              </div>
-
-              <!-- Card Spending -->
-              <div class="w-48 shrink-0 rounded-[28px] p-6 pt-2.5 pb-12 bg-[#D1E0E9] dark:bg-gray-800 relative">
-                <button
-                  class="absolute right-4 top-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/70 transition">
-                  <span class="i-ph-dots-three-vertical-bold text-gray-700 dark:text-gray-300"></span>
-                </button>
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                  <span class="i-ph-credit-card text-gray-900 dark:text-gray-300 text-2xl"></span>
-                </div>
-                <div class="text-3xl font-800 text-gray-900 dark:text-gray-200 mb-1">$3,287.49</div>
-                <div class="text-sm text-gray-600 dark:text-gray-300">This week's card spending</div>
-              </div>
+              <NuxtLink to="/admin/analytics" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+                Open analytics
+              </NuxtLink>
             </div>
 
-            <!-- Middle Section: Stats + Chart -->
-            <div class="flex gap-4">
-              <!-- Left: Stacked Cards -->
-              <div class="space-y-4">
-                <!-- User Growth -->
-                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
-                  <div class="text-size-4 font-800 mb-2">New users this month</div>
-                  <div v-if="isLoadingUserGrowth" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
-                  <div v-else class="flex items-center gap-3">
-                    <div class="text-5xl font-800 text-gray-900 dark:text-gray-200">{{ userGrowth.this_month }}</div>
-                    <span
-                      class="px-2 py-1 rounded-full text-xs font-700"
-                      :class="userGrowth.percentage_change >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
-                    >
-                      {{ userGrowth.percentage_change >= 0 ? '+' : '' }} {{ userGrowth.percentage_change }}%
-                    </span>
+            <div class="mt-6 grid gap-4 lg:grid-cols-2">
+              <div class="rounded-3xl bg-stone-50 p-4 dark:bg-zinc-900/80">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Content cadence</p>
+                    <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Uploads over the last week and month.</p>
+                  </div>
+                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span class="i-ph-shooting-star text-lg"></span>
                   </div>
                 </div>
 
-                <!-- Content Activity -->
-                <div class="w-64 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
-                  <div class="text-size-4 font-800 mb-2">Images (7 days)</div>
-                  <div v-if="isLoadingContentActivity" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
-                  <div v-else class="flex items-center gap-3">
-                    <div class="text-5xl font-800 text-gray-900 dark:text-gray-200">{{ contentActivity.last_7_days }}</div>
-                    <span class="px-2 py-1 rounded-full text-xs font-700 bg-blue-100 text-blue-700">
-                      {{ contentActivity.last_30_days }} / 30d
-                    </span>
+                <div class="mt-5 space-y-4">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-xs text-stone-500 dark:text-zinc-400">
+                      <span>Last 7 days</span>
+                      <span>{{ contentActivity.last_7_days }}</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-zinc-800">
+                      <div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="{ width: `${contentLastWeekWidth}%` }"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-xs text-stone-500 dark:text-zinc-400">
+                      <span>Last 30 days</span>
+                      <span>{{ contentActivity.last_30_days }}</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-zinc-800">
+                      <div class="h-full rounded-full bg-cyan-400 transition-all duration-500" :style="{ width: `${contentLastMonthWidth}%` }"></div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                    {{ cadenceInsight }}
                   </div>
                 </div>
               </div>
 
-              <!-- Right: Revenue Chart -->
-              <div class="flex-1 rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="text-lg font-700 text-gray-900 dark:text-gray-200">Revenue</div>
-                  <div class="text-sm text-gray-600 dark:text-gray-300">Last 7 days VS prior week</div>
+              <div class="rounded-3xl bg-stone-50 p-4 dark:bg-zinc-900/80">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Reach snapshot</p>
+                    <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">High-level engagement across the gallery.</p>
+                  </div>
+                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
+                    <span class="i-ph-chart-line-up text-lg"></span>
+                  </div>
                 </div>
-                <!-- Placeholder for chart -->
-                <div class="h-48 flex items-center justify-center rounded-2xl">
-                  <div class="text-center text-gray-500">
-                    <span class="i-ph-chart-line text-4xl mb-2"></span>
-                    <p class="text-sm">Chart placeholder</p>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
+                    <p class="text-xs text-stone-500 dark:text-zinc-400">Image views</p>
+                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalViews ?? 0) }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
+                    <p class="text-xs text-stone-500 dark:text-zinc-400">Downloads</p>
+                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalDownloads ?? 0) }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
+                    <p class="text-xs text-stone-500 dark:text-zinc-400">Likes</p>
+                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalLikes ?? 0) }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
+                    <p class="text-xs text-stone-500 dark:text-zinc-400">Collection views</p>
+                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.collections.totalViews ?? 0) }}</p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Recent Messages -->
-            <div class="rounded-[28px] p-6 bg-[#D1E0E9] dark:bg-gray-800">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-lg font-700 text-gray-900 dark:text-gray-200">Recent messages</div>
-                <NButton to="/admin/messages" btn="light:soft-blue dark:soft-blue" rounded="6" size="sm">View all</NButton>
+          <div class="space-y-4">
+            <div class="admin-card p-5 sm:p-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Focus block</p>
+                  <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Next task</h2>
+                </div>
+                <NuxtLink to="/admin/todos" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+                  Open tasks
+                </NuxtLink>
               </div>
 
-              <div v-if="isLoadingMessages" class="space-y-3">
-                <div v-for="n in 4" :key="n" class="h-16 bg-white/50 rounded-xl animate-pulse"></div>
+              <div v-if="isLoadingNextTodo" class="mt-5 h-36 animate-pulse rounded-3xl bg-stone-100 dark:bg-zinc-800"></div>
+
+              <div v-else-if="nextTodo" class="mt-5 rounded-3xl border border-stone-200 bg-stone-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/80">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="admin-badge py-1 text-[10px]" :class="priorityBadgeClass(nextTodo.priority)">
+                    {{ nextTodo.priority }} priority
+                  </span>
+                  <span class="text-xs text-stone-400 dark:text-zinc-500">{{ getStatusLabel(nextTodo.status) }}</span>
+                </div>
+                <h3 class="mt-4 text-lg font-medium text-zinc-900 dark:text-zinc-100">{{ nextTodo.title }}</h3>
+                <p v-if="nextTodo.description" class="mt-2 text-sm leading-6 text-stone-500 dark:text-zinc-400">{{ nextTodo.description }}</p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-stone-500 dark:text-zinc-400">
+                  <span class="i-ph-calendar-dots"></span>
+                  <span>Due {{ formatDate(nextTodo.due_date) }}</span>
+                </div>
               </div>
 
-              <div v-else-if="recentMessages.length === 0" class="text-center py-8 text-gray-500">
-                No recent messages
+              <div v-else class="mt-5 rounded-3xl border border-dashed border-stone-200 p-5 text-sm text-stone-500 dark:border-zinc-800 dark:text-zinc-400">
+                No pending task is currently blocking the studio.
+              </div>
+            </div>
+
+            <div class="admin-card p-5 sm:p-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Inbox</p>
+                  <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Recent messages</h2>
+                </div>
+                <NuxtLink to="/admin/messages" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+                  Open inbox
+                </NuxtLink>
               </div>
 
-              <div v-else class="space-y-3">
+              <div v-if="isLoadingMessages" class="mt-5 space-y-3">
+                <div v-for="n in 3" :key="n" class="h-16 animate-pulse rounded-2xl bg-stone-100 dark:bg-zinc-800"></div>
+              </div>
+
+              <div v-else-if="recentMessages.length === 0" class="mt-5 rounded-3xl border border-dashed border-stone-200 p-5 text-sm text-stone-500 dark:border-zinc-800 dark:text-zinc-400">
+                No recent messages.
+              </div>
+
+              <div v-else class="mt-5 space-y-3">
                 <NuxtLink
                   v-for="message in recentMessages"
                   :key="message.id"
-                  :to="`/admin/messages`"
-                  class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition cursor-pointer"
+                  to="/admin/messages"
+                  class="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition-colors hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:bg-zinc-900"
                 >
-                  <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-gray-200 font-600">
+                  <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-950">
                     {{ getInitials(message.sender_email) }}
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="font-600 text-gray-900 dark:text-gray-200 flex items-center gap-2">
-                      {{ message.sender_email }}
-                      <span v-if="!message.read" class="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ message.subject }}</p>
+                      <span v-if="!message.read" class="h-2 w-2 rounded-full bg-amber-400"></span>
                     </div>
-                    <div class="text-sm text-gray-600 dark:text-gray-300 truncate">{{ message.subject }}</div>
+                    <p class="mt-1 truncate text-xs text-stone-500 dark:text-zinc-400">{{ message.sender_email }}</p>
                   </div>
-                  <div class="text-sm text-gray-500">{{ formatMessageDate(message.created_at) }}</div>
+                  <p class="whitespace-nowrap text-[11px] text-stone-400 dark:text-zinc-500">{{ formatRelativeDate(message.created_at) }}</p>
                 </NuxtLink>
               </div>
             </div>
           </div>
+        </section>
 
-          <!-- Right Column: Stacked Cards -->
-          <div class="space-y-4">
-            <!-- Next Project (dark card) -->
-            <div v-if="nextTodo" class="rounded-[28px] bg-black text-gray-200 p-6">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-lg font-700">Next Project</div>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-700"
-                  :class="nextTodo.priority === 'high' ? 'bg-red-500/20 text-red-300' : nextTodo.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300'"
-                >
-                  {{ nextTodo.priority }}
-                </span>
-              </div>
-              <div class="text-xl font-600 mb-2">{{ nextTodo.title }}</div>
-              <div class="text-sm text-gray-300 mb-4">Due: {{ formatDate(nextTodo.due_date) }}</div>
-              <div class="flex items-center gap-2 text-sm text-gray-200 mb-4">
-                <span class="i-ph-clock"></span>
-                <span>{{ getStatusLabel(nextTodo.status) }}</span>
-              </div>
-              <NButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
-                View all tasks
-              </NButton>
-            </div>
+        <section class="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+          <AdminActivityFeed />
 
-            <!-- No upcoming tasks -->
-            <div v-else-if="!isLoadingNextTodo" class="rounded-[28px] bg-black text-gray-200 p-6">
-              <div class="text-lg font-700 mb-2">Next Project</div>
-              <div class="text-sm text-gray-300 mb-4">No upcoming tasks</div>
-              <NButton to="/admin/todos" size="sm" class="w-full justify-center" btn="soft-white">
-                Create a task
-              </NButton>
-            </div>
+          <div class="admin-card p-5 sm:p-6">
+            <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Shortcuts</p>
+            <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Common routes</h2>
 
-            <!-- Loading state -->
-            <div v-else class="rounded-[28px] bg-black text-gray-200 p-6 h-48 animate-pulse"></div>
-
-            <!-- To-Do List -->
-            <div class="rounded-[28px] bg-[#D1E0E9] p-6">
-              <div class="text-lg font-700 text-gray-900 mb-4">Your to-Do list</div>
-              <div class="space-y-3">
-                <div v-for="item in todoItems" :key="item.title" class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span class="i-ph-check text-gray-200 text-sm"></span>
+            <div class="mt-5 grid gap-3">
+              <NuxtLink
+                v-for="action in quickActions"
+                :key="action.to"
+                :to="action.to"
+                class="group flex items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:bg-zinc-900"
+              >
+                <div class="flex items-center gap-3">
+                  <div :class="['flex h-11 w-11 items-center justify-center rounded-2xl text-lg', action.iconClass]">
+                    <span :class="action.icon"></span>
                   </div>
-                  <div class="flex-1">
-                    <div class="font-600 text-gray-900">{{ item.title }}</div>
-                    <div class="text-sm text-gray-600">{{ item.time }}</div>
+                  <div>
+                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ action.label }}</p>
+                    <p class="text-xs text-stone-500 dark:text-zinc-400">{{ action.description }}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Board Meeting (dark card) -->
-            <div class="rounded-[28px] bg-black text-gray-200 p-6">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-lg font-700">Board meeting</div>
-                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-              </div>
-              <div class="text-sm text-gray-200 mb-2">Feb 22 at 6:00 PM</div>
-              <p class="text-sm text-gray-300">You have been invited to attend a meeting of the Board Directors.</p>
+                <span class="i-ph-arrow-up-right text-stone-300 transition-colors group-hover:text-amber-500 dark:text-zinc-600 dark:group-hover:text-amber-400"></span>
+              </NuxtLink>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   </div>
@@ -271,13 +265,12 @@ definePageMeta({
 })
 
 const stats = ref<AdminStats | null>(null)
-const isLoading = ref(false)
-const isLoadingMessages = ref(false)
-const isLoadingNextTodo = ref(false)
-const isLoadingUserGrowth = ref(false)
-const isLoadingContentActivity = ref(false)
 const recentMessages = ref<Message[]>([])
 const nextTodo = ref<Todo | null>(null)
+const isLoadingMessages = ref(false)
+const isLoadingNextTodo = ref(false)
+const isRefreshing = ref(false)
+const fetchAdmin = $fetch as (url: string) => Promise<any>
 
 const userGrowth = ref({
   this_month: 0,
@@ -292,206 +285,258 @@ const contentActivity = ref({
   total: 0
 })
 
-// Greeting helpers
-const firstName = computed(() => user.value?.name?.split(' ')[0] || 'James')
+const firstName = computed(() => user.value?.name?.split(' ')[0] || 'Artist')
 const greetingTime = computed(() => {
-  const h = new Date().getHours()
-  if (h < 12) return 'morning'
-  if (h < 18) return 'afternoon'
+  const hours = new Date().getHours()
+
+  if (hours < 12) return 'morning'
+  if (hours < 18) return 'afternoon'
   return 'evening'
 })
 
-// Mock data for to-do list (for the "Your to-Do list" card)
-const todoItems = ref([
-  { title: 'Run payroll', time: 'Mar 4 at 6:00 pm' },
-  { title: 'Review time off request', time: 'Mar 7 at 6:00 pm' },
-  { title: 'Sign board resolution', time: 'Mar 12 at 6:00 pm' },
-  { title: 'Finish onboarding Tony', time: 'Mar 15 at 6:00 pm' },
+const publicCollectionsRatio = computed(() => {
+  const total = stats.value?.collections.total ?? 0
+  if (!total) return 0
+  return Math.round(((stats.value?.collections.public ?? 0) / total) * 100)
+})
+
+const contentActivityChange = computed(() => {
+  const monthlyAverageWeek = (contentActivity.value.last_30_days || 0) / 4.285
+  if (!monthlyAverageWeek) return 0
+
+  return Math.round(((contentActivity.value.last_7_days - monthlyAverageWeek) / monthlyAverageWeek) * 100)
+})
+
+const messageFreshness = computed(() => stats.value?.messages.newToday ?? 0)
+
+const contentLastWeekWidth = computed(() => {
+  const max = Math.max(contentActivity.value.total, contentActivity.value.last_30_days, 1)
+  return Math.min(100, Math.round((contentActivity.value.last_7_days / max) * 100))
+})
+
+const contentLastMonthWidth = computed(() => {
+  const max = Math.max(contentActivity.value.total, contentActivity.value.last_30_days, 1)
+  return Math.min(100, Math.round((contentActivity.value.last_30_days / max) * 100))
+})
+
+const cadenceInsight = computed(() => {
+  if (!contentActivity.value.last_30_days) {
+    return 'No uploads detected over the last month yet.'
+  }
+
+  if (contentActivityChange.value > 10) {
+    return 'Upload rhythm is accelerating compared to the monthly baseline.'
+  }
+
+  if (contentActivityChange.value < -10) {
+    return 'Upload rhythm is slowing down. The gallery may need fresh work soon.'
+  }
+
+  return 'Upload rhythm is stable and aligned with the monthly baseline.'
+})
+
+const contentSparkline = computed(() => [
+  Math.max(contentActivity.value.last_30_days - contentActivity.value.last_7_days, 1),
+  Math.max(Math.round(contentActivity.value.last_30_days / 2), 1),
+  Math.max(contentActivity.value.last_7_days, 1),
+  Math.max(Math.round(contentActivity.value.last_30_days * 0.8), 1)
 ])
 
-// User menu items
-const userMenuItems = [
-  { label: 'Profile', onClick: () => navigateTo('/user') },
-  { label: 'Settings', onClick: () => navigateTo('/admin/settings') },
-  { label: 'Logout', onClick: () => navigateTo('/logout') },
+const collectionSparkline = computed(() => [
+  Math.max(stats.value?.collections.private ?? 0, 1),
+  Math.max(stats.value?.collections.public ?? 0, 1),
+  Math.max(stats.value?.collections.total ?? 0, 1)
+])
+
+const messageSparkline = computed(() => [
+  Math.max(stats.value?.messages.newToday ?? 0, 1),
+  Math.max(stats.value?.messages.unread ?? 0, 1),
+  Math.max(stats.value?.messages.total ?? 0, 1)
+])
+
+const userSparkline = computed(() => [
+  Math.max(userGrowth.value.last_month, 1),
+  Math.max(userGrowth.value.this_month, 1),
+  Math.max(userGrowth.value.total, 1)
+])
+
+const quickActions = [
+  {
+    to: '/admin/images',
+    label: 'Images',
+    description: 'Upload, edit and curate illustrations.',
+    icon: 'i-ph-image-square',
+    iconClass: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+  },
+  {
+    to: '/admin/collections',
+    label: 'Collections',
+    description: 'Shape public and private series.',
+    icon: 'i-ph-folder-open',
+    iconClass: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'
+  },
+  {
+    to: '/admin/messages',
+    label: 'Messages',
+    description: 'Answer new contact requests quickly.',
+    icon: 'i-ph-envelope-open',
+    iconClass: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
+  },
+  {
+    to: '/admin/todos',
+    label: 'Todos',
+    description: 'Track the next production tasks.',
+    icon: 'i-ph-check-square-offset',
+    iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+  }
 ]
 
-// Helper functions
-const getInitials = (email: string) => {
-  const parts = email.split('@')
-  if (!parts[0]) return email.substring(0, 2).toUpperCase()
-  
-  const nameParts = parts[0].split('.')
-  if (nameParts.length >= 2 && nameParts[0] && nameParts[0][0] && nameParts[1] && nameParts[1][0]) {
-    return (nameParts[0][0] + nameParts[1][0]).toUpperCase()
-  }
-  return email.substring(0, 2).toUpperCase()
+const formatCompact = (value: number) => {
+  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
 }
 
-const formatMessageDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
 
-  if (diffInHours < 1) {
-    const m = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-    return m < 1 ? 'Just now' : `${m}m ago`
-  }
+const formatRelativeDate = (dateString: string) => {
+  const diffInMinutes = Math.floor((Date.now() - new Date(dateString).getTime()) / 60000)
+
+  if (diffInMinutes < 1) return 'just now'
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+
+  const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) return `${diffInHours}h ago`
-  if (diffInHours < 48) return 'Yesterday'
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  if (diffInHours < 48) return 'yesterday'
+
+  return formatDate(dateString)
 }
 
-const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
+const getInitials = (email: string) => {
+  const localPart = email.split('@')[0]
+  if (!localPart) return '??'
+
+  const segments = localPart.split(/[._-]/).filter(Boolean)
+  if (segments.length >= 2) {
+    return `${segments[0]?.[0] || ''}${segments[1]?.[0] || ''}`.toUpperCase()
+  }
+
+  return localPart.slice(0, 2).toUpperCase()
+}
+
+const getStatusLabel = (status: Todo['status']) => {
+  const labels: Record<Todo['status'], string> = {
     pending: 'Pending',
-    in_progress: 'In Progress',
+    in_progress: 'In progress',
     completed: 'Completed'
   }
-  return labels[status] || status
+
+  return labels[status]
 }
 
-// Simple chart data
-const chart = reactive({ currPoints: '', prevPoints: '' })
-const buildChart = () => {
-  // Generate tiny demo data based on stats counts, normalized to 0..100
-  const seed = (stats.value?.images.total ?? 50) + (stats.value?.users.total ?? 50)
-  const curr = Array.from({ length: 7 }, (_, i) => ((Math.sin((i + seed % 10) / 2) + 1) * 40 + 10))
-  const prev = curr.map((v, i) => Math.max(5, v - 8 + ((i % 2) ? 6 : -4)))
-  const toPoints = (arr: number[]) => arr.map((v, i) => `${(i) * (300/6)},${100 - v}`).join(' ')
-  chart.currPoints = toPoints(curr)
-  chart.prevPoints = toPoints(prev)
+const priorityBadgeClass = (priority: Todo['priority']) => {
+  if (priority === 'high') return 'admin-badge-rose'
+  if (priority === 'medium') return 'admin-badge-amber'
+  return 'admin-badge-cyan'
 }
 
 const fetchStats = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
-  
-  isLoading.value = true
-  try {
-    const response = await $fetch('/api/admin/stats')
-    if (response.success) {
-      stats.value = response.data
-      buildChart()
-    }
-  } catch (error) {
-    console.error('Error fetching admin stats:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to fetch dashboard statistics. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
-  } finally {
-    isLoading.value = false
+  const endpoint: string = '/api/admin/stats'
+  const response = await fetchAdmin(endpoint) as { success?: boolean, data?: AdminStats }
+  if (response.success && response.data) {
+    stats.value = response.data
   }
 }
 
 const fetchRecentMessages = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
   isLoadingMessages.value = true
+
   try {
-    const res = await $fetch('/api/admin/messages?limit=4')
-    if (res?.success) {
-      recentMessages.value = res.data.messages
+    const endpoint: string = '/api/admin/messages?limit=3'
+    const response = await fetchAdmin(endpoint) as { success?: boolean, data?: { messages?: Message[] } }
+    if (response.success) {
+      recentMessages.value = response.data?.messages ?? []
     }
-  } catch (e) {
-    console.warn('Failed to load recent messages', e)
   } finally {
     isLoadingMessages.value = false
   }
 }
 
 const fetchNextTodo = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
   isLoadingNextTodo.value = true
+
   try {
-    const res = await $fetch('/api/admin/todos/next') as any
-    if (res?.success) {
-      nextTodo.value = res.data
+    const endpoint: string = '/api/admin/todos/next'
+    const response = await fetchAdmin(endpoint) as { success?: boolean, data?: Todo | null }
+    if (response.success) {
+      nextTodo.value = response.data ?? null
     }
-  } catch (e) {
-    console.warn('Failed to load next todo', e)
   } finally {
     isLoadingNextTodo.value = false
   }
 }
 
 const fetchUserGrowth = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
-  isLoadingUserGrowth.value = true
-  try {
-    const res = await $fetch('/api/admin/analytics/user-growth') as any
-    if (res?.success) {
-      userGrowth.value = res.data
-    }
-  } catch (e) {
-    console.warn('Failed to load user growth', e)
-  } finally {
-    isLoadingUserGrowth.value = false
+  const endpoint: string = '/api/admin/analytics/user-growth'
+  const response = await fetchAdmin(endpoint) as {
+    success?: boolean
+    data?: typeof userGrowth.value
+  }
+
+  if (response.success && response.data) {
+    userGrowth.value = response.data
   }
 }
 
 const fetchContentActivity = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
-  isLoadingContentActivity.value = true
-  try {
-    const res = await $fetch('/api/admin/analytics/content-activity') as any
-    if (res?.success) {
-      contentActivity.value = res.data
-    }
-  } catch (e) {
-    console.warn('Failed to load content activity', e)
-  } finally {
-    isLoadingContentActivity.value = false
+  const endpoint: string = '/api/admin/analytics/content-activity'
+  const response = await fetchAdmin(endpoint) as {
+    success?: boolean
+    data?: typeof contentActivity.value
+  }
+
+  if (response.success && response.data) {
+    contentActivity.value = response.data
   }
 }
 
-// Helper function for formatting dates
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+const reloadDashboard = async () => {
+  if (!loggedIn.value || user.value?.role !== 'admin') return
+
+  isRefreshing.value = true
+
+  try {
+    await Promise.all([
+      fetchStats(),
+      fetchRecentMessages(),
+      fetchNextTodo(),
+      fetchUserGrowth(),
+      fetchContentActivity()
+    ])
+  } catch (error) {
+    console.error('Error fetching admin dashboard data:', error)
+    toast({
+      title: 'Error',
+      description: 'Failed to refresh the dashboard.',
+      toast: 'soft-error',
+      duration: 5000
+    })
+  } finally {
+    isRefreshing.value = false
+  }
 }
 
 onMounted(() => {
-  if (loggedIn.value && user.value?.role === 'admin') {
-    fetchStats()
-    fetchRecentMessages()
-    fetchNextTodo()
-    fetchUserGrowth()
-    fetchContentActivity()
-  }
+  reloadDashboard()
 })
 
 watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
   if (newLoggedIn && newRole === 'admin') {
-    fetchStats()
-    fetchRecentMessages()
-    fetchNextTodo()
-    fetchUserGrowth()
-    fetchContentActivity()
+    reloadDashboard()
   }
 })
 </script>
-
-<style scoped>
-/* Tiny motion transitions */
-.fade-slide-enter-active,
-.fade-slide-leave-active { transition: all .3s ease; }
-.fade-slide-enter-from { opacity: 0; transform: translateY(6px); }
-.fade-slide-leave-to { opacity: 0; transform: translateY(6px); }
-
-/* Chart line draw animation */
-.chart-line {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  animation: line-draw 900ms ease forwards;
-}
-@keyframes line-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Thin horizontal scrollbar on KPI row (fallback) */
-.scrollbar-thin { scrollbar-width: thin; }
-.scrollbar-thin::-webkit-scrollbar { height: 8px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 9999px; }
-</style>

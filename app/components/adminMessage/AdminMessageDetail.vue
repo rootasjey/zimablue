@@ -1,87 +1,58 @@
 <template>
-  <NCard v-if="message" class="bg-white/70 dark:bg-gray-900" border="0" shadow="lg" rounded="xl">
-    <!-- Header -->
-    <template #header>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-3 h-3 rounded-full" :class="message.read ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500'"
-            :title="message.read ? 'Read' : 'Unread'"></div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
-            {{ message.subject }}
-          </h3>
+  <div v-if="message" class="admin-card min-h-[520px] p-5 sm:p-6">
+    <div class="flex flex-col gap-5">
+      <div class="flex flex-col gap-4 border-b border-stone-200 pb-5 dark:border-zinc-800 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="h-2.5 w-2.5 rounded-full" :class="message.read ? 'bg-stone-300 dark:bg-zinc-600' : 'bg-amber-400'"></span>
+            <span class="text-xs uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">
+              {{ message.read ? 'Read' : 'Unread' }}
+            </span>
+          </div>
+          <h3 class="mt-3 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ message.subject }}</h3>
+          <div class="mt-4 flex flex-wrap gap-3 text-xs text-stone-500 dark:text-zinc-400">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 dark:bg-zinc-800">
+              <span class="i-ph-envelope-simple"></span>
+              {{ message.sender_email }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 dark:bg-zinc-800">
+              <span class="i-ph-clock"></span>
+              {{ formatFullDate(message.created_at) }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 dark:bg-zinc-800">
+              <span class="i-ph-hash"></span>
+              #{{ message.id }}
+            </span>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <NTooltip>
-            <template #default>
-              <NButton
-                @click="handleMarkRead(!message.read)"
-                :btn="message.read ? 'soft-blue' : 'solid-blue'"
-                :label="message.read ? 'i-ph-circle' : 'i-ph-check'" size="xs" icon
-              />
-            </template>
-            <template #content>
-              <div class="px-3 py-1">{{ message.read ? 'Mark this message as unread' : 'Mark this message as read' }}</div>
-            </template>
-          </NTooltip>
-
-          <NTooltip>
-            <template #default>
-              <NButton @click="$emit('delete', message)" btn="soft-pink" icon label="i-tabler-trash" size="xs" />
-            </template>
-            <template #content>
-              <div class="px-3 py-1">Delete this message</div>
-            </template>
-          </NTooltip>
-
-          <NTooltip>
-            <template #default>
-              <NButton size="xs" icon btn="soft-lime" label="i-tabler-x" aria-label="Close" @click="$emit('close')" />
-            </template>
-            <template #content>
-              <div class="px-3 py-1">Close message detail view</div>
-            </template>
-          </NTooltip>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            class="inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors"
+            :class="message.read
+              ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              : 'bg-amber-500 text-white hover:bg-amber-400'"
+            @click="handleMarkRead(!message.read)"
+          >
+            <span :class="message.read ? 'i-ph-circle' : 'i-ph-check'"></span>
+            {{ message.read ? 'Mark unread' : 'Mark read' }}
+          </button>
+          <button class="inline-flex h-10 items-center gap-2 rounded-2xl bg-rose-50 px-3 text-sm font-medium text-rose-700 transition-colors hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/60" @click="$emit('delete', message)">
+            <span class="i-ph-trash"></span>
+            Delete
+          </button>
+          <button class="inline-flex h-10 items-center gap-2 rounded-2xl bg-stone-100 px-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="$emit('close')">
+            <span class="i-ph-x"></span>
+            Close
+          </button>
         </div>
       </div>
-    </template>
 
-    <!-- Message Content -->
-    <div class="space-y-3">
-      <!-- Compact Info Row -->
-      <div class="flex flex-wrap gap-4 items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
-        <span class="flex items-center gap-1">
-          <span class="i-ph-envelope text-gray-400"></span>
-          {{ message.sender_email }}
-        </span>
-        <span class="flex items-center gap-1">
-          <span class="i-ph-clock text-gray-400"></span>
-          {{ formatFullDate(message.created_at) }}
-        </span>
-        <span class="flex items-center gap-1">
-          <span class="i-ph-hash text-gray-400"></span>
-          #{{ message.id }}
-        </span>
-        <span class="flex items-center gap-1">
-          <span class="i-ph-circle text-gray-400"></span>
-          {{ message.read ? 'Read' : 'Unread' }}
-        </span>
-      </div>
-
-      <!-- Message Body - visually emphasized -->
-      <div>
-        <div
-          class="p-6 bg-white dark:bg-gray-900 rounded-xl border-1 b-dashed border-gray-400 dark:border-blue-900 max-h-[32rem] overflow-y-auto">
-          <div class="text-lg font-medium text-gray-900 dark:text-gray-200 whitespace-pre-wrap leading-relaxed"
-            style="word-break:break-word;" v-html="formattedMessage"></div>
-        </div>
+      <div class="rounded-[28px] border border-dashed border-stone-200 bg-stone-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
+        <div class="prose prose-stone max-w-none whitespace-pre-wrap break-words text-[15px] leading-7 text-zinc-800 dark:prose-invert dark:text-zinc-200" v-html="formattedMessage"></div>
       </div>
     </div>
-
-    <!-- Footer Actions -->
-    <template #footer>
-    </template>
-  </NCard>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -94,23 +65,26 @@ const emit = defineEmits<{
   (e: 'delete', message: Message): void
 }>()
 
+const escapeHtml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;')
+
 const formattedMessage = computed(() => {
   if (!props.message) return ''
-  // Basic HTML escaping and formatting (kept simple)
-  let formatted = props.message.message
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/'/g, "'")
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  formatted = formatted.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>')
+  const escaped = escapeHtml(props.message.message)
+  const linkedUrls = escaped.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" class="font-medium text-cyan-700 underline decoration-cyan-300 underline-offset-3 hover:text-cyan-800 dark:text-cyan-300 dark:decoration-cyan-700 dark:hover:text-cyan-200">$1</a>'
+  )
 
-  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
-  formatted = formatted.replace(emailRegex, '<a href="mailto:$1" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>')
-
-  return formatted
+  return linkedUrls.replace(
+    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+    '<a href="mailto:$1" class="font-medium text-cyan-700 underline decoration-cyan-300 underline-offset-3 hover:text-cyan-800 dark:text-cyan-300 dark:decoration-cyan-700 dark:hover:text-cyan-200">$1</a>'
+  )
 })
 
 const formatFullDate = (dateString: string): string => {
@@ -129,23 +103,3 @@ const handleMarkRead = (read: boolean) => {
   emit('mark-read', props.message.id, read)
 }
 </script>
-
-<style scoped>
-/* reuse scrollbar styles from modal */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background-color: rgb(243 244 246); border-radius: 0.25rem;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: rgb(209 213 219);
-  border-radius: 0.25rem;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(156 163 175);
-}
-</style>

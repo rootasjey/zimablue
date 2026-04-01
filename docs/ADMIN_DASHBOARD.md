@@ -46,12 +46,12 @@ A comprehensive admin dashboard for managing the core entities in the Zima Blue 
 
 ### Architecture
 - **Sidebar Navigation**: Consistent navigation across all admin pages using UnaUI Sidebar
-- **Reusable Components**: AdminTable, AdminStatsCard, AdminSidebar
+- **Reusable Components**: AdminTable, AdminStatsCard, AdminBottomNav
 - **Type Safety**: Full TypeScript support with proper type definitions
 - **API Endpoints**: RESTful admin API endpoints with proper authentication
 
 ### Components
-- `AdminSidebar.vue`: Left navigation sidebar with entity links
+- `AdminBottomNav.vue`: Floating bottom navigation for admin sections
 - `AdminStatsCard.vue`: Reusable statistics display cards
 - `AdminTable.vue`: Feature-rich table component with search, pagination, and bulk actions
 
@@ -121,7 +121,7 @@ A comprehensive admin dashboard for managing the core entities in the Zima Blue 
 1. Create type definitions in `types/`
 2. Add API endpoints in `server/api/admin/`
 3. Create management page in `pages/admin/`
-4. Add navigation link to `AdminSidebar.vue`
+4. Add navigation link to `AdminBottomNav.vue`
 5. Update dashboard stats if needed
 
 ### Customizing the Table Component

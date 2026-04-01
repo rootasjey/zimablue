@@ -1,24 +1,10 @@
 <template>
-  <div>
-    <!-- Access Control -->
-    <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-      <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-      <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-      <NButton to="/user" class="mt-4">Go to Profile</NButton>
-    </div>
-
-    <div v-else class="space-y-8">
-      <div>
-        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-200">Admin Tools</h1>
-        <p class="text-gray-600 dark:text-gray-400">Operations that affect stored data and files.</p>
-      </div>
-
+  <div class="space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Thumbnails regeneration -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div class="admin-card p-6">
           <h3 class="text-lg font-semibold mb-2">Regenerate thumbnails</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">Rebuild resized variants for one image or all images. Useful after updating processing or when a variant is missing.</p>
+          <p class="text-stone-500 dark:text-zinc-400 mb-4">Rebuild resized variants for one image or all images. Useful after updating processing or when a variant is missing.</p>
           <div class="flex gap-3 items-end">
             <NInput v-model.number="imageId" type="number" placeholder="Image ID (optional)" class="w-48" />
             <NButton :loading="regenLoading" btn="soft-blue" @click="regenerate">
@@ -26,13 +12,13 @@
               <span>{{ imageId ? 'Regenerate image' : 'Regenerate all (batch)' }}</span>
             </NButton>
           </div>
-          <p v-if="regenResult" class="text-xs text-gray-500 mt-3">{{ regenResult }}</p>
+          <p v-if="regenResult" class="text-xs text-stone-500 dark:text-zinc-400 mt-3">{{ regenResult }}</p>
         </div>
 
         <!-- Import / Export -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div class="admin-card p-6">
           <h3 class="text-lg font-semibold mb-2">Data import / export</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-3">Export entities to JSON or import from a JSON file.</p>
+          <p class="text-stone-500 dark:text-zinc-400 mb-3">Export entities to JSON or import from a JSON file.</p>
           <div class="flex flex-wrap gap-3 items-center">
             <NButton :loading="exporting" btn="soft-gray" @click="exportAll">
               <span class="i-ph-cloud-arrow-down mr-2" /> Export JSON
@@ -44,15 +30,14 @@
               <input ref="fileInput" type="file" accept="application/json" class="hidden" @change="importJson">
             </label>
           </div>
-          <p v-if="importResult" class="text-xs text-gray-500 mt-3">{{ importResult }}</p>
+          <p v-if="importResult" class="text-xs text-stone-500 dark:text-zinc-400 mt-3">{{ importResult }}</p>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { loggedIn, user } = useUserSession()
+const { } = useUserSession()
 const { toast } = useToast()
 
 definePageMeta({

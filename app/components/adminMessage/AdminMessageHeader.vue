@@ -1,104 +1,80 @@
 <template>
-  <div class="relative rounded-6 mb-6">
-    <!-- Stats Row -->
-    <NTooltip>
-      <template #default>
-        <NButton @click="$emit('refresh')" :loading="isLoading" btn="light:soft-indigo dark:solid-gray" size="xs"
-          rounded="6" class="absolute right-4 top-4">
-          <span class="i-ph-info mr-2"></span>
-          <span class="hidden md:inline">Stats</span>
-        </NButton>
-      </template>
-      <template #content>
-        <div class="flex gap-3 items-center px-3 py-1">
-          <p>{{ totalMessages }} total messages</p>
-          <span>•</span>
-          <p>{{ unreadCount }} unread</p>
-        </div>
-      </template>
-    </NTooltip>
-
-    <!-- Bulk Actions Row -->
-    <div class="flex flex-wrap gap-4 pt-4 border-t b-dashed border-gray-200 dark:border-gray-700">
-      <div>
-        <NInput v-model="searchQuery" placeholder="Search messages..." @keyup.enter="handleSearch"
-          @input="debouncedSearch" size="sm" rounded=6
-          class="shadow-lg border border-white focus:border-blue-500 dark:border-gray-700">
-          <template #leading>
-            <span class="i-ph-magnifying-glass"></span>
-          </template>
-        </NInput>
+  <div class="admin-card p-5 sm:p-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="admin-badge-stone">{{ totalMessages }} total</span>
+        <span class="admin-badge-amber">{{ unreadCount }} unread</span>
+        <span v-if="selectedCount > 0" class="admin-badge-cyan">{{ selectedCount }} selected</span>
       </div>
-      <div>
-        <NSelect v-model="readFilter" :items="readFilterOptions" @update:model-value="handleFilterChange"
-          select="soft-gray" size="xs" placeholder="Filter by status" item-key="label" value-key="label" />
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          class="inline-flex h-10 items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 text-sm text-zinc-700 transition-colors hover:bg-stone-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          :class="isLoading ? 'opacity-60' : ''"
+          :disabled="isLoading"
+          @click="$emit('refresh')"
+        >
+          <span :class="['i-ph-arrow-clockwise text-base', isLoading ? 'animate-spin' : '']"></span>
+          Refresh
+        </button>
       </div>
-      <NTooltip>
-        <template #default>
-          <NButton @click="$emit('toggle-multiselect')" size="xs" :btn="multiSelectActive ? 'soft-blue' : 'soft-gray'"
-            rounded="6">
-            <span class="i-ph-list mr-1"></span>
-            <span class="hidden md:inline">Multi-select</span>
-          </NButton>
-        </template>
-        <template #content>
-          <div class="px-3 py-1">{{ multiSelectActive ? 'Deactivate' : 'Activate' }} multi-select mode</div>
-        </template>
-      </NTooltip>
+    </div>
 
-      <NTooltip v-if="multiSelectActive">
-        <template #default>
-          <NButton @click="$emit('select-all')" size="xs" btn="soft-gray" rounded="6">
-            <span class="i-ph-check-square-offset mr-1"></span>
-            <span class="hidden md:inline">{{ isAllSelected ? 'Deselect all' : 'Select all' }}</span>
-          </NButton>
-        </template>
-        <template #content>
-          <div class="px-3 py-1">Toggle select all messages</div>
-        </template>
-      </NTooltip>
+    <div class="mt-5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+      <label class="flex h-11 items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 dark:border-zinc-800 dark:bg-zinc-900/80">
+        <span class="i-ph-magnifying-glass text-stone-400 dark:text-zinc-500"></span>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by subject, sender or message"
+          class="w-full bg-transparent text-sm text-zinc-900 outline-none placeholder:text-stone-400 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+          @keydown.enter="handleSearch"
+          @input="debouncedSearch"
+        >
+      </label>
 
-      <div v-if="selectedCount > 0" class="flex flex-wrap gap-2">
-        <NTooltip>
-          <template #default>
-            <NButton @click="$emit('bulk-action', 'mark_read')" size="xs" btn="soft-gray" rounded="6">
-              <span class="i-ph-check mr-2"></span>
-              <span class="hidden md:inline">Read </span>
-              <span>({{ selectedCount }})</span>
-            </NButton>
-          </template>
-          <template #content>
-            <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as read</div>
-          </template>
-        </NTooltip>
+      <select
+        v-model="readFilterValue"
+        class="h-11 rounded-2xl border border-stone-200 bg-white px-3 text-sm text-zinc-700 outline-none transition-colors hover:bg-stone-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
+        @change="handleFilterChange"
+      >
+        <option v-for="option in readFilterOptions" :key="option.label" :value="option.value ?? ''">{{ option.label }}</option>
+      </select>
 
-        <NTooltip>
-          <template #default>
-            <NButton @click="$emit('bulk-action', 'mark_unread')" size="xs" btn="soft-gray" rounded="6">
-              <span class="i-ph-circle mr-2"></span>
-              <span class="hidden md:inline">Unread </span>
-              <span>({{ selectedCount }})</span>
-            </NButton>
-          </template>
-          <template #content>
-            <div class="px-3 py-1">Mark {{ selectedCount }} selected messages as unread</div>
-          </template>
-        </NTooltip>
+      <button
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-medium transition-colors"
+        :class="multiSelectActive
+          ? 'border-cyan-300 bg-cyan-50 text-cyan-700 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300'
+          : 'border-stone-200 bg-white text-zinc-700 hover:bg-stone-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900'"
+        @click="$emit('toggle-multiselect')"
+      >
+        <span class="i-ph-selection-plus text-base"></span>
+        {{ multiSelectActive ? 'Multi-select on' : 'Multi-select' }}
+      </button>
 
-        <NTooltip>
-          <template #default>
-            <NButton @click="$emit('bulk-action', 'confirm_delete')" size="xs" btn="light:soft-pink dark:outline-pink"
-              rounded="6">
-              <span class="i-ph-trash mr-2"></span>
-              <span class="hidden md:inline">Delete </span>
-              <span>({{ selectedCount }})</span>
-            </NButton>
-          </template>
-          <template #content>
-            <div class="px-3 py-1">Delete {{ selectedCount }} selected messages</div>
-          </template>
-        </NTooltip>
-      </div>
+      <button
+        v-if="multiSelectActive"
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 text-sm font-medium text-zinc-700 transition-colors hover:bg-stone-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
+        @click="$emit('select-all')"
+      >
+        <span class="i-ph-check-square-offset text-base"></span>
+        {{ isAllSelected ? 'Clear all' : 'Select all' }}
+      </button>
+    </div>
+
+    <div v-if="selectedCount > 0" class="mt-4 flex flex-wrap gap-2 border-t border-dashed border-stone-200 pt-4 dark:border-zinc-800">
+      <button class="inline-flex h-10 items-center gap-2 rounded-2xl bg-stone-100 px-3 text-sm text-stone-700 transition-colors hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="$emit('bulk-action', 'mark_read')">
+        <span class="i-ph-check"></span>
+        Mark read
+      </button>
+      <button class="inline-flex h-10 items-center gap-2 rounded-2xl bg-stone-100 px-3 text-sm text-stone-700 transition-colors hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="$emit('bulk-action', 'mark_unread')">
+        <span class="i-ph-circle"></span>
+        Mark unread
+      </button>
+      <button class="inline-flex h-10 items-center gap-2 rounded-2xl bg-rose-50 px-3 text-sm text-rose-700 transition-colors hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/60" @click="$emit('bulk-action', 'confirm_delete')">
+        <span class="i-ph-trash"></span>
+        Delete
+      </button>
     </div>
   </div>
 </template>
@@ -106,6 +82,7 @@
 <script lang="ts" setup>
 interface Props {
   totalMessages: number
+  visibleMessages?: number
   unreadCount: number
   selectedCount: number
   isLoading: boolean
@@ -130,11 +107,11 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // Determine if all are selected to change button label
-const isAllSelected = computed(() => props.totalMessages > 0 && props.selectedCount === props.totalMessages)
+const isAllSelected = computed(() => (props.visibleMessages ?? 0) > 0 && props.selectedCount === (props.visibleMessages ?? 0))
 
 // Local state
 const searchQuery = ref('')
-const readFilter = ref<ReadFilterOption>({ label: 'All Messages', value: undefined })
+const readFilterValue = ref('')
 
 const readFilterOptions: ReadFilterOption[] = [
   { label: 'All Messages', value: undefined },
@@ -142,8 +119,7 @@ const readFilterOptions: ReadFilterOption[] = [
   { label: 'Read Only', value: 'true' }
 ]
 
-// Debounced search
-let searchTimeout: NodeJS.Timeout
+let searchTimeout: ReturnType<typeof setTimeout>
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -155,9 +131,8 @@ const handleSearch = () => {
   emit('search', searchQuery.value)
 }
 
-const handleFilterChange = (selectedOption: ReadFilterOption) => {
-  readFilter.value = selectedOption
-  const filterValue = selectedOption.value === undefined ? undefined : selectedOption.value === 'true'
+const handleFilterChange = () => {
+  const filterValue = readFilterValue.value === '' ? undefined : readFilterValue.value === 'true'
   emit('filter-change', 'read', filterValue)
 }
 </script>

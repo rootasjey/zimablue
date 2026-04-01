@@ -157,8 +157,8 @@
 - **Recommendation**: Add keyboard shortcut hints in UI or documentation
 - **Suggested command**: `/clarify` to improve discoverability
 
-#### 12. AdminSidebar Mobile Z-Index
-- **Location**: `app/components/admin/AdminSidebar.vue`
+#### 12. Legacy Admin Sidebar Mobile Z-Index
+- **Location**: Removed component (`app/components/admin/AdminSidebar.vue`)
 - **Category**: Responsive
 - **Description**: Uses `z-50` for mobile toggle and `z-40` for backdrop
 - **Impact**: Works correctly but could conflict with other overlays

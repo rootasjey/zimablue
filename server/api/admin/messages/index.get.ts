@@ -1,7 +1,7 @@
 // GET /api/admin/messages
 
 import { db } from 'hub:db'
-import { sql } from 'drizzle-orm'
+import { sql, type SQL } from 'drizzle-orm'
 import type { Message } from "~~/shared/types/message"
 
 export default eventHandler(async (event) => {
@@ -21,38 +21,35 @@ export default eventHandler(async (event) => {
   }
 
   const query = getQuery(event)
-  const page = parseInt(query.page as string) || 1
-  const limit = parseInt(query.limit as string) || 20
+  const page = Math.max(Number.parseInt((query.page as string) || '1', 10) || 1, 1)
+  const limit = Math.min(Math.max(Number.parseInt((query.limit as string) || '20', 10) || 20, 1), 100)
   const readFilter = query.read as string // 'true', 'false', or undefined for all
-  const search = query.search as string || ''
+  const search = (query.search as string || '').trim()
   const offset = (page - 1) * limit
 
   try {
-    let whereClause = ''
-
-    // Build WHERE clause for filtering
-    const conditions: string[] = []
+    const conditions: SQL[] = []
     
     if (readFilter !== undefined) {
-      conditions.push(`read = ${readFilter === 'true' ? 1 : 0}`)
+      conditions.push(sql`read = ${readFilter === 'true' ? 1 : 0}`)
     }
 
     if (search) {
-      const escapedSearch = search.replace(/'/g, "''")
-      conditions.push(`(sender_email LIKE '%${escapedSearch}%' OR subject LIKE '%${escapedSearch}%' OR message LIKE '%${escapedSearch}%')`)
+      const pattern = `%${search}%`
+      conditions.push(sql`(sender_email LIKE ${pattern} OR subject LIKE ${pattern} OR message LIKE ${pattern})`)
     }
 
-    if (conditions.length > 0) {
-      whereClause = 'WHERE ' + conditions.join(' AND ')
-    }
+    const whereClause = conditions.length > 0
+      ? sql`WHERE ${sql.join(conditions, sql` AND `)}`
+      : sql``
 
     // Get total count for pagination
-    const countQuery = sql.raw(`SELECT COUNT(*) as total FROM messages ${whereClause}`)
+    const countQuery = sql`SELECT COUNT(*) as total FROM messages ${whereClause}`
     const countResult = await db.get(countQuery) as { total: number } | undefined
     const total = countResult?.total || 0
 
     // Get messages with pagination
-    const messagesQuery = `
+    const messagesQuery = sql`
       SELECT 
         id,
         sender_email,
@@ -61,14 +58,14 @@ export default eventHandler(async (event) => {
         read,
         created_at,
         updated_at
-      FROM messages 
+      FROM messages
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `
     
     const messagesResult = await db
-      .all(sql.raw(messagesQuery)) as unknown as Message[]
+      .all(messagesQuery) as unknown as Message[]
 
     return {
       success: true,

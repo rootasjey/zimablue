@@ -20,7 +20,7 @@ export default eventHandler(async (event) => {
   }
 
   const query = getQuery(event)
-  const limit = parseInt((query.limit as string) || '10')
+  const limit = Math.min(Math.max(Number.parseInt((query.limit as string) || '10', 10) || 10, 1), 30)
 
   try {
     const tags = await db

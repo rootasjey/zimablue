@@ -1,85 +1,123 @@
 <template>
-  <div>
-      <main>
-        <!-- Access Control -->
-        <div v-if="!loggedIn || user?.role !== 'admin'" class="text-center py-12">
-          <div class="i-ph-lock text-6xl text-gray-400 mb-4"></div>
-          <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Access Denied</h2>
-          <p class="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-          <NButton to="/user" class="mt-4">Go to Profile</NButton>
-        </div>
-
-        <!-- Messages Management -->
-        <div v-else>
-          <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">Message Management</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-2">
-              Manage contact messages and inquiries from users.
+  <div class="space-y-6">
+    <section class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+      <div class="admin-card overflow-hidden border-none bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] p-5 shadow-sm dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(17,24,39,0.94))] sm:p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Inbox pulse</p>
+            <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Messages that need a response</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
+              Review new contact requests, clear your unread queue, and batch process routine actions without losing context.
             </p>
           </div>
 
-          <AdminMessageHeader
-            :total-messages="pagination.total"
-            :unread-count="unreadCount"
-            :selected-count="Object.values(selectedMessages).filter(Boolean).length"
-            :is-loading="isLoading"
-            :multi-select-active="multiSelectActive"
-            @refresh="fetchMessages"
-            @bulk-action="handleBulkAction"
-            @search="handleSearch"
-            @filter-change="handleFilterChange"
-            @select-all="toggleSelectAll"
-            @toggle-multiselect="multiSelectActive = !multiSelectActive; if (!multiSelectActive) selectedMessages = {}"
-          />
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1">
-              <AdminMessageList
-                :messages="messages"
-                :selected-messages="selectedMessages"
-                :is-loading="isLoading"
-                :multi-select-active="multiSelectActive"
-                :active-message-id="selectedMessage ? selectedMessage.id : undefined"
-                @select-message="toggleMessageSelection"
-                @view-message="viewMessage"
-              />
+          <div class="grid grid-cols-3 gap-3 sm:min-w-[320px]">
+            <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
+              <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Unread</p>
+              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ unreadCount }}</p>
             </div>
+            <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
+              <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Selected</p>
+              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ selectedCount }}</p>
+            </div>
+            <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
+              <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Total</p>
+              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.total }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Detail column: occupies 2/3 on desktop -->
-            <div class="hidden md:block md:col-span-2">
-              <div v-if="selectedMessage" class="sticky top-6">
-                <AdminMessageDetail
-                  :message="selectedMessage"
-                  @mark-read="markAsRead"
-                  @delete="showDeleteDialog"
-                  @close="closeDetail"
-                />
+      <div class="admin-card p-5 sm:p-6">
+        <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Workflow</p>
+        <div class="mt-4 space-y-3">
+          <div class="rounded-2xl bg-stone-50 p-4 dark:bg-zinc-900/80">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                <span class="i-ph-envelope-open text-lg"></span>
               </div>
-
-              <div v-else class="p-6">
-                <div class="text-center text-gray-500 dark:text-gray-400">
-                  <h3 class="text-lg font-medium mb-2">Select a message</h3>
-                  <p class="text-sm">Choose a message from the list to view its details here.</p>
-                </div>
+              <div>
+                <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Open the latest unread message first</p>
+                <p class="text-xs text-stone-500 dark:text-zinc-400">The list keeps unread items visually distinct.</p>
               </div>
             </div>
           </div>
-
-          <AdminMessagePagination
-            v-if="pagination.totalPages > 1"
-            :pagination="pagination"
-            @page-change="handlePageChange"
-          />
+          <div class="rounded-2xl bg-stone-50 p-4 dark:bg-zinc-900/80">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
+                <span class="i-ph-selection-plus text-lg"></span>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Use multi-select for cleanup</p>
+                <p class="text-xs text-stone-500 dark:text-zinc-400">Batch mark, archive mentally, then delete only what is safe.</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
+    </section>
+
+    <AdminMessageHeader
+      :total-messages="pagination.total"
+      :visible-messages="messages.length"
+      :unread-count="unreadCount"
+      :selected-count="selectedCount"
+      :is-loading="isLoading"
+      :multi-select-active="multiSelectActive"
+      @refresh="fetchMessages"
+      @bulk-action="handleBulkAction"
+      @search="handleSearch"
+      @filter-change="handleFilterChange"
+      @select-all="toggleSelectAll"
+      @toggle-multiselect="toggleMultiSelect"
+    />
+
+    <section class="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
+      <AdminMessageList
+        :messages="messages"
+        :selected-messages="selectedMessages"
+        :is-loading="isLoading"
+        :multi-select-active="multiSelectActive"
+        :active-message-id="selectedMessage ? selectedMessage.id : undefined"
+        @select-message="toggleMessageSelection"
+        @view-message="viewMessage"
+      />
+
+      <div class="hidden xl:block">
+        <AdminMessageDetail
+          v-if="selectedMessage"
+          :message="selectedMessage"
+          @mark-read="markAsRead"
+          @delete="showDeleteDialog"
+          @close="closeDetail"
+        />
+
+        <div v-else class="admin-card flex min-h-[520px] items-center justify-center p-10 text-center">
+          <div>
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-stone-100 text-stone-400 dark:bg-zinc-800 dark:text-zinc-500">
+              <span class="i-ph-chat-circle-text text-3xl"></span>
+            </div>
+            <h3 class="mt-4 text-lg font-medium text-zinc-900 dark:text-zinc-100">Select a message</h3>
+            <p class="mt-2 text-sm text-stone-500 dark:text-zinc-400">
+              The conversation body, sender details, and actions appear here.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <AdminMessagePagination
+      v-if="pagination.totalPages > 1"
+      :pagination="pagination"
+      @page-change="handlePageChange"
+    />
 
     <!-- Mobile drawer for message details -->
     <NDrawer v-model:open="isDrawerOpen">
       <NDrawerContent class="w-full max-w-[95vw] bottom-0">
         <NDrawerHeader>
           <NDrawerTitle>Message Details</NDrawerTitle>
-          <NDrawerDescription class="text-sm text-gray-500 dark:text-gray-400">Details and actions</NDrawerDescription>
+          <NDrawerDescription class="text-sm text-stone-500 dark:text-zinc-400">Details and actions</NDrawerDescription>
         </NDrawerHeader>
 
         <div class="p-4">
@@ -119,8 +157,8 @@ import type { Message } from '~~/shared/types/message'
 import type { Pagination } from '~~/shared/types/pagination'
 import AdminMessageDetail from '~/components/adminMessage/AdminMessageDetail.vue'
 
-const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
+const fetchAdmin = $fetch as (url: string, options?: Record<string, any>) => Promise<any>
 
 definePageMeta({
   middleware: 'admin',
@@ -137,6 +175,7 @@ const isDrawerOpen = ref(false)
 const isLoading = ref(false)
 const unreadCount = ref(0)
 const multiSelectActive = ref(false)
+const selectedCount = computed(() => Object.values(selectedMessages.value).filter(Boolean).length)
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -152,8 +191,14 @@ const filters = ref({
   read: undefined as boolean | undefined
 })
 
+const fetchUnreadCount = async () => {
+  const response = await fetchAdmin('/api/admin/messages?limit=1&read=false')
+  if (response?.success) {
+    unreadCount.value = response.data?.pagination?.total ?? 0
+  }
+}
+
 const fetchMessages = async () => {
-  if (!loggedIn.value || user.value?.role !== 'admin') return
   isLoading.value = true
   
   try {
@@ -170,14 +215,20 @@ const fetchMessages = async () => {
       query.append('read', filters.value.read.toString())
     }
 
-    const response = await $fetch(`/api/admin/messages?${query.toString()}`)
+    const response = await fetchAdmin(`/api/admin/messages?${query.toString()}`)
     
     if (response.success) {
       messages.value = response.data.messages
       pagination.value = response.data.pagination
-      
-      // Calculate unread count
-      unreadCount.value = messages.value.filter(m => !m.read).length
+      selectedMessages.value = {}
+
+      if (!selectedMessage.value && messages.value.length > 0) {
+        selectedMessage.value = messages.value[0] ?? null
+      } else if (selectedMessage.value) {
+        selectedMessage.value = messages.value.find(m => m.id === selectedMessage.value?.id) ?? null
+      }
+
+      await fetchUnreadCount()
     }
   } catch (error) {
     console.error('Error fetching messages:', error)
@@ -217,7 +268,7 @@ const toggleSelectAll = () => {
 
 const markAsRead = async (messageId: number, read: boolean = true) => {
   try {
-    const response = await $fetch(`/api/admin/messages/${messageId}`, {
+    const response = await fetchAdmin(`/api/admin/messages/${messageId}`, {
       method: 'PATCH',
       body: { read }
     })
@@ -234,8 +285,7 @@ const markAsRead = async (messageId: number, read: boolean = true) => {
         selectedMessage.value = response.data
       }
 
-      // Update unread count
-      unreadCount.value = messages.value.filter(m => !m.read).length
+      await fetchUnreadCount()
 
       toast({
         title: 'Success',
@@ -257,7 +307,7 @@ const markAsRead = async (messageId: number, read: boolean = true) => {
 
 const deleteMessage = async (messageId: number) => {
   try {
-    const response = await $fetch(`/api/admin/messages/${messageId}`, {
+    const response = await fetchAdmin(`/api/admin/messages/${messageId}`, {
       method: 'DELETE'
     })
 
@@ -274,7 +324,7 @@ const deleteMessage = async (messageId: number) => {
 
       // Update pagination total
       pagination.value.total--
-      unreadCount.value = messages.value.filter(m => !m.read).length
+      await fetchUnreadCount()
 
       toast({
         title: 'Success',
@@ -311,7 +361,7 @@ const handleBulkAction = async (action: 'mark_read' | 'mark_unread' | 'confirm_d
   }
 
   try {
-    const response = await $fetch('/api/admin/messages/bulk', {
+    const response = await fetchAdmin('/api/admin/messages/bulk', {
       method: 'POST',
       body: {
         action,
@@ -362,21 +412,19 @@ const handlePageChange = (page: number) => {
   fetchMessages()
 }
 
+const toggleMultiSelect = () => {
+  multiSelectActive.value = !multiSelectActive.value
+  if (!multiSelectActive.value) {
+    selectedMessages.value = {}
+  }
+}
+
 const viewMessage = (message: Message) => {
   selectedMessage.value = message
-  // Only open drawer on mobile
-  try {
-    const breakpoints = useBreakpoints({ sm: 0, md: 768 })
-    const isMobile = breakpoints.smaller('md')
-    if (isMobile.value) {
-      isDrawerOpen.value = true
-    } else {
-      isDrawerOpen.value = false
-    }
-  } catch (e) {
-    isDrawerOpen.value = false
+  if (window.innerWidth < 1280) {
+    isDrawerOpen.value = true
   }
-  // Mark as read when viewing
+
   if (!message.read) {
     markAsRead(message.id, true)
   }
@@ -394,8 +442,6 @@ const closeDetail = () => {
 
 const closeDrawer = () => {
   isDrawerOpen.value = false
-  // keep selectedMessage so user can re-open, but clear if desired
-  selectedMessage.value = null
 }
 
 const showDeleteDialog = (message: Message) => {
@@ -407,16 +453,6 @@ const closeDeleteDialog = () => {
   isDeleteDialogOpen.value = false
 }
 
-onMounted(() => {
-  if (loggedIn.value && user.value?.role === 'admin') {
-    fetchMessages()
-  }
-})
-
-watch([loggedIn, () => user.value?.role], ([newLoggedIn, newRole]) => {
-  if (newLoggedIn && newRole === 'admin') {
-    fetchMessages()
-  }
-})
+onMounted(() => fetchMessages())
 </script>
 

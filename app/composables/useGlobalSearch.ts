@@ -3,6 +3,7 @@
  */
 export const useGlobalSearch = () => {
   const searchStore = useGlobalSearchStore()
+  const route = useRoute()
 
   // Detect if user is on Mac for keyboard shortcuts
   const isMac = computed(() => {
@@ -20,6 +21,13 @@ export const useGlobalSearch = () => {
 
   // Handle global keyboard shortcuts
   const handleGlobalKeydown = (event: KeyboardEvent) => {
+    if (route.path.startsWith('/admin')) {
+      if (searchStore.isDialogOpen) {
+        closeSearch()
+      }
+      return
+    }
+
     // Ignore if user is typing in an input, textarea, or contenteditable element
     const target = event.target as HTMLElement
     const isInputElement = target.tagName === 'INPUT' || 
@@ -99,6 +107,12 @@ export const useGlobalSearch = () => {
 
   onUnmounted(() => {
     cleanupGlobalListeners()
+  })
+
+  watch(() => route.path, (path) => {
+    if (path.startsWith('/admin') && searchStore.isDialogOpen) {
+      closeSearch()
+    }
   })
 
   return {
