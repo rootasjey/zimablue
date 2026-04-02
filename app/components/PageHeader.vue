@@ -2,37 +2,20 @@
   <MobileHeader />
 
   <header class="hidden sm:flex mt-12 mb-8 flex-col items-center justify-center">
-    <h1 class="font-title text-size-18 font-800 text-gray-800 dark:text-gray-200">
+    <h1 class="font-cursive text-size-8 font-800 text-gray-800 dark:text-gray-200">
       <NuxtLink :to="linkTo" :aria-label="linkAriaLabel">
         zimablue
       </NuxtLink>
     </h1>
 
+    <!-- Description -->
+    <div class="flex justify-center text-size-4 font-500 text-gray-600 dark:text-gray-400 mx-auto">
+      <h3 class="text-center ">Your daily hand-made illustration</h3>
+    </div>
+    
     <!-- Greeting with Date and Time -->
     <ClientOnly>
       <div class="flex justify-center items-center flex-wrap gap-2">
-        <NTooltip content="Toggle theme" :_tooltip-content="{
-          side: 'right',
-        }">
-          <template #default>
-            <div :class="timeIcon"
-              class="cursor-pointer hover:scale-110 hover:accent-rose active:scale-99 transition h-10 w-10"
-              @click="toggleTheme"
-              @click.right="setSystemTheme"
-            />
-          </template>
-          <template #content>
-            <button
-              @click="setSystemTheme"
-              bg="light dark:dark"
-              text="dark dark:white"
-              class="b-#3D3BF3 text-3 px-3 py-1 rounded-md m-0 border-1 border-dashed"
-            >
-              System theme
-            </button>
-          </template>
-        </NTooltip>
-
         <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
           {{ greeting }}
         </span>
@@ -41,48 +24,22 @@
           • {{ formattedDate }}
         </span>
 
-        <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
-          • {{ currentTime }}
-        </span>
-
-        <!-- Low-power toggle -->
-        <NTooltip :content="lowPowerMode ? 'Resume live time' : 'Pause live time'" :_tooltip-content="{ side: 'right' }">
+        <NTooltip :content="liveTime ? 'Pause live time' : 'Resume live time'" :_tooltip-content="{ side: 'right' }">
           <template #default>
             <button
-              aria-label="Toggle low-power mode"
-              class="inline-flex items-center justify-center h-10 w-10 rounded-md text-gray-600 
-              dark:text-gray-400 hover:scale-105 active:scale-98 transition 
-              focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-700"
-              @click="toggleLowPower"
+              type="button"
+              :aria-label="liveTime ? 'Pause live timer' : 'Start live timer'"
+              class="inline-flex items-center gap-1 text-size-3 font-500 text-gray-800 dark:text-gray-200 rounded-md px-1 py-0.5 transition hover:scale-102 active:scale-99 focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-700"
+              @click="toggleLiveTime"
             >
-              <div :class="lowPowerMode ? 'i-ph-play-circle-duotone' : 'i-ph-pause-circle-duotone'" class="text-[18px]"></div>
+              <span>•</span>
+              <span>{{ currentTime }}</span>
             </button>
           </template>
         </NTooltip>
       </div>
       <template #fallback>
         <div class="flex justify-center items-center flex-wrap gap-2 mt-2">
-          <NTooltip content="Toggle theme" :_tooltip-content="{
-            side: 'right',
-          }">
-            <template #default>
-              <div class="i-ph-sun-duotone cursor-pointer hover:scale-110 hover:accent-rose active:scale-99 transition"
-                @click="toggleTheme"
-                @click.right="setSystemTheme"
-              />
-            </template>
-            <template #content>
-              <button
-                @click="setSystemTheme"
-                bg="light dark:dark"
-                text="dark dark:white"
-                class="b-#3D3BF3 text-3 px-3 py-1 rounded-md m-0 border-1 border-dashed"
-              >
-                System theme
-              </button>
-            </template>
-          </NTooltip>
-
           <span class="text-size-3 font-500 text-gray-800 dark:text-gray-200">
             Welcome
           </span>
@@ -97,11 +54,6 @@
         </div>
       </template>
     </ClientOnly>
-
-    <!-- Description -->
-    <div class="text-size-5 font-200 text-gray-600 dark:text-gray-400 text-center max-w-md">
-      A handmade, ever-evolving gallery at the crossroads of code and illustration
-    </div>
   </header>
 </template>
 
@@ -146,14 +98,14 @@ const greeting = computed(() => {
   return 'Good night'
 })
 
-// Low-power mode (pauses live time and uses static icons)
-const lowPowerMode = ref(false)
+// Live time mode controls whether the clock updates every second.
+const liveTime = ref(false)
 
 // Time-based icon, switches to static icons when low-power is ON
 const timeIcon = computed(() => {
   const hour = new Date().getHours()
 
-  if (lowPowerMode.value) {
+  if (!liveTime.value) {
     if (hour >= 5 && hour < 12) return 'i-ph-sun-duotone'
     if (hour >= 12 && hour < 17) return 'i-ph-sun-dim-duotone'
     if (hour >= 17 && hour < 22) return 'i-ph-sunset-duotone'
@@ -200,24 +152,24 @@ const stopClock = () => {
   }
 }
 
-const toggleLowPower = () => {
-  lowPowerMode.value = !lowPowerMode.value
+const toggleLiveTime = () => {
+  liveTime.value = !liveTime.value
 }
 
 // Persist preference and start/stop clock accordingly
-watch(lowPowerMode, (val) => {
+watch(liveTime, (val) => {
   if (import.meta.client) {
     try {
-      localStorage.setItem('lowPowerMode', val ? 'true' : 'false')
+      localStorage.setItem('zima:liveTime', val ? 'true' : 'false')
     } catch (_) { /* ignore */ }
   }
 
   if (val) {
-    stopClock()
-  } else {
     // update immediately when resuming
     updateTime()
     startClock()
+  } else {
+    stopClock()
   }
 })
 
@@ -229,12 +181,12 @@ onMounted(() => {
   // Restore preference - this is safe since we're in onMounted
   if (import.meta.client) {
     try {
-      const saved = localStorage.getItem('lowPowerMode')
-      if (saved === 'true') lowPowerMode.value = true
+      const saved = localStorage.getItem('zima:liveTime')
+      if (saved === 'true') liveTime.value = true
     } catch (_) { /* ignore */ }
   }
 
-  if (!lowPowerMode.value) {
+  if (liveTime.value) {
     startClock()
   }
 })
@@ -263,16 +215,17 @@ const linkAriaLabel = computed(() => {
 .i-line-md\:moon-to-sunny-outline-loop-transition {
   animation: fadeScale 0.3s ease-in-out;
 }
-</style>
+
 @media (prefers-reduced-motion: reduce) {
   .i-ph-sun-horizon,
   .i-line-md\\:moon-to-sunny-outline-loop-transition {
     animation: none;
   }
-  
+
   /* Disable hover scale animations for motion-sensitive users */
   * {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
 }
+</style>

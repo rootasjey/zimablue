@@ -388,6 +388,13 @@ const quickActions = [
     description: 'Track the next production tasks.',
     icon: 'i-ph-check-square-offset',
     iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+  },
+  {
+    to: '/admin/social',
+    label: 'Social',
+    description: 'Run and curate the social autopost queue.',
+    icon: 'i-ph-share-network',
+    iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
   }
 ]
 

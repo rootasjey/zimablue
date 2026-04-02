@@ -27,7 +27,7 @@
 
           <button
             type="button"
-            class="relative hidden h-9 w-56 items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 text-stone-400 transition-colors hover:bg-stone-50 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800"
+            class="relative hidden h-9 items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 text-stone-400 transition-colors hover:bg-stone-50 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800"
             @click="$emit('open-command-dialog')"
           >
             <span class="i-ph-command text-sm"></span>
@@ -161,7 +161,7 @@ const navigationItems = computed<any[]>(() => {
     {
       label: 'Workspace',
       value: 'workspace',
-      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools'),
+      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools') || isCurrentRoute('/admin/social'),
       items: [
         {
           label: 'Users',
@@ -180,6 +180,12 @@ const navigationItems = computed<any[]>(() => {
           description: 'Monitor growth, engagement and top content.',
           to: '/admin/analytics',
           active: isCurrentRoute('/admin/analytics'),
+        },
+        {
+          label: 'Social',
+          description: 'Queue, publish and retry autoposted illustrations.',
+          to: '/admin/social',
+          active: isCurrentRoute('/admin/social'),
         },
         {
           label: 'Tools',

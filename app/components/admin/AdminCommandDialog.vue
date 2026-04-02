@@ -6,6 +6,9 @@
       width: 'w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] lg:w-full lg:max-w-3xl',
       height: 'max-h-[80vh]'
     }"
+    :_dialog-content="{
+      class: 'bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-3xl',
+    }"
     :_dialog-close="{
       btn: 'ghost-gray absolute right-3 top-3 z-10'
     }"
@@ -291,6 +294,20 @@ const commands = computed<Command[]>(() => {
         : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300',
       keywords: ['analytics', 'stats', 'traffic'],
       hint: isCurrentRoute('/admin/analytics') ? 'Current page' : 'Page'
+    },
+    {
+      id: 'nav-social',
+      label: 'Social queue',
+      description: 'Manage autopost queue, retries and platform runs.',
+      group: 'navigation',
+      kind: 'route',
+      to: '/admin/social',
+      icon: 'i-ph-share-network',
+      iconClass: isCurrentRoute('/admin/social')
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+        : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300',
+      keywords: ['social', 'queue', 'autopost', 'bluesky', 'x', 'instagram', 'threads', 'facebook'],
+      hint: isCurrentRoute('/admin/social') ? 'Current page' : 'Page'
     },
     {
       id: 'nav-tools',

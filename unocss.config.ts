@@ -32,7 +32,7 @@ export default {
         mono: 'Pally',
         sans: 'General Sans',
         serif: 'Boska',
-        cursive: 'Sharpie',
+        cursive: 'Britney',
       },
     }),
     presetUna(),
@@ -50,7 +50,7 @@ export default {
       "image-resizer": "i-ph-arrow-down-right-duotone invisible group-hover:visible z-2 hover:scale-110 active:scale-99 transition",
       // Admin panel design tokens
       "admin-card": "bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl",
-      "admin-surface": "bg-stone-50 dark:bg-zinc-950",
+      "admin-surface": "bg-[#FFF] dark:bg-zinc-950",
       "admin-section-title": "text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-zinc-500",
       "admin-nav-item": "relative flex items-center justify-center w-11 h-11 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-150",
       "admin-nav-item-active": "bg-amber-500 text-white hover:bg-amber-400 hover:text-white shadow-sm shadow-amber-500/30",

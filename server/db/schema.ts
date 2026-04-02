@@ -1,6 +1,8 @@
 import { sql } from 'drizzle-orm'
 import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
+const socialAutopostPlatforms = ['x', 'bluesky', 'instagram', 'threads', 'facebook', 'pinterest'] as const
+
 // Users table
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -106,6 +108,46 @@ export const collectionImages = sqliteTable('collection_images', {
   positionIdx: index('idx_collection_images_position').on(table.collectionId, table.position),
 }))
 
+export const socialQueue = sqliteTable('social_queue', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  imageId: integer('image_id').notNull().references(() => images.id, { onDelete: 'cascade' }),
+  sourceType: text('source_type').notNull().default('image'),
+  sourceId: integer('source_id').notNull(),
+  platform: text('platform', { enum: socialAutopostPlatforms }).notNull(),
+  status: text('status', { enum: ['queued', 'processing', 'posted', 'failed'] }).notNull().default('queued'),
+  scheduledFor: integer('scheduled_for', { mode: 'timestamp' }),
+  position: integer('position').notNull().default(0),
+  lastError: text('last_error'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  imagePlatformIdx: uniqueIndex('idx_social_queue_image_platform').on(table.imageId, table.platform),
+  statusPlatformScheduledIdx: index('idx_social_queue_status_platform_scheduled').on(table.status, table.platform, table.scheduledFor),
+  positionIdx: index('idx_social_queue_position').on(table.platform, table.position, table.id),
+  sourceIdx: index('idx_social_queue_source').on(table.sourceType, table.sourceId),
+}))
+
+export const socialPosts = sqliteTable('social_posts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  imageId: integer('image_id').notNull().references(() => images.id, { onDelete: 'cascade' }),
+  queueId: integer('queue_id').references(() => socialQueue.id, { onDelete: 'set null' }),
+  sourceType: text('source_type').notNull().default('image'),
+  sourceId: integer('source_id').notNull(),
+  platform: text('platform', { enum: socialAutopostPlatforms }).notNull(),
+  status: text('status', { enum: ['success', 'failed'] }).notNull(),
+  postText: text('post_text'),
+  postUrl: text('post_url'),
+  externalPostId: text('external_post_id'),
+  idempotencyKey: text('idempotency_key').notNull().unique(),
+  errorMessage: text('error_message'),
+  postedAt: integer('posted_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  platformPostedAtIdx: index('idx_social_posts_platform_posted_at').on(table.platform, table.postedAt),
+  queueIdx: index('idx_social_posts_queue_id').on(table.queueId),
+  sourceIdx: index('idx_social_posts_source').on(table.sourceType, table.sourceId),
+}))
+
 // Messages table
 export const messages = sqliteTable('messages', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -148,6 +190,8 @@ export const schema = {
   imageTags,
   collections,
   collectionImages,
+  socialQueue,
+  socialPosts,
   messages,
   todos,
 }

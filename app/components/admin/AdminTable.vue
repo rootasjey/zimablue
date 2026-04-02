@@ -1,8 +1,8 @@
 <template>
-  <div class="admin-card overflow-hidden">
-    <div class="flex flex-col gap-4 border-b border-stone-200 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+  <div class="overflow-hidden">
+    <div class="flex flex-col gap-4 border-stone-200 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
-        <h3 class="truncate font-title text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ title }}</h3>
+        <h3 v-if="title" class="truncate font-title text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ title }}</h3>
         <p v-if="description" class="mt-0.5 truncate text-xs text-stone-400 dark:text-zinc-500">{{ description }}</p>
       </div>
 
@@ -66,10 +66,10 @@
     </Transition>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full">
+      <table class="min-w-full border-separate border-spacing-0">
         <thead>
-          <tr class="border-b border-stone-200 dark:border-zinc-800">
-            <th class="w-10 py-3 pl-5 pr-3">
+          <tr class="text-xs uppercase text-stone-400 dark:text-zinc-500">
+            <th class="w-10 rounded-l-[12px] bg-[#F7F7F7] py-3 pl-5 pr-3 dark:bg-zinc-800/50">
               <input
                 ref="selectAllCheckboxRef"
                 type="checkbox"
@@ -81,12 +81,16 @@
             <th
               v-for="column in columns"
               :key="column.accessorKey"
-              class="px-3 py-3 text-left"
+              class="bg-[#F7F7F7] px-3 py-3 text-left dark:bg-zinc-800/50"
             >
-              <span class="admin-section-title">{{ column.header }}</span>
+              <slot :name="`${column.accessorKey}-header`" :column="column">
+                <span class="admin-section-title">{{ column.header }}</span>
+              </slot>
             </th>
-            <th class="px-3 py-3 pr-5 text-right">
-              <span class="admin-section-title">Actions</span>
+            <th class="rounded-r-[12px] bg-[#F7F7F7] px-3 py-3 pr-5 text-right dark:bg-zinc-800/50">
+              <slot name="actions-header">
+                <span class="admin-section-title">Actions</span>
+              </slot>
             </th>
           </tr>
         </thead>
@@ -208,7 +212,7 @@ import type { AdminBulkAction, AdminTableColumn } from '~~/shared/types/admin'
 import type { Pagination } from '~~/shared/types/pagination'
 
 interface Props {
-  title: string
+  title?: string
   description?: string
   columns: AdminTableColumn[]
   data: any[]
