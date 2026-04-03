@@ -13,6 +13,15 @@ import {
 } from 'unocss'
 
 export default {
+  safelist: [
+    'i-tabler-smart-home',
+    'i-ph-squares-four-duotone',
+    'i-ph-magnifying-glass-duotone',
+    'i-tabler-upload',
+    'i-ph-paint-roller-duotone',
+    'i-ph-gear-duotone',
+    'i-ph-dots-three-vertical',
+  ],
   presets: [
     presetWind3(),
     presetAttributify(),
@@ -26,13 +35,9 @@ export default {
     presetWebFonts({
       provider: 'fontshare',
       fonts: {
-        title: 'Montserrat',
-        text: 'Gambetta',
+        title: 'Britney',
+        classic: 'Montserrat',
         body: 'Chillax',
-        mono: 'Pally',
-        sans: 'General Sans',
-        serif: 'Boska',
-        cursive: 'Britney',
       },
     }),
     presetUna(),

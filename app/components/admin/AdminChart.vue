@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-title">{{ title }}</h3>
+        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-body">{{ title }}</h3>
         <p v-if="description" class="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{{ description }}</p>
       </div>
       <slot name="actions"></slot>

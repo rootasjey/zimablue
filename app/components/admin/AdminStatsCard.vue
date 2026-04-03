@@ -10,7 +10,7 @@
 
     <!-- Value + trend -->
     <div class="flex items-end justify-between gap-2">
-      <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 font-title leading-none">
+      <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 font-body leading-none">
         {{ formattedValue }}
       </p>
       <div

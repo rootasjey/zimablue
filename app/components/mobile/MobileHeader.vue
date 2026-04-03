@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile Header - Only visible on mobile devices -->
-  <header :class="[isScrolled ? 'scrolled' : 'py-6', 'sm:hidden w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b b-dashed border-gray-200 dark:border-gray-700 sticky top-0 z-12']">
+  <header :class="[isScrolled ? 'scrolled' : 'pt-4', 'sm:hidden w-full bg-white/90 dark:bg-gray-950/90 backdrop-blur-md sticky top-0 z-12']">
     <div class="flex items-center justify-center px-4 py-3 safe-area-pt">
       <!-- Site Title + Short Description -->
       <div class="flex flex-col items-center">
@@ -14,8 +14,8 @@
           </NuxtLink>
         </h1>
 
-        <p class="mt-0.5 text-size-5 font-200 text-center text-gray-500 dark:text-gray-400 mobile-desc">
-          A handmade, ever-evolving gallery at the crossroads of code and illustration
+        <p class="mt-0.5 text-size-4 font-500 text-center text-gray-500 dark:text-gray-400 mobile-desc">
+          Your daily hand-made illustration
         </p>
       </div>
     </div>

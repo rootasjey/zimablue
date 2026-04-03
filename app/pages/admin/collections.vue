@@ -3,7 +3,7 @@
     <section class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
       <div class="admin-card overflow-hidden border-none bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] p-5 shadow-sm dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(17,24,39,0.94))] sm:p-6">
         <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Collections</p>
-        <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Series visibility and editorial structure</h2>
+        <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Series visibility and editorial structure</h2>
         <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
           Keep public series clean, watch how many images are grouped together, and adjust visibility without dropping into a heavier editor flow.
         </p>
@@ -18,17 +18,17 @@
       <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Public ratio</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ publicRatio }}%</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ publicRatio }}%</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Share of visible collections exposed to visitors.</p>
         </div>
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Grouped images</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleGroupedImages.toLocaleString() }}</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleGroupedImages.toLocaleString() }}</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Images currently represented on this page.</p>
         </div>
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Page reach</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleCollectionViews.toLocaleString() }}</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleCollectionViews.toLocaleString() }}</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Combined collection views across the visible rows.</p>
         </div>
       </div>
@@ -150,7 +150,7 @@
             </div>
             <div class="flex items-center justify-between py-1.5 border-b border-stone-100 dark:border-zinc-800">
               <span class="text-xs text-stone-400 dark:text-zinc-500">Slug</span>
-              <span class="text-sm font-mono text-zinc-700 dark:text-zinc-300">{{ selectedCollection.slug }}</span>
+              <span class="text-sm font-classic text-zinc-700 dark:text-zinc-300">{{ selectedCollection.slug }}</span>
             </div>
             <div class="flex items-center justify-between py-1.5">
               <span class="text-xs text-stone-400 dark:text-zinc-500">Owner</span>

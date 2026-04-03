@@ -82,7 +82,7 @@
             <div class="flex items-center gap-3">
               <input v-model="tagForm.color" type="color"
                 class="w-10 h-9 rounded-lg border border-stone-200 dark:border-zinc-700 cursor-pointer bg-transparent" />
-              <span class="text-sm font-mono text-stone-500 dark:text-zinc-400">{{ tagForm.color }}</span>
+              <span class="text-sm font-classic text-stone-500 dark:text-zinc-400">{{ tagForm.color }}</span>
             </div>
           </div>
 

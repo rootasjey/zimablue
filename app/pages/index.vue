@@ -6,8 +6,10 @@
       @close="imageUpload.clearUploadSession"
     />
 
+    <ImageGridLoading v-if="isInitialGridLoading" />
+
     <ImageUploadZone
-      :show-empty-state="!layout.length"
+      :show-empty-state="!layout.length && !isInitialGridLoading"
       :is-dragging="imageUpload.isDragging.value"
       :is-uploading="imageUpload.isUploading.value"
       :logged-in="loggedIn"
@@ -28,6 +30,7 @@
       :is-selection-mode="multiSelect.isSelectionMode.value"
       :selected-images-map="multiSelect.selectedImagesMap.value"
       :has-selected-images="multiSelect.hasSelectedImages.value"
+      :show-initial-skeleton="!isInitialGridLoading"
       @image-click="imageModal.openImageModal"
       @image-toggle="handleImageToggle"
       @mouse-down="imageModal.handleMouseDown"
@@ -197,32 +200,19 @@ const imageUpload = useImageUpload()
 const addToCollection = useAddToCollectionModal()
 const multiSelect = useHomeMultiSelect()
 
-// Register header state (layout will render PageHeader)
-import usePageHeader from '~/composables/usePageHeader'
-const pageHeader = usePageHeader()
-
-// provide the same menu items that the page previously passed directly
-import { onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-
-onMounted(() => {
-  pageHeader.setPageHeader({
-    userMenuItems: () => imageActions.generateUserMenuItems(imageUpload.triggerFileUpload, clear)
-  })
-})
-
-onBeforeUnmount(() => {
-  pageHeader.resetPageHeader()
-})
+import { watch, nextTick } from 'vue'
 
 const replacementFileInput = imageUpload.replacementFileInput
-const fileInput = imageUpload.fileInput
 
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
+const hideInitialGridLoading = ref(false)
+let initialGridLoadingTimeout: ReturnType<typeof setTimeout> | null = null
 
 const showGrid = ref(false)
 const showGridOpacity = ref(false)
 const isDraggable = computed(() => loggedIn.value)
 const isResizable = computed(() => loggedIn.value && isAdmin.value)
+const isInitialGridLoading = computed(() => !gridStore.initialized && !hideInitialGridLoading.value)
 
 const colNum = ref(14)
 const rowHeight = ref(37)
@@ -253,7 +243,22 @@ const updateRowHeight = () => {
 
 onMounted(() => {
   if (!gridStore.initialized) {
-    gridStore.fetchGrid()
+    const loadingStartedAt = Date.now()
+    gridStore.fetchGrid().finally(() => {
+      const elapsed = Date.now() - loadingStartedAt
+      const remaining = Math.max(0, 450 - elapsed)
+
+      if (initialGridLoadingTimeout) {
+        clearTimeout(initialGridLoadingTimeout)
+      }
+
+      initialGridLoadingTimeout = setTimeout(() => {
+        hideInitialGridLoading.value = true
+        initialGridLoadingTimeout = null
+      }, remaining)
+    })
+  } else {
+    hideInitialGridLoading.value = true
   }
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
@@ -266,6 +271,11 @@ onMounted(() => {
   window.addEventListener('drop', imageUpload.handleDrop)
 
   onUnmounted(() => {
+    if (initialGridLoadingTimeout) {
+      clearTimeout(initialGridLoadingTimeout)
+      initialGridLoadingTimeout = null
+    }
+
     window.removeEventListener('resize', updateRowHeight)
     window.removeEventListener('keydown', handleGlobalKeydown)
 

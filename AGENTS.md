@@ -206,6 +206,11 @@ Standard events emitted by image grid components:
 - `@image-toggle` — toggle selection
 - `@enter-selection-mode` — activate multi-select
 
+### Nested component auto-imports
+- Components inside any nested folder under `app/components/` should be referenced with the folder name in PascalCase as a prefix in templates, for example `app/components/image/HomeGridLoadingState.vue` is used as `ImageHomeGridLoadingState`.
+- If the component is imported explicitly in the script section, use the local import name instead of the auto-import prefix.
+- Keep the generated auto-import tag aligned with the folder name so Nuxt resolves the component consistently.
+
 ### UnoCSS shortcuts
 Custom UnoCSS shortcuts are defined in `unocss.config.ts`:
 - `btn-glowing` — primary gradient button

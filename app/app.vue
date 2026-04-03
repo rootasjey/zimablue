@@ -7,7 +7,6 @@
     <NToaster />
     <GlobalSearchDialog />
     <HiddenFileInputs />
-    <UserMenu />
   </div>
 </template>
 

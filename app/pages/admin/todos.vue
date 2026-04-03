@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 font-title">To-Do List</h1>
+        <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 font-classic">To-Do List</h1>
         <p class="text-sm text-stone-500 dark:text-zinc-400 mt-0.5">Manage art projects and upcoming tasks</p>
       </div>
       <div class="flex items-center gap-2">

@@ -5,7 +5,7 @@
         <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
           <span class="i-ph-lock text-3xl"></span>
         </div>
-        <h2 class="font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Access denied</h2>
+        <h2 class="font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Access denied</h2>
         <p class="mx-auto mt-2 max-w-md text-sm text-stone-500 dark:text-zinc-400">
           You need administrator access to manage the gallery workspace.
         </p>
@@ -14,7 +14,7 @@
 
       <div v-else class="space-y-6">
         <section class="mt-6 mb-12">
-          <h1 class="font-title text-3xl sm:text-8xl font-500 text-zinc-950 dark:text-zinc-50">
+          <h1 class="font-classic text-3xl sm:text-8xl font-500 text-zinc-950 dark:text-zinc-50">
             Good {{ greetingTime }}, {{ firstName }}.
           </h1>
         </section>
@@ -62,7 +62,7 @@
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Studio pulse</p>
-                <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">What needs attention now</h2>
+                <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">What needs attention now</h2>
               </div>
               <NuxtLink to="/admin/analytics" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
                 Open analytics
@@ -122,19 +122,19 @@
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
                   <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
                     <p class="text-xs text-stone-500 dark:text-zinc-400">Image views</p>
-                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalViews ?? 0) }}</p>
+                    <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalViews ?? 0) }}</p>
                   </div>
                   <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
                     <p class="text-xs text-stone-500 dark:text-zinc-400">Downloads</p>
-                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalDownloads ?? 0) }}</p>
+                    <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalDownloads ?? 0) }}</p>
                   </div>
                   <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
                     <p class="text-xs text-stone-500 dark:text-zinc-400">Likes</p>
-                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalLikes ?? 0) }}</p>
+                    <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.images.totalLikes ?? 0) }}</p>
                   </div>
                   <div class="rounded-2xl bg-white p-3 dark:bg-zinc-950">
                     <p class="text-xs text-stone-500 dark:text-zinc-400">Collection views</p>
-                    <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.collections.totalViews ?? 0) }}</p>
+                    <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ formatCompact(stats?.collections.totalViews ?? 0) }}</p>
                   </div>
                 </div>
               </div>
@@ -146,7 +146,7 @@
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Focus block</p>
-                  <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Next task</h2>
+                  <h2 class="mt-2 font-classic text-xl font-semibold text-zinc-900 dark:text-zinc-100">Next task</h2>
                 </div>
                 <NuxtLink to="/admin/todos" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
                   Open tasks
@@ -179,7 +179,7 @@
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Inbox</p>
-                  <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Recent messages</h2>
+                  <h2 class="mt-2 font-classic text-xl font-semibold text-zinc-900 dark:text-zinc-100">Recent messages</h2>
                 </div>
                 <NuxtLink to="/admin/messages" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
                   Open inbox
@@ -223,7 +223,7 @@
 
           <div class="admin-card p-5 sm:p-6">
             <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Shortcuts</p>
-            <h2 class="mt-2 font-title text-xl font-semibold text-zinc-900 dark:text-zinc-100">Common routes</h2>
+            <h2 class="mt-2 font-classic text-xl font-semibold text-zinc-900 dark:text-zinc-100">Common routes</h2>
 
             <div class="mt-5 grid gap-3">
               <NuxtLink

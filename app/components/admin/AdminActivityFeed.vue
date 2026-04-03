@@ -1,7 +1,7 @@
 <template>
   <div class="admin-card p-5">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-title">Recent Activity</h3>
+      <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-body">Recent Activity</h3>
       <button
         class="flex items-center justify-center w-7 h-7 rounded-lg text-stone-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
         :class="{ 'animate-spin': loading }"

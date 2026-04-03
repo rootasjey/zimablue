@@ -4,7 +4,7 @@
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Signals</p>
-          <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Gallery reach and content momentum</h2>
+          <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Gallery reach and content momentum</h2>
           <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
             See whether the gallery is growing, which work attracts attention, and where new uploads are actually changing the pace.
           </p>
@@ -72,7 +72,7 @@
       <div class="admin-card p-5">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-title">Top Images</h3>
+            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-classic">Top Images</h3>
             <p class="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">Best performing illustrations</p>
           </div>
           <select v-model="imageMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopImages">
@@ -112,7 +112,7 @@
       <div class="admin-card p-5">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-title">Top Collections</h3>
+            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-classic">Top Collections</h3>
             <p class="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">Best performing collections</p>
           </div>
           <select v-model="collectionMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopCollections">
@@ -151,7 +151,7 @@
 
     <!-- Top Tags -->
     <div class="admin-card p-5">
-      <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-title mb-4">Most Used Tags</h3>
+      <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-classic mb-4">Most Used Tags</h3>
 
       <div v-if="isLoadingTopTags" class="flex flex-wrap gap-2">
         <div v-for="n in 8" :key="n" class="h-7 rounded-full animate-pulse bg-stone-100 dark:bg-zinc-800" :style="{ width: `${60 + n * 8}px` }"></div>

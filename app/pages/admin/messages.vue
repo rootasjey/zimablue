@@ -5,7 +5,7 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Inbox pulse</p>
-            <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Messages that need a response</h2>
+            <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Messages that need a response</h2>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
               Review new contact requests, clear your unread queue, and batch process routine actions without losing context.
             </p>
@@ -14,15 +14,15 @@
           <div class="grid grid-cols-3 gap-3 sm:min-w-[320px]">
             <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
               <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Unread</p>
-              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ unreadCount }}</p>
+              <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ unreadCount }}</p>
             </div>
             <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
               <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Selected</p>
-              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ selectedCount }}</p>
+              <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ selectedCount }}</p>
             </div>
             <div class="rounded-2xl border border-stone-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
               <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Total</p>
-              <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.total }}</p>
+              <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.total }}</p>
             </div>
           </div>
         </div>

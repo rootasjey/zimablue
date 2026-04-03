@@ -312,10 +312,13 @@ const nextImage = computed(() => {
 })
 
 // Load collection data on mount
-onMounted(async () => {
+onBeforeMount(() => {
   pageHeader.setPageHeader({
-    show: false
+    topBarMode: 'minimal'
   })
+})
+
+onMounted(async () => {
 
   try {
     await store.fetchCollection(slug)

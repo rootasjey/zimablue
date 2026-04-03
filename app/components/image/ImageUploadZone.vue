@@ -21,7 +21,7 @@
       </div>
 
       <div class="max-w-300px text-center">
-        <h2 class="mt-2 font-size-4 font-text font-500 text-gray-800 dark:text-gray-200">
+        <h2 class="mt-2 font-size-4 font-500 text-gray-800 dark:text-gray-200">
           This is an image gallery to share what you love with others. 
           Use it with caution and without moderation.
           <span class="i-ph:hand-pointing-bold"></span> 

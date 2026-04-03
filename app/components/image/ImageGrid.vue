@@ -2,7 +2,7 @@
   <div>
     <!-- Skeleton mobile — visible pendant le chargement si layout vide -->
     <div
-      v-if="isLoading && !layout.length"
+      v-if="showInitialSkeleton && isLoading && !layout.length"
       class="mobile-masonry-grid mx-4 mt-12"
       aria-hidden="true"
     >
@@ -231,6 +231,7 @@ interface Props {
   hasSelectedImages?: boolean
   // Loading state for skeleton
   isLoading?: boolean
+  showInitialSkeleton?: boolean
 }
 
 interface Emits {
@@ -244,7 +245,9 @@ interface Emits {
   enterSelectionMode: []
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showInitialSkeleton: true,
+})
 const emit = defineEmits<Emits>()
 
 // Mobile grid layout patterns - creates visual variety similar to Pinterest/Google Photos

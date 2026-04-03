@@ -32,7 +32,7 @@
           >
             <span class="i-ph-command text-sm"></span>
             <span class="flex-1 text-left text-xs">Go to a page or run an action…</span>
-            <kbd class="inline-flex items-center gap-0.5 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-mono text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <kbd class="inline-flex items-center gap-0.5 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-classic text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
               <span>⌘K</span>
             </kbd>
           </button>

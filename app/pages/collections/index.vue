@@ -1,28 +1,37 @@
 <template>
-  <div class="page max-w-[1400px] mx-auto px-4 sm:px-6 pt-5 pb-16">
-    <div class="mt-6 ml-4 flex items-center">
-      <div class="font-500 color-gray-400 text-size-4 uppercase">
-        <template v-if="isLoading">
-          <span class="inline-flex items-center gap-2 opacity-80">
-            <span class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-            Loading
-          </span>
-        </template>
-        <template v-else>
-          {{ collectionStore.collections.length.toLocaleString() }} Collections
-        </template>
+  <div class="page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24">
+    <!-- Sophisticated Header -->
+    <div class="mb-16 border-b border-gray-100 dark:border-gray-800 pb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
+      <div class="space-y-4">
+        <h1 class="font-title text-size-10 sm:text-size-12 font-800 tracking-tighter text-gray-900 dark:text-gray-100">
+          The Gallery <span class="text-primary font-300">/</span>
+          <span class="block sm:inline ml-2 text-gray-400 dark:text-gray-600 font-200 uppercase text-size-6 tracking-[0.2em]">Collections</span>
+        </h1>
+
+        <div class="flex items-center gap-4 text-size-3.5 uppercase tracking-widest text-gray-400 dark:text-gray-500 font-500">
+          <div class="w-8 h-[1px] bg-primary/40" />
+          <template v-if="isLoading">
+            <span class="inline-flex items-center gap-2">
+              <span class="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></span>
+              Indexing archives
+            </span>
+          </template>
+          <template v-else>
+            {{ collectionStore.collections.length.toLocaleString() }} curated series
+          </template>
+        </div>
       </div>
 
-      <div class="flex items-center">
-        <NIcon name="i-ph-dot" class="text-gray-500 ml-6 mr-2 text-size-5" />
+      <div class="flex items-center gap-6">
         <NButton
           v-if="isAdmin"
           btn="link-gray"
           size="sm"
-          class="hover:scale-101 active:scale-99 transition"
+          class="group flex items-center gap-2 hover:text-primary transition-colors"
           @click="collectionStore.openCreateDialog()"
         >
-          <span class="uppercase">Create new</span>
+          <span class="i-ph-plus-circle text-lg transition-transform group-hover:rotate-90 duration-500"></span>
+          <span class="uppercase tracking-widest text-[11px] font-600">New Collection</span>
         </NButton>
       </div>
     </div>
@@ -38,73 +47,86 @@
       </div>
     </section>
 
-    <!-- Vertical Cards on Mobile, Horizontal Carousel on Desktop -->
+    <!-- Grid Layout for Collections (Clean & Elegant) -->
     <section v-else-if="!isLoading && collectionStore.collections.length > 0" class="relative animate-fade-in-up animation-delay-200">
-      <div ref="scrollEl" 
-        class="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:gap-[28px] sm:justify-start p-3 sm:mx-6" 
-        @scroll.passive="onScroll">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12 p-3 sm:mx-6">
         <article
           v-for="(collection, index) in collectionStore.collections"
           :key="collection.id"
-          class="hcard animate-fade-in-scale w-full sm:flex-[1_1_240px] sm:max-w-[380px]"
+          class="group relative"
           :style="{ animationDelay: `${300 + index * 100}ms` }"
-          @mousemove="(e) => onParallax(e, collection.id)"
-          @mouseleave="() => resetParallax(collection.id)"
         >
-          <NuxtLink :to="`/collections/${collection.slug}`" class="hcard-link">
-            <div class="hcover relative w-full aspect-[16/9] sm:aspect-[3/4] rounded-[4px] overflow-hidden shadow-lg">
+          <NuxtLink :to="`/collections/${collection.slug}`" class="block w-full">
+            <!-- Image Container with Artistic Aspect Ratio -->
+            <div class="relative overflow-hidden aspect-[4/5] rounded-[2px] transition-all duration-700 bg-gray-50 dark:bg-gray-900/50 shadow-sm group-hover:shadow-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50">
               <NuxtImg
                 v-if="getCoverSrc(collection)"
                 provider="hubblob"
                 :src="getCoverSrc(collection) || undefined"
                 :alt="collection.name"
-                class="hcover-img w-full h-full object-cover transition-transform duration-180 ease-out will-change-transform"
-                :style="getParallaxStyle(collection.id)"
+                class="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 ease-out will-change-transform"
                 :loading="'lazy'"
                 @error="handleImageError"
               />
               <div
                 v-else
-                class="hcover-fallback w-full h-full"
+                class="w-full h-full opacity-60 dark:opacity-40 group-hover:opacity-100 transition-opacity duration-1000"
                 :style="getGradientStyle(collection)"
               />
 
-              <!-- Centered title overlay -->
-              <div class="absolute bg-black/30 hover:bg-black/50 inset-0 grid place-items-center">
-                <!-- translucent gradient backdrop under the title (pointer-events-none so it doesn't block interactions) -->
-                <div class="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div class="relative z-10 text-gray-200 font-200 backdrop-blur-1 tracking-[0.08em] uppercase text-size-6 mx-4 text-center [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_6px_rgba(0,0,0,0.45)]">
-                  {{ collection.name }}
-                </div>
-              </div>
+              <!-- Artistic Overlays -->
+              <div class="absolute inset-0 bg-transparent group-hover:bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               
-              <!-- Public/Private chip -->
-              <NBadge v-if="loggedIn"
-                :badge="collection.is_public ? 'solid-blue' : 'solid-gray'"
-                :label="collection.is_public ? 'Public' : 'Private'" 
-                :icon="collection.is_public ? 'i-ph-globe' : 'i-ph-lock'" 
-                class="absolute top-2 left-2"
-              />
+              <!-- Subtle Frame / Internal Border on Hover -->
+              <div class="absolute inset-4 border border-white/20 scale-105 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
+            </div>
 
-              <!-- Inline menu for owners/admins -->
-              <div v-if="loggedIn" class="absolute top-2 right-2 z-2">
-                <ClientOnly>
-                  <NDropdownMenu
-                    :items="collectionStore.getCollectionMenuItems(collection)"
-                    size="xs"
-                    dropdown-menu="ghost-gray"
-                    :_dropdown-menu-content="{ class: 'w-48', align: 'end', side: 'bottom' }"
-                    :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-lucide-ellipsis', class: 'color-white' }"
-                  />
-                  <template #fallback>
-                    <div class="w-8 h-8 grid place-items-center text-gray-200/70">
-                      <span class="i-lucide-ellipsis"></span>
-                    </div>
-                  </template>
-                </ClientOnly>
+            <!-- Content Area - Minimalist & Elegant -->
+            <div class="mt-6 space-y-2">
+              <div class="flex items-center justify-between gap-4">
+                <h2 class="font-title text-size-5 sm:text-size-6 font-500 tracking-wide text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors duration-500">
+                  {{ collection.name }}
+                </h2>
+                
+                <div class="h-[1px] flex-1 bg-gray-100 dark:bg-gray-800 group-hover:bg-primary/30 transition-colors duration-500" />
+                
+                <span class="font-mono text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                  {{ index + 1 < 10 ? `0${index + 1}` : index + 1 }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <span class="text-[11px] uppercase tracking-[0.2em] font-500 text-gray-400 dark:text-gray-600 transition-colors duration-500 group-hover:text-gray-500">
+                  Series Vol. {{ index + 1 }}
+                </span>
+                
+                <div v-if="loggedIn" class="flex items-center gap-2">
+                  <div :class="[collection.is_public ? 'bg-blue-400/20 text-blue-500' : 'bg-gray-400/20 text-gray-500', 'w-1.5 h-1.5 rounded-full animate-pulse']" />
+                  <span class="text-[9px] uppercase tracking-tighter text-gray-400">
+                    {{ collection.is_public ? 'Public' : 'Private' }}
+                  </span>
+                </div>
               </div>
             </div>
           </NuxtLink>
+
+          <!-- Floating Admin Actions -->
+          <div v-if="loggedIn" class="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <ClientOnly>
+              <NDropdownMenu
+                :items="collectionStore.getCollectionMenuItems(collection)"
+                size="sm"
+                dropdown-menu="ghost-gray"
+                :_dropdown-menu-content="{ class: 'w-48', align: 'end', side: 'bottom' }"
+                :_dropdown-menu-trigger="{ 
+                  icon: true, 
+                  square: true, 
+                  label: 'i-lucide-more-horizontal', 
+                  class: 'bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-full w-8 h-8 shadow-sm hover:scale-110 active:scale-95 transition-all text-gray-800 dark:text-white' 
+                }"
+              />
+            </ClientOnly>
+          </div>
         </article>
       </div>
     </section>
@@ -152,12 +174,14 @@
 
 <script lang="ts" setup>
 import type { CollectionFormData } from '~~/shared/types/collection'
+import usePageHeader from '~/composables/usePageHeader'
 
 const { toast } = useToast()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const collectionStore = useCollectionStore()
 const { lightModeColors } = useRandomColors()
+const pageHeader = usePageHeader()
 
 // We render a cached, server-side snapshot for unauthenticated users to get
 // a fast, cacheable HTML response from the edge/CDN. Authenticated users won't
@@ -165,6 +189,14 @@ const { lightModeColors } = useRandomColors()
 const isLoading = ref(import.meta.client
   ? (loggedIn.value || collectionStore.collections.length === 0)
   : true)
+
+onBeforeMount(() => {
+  pageHeader.setPageHeader({ topBarMode: 'minimal' })
+})
+
+onBeforeUnmount(() => {
+  pageHeader.resetPageHeader()
+})
 
 // Server: for anonymous visitors fetch collections during SSR and attach
 // caching headers so CDNs can cache the snapshot. For authenticated users

@@ -3,7 +3,7 @@
     <section class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
       <div class="admin-card overflow-hidden border-none bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] p-5 shadow-sm dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(17,24,39,0.94))] sm:p-6">
         <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Library</p>
-        <h2 class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Illustrations, ownership and quick cleanup</h2>
+        <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Illustrations, ownership and quick cleanup</h2>
         <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
           Keep uploads tidy, inspect who owns what, and spot high-performing pieces without leaving the management view.
         </p>
@@ -18,17 +18,17 @@
       <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Visible views</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageViews.toLocaleString() }}</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageViews.toLocaleString() }}</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Combined view count on the current page.</p>
         </div>
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Visible likes</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageLikes.toLocaleString() }}</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageLikes.toLocaleString() }}</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">A quick signal for what resonates now.</p>
         </div>
         <div class="admin-card p-4">
           <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Current page</p>
-          <p class="mt-2 font-title text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.page }} / {{ Math.max(1, pagination.totalPages) }}</p>
+          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.page }} / {{ Math.max(1, pagination.totalPages) }}</p>
           <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Pagination stays light while the layout remains readable.</p>
         </div>
       </div>
@@ -145,7 +145,7 @@
             </div>
             <div>
               <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Slug</p>
-              <p class="text-sm font-mono text-zinc-700 dark:text-zinc-300">{{ selectedImage.slug }}</p>
+              <p class="text-sm font-classic text-zinc-700 dark:text-zinc-300">{{ selectedImage.slug }}</p>
             </div>
             <div>
               <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Views</p>
@@ -242,7 +242,7 @@
               type="text"
               placeholder="image-slug"
               :disabled="autoSlug"
-              class="w-full px-3 h-9 rounded-lg text-sm font-mono bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition disabled:opacity-50"
+              class="w-full px-3 h-9 rounded-lg text-sm font-classic bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition disabled:opacity-50"
             />
           </div>
 

@@ -2,7 +2,7 @@
   <div class="overflow-hidden">
     <div class="flex flex-col gap-4 border-stone-200 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
-        <h3 v-if="title" class="truncate font-title text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ title }}</h3>
+        <h3 v-if="title" class="truncate font-body text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ title }}</h3>
         <p v-if="description" class="mt-0.5 truncate text-xs text-stone-400 dark:text-zinc-500">{{ description }}</p>
       </div>
 
