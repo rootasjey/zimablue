@@ -101,7 +101,7 @@
       vertical-compact
       use-css-transforms
       v-show="showGrid"
-      class="transition-all duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
+      class="transition-opacity duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
       :class="showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       :responsive="false"
       role="grid"
@@ -450,7 +450,7 @@ const markError = (itemKey: string | number) => {
 <style scoped>
 :deep(.vgl-item) {
   box-shadow: rgba(149, 157, 165, 0.4) 0px 8px 24px;
-  transition: all 0.2s ease-in-out;
+  transition: box-shadow 0.2s ease-in-out;
 
   .dark & {
     box-shadow: rgba(0, 0, 0, 0.4) 0px 8px 24px;

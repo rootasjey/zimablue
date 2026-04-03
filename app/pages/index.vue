@@ -190,6 +190,10 @@ import { useImageActions } from '~/composables/image/useImageActions'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 import { useHomeMultiSelect } from '~/composables/image/useHomeMultiSelect'
 
+definePageMeta({
+  disableViewTransition: true,
+})
+
 const { loggedIn, clear, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const gridStore = useGridStore()
