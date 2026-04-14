@@ -9,7 +9,12 @@ export const getImage: ProviderGetImage = (
   { modifiers = {}, baseURL } = {}
 ) => {
   if (!baseURL) {
-    baseURL = useRuntimeConfig().public.siteUrl
+    const config = useRuntimeConfig()
+    if (import.meta.dev) {
+      baseURL = ''
+    } else {
+      baseURL = config.public.siteUrl
+    }
   }
 
   const operations = operationsGenerator(modifiers).replaceAll(/[/]/g, '&')

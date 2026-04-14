@@ -1,107 +1,152 @@
 <template>
-  <div>
-    <header ref="heroRef" class="mt-12 mb-8 max-w-3xl mx-auto">
-      <!-- Main centered blog-like title and description -->
-      <div class="text-center">
-        <h1 class="font-body text-3xl sm:text-4xl md:text-5xl font-800 leading-tight text-gray-900 dark:text-gray-200 animate-fade-in-up">
-          {{ collection?.name || 'Collection' }}
-        </h1>
+  <div class="relative group">
+    <!-- Main Hero Header -->
+    <header ref="heroRef" class="pt-20 pb-16 px-4">
+      <div class="max-w-4xl mx-auto text-center space-y-8">
+        <!-- Collection Metadata -->
+        <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200/60 dark:border-gray-800/60 text-[11px] font-700 uppercase tracking-widest text-gray-500 animate-in zoom-in-95 duration-700">
+          <span class="i-ph-folder-simple-user text-blue-500"></span>
+          Collection <span class="mx-1 opacity-30">|</span> {{ imageCount }} images
+        </div>
 
-        <p v-if="collection?.description" class="mt-4 text-gray-600 dark:text-gray-400 max-w-prose mx-auto animate-fade-in-up animation-delay-100">
-          {{ collection.description }}
-        </p>
+        <!-- Title & Description -->
+        <div class="space-y-4 animate-in slide-in-from-bottom-4 duration-700 delay-100">
+          <h1 class="font-body text-4xl sm:text-5xl md:text-7xl font-900 leading-[1.1] tracking-tight text-gray-900 dark:text-gray-100">
+            {{ collection?.name || 'Untitled' }}
+          </h1>
+
+          <p v-if="collection?.description" class="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-body">
+            {{ collection.description }}
+          </p>
+        </div>
+
+        <!-- Creator & Stats -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4 animate-in fade-in duration-700 delay-200">
+          <div v-if="collection?.owner" class="flex items-center gap-3">
+             <div class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 shadow-sm overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <NuxtImg
+                v-if="ownerAvatar"
+                :src="ownerAvatar"
+                provider="hubblob"
+                :alt="collection.owner.name || 'Owner'"
+                class="w-full h-full object-cover"
+                width="40"
+                height="40"
+              />
+              <span v-else class="text-xs font-800 text-gray-600 dark:text-gray-400">{{ ownerInitials }}</span>
+            </div>
+            <div class="text-left">
+              <div class="text-[10px] font-700 uppercase tracking-wider text-gray-400">Curated by</div>
+              <div class="text-sm font-700 text-gray-900 dark:text-gray-100">{{ collection.owner.name }}</div>
+            </div>
+          </div>
+
+          <div class="hidden sm:block w-px h-8 bg-gray-200 dark:bg-gray-800"></div>
+
+          <div class="flex items-center gap-6 text-gray-500 dark:text-gray-400">
+            <div class="flex flex-col items-center">
+              <span class="text-lg font-700 text-gray-900 dark:text-gray-100">{{ (collection?.stats_views || 0).toLocaleString() }}</span>
+              <span class="text-[10px] font-700 uppercase tracking-widest opacity-60">Views</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-lg font-700 text-gray-900 dark:text-gray-100">{{ (collection?.stats_likes || 0).toLocaleString() }}</span>
+              <span class="text-[10px] font-700 uppercase tracking-widest opacity-60">Likes</span>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
-    <!-- Action bar: sticky only this bar. Left: name, Center: stats, Right: actions -->
-    <div class="sticky top-0 z-4 bg-transparent backdrop-blur-md border-y b-dashed border-gray-200 hover:border-gray-300 dark:border-gray-700 transition-all duration-200 animate-fade-in-up animation-delay-200">
-      <div
-        class="w-full grid grid-cols-[auto_1fr_auto] items-center transition-all duration-200 relative"
-        :class="isCompact ? 'py-1' : 'py-2'"
-      >
-        <!-- Left: back + avatar + name (truncate) -->
-        <div class="inline-flex items-center gap-2 min-w-0 pl-2">
-          <NLink to="/collections" class="w-8 h-8 inline-flex items-center justify-center rounded-md text-[rgba(var(--una-gray-600),1)] hover:bg-black/5 dark:hover:bg-white/5" aria-label="Back to collections">
-            <span class="i-ph-arrow-left" aria-hidden="true"></span>
-            <span class="sr-only">Back</span>
+    <!-- Sticky Action Navigator -->
+    <div 
+      class="sticky top-0 z-40 transition-all duration-500 border-y border-dashed border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl"
+      :class="[
+        isCompact ? 'py-2 translate-y-0 opacity-100 shadow-sm' : 'py-3',
+      ]"
+    >
+      <div class="w-full max-w-[1600px] mx-auto px-4 flex items-center justify-between gap-4">
+        <!-- Left: Back & Title -->
+        <div class="flex items-center gap-3 min-w-0">
+          <NLink 
+            to="/collections" 
+            class="group/back w-10 h-10 inline-flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+          >
+            <span class="i-ph-arrow-left text-lg group-hover/back:-translate-x-1 transition-transform"></span>
           </NLink>
 
-          <div
-            v-if="collection?.owner"
-            class="rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-all duration-200"
-            :class="isCompact ? 'w-6 h-6' : 'w-7 h-7'"
-          >
-            <NuxtImg
-              v-if="ownerAvatar"
-              :src="ownerAvatar"
-              provider="hubblob"
-              :alt="collection.owner.name || 'Owner avatar'"
-              class="w-full h-full object-cover"
-              width="28"
-              height="28"
-              loading="lazy"
-            />
-            <span v-else class="text-[11px] font-medium text-gray-700 dark:text-gray-200">{{ ownerInitials }}</span>
-          </div>
-
-          <div
-            class="hidden sm:flex font-500 text-gray-900 dark:text-gray-200 transition-all duration-200 ellipsis"
-            :class="isCompact ? 'text-sm' : 'text-sm md:text-base'"
-            style="min-width: 0"
-          >
-            {{ collection?.name || 'Collection' }}
+          <div class="flex flex-col min-w-0">
+             <h2 
+              class="font-800 text-gray-900 dark:text-gray-100 truncate transition-all duration-300"
+              :class="isCompact ? 'text-lg opacity-100' : 'text-sm opacity-50'"
+            >
+              {{ collection?.name }}
+            </h2>
+            <div v-if="!isCompact" class="text-[10px] font-700 uppercase tracking-widest text-gray-400">Collection</div>
           </div>
         </div>
 
-        <!-- Center: compact stats pill -->
-        <div class="justify-self-center absolute left-1/2 transform -translate-x-1/2">
-          <div
-            class="inline-flex items-center rounded-full border border-dashed border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200"
-            :class="isCompact ? 'gap-3 px-2 py-0.5 text-[12px]' : 'gap-4 px-3 py-1 text-[13px]'"
-          >
-            <div class="inline-flex items-center gap-1">
-              <span class="i-ph-eye"></span>
-              <span>{{ (collection?.stats_views || 0).toLocaleString() }}</span>
-            </div>
-            <div class="inline-flex items-center gap-1">
-              <span class="i-ph-heart"></span>
-              <span>{{ (collection?.stats_likes || 0).toLocaleString() }}</span>
-            </div>
-            <div class="inline-flex items-center gap-1">
-              <span class="i-ph-download-simple"></span>
-              <span>{{ (collection?.stats_downloads || 0).toLocaleString() }}</span>
-            </div>
+        <!-- Center: Stats (shown only when compact) -->
+        <div 
+          v-if="isCompact"
+          class="hidden md:flex items-center gap-8 animate-in fade-in slide-in-from-top-2 duration-300"
+        >
+          <div class="flex items-center gap-2 group/stat">
+            <span class="i-ph-eye text-gray-400 group-hover/stat:text-blue-500 transition-colors"></span>
+            <span class="text-xs font-700 text-gray-700 dark:text-gray-300">{{ collection?.stats_views }}</span>
+          </div>
+          <div class="flex items-center gap-2 group/stat">
+            <span class="i-ph-heart text-gray-400 group-hover/stat:text-red-500 transition-colors"></span>
+            <span class="text-xs font-700 text-gray-700 dark:text-gray-300">{{ collection?.stats_likes }}</span>
           </div>
         </div>
 
-        <!-- Right: actions -->
-        <div class="inline-flex items-center justify-self-end gap-2 pr-2 transition-all duration-200" :class="isCompact ? 'text-[12px]' : ''">
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-2">
           <template v-if="canEdit">
-            <NBadge badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('addImages')">
-              <NIcon name="i-ph-plus" class="mr-1" />
-              <span>Add Images</span>
-            </NBadge>
+            <NButton 
+              btn="soft-gray" 
+              size="sm" 
+              class="hidden sm:inline-flex font-700 rounded-xl px-4" 
+              @click="$emit('addImages')"
+            >
+              <span class="i-ph-plus mr-2"></span>
+              Add
+            </NButton>
 
-            <NBadge v-if="canEdit" badge="solid-gray" class="whitespace-nowrap cursor-pointer hidden sm:inline-flex" :class="isCompact ? 'py-1' : ''" @click="$emit('edit')">
-              <NIcon name="i-ph-pencil" class="mr-1" />
-              <span>Edit</span>
-            </NBadge>
+            <NButton 
+              btn="ghost-gray" 
+              size="sm" 
+              un-icon 
+              class="p-2.5 rounded-xl"
+              @click="$emit('edit')"
+            >
+              <span class="i-ph-pencil-line text-lg"></span>
+            </NButton>
 
             <ClientOnly>
               <NDropdownMenu
                 :items="menuItems"
                 size="xs"
-                menu-label=""
-                :_dropdown-menu-content="{ class: 'w-44', align: 'end', side: 'bottom' }"
-                :_dropdown-menu-trigger="{ icon: true, square: true, label: 'i-ph-dots-three', class: 'bg-transparent scale-75' }"
+                :_dropdown-menu-content="{ class: 'w-48 rounded-2xl p-2 shadow-xl', align: 'end', side: 'bottom' }"
+                :_dropdown-menu-trigger="{ 
+                  icon: true, 
+                  square: true, 
+                  label: 'i-ph-dots-three-bold', 
+                  class: 'rounded-xl w-10 h-10 bg-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800' 
+                }"
               />
-              <template #fallback>
-                <div class="flex items-center justify-center w-8 h-8 bg-transparent scale-75 opacity-50">
-                  <NIcon name="i-ph-dots-three" />
-                </div>
-              </template>
             </ClientOnly>
           </template>
+          
+          <NButton 
+            v-else
+            btn="soft-gray"
+            size="sm"
+            class="rounded-xl px-5 font-700"
+          >
+            <span class="i-ph-share-network mr-2"></span>
+            Share
+          </NButton>
         </div>
       </div>
     </div>
@@ -179,7 +224,7 @@ onMounted(() => {
     (entries) => {
       const entry = entries[0]
       // When header is not intersecting (scrolled past), enable compact mode
-      isCompact.value = entry?.isIntersecting ?? false
+      isCompact.value = !(entry?.isIntersecting ?? true)
     },
     { threshold: 0.01 }
   )

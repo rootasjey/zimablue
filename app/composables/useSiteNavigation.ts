@@ -102,6 +102,13 @@ export const useSiteNavigation = () => {
         action: openSearch,
       },
       {
+        key: 'about',
+        label: 'About',
+        icon: 'i-ph-info-duotone',
+        to: '/about',
+        match: (currentPath: string) => currentPath.startsWith('/about'),
+      },
+      {
         key: 'upload',
         label: 'Upload',
         icon: 'i-tabler-upload',

@@ -1,54 +1,93 @@
 <template>
-  <main class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-700 text-gray-900 dark:text-gray-200">Settings</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Control app behaviour and appearance</p>
-      </div>
+  <main class="max-w-6xl mx-auto py-16 sm:py-24 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-1000">
+    <header class="mb-20 sm:mb-24">
+      <h1 class="text-4xl sm:text-5xl md:text-7xl font-900 tracking-tighter text-gray-900 dark:text-gray-100 mb-4">
+        Settings
+      </h1>
+      <p class="text-lg text-gray-400 dark:text-gray-500 max-w-2xl font-body">
+        Architecture, identity, and visual environment control.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+      <!-- Section Navigation -->
+      <aside class="lg:col-span-3 space-y-1 sticky top-32 lg:block hidden">
+        <div class="text-[10px] font-900 uppercase tracking-[.25em] text-gray-300 dark:text-gray-700 mb-6 pl-4">Registry</div>
+        <button class="w-full text-left px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 text-sm transition-all shadow-sm">
+          General
+        </button>
+        <button class="w-full text-left px-4 py-3 rounded-2xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all text-sm font-600">
+          Account
+        </button>
+        <button class="w-full text-left px-4 py-3 rounded-2xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all text-sm font-600">
+          Security
+        </button>
+      </aside>
+
+      <section class="lg:col-span-9 space-y-16 sm:space-y-24">
+        <!-- Profile Section -->
+        <div v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+          <div class="flex items-center gap-4 mb-8">
+             <div class="w-10 h-10 rounded-xl bg-blue-500/5 flex items-center justify-center">
+              <span class="i-ph-user-focus-duotone text-2xl text-blue-500/50"></span>
+            </div>
+            <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">Identity</h2>
+          </div>
+
+          <div class="rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-2 bg-gray-50/30 dark:bg-gray-900/10 transition-all hover:bg-white dark:hover:bg-gray-900 shadow-sm">
+            <div class="rounded-[2.2rem] bg-white dark:bg-gray-950 p-8 sm:p-12">
+              <UserInfo
+                v-if="user"
+                :isEditing="isEditing"
+                :isSaving="isSaving"
+                :formErrors="formErrors"
+                :editForm="editForm"
+                :profileData="profileData"
+                :user="user"
+                @cancelEditing="cancelEditing"
+                @startEditing="startEditing"
+                @saveProfile="saveProfile"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="animate-in slide-in-from-bottom-8 duration-1000 delay-400">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/5 flex items-center justify-center">
+              <span class="i-ph-palette-duotone text-2xl text-purple-500/50"></span>
+            </div>
+            <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">Environment</h2>
+          </div>
+
+          <div class="rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-10 sm:p-14 bg-white dark:bg-gray-950 flex flex-col sm:flex-row items-center justify-between gap-10">
+            <div class="max-w-md text-center sm:text-left">
+              <h3 class="text-lg font-900 text-gray-900 dark:text-gray-100 mb-2">Interface Theme</h3>
+              <p class="text-gray-400 dark:text-gray-500 leading-relaxed font-body">
+                Adjust the visual resonance. Choose between high-contrast clarity, midnight depth, or automated synchronisation.
+              </p>
+            </div>
+            <div class="shrink-0 w-full sm:w-56">
+              <NSelect v-model="selectedTheme" :items="themeOptions" item-key="label" value-key="label" size="lg" class="rounded-2xl" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Infrastructure -->
+        <div class="flex items-center justify-between px-10 py-8 rounded-[2rem] bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100/50 dark:border-gray-800/50">
+          <div class="flex items-center gap-3">
+             <span class="i-ph-info text-gray-300 dark:text-gray-600"></span>
+             <span class="text-xs font-800 uppercase tracking-widest text-gray-400">Engine Build</span>
+          </div>
+          <div class="px-5 py-2 rounded-full bg-white dark:bg-gray-800 text-[10px] font-900 tracking-[.2em] text-gray-400 dark:text-gray-500 uppercase border border-gray-100 dark:border-gray-700 shadow-sm">
+            v{{ version || 'Release' }}
+          </div>
+        </div>
+      </section>
     </div>
 
-    <section class="space-y-6">
-      <div v-if="loggedIn" class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
-        <div class="mt-4">
-          <UserInfo
-            v-if="user"
-            :isEditing="isEditing"
-            :isSaving="isSaving"
-            :formErrors="formErrors"
-            :editForm="editForm"
-            :profileData="profileData"
-            :user="user"
-            @cancelEditing="cancelEditing"
-            @startEditing="startEditing"
-            @saveProfile="saveProfile"
-          />
-        </div>
-      </div>
-
-      <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30">
-        <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
-          <div class="flex-1">
-            <h2 class="text-lg font-700 text-gray-900 dark:text-gray-200">App theme</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred theme. System will follow the OS preference.</p>
-          </div>
-          <div class="shrink-0 w-48">
-            <NSelect v-model="selectedTheme" :items="themeOptions" item-key="label" value-key="label" size="sm" />
-          </div>
-        </div>
-      </div>
-      
-      <div class="rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 bg-white/70 dark:bg-gray-900/30 mt-6">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            <h2 class="text-lg font-700 text-gray-900 dark:text-gray-200">App version</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">The current application version built into runtime config.</p>
-          </div>
-          <div class="shrink-0 flex items-center text-sm text-gray-700 dark:text-gray-300">
-            {{ version || '—' }}
-          </div>
-        </div>
-      </div>
-    </section>
+    <Footer class="mt-32 grayscale opacity-10" />
   </main>
 </template>
 
