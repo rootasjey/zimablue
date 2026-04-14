@@ -290,6 +290,7 @@ const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
 const pageHeader = usePageHeader()
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
+const escapeKeyHandler = ref<((e: KeyboardEvent) => void) | null>(null)
 
 // Computed properties for navigation (circular when more than 1 image)
 const canNavigatePrevious = computed(() => store.images.length > 1)
@@ -319,7 +320,6 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-
   try {
     await store.fetchCollection(slug)
   } catch (err) {
@@ -332,8 +332,29 @@ onMounted(async () => {
   }
 })
 
-// Reset store when component unmounts
+escapeKeyHandler.value = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    const hasOpenModal =
+      isImageModalOpen.value ||
+      isImageDrawerOpen.value ||
+      showImageDeleteDialog.value ||
+      imageActions.showEditModal.value ||
+      addToCollection.isOpen.value ||
+      imageActions.showEditDrawer.value ||
+      addToCollection.isDrawerOpen.value ||
+      store.isEditDialogOpen
+
+    if (!hasOpenModal) {
+      router.back()
+    }
+  }
+}
+window.addEventListener('keydown', escapeKeyHandler.value)
+
 onUnmounted(() => {
+  if (escapeKeyHandler.value) {
+    window.removeEventListener('keydown', escapeKeyHandler.value)
+  }
   pageHeader.resetPageHeader()
   store.resetStore()
 })
