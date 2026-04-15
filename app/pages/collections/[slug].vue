@@ -1,5 +1,10 @@
 <template>
-  <div :class="['container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']">
+  <div :class="['container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
+    @dragenter.prevent="imageUpload.handleDragEnter"
+    @dragover.prevent="imageUpload.handleDragOver"
+    @dragleave.prevent="imageUpload.handleDragLeave"
+    @drop.prevent="handleDrop"
+  >
     <!-- Header (non-sticky). Only the internal action bar stays sticky. -->
     <!-- Header skeleton while loading -->
     <div v-if="store.isLoading" class="space-y-2">
@@ -7,8 +12,21 @@
       <div class="h-4 w-80 rounded-md bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
     </div>
     
+    <ImageUploadProgress
+      :session="imageUpload.currentUploadSession.value"
+      @close="imageUpload.clearUploadSession"
+    />
+
+    <ImageUploadZone
+      :show-empty-state="false"
+      :is-dragging="imageUpload.isDragging.value"
+      :is-uploading="imageUpload.isUploading.value"
+      :logged-in="loggedIn"
+      @upload="imageUpload.triggerFileUpload"
+    />
+
     <CollectionHeader 
-      v-else
+      v-if="!store.isLoading"
       :collection="store.collection"
       :image-count="store.images.length"
       :can-edit="isOwner"
@@ -467,6 +485,67 @@ const confirmImageDelete = async () => {
     isImageDrawerOpen.value = false
   } finally {
     isDeletingImage.value = false
+  }
+}
+
+const handleDrop = async (e: DragEvent) => {
+  e.preventDefault()
+  imageUpload.handleDragLeave(e)
+
+  if (!imageUpload.checkAuth()) return
+
+  if (!e.dataTransfer) return
+
+  const files = [...e.dataTransfer.files].filter(file =>
+    file.type.startsWith('image/') && imageUpload.validateFile(file)
+  )
+
+  if (files.length === 0) {
+    toast({
+      title: 'No Valid Files',
+      description: 'No valid image files were found.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+    return
+  }
+
+  try {
+    const results = await imageUpload.uploadFiles(files)
+    if (!results) return
+
+    const successfulIds = results.successful
+      .map(r => r.response?.id)
+      .filter((id): id is number => id != null)
+
+    if (successfulIds.length > 0) {
+      await $fetch(`/api/collections/${slug}`, {
+        method: 'PUT',
+        body: {
+          images: {
+            add: successfulIds
+          }
+        }
+      })
+
+      await store.fetchCollection(slug)
+
+      toast({
+        title: 'Upload Success',
+        description: `Added ${successfulIds.length} ${successfulIds.length === 1 ? 'image' : 'images'} to collection`,
+        duration: 3000,
+        showProgress: true,
+        toast: 'soft-success'
+      })
+    }
+  } catch (error) {
+    console.error('Collection drop upload error:', error)
+    toast({
+      title: 'Upload Failed',
+      description: 'Failed to upload and add images to collection.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
   }
 }
 </script>
