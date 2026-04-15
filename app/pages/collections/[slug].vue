@@ -290,7 +290,7 @@ const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
 const pageHeader = usePageHeader()
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
-const escapeKeyHandler = ref<((e: KeyboardEvent) => void) | null>(null)
+const gridStore = useGridStore()
 
 // Computed properties for navigation (circular when more than 1 image)
 const canNavigatePrevious = computed(() => store.images.length > 1)
@@ -330,9 +330,10 @@ onMounted(async () => {
       duration: 5000
     })
   }
+  window.addEventListener('keydown', escapeKeyHandler, true)
 })
 
-escapeKeyHandler.value = (e: KeyboardEvent) => {
+const escapeKeyHandler = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     const hasOpenModal =
       isImageModalOpen.value ||
@@ -349,12 +350,9 @@ escapeKeyHandler.value = (e: KeyboardEvent) => {
     }
   }
 }
-window.addEventListener('keydown', escapeKeyHandler.value)
 
 onUnmounted(() => {
-  if (escapeKeyHandler.value) {
-    window.removeEventListener('keydown', escapeKeyHandler.value)
-  }
+  window.removeEventListener('keydown', escapeKeyHandler, true)
   pageHeader.resetPageHeader()
   store.resetStore()
 })
@@ -440,6 +438,17 @@ watch(() => addToCollection.isOpen.value, (isOpen, wasOpen) => {
     refocusImageModal()
   }
 })
+
+watch(
+  [() => imageActions.showEditModal.value, () => imageActions.showEditDrawer.value],
+  ([modalOpen, drawerOpen], [modalWasOpen, drawerWasOpen]) => {
+    const wasOpen = modalWasOpen || drawerWasOpen
+    const isNowOpen = modalOpen || drawerOpen
+    if (wasOpen && !isNowOpen && gridStore.selectedImage) {
+      store.updateImageInCollection(gridStore.selectedImage)
+    }
+  }
+)
 
 const openImageDeleteDialog = (image: Image | null) => {
   if (!image || !isAdmin.value) return

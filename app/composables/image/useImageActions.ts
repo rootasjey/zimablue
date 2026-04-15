@@ -122,9 +122,14 @@ export const useImageActions = () => {
         tags: tagNames // Send as array of strings
       })
       
-      // Update local image with server response (includes normalized tags)
-      if (response?.data?.tags && gridStore.selectedImage) {
-        gridStore.selectedImage.tags = response.data.tags
+      // Sync updated image data from server response to the selected image
+      if (response?.data && gridStore.selectedImage) {
+        const updated = response.data as Partial<Image>
+        if (updated.name !== undefined) gridStore.selectedImage.name = updated.name
+        if (updated.description !== undefined) gridStore.selectedImage.description = updated.description
+        if (updated.slug !== undefined) gridStore.selectedImage.slug = updated.slug
+        if (updated.tags !== undefined) gridStore.selectedImage.tags = updated.tags
+        if (updated.updated_at !== undefined) gridStore.selectedImage.updated_at = updated.updated_at
       }
       
       closeEditModal()

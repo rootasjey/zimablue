@@ -316,6 +316,14 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   }
   
 
+  // Update a single image in the collection
+  function updateImageInCollection(updatedImage: Image) {
+    const idx = images.value.findIndex(img => img.id === updatedImage.id)
+    if (idx !== -1) {
+      images.value[idx] = { ...images.value[idx], ...updatedImage }
+    }
+  }
+
   // Reset store state
   function resetStore() {
     collection.value = null
@@ -367,6 +375,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     toggleImageRange,
     updateCollection,
     deleteCollection,
+    updateImageInCollection,
     resetStore,
   }
 })
