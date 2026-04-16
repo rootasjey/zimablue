@@ -194,15 +194,6 @@ const handleSearchQuery = (query: string) => {
   tagSearch.searchTags(query)
 }
 
-// Handle tag selection/deselection
-const resolveTagOption = (name: string): TagOption => {
-  const normalized = normalizeTagName(name).toLowerCase()
-  const match = availableTagItems.value.find(
-    item => normalizeTagName(item.name).toLowerCase() === normalized
-  )
-  return match ? { id: match.id, name: match.name } : { name }
-}
-
 const toggleTagByName = (name: string) => {
   const normalized = normalizeTagName(name).toLowerCase()
   const current = displayTags.value
@@ -214,9 +205,24 @@ const toggleTagByName = (name: string) => {
 }
 
 const handleTagsUpdate = (selectedTags: TagOption | TagOption[] | string | string[]) => {
-  if (Array.isArray(selectedTags)) {
-    const nextTags = selectedTags
+  const processTags = (tags: Array<TagOption | string>) => {
+    const hasMatches = availableTagItems.value.length > 0
+    const existingNames = new Set(
+      displayTags.value.map(t => normalizeTagName(t.name).toLowerCase())
+    )
+    return tags
       .map(tag => typeof tag === 'string' ? resolveTagOption(tag) : resolveTagOption(tag.name))
+      .filter(tag => {
+        const normalized = normalizeTagName(tag.name).toLowerCase()
+        if (!hasMatches) return true
+        return existingNames.has(normalized) || availableTagItems.value.some(
+          item => normalizeTagName(item.name).toLowerCase() === normalized
+        )
+      })
+  }
+
+  if (Array.isArray(selectedTags)) {
+    const nextTags = processTags(selectedTags)
     emit('updateField', 'tags', dedupeTags(nextTags))
     return
   }
@@ -238,8 +244,11 @@ const handleInputKeydown = async (event: KeyboardEvent) => {
   const normalized = normalizeTagName(searchQuery.value)
   if (!normalized) return
 
-  if (!showCreateOption.value) {
-    if (event.key !== 'Enter') event.preventDefault()
+  const hasMatches = availableTagItems.value.length > 0
+
+  if (hasMatches) {
+    event.preventDefault()
+    event.stopPropagation()
     return
   }
 

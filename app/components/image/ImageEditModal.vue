@@ -231,8 +231,20 @@ const toggleTagByName = (name: string) => {
 
 const handleTagsUpdate = (selectedTags: TagOption | TagOption[] | string | string[]) => {
   if (Array.isArray(selectedTags)) {
-    const nextTags = selectedTags
-      .map(tag => typeof tag === 'string' ? resolveTagOption(tag) : resolveTagOption(tag.name))
+    const hasMatches = availableTagItems.value.length > 0
+    const existingNames = new Set(
+      displayTags.value.map(t => normalizeTagName(t.name).toLowerCase())
+    )
+    const nextTags = hasMatches
+      ? selectedTags
+          .map(tag => typeof tag === 'string' ? resolveTagOption(tag) : resolveTagOption(tag.name))
+          .filter(tag => {
+            const normalized = normalizeTagName(tag.name).toLowerCase()
+            return existingNames.has(normalized) || availableTagItems.value.some(
+              item => normalizeTagName(item.name).toLowerCase() === normalized
+            )
+          })
+      : selectedTags.map(tag => typeof tag === 'string' ? resolveTagOption(tag) : resolveTagOption(tag.name))
     emit('updateField', 'tags', dedupeTags(nextTags))
     return
   }
@@ -254,8 +266,11 @@ const handleInputKeydown = async (event: KeyboardEvent) => {
   const normalized = normalizeTagName(searchQuery.value)
   if (!normalized) return
 
-  if (!showCreateOption.value) {
-    if (event.key !== 'Enter') event.preventDefault()
+  const hasMatches = availableTagItems.value.length > 0
+
+  if (hasMatches) {
+    event.preventDefault()
+    event.stopPropagation()
     return
   }
 
