@@ -25,4 +25,5 @@ export interface CollectionFormData {
   description: string
   isPublic: boolean
   slug?: string
+  image_ids?: number[]
 }

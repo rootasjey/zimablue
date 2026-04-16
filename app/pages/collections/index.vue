@@ -1,5 +1,11 @@
 <template>
-  <div class="page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24">
+  <div 
+    class="page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24"
+    @dragenter.prevent="handlePageDragEnter"
+    @dragover.prevent="handlePageDragOver"
+    @dragleave.prevent="handlePageDragLeave"
+    @drop.prevent="handleDropOnEmptySpace"
+  >
     <!-- Sophisticated Header -->
     <div class="mb-16 border-b border-gray-100 dark:border-gray-800 pb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
       <div class="space-y-4">
@@ -37,6 +43,11 @@
     </div>
     
     <!-- Loading skeleton (client-only) -->
+    <ImageUploadProgress
+      :session="imageUpload.currentUploadSession.value"
+      @close="imageUpload.clearUploadSession"
+    />
+
     <section v-if="isLoading" class="relative animate-fade-in-up animation-delay-200">
       <div class="flex flex-col gap-6 sm:grid sm:grid-flow-col sm:auto-cols-[minmax(240px,380px)] sm:gap-[28px] p-3 sm:mx-6">
         <article v-for="n in 4" :key="`skeleton-${n}`" class="hcard sm:snap-start w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]">
@@ -55,8 +66,12 @@
           :key="collection.id"
           class="group relative"
           :style="{ animationDelay: `${300 + index * 100}ms` }"
+          @dragenter.prevent.stop="handleCardDragEnter($event, collection.id)"
+          @dragover.prevent.stop
+          @dragleave.prevent.stop="handleCardDragLeave($event)"
+          @drop.prevent.stop="(e: DragEvent) => handleDropOnCollection(e, collection)"
         >
-          <NuxtLink :to="`/collections/${collection.slug}`" class="block w-full">
+          <NuxtLink :to="`/collections/${collection.slug}`" class="block w-full" :class="{ 'pointer-events-none': isDraggingOnCard === collection.id }">
             <!-- Image Container with Artistic Aspect Ratio -->
             <div class="relative overflow-hidden aspect-[4/5] rounded-[2px] transition-all duration-700 bg-gray-50 dark:bg-gray-900/50 shadow-sm group-hover:shadow-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50">
               <NuxtImg
@@ -76,6 +91,15 @@
 
               <!-- Artistic Overlays -->
               <div class="absolute inset-0 bg-transparent group-hover:bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              <!-- Drop overlay on card -->
+              <div 
+                v-if="isDraggingOnCard === collection.id" 
+                class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-primary/10 dark:bg-primary/20 backdrop-blur-sm transition-all duration-300"
+              >
+                <div class="i-ph-image-square text-6xl text-primary mb-2 animate-bounce"></div>
+                <span class="text-sm font-600 text-primary uppercase tracking-widest">Add to collection</span>
+              </div>
               
               <!-- Subtle Frame / Internal Border on Hover -->
               <div class="absolute inset-4 border border-white/20 scale-105 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
@@ -155,6 +179,17 @@
       @cancel="collectionStore.closeCreateDialog"
     />
 
+    <!-- Full-page drag overlay -->
+    <Transition name="fade">
+      <div 
+        v-if="isDraggingOnPage" 
+        class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none"
+      >
+        <div class="i-ph-upload-simple text-8xl text-white mb-4 animate-bounce"></div>
+        <span class="text-xl font-600 text-white uppercase tracking-widest">Drop to create a new collection</span>
+      </div>
+    </Transition>
+
     <CollectionEditDialog
       v-model:open="collectionStore.isEditDialogOpen"
       :collection="collectionStore.editCollection"
@@ -175,6 +210,8 @@
 <script lang="ts" setup>
 import type { CollectionFormData } from '~~/shared/types/collection'
 import usePageHeader from '~/composables/usePageHeader'
+import { useImageUpload } from '~/composables/image/useImageUpload'
+import type { Collection } from '~~/shared/types/collection'
 
 const { toast } = useToast()
 const { loggedIn, user } = useUserSession()
@@ -182,6 +219,13 @@ const isAdmin = computed(() => user.value?.role === 'admin')
 const collectionStore = useCollectionStore()
 const { lightModeColors } = useRandomColors()
 const pageHeader = usePageHeader()
+const imageUpload = useImageUpload()
+
+// Drag state
+const isDraggingOnPage = ref(false)
+const isDraggingOnCard = ref<number | null>(null)
+let pageDragCounter = 0
+let cardDragCounter = 0
 
 // We render a cached, server-side snapshot for unauthenticated users to get
 // a fast, cacheable HTML response from the edge/CDN. Authenticated users won't
@@ -366,6 +410,154 @@ const getGradientStyle = (collection: any) => {
   const angle = mod(hashString(String(collection?.id ?? 'fallback') + 'θ'), 360)
   return {
     backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.08), rgba(255,255,255,0.08) 1px, transparent 1px, transparent 12px), linear-gradient(${angle}deg, ${c1}, ${c2})`
+  }
+}
+
+// Page-level drag handlers
+const handlePageDragEnter = (e: DragEvent) => {
+  e.preventDefault()
+  pageDragCounter++
+  isDraggingOnPage.value = true
+  isDraggingOnCard.value = null
+}
+
+const handlePageDragOver = (e: DragEvent) => {
+  e.preventDefault()
+}
+
+const handlePageDragLeave = (e: DragEvent) => {
+  e.preventDefault()
+  pageDragCounter--
+  if (pageDragCounter === 0) {
+    isDraggingOnPage.value = false
+  }
+}
+
+// Card-level drag handlers
+const handleCardDragEnter = (e: DragEvent, collectionId: number) => {
+  e.preventDefault()
+  e.stopPropagation()
+  cardDragCounter++
+  isDraggingOnPage.value = false
+  isDraggingOnCard.value = collectionId
+}
+
+const handleCardDragLeave = (e: DragEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+  cardDragCounter--
+  const relatedTarget = e.relatedTarget as HTMLElement | null
+  const currentTarget = e.currentTarget as HTMLElement
+  if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+    if (cardDragCounter <= 0) {
+      cardDragCounter = 0
+      isDraggingOnCard.value = null
+      isDraggingOnPage.value = true
+      pageDragCounter = 1
+    }
+  }
+}
+
+// Drop handlers
+const handleDropOnCollection = async (e: DragEvent, collection: Collection) => {
+  e.preventDefault()
+  e.stopPropagation()
+  isDraggingOnCard.value = null
+  isDraggingOnPage.value = false
+  cardDragCounter = 0
+  pageDragCounter = 0
+
+  if (!imageUpload.checkAuth()) return
+
+  if (!e.dataTransfer) return
+
+  const files = [...e.dataTransfer.files].filter(file =>
+    file.type.startsWith('image/') && imageUpload.validateFile(file)
+  )
+
+  if (files.length === 0) {
+    toast({
+      title: 'No Valid Files',
+      description: 'No valid image files were found.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+    return
+  }
+
+  try {
+    const results = await imageUpload.uploadFiles(files)
+    if (!results) return
+
+    const successfulIds = results.successful
+      .map(r => r.response?.id)
+      .filter((id): id is number => id != null)
+
+    if (successfulIds.length > 0) {
+      await $fetch(`/api/collections/${collection.slug}`, {
+        method: 'PUT',
+        body: {
+          images: {
+            add: successfulIds
+          }
+        }
+      })
+
+      await collectionStore.fetchCollections(true)
+    }
+  } catch (error) {
+    console.error('Collection drop upload error:', error)
+    toast({
+      title: 'Upload Failed',
+      description: 'Failed to upload and add images to collection.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+  }
+}
+
+const handleDropOnEmptySpace = async (e: DragEvent) => {
+  e.preventDefault()
+  isDraggingOnPage.value = false
+  pageDragCounter = 0
+
+  if (!imageUpload.checkAuth()) return
+
+  if (!e.dataTransfer) return
+
+  const files = [...e.dataTransfer.files].filter(file =>
+    file.type.startsWith('image/') && imageUpload.validateFile(file)
+  )
+
+  if (files.length === 0) {
+    toast({
+      title: 'No Valid Files',
+      description: 'No valid image files were found.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+    return
+  }
+
+  try {
+    const results = await imageUpload.uploadFiles(files)
+    if (!results) return
+
+    const successfulIds = results.successful
+      .map(r => r.response?.id)
+      .filter((id): id is number => id != null)
+
+    if (successfulIds.length > 0) {
+      collectionStore.openCreateDialogWithImages(successfulIds)
+    }
+  } catch (error) {
+    console.error('Empty space drop upload error:', error)
+    toast({
+      title: 'Upload Failed',
+      description: 'Failed to upload images.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
   }
 }
 </script>

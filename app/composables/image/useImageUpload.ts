@@ -218,7 +218,6 @@ export const useImageUpload = () => {
 
       const totalFailed = failed.length + failedFromSuccess.length
 
-      // Show appropriate toast
       if (totalFailed > 0) {
         console.error(failedFromSuccess)
         toast({
@@ -227,14 +226,6 @@ export const useImageUpload = () => {
           duration: 5000,
           showProgress: true,
           toast: 'soft-warning'
-        })
-      } else {
-        toast({
-          title: 'Upload Success',
-          description: `Successfully uploaded ${successful.length} ${successful.length === 1 ? 'image' : 'images'}`,
-          duration: 5000,
-          showProgress: true,
-          toast: 'soft-success'
         })
       }
 
@@ -269,14 +260,6 @@ export const useImageUpload = () => {
     try {
       await gridStore.replaceImage(file, imageId)
       uploadProgressTracker.completeFile(`${sessionId}_file_0`, { imageId })
-
-      toast({
-        title: 'Replace Success',
-        description: 'Successfully replaced image',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-success'
-      })
 
       // Clear session after a delay
       setTimeout(() => {

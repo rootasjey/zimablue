@@ -9,7 +9,7 @@ export const useCollectionStore = defineStore('collection', () => {
   const isEditDialogOpen = ref(false)
   const isDeleteDialogOpen = ref(false)
 
-  const newCollection = ref({
+  const newCollection = ref<CollectionFormData>({
     name: '',
     description: '',
     isPublic: true,
@@ -123,6 +123,11 @@ export const useCollectionStore = defineStore('collection', () => {
     isCreateDialogOpen.value = true
   }
 
+  function openCreateDialogWithImages(imageIds: number[]) {
+    newCollection.value.image_ids = imageIds
+    isCreateDialogOpen.value = true
+  }
+
   function closeCreateDialog() {
     isCreateDialogOpen.value = false
   }
@@ -200,6 +205,7 @@ export const useCollectionStore = defineStore('collection', () => {
     updateCollection,
     deleteCollection,
     openCreateDialog,
+    openCreateDialogWithImages,
     closeCreateDialog,
     openDeleteDialog,
     closeDeleteDialog,

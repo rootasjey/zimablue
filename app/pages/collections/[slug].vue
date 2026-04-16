@@ -530,14 +530,6 @@ const handleDrop = async (e: DragEvent) => {
       })
 
       await store.fetchCollection(slug)
-
-      toast({
-        title: 'Upload Success',
-        description: `Added ${successfulIds.length} ${successfulIds.length === 1 ? 'image' : 'images'} to collection`,
-        duration: 3000,
-        showProgress: true,
-        toast: 'soft-success'
-      })
     }
   } catch (error) {
     console.error('Collection drop upload error:', error)

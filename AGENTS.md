@@ -243,6 +243,7 @@ Images use the View Transition API for smooth navigation:
 - **Don't inline complex state logic in pages** — use composables; keep pages thin.
 - **Don't commit `.env`** — secrets (`NUXT_SESSION_PASSWORD`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`) stay local. Use `.env.example` as the template.
 - **Don't skip the `requireUserSession` check** on protected API routes — all `/api/admin/*` endpoints must verify the session and admin role.
+- **Don't show success toasts for uploads** — upload success is visually obvious via the progress widget and UI state changes. Only toast errors (failures, invalid files, auth issues). Success notifications are noise.
 
 ---
 
