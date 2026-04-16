@@ -31,16 +31,21 @@
 
     <!-- Drag overlay -->
     <div v-if="isDragging && loggedIn && isAdmin" 
-         class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50"
+         :class="[
+           'fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50',
+           overlayPosition === 'bottom'
+             ? 'flex items-end justify-center pb-8 sm:pb-12'
+             : 'flex items-center justify-center'
+         ]"
          @dragenter.prevent="$emit('dragenter', $event)"
          @dragover.prevent="$emit('dragover', $event)"
          @dragleave.prevent="$emit('dragleave', $event)"
          @drop.prevent="$emit('drop', $event)">
-      <div class="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl p-8 border border-white/20 dark:border-gray-700">
-        <div class="flex flex-col items-center gap-4">
-          <div class="i-ph-upload-simple text-4xl text-gray-200 animate-bounce"></div>
-          <div class="text-gray-200 text-xl font-medium">Drop your images here</div>
-          <div class="text-gray-200/70 text-sm">Supported formats: JPG, PNG, GIF, BMP, TIFF</div>
+      <div class="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-white/20 dark:border-gray-700">
+        <div class="flex flex-col items-center gap-3 sm:gap-4">
+          <div class="i-ph-upload-simple text-3xl sm:text-4xl text-gray-200 animate-bounce"></div>
+          <div class="text-gray-200 text-lg sm:text-xl font-medium">Drop your images here</div>
+          <div class="text-gray-200/70 text-xs sm:text-sm">Supported formats: JPG, PNG, GIF, BMP, TIFF</div>
         </div>
       </div>
     </div> 
@@ -53,6 +58,7 @@ interface Props {
   isDragging: boolean
   isUploading: boolean
   loggedIn: boolean
+  overlayPosition?: 'center' | 'bottom'
 }
 
 interface Emits {
@@ -63,7 +69,9 @@ interface Emits {
   drop: [event: DragEvent]
 } 
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  overlayPosition: 'center'
+})
 const emit = defineEmits<Emits>()
 
 const { user } = useUserSession()

@@ -22,6 +22,7 @@
       :is-dragging="imageUpload.isDragging.value"
       :is-uploading="imageUpload.isUploading.value"
       :logged-in="loggedIn"
+      overlay-position="bottom"
       @upload="imageUpload.triggerFileUpload"
     />
 
