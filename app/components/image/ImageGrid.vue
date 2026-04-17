@@ -102,11 +102,11 @@
       use-css-transforms
       v-show="showGrid"
       class="transition-opacity duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
-      :class="showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+      :class="[showGridOpacity ? 'opacity-100' : 'opacity-0 pointer-events-none', { 'grid-ready': isGridReady }]"
       :responsive="false"
       role="grid"
       :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
-      @layout-ready="$emit('layoutReady', $event)"
+      @layout-ready="handleLayoutReady"
       @layout-updated="$emit('layoutUpdated', $event)"
     >
       <GridItem
@@ -249,6 +249,15 @@ const props = withDefaults(defineProps<Props>(), {
   showInitialSkeleton: true,
 })
 const emit = defineEmits<Emits>()
+
+const isGridReady = ref(false)
+
+const handleLayoutReady = (layout: Image[]) => {
+  emit('layoutReady', layout)
+  setTimeout(() => {
+    isGridReady.value = true
+  }, 1200)
+}
 
 // Mobile grid layout patterns - creates visual variety similar to Pinterest/Google Photos
 // Pattern repeats every 10 items with varying sizes for a dynamic masonry effect
@@ -470,6 +479,10 @@ const markError = (itemKey: string | number) => {
       box-shadow: rgba(0, 0, 0, 0.0) 0px 8px 24px;
     }
   }
+}
+
+.grid-ready :deep(.vgl-item) {
+  transition: transform 0.2s ease, box-shadow 0.2s ease-in-out;
 }
 
 /* Mobile Masonry Grid Styles */

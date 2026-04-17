@@ -264,6 +264,7 @@ Images use the View Transition API for smooth navigation:
 1. Run `bun run typecheck` — fix all type errors.
 2. Manually test the affected feature in `bun run dev`.
 3. If you changed the DB schema, ensure a corresponding migration file exists.
+4. **Always bump the version** in `package.json` and include it in the same commit (see Version Bump Rules below).
 
 ### Commit message conventions
 Follow the **gitmoji + conventional commits** hybrid observed in the git history:
@@ -296,11 +297,11 @@ Update the version in `package.json` for every commit, using the appropriate scr
 - If it is a fix, performance optimization, or internal refactor → **patch**
 - If the API, DB schema, or UI changes incompatibly → **major**
 
-Prefer committing the version bump separately, immediately after the functional commit:
+When committing, bump the version first then stage both files together:
 ```bash
 bun run bump:version   # or bump:minor / bump:major
-git add package.json
-git commit -m "🔧 chore: bump version to X.Y.Z"
+git add package.json <changed-files>
+git commit -m "<emoji> <type>(<scope>): <description>"
 ```
 
 ### Pull requests
