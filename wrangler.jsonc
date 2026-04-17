@@ -31,5 +31,16 @@
       "binding": "DB",
       "database_id": "97b74403-e97a-47e9-b32a-83d705bc1b21"
     }
+  ],
+  "vars": {
+    "NUXT_AUTH_ORIGIN": "https://zimablue.cc",
+    "NUXT_PUBLIC_SITE_URL": "https://zimablue.cc"
+  },
+  "routes": [
+    {
+      "pattern": "zimablue.cc",
+      "zone_name": "zimablue.cc",
+      "custom_domain": true
+    }
   ]
 }
