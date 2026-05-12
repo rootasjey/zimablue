@@ -2,6 +2,7 @@ import type { Image } from '~~/shared/types/image'
 
 export const useImageModal = () => {
   const router = useRouter()
+  const route = useRoute()
   const gridStore = useGridStore()
   
   // Modal state (desktop)
@@ -22,6 +23,32 @@ export const useImageModal = () => {
   
   const totalImages = computed(() => gridStore.layout.length)
   const currentPosition = computed(() => currentImageIndex.value + 1)
+
+  // --- Query param sync ---
+  const IMAGE_QUERY_KEY = 'image'
+
+  const syncImageQueryParam = (slug?: string) => {
+    if (typeof window === 'undefined') return
+    const currentQuery = { ...route.query } as Record<string, string>
+    if (slug) {
+      currentQuery[IMAGE_QUERY_KEY] = slug
+    } else {
+      delete currentQuery[IMAGE_QUERY_KEY]
+    }
+    // Avoid redundant navigation
+    const currentImageParam = route.query[IMAGE_QUERY_KEY] as string | undefined
+    if ((slug || undefined) !== currentImageParam) {
+      router.replace({ query: currentQuery })
+    }
+  }
+
+  // Remove query param when modal/drawer both close
+  watch([isImageModalOpen, isImageDrawerOpen], ([modal, drawer]) => {
+    if (!modal && !drawer) {
+      syncImageQueryParam()
+    }
+  })
+  // --- End query param sync ---
 
   // Track mouse down for drag detection
   const handleMouseDown = (e: MouseEvent | PointerEvent) => {
@@ -47,6 +74,8 @@ export const useImageModal = () => {
       isImageModalOpen.value = true
     }
 
+    syncImageQueryParam(item.slug || String(item.id))
+
     // Fire-and-forget : n'attend pas, met à jour les stats si la réponse arrive
     $fetch(`/api/images/slug/${item.slug}/views`, { method: 'PUT' })
       .then((updatedImage: any) => {
@@ -64,7 +93,10 @@ export const useImageModal = () => {
     const lastIndex = gridStore.layout.length - 1
     currentImageIndex.value = currentImageIndex.value > 0 ? currentImageIndex.value - 1 : lastIndex
     const prevImage = gridStore.layout[currentImageIndex.value]
-    if (prevImage) selectedModalImage.value = prevImage
+    if (prevImage) {
+      selectedModalImage.value = prevImage
+      syncImageQueryParam(prevImage.slug || String(prevImage.id))
+    }
   }
 
   const navigateToNext = () => {
@@ -72,7 +104,10 @@ export const useImageModal = () => {
     const lastIndex = gridStore.layout.length - 1
     currentImageIndex.value = currentImageIndex.value < lastIndex ? currentImageIndex.value + 1 : 0
     const nextImage = gridStore.layout[currentImageIndex.value]
-    if (nextImage) selectedModalImage.value = nextImage
+    if (nextImage) {
+      selectedModalImage.value = nextImage
+      syncImageQueryParam(nextImage.slug || String(nextImage.id))
+    }
   }
 
   const navigateToFirst = () => {
@@ -123,6 +158,7 @@ export const useImageModal = () => {
     if (!selectedModalImage.value) return
     
     const item = selectedModalImage.value
+    syncImageQueryParam() // clean up query param before navigating away
     isImageModalOpen.value = false
     
     // Set selected image in store

@@ -238,6 +238,9 @@ const imageUpload = useImageUpload()
 const addToCollection = useAddToCollectionModal()
 const multiSelect = useHomeMultiSelect()
 
+const route = useRoute()
+const router = useRouter()
+
 import { watch, nextTick } from 'vue'
 
 const replacementFileInput = imageUpload.replacementFileInput
@@ -321,6 +324,25 @@ onMounted(() => {
     window.removeEventListener('dragover', imageUpload.handleDragOver)
     window.removeEventListener('dragleave', imageUpload.handleDragLeave)
     window.removeEventListener('drop', imageUpload.handleDrop)
+  })
+})
+
+// Auto-open image dialog from URL query param on page load
+let hasAutoOpenedFromQuery = false
+watch(() => gridStore.initialized, (initialized) => {
+  if (!initialized || hasAutoOpenedFromQuery) return
+  const imageSlug = route.query.image as string | undefined
+  if (!imageSlug) return
+  hasAutoOpenedFromQuery = true
+  nextTick(() => {
+    const image = layout.value.find(
+      img => img.slug === imageSlug || String(img.id) === imageSlug
+    )
+    if (image) {
+      imageModal.openImageModal(image)
+    } else {
+      router.replace({ query: { ...route.query, image: undefined } })
+    }
   })
 })
 
