@@ -213,6 +213,22 @@ import usePageHeader from '~/composables/usePageHeader'
 import { useImageUpload } from '~/composables/image/useImageUpload'
 import type { Collection } from '~~/shared/types/collection'
 
+useSeoMeta({
+  title: 'Collections',
+  description: 'Explore curated series of digital illustrations organized into themed collections',
+  ogTitle: 'Collections — Zima Blue',
+  ogDescription: 'Explore curated series of digital illustrations organized into themed collections',
+  twitterTitle: 'Collections — Zima Blue',
+  twitterDescription: 'Explore curated series of digital illustrations organized into themed collections',
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'Collections',
+  description: 'Curated series of digital illustrations',
+  bgFrom: '#2F2FE4',
+  bgTo: '#89D4FF',
+})
+
 const { toast } = useToast()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')

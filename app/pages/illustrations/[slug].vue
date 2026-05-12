@@ -201,10 +201,85 @@ const { normalizeTags } = imageActions
 const addToCollection = useAddToCollectionModal()
 const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
+const siteConfig = useRuntimeConfig()
 
 const showEditDrawer = ref(false)
 const showImageDeleteDialog = ref(false)
 const isDeletingImage = ref(false)
+
+const image = computed(() => {
+  if (gridStore.selectedImage?.slug.toString() === route.params.slug) {
+    return gridStore.selectedImage
+  }
+  if (import.meta.client && history?.state?.imageData) {
+    return history.state.imageData
+  }
+  return undefined
+})
+
+async function fetchImage() {
+  if (!image.value) {
+    const slug = route.params.slug
+    const data = await $fetch(`/api/images/slug/${slug}`)
+    gridStore.selectedImage = data
+  }
+}
+
+if (import.meta.server) {
+  await fetchImage()
+}
+
+// Dynamic SEO meta based on illustration data
+const imageTitle = computed(() => image.value?.name || 'Illustration')
+const imageDesc = computed(() => image.value?.description || 'View this digital illustration')
+const { parse: parseVariantsForSeo } = useParseVariants()
+const imageUrl = computed(() => {
+  if (!image.value) return undefined
+  const variants = parseVariantsForSeo(image.value.variants)
+  const mdVariant = variants.find(v => v.size === 'md') || variants.find(v => v.size === 'lg') || variants.find(v => v.size === 'original')
+  const pathname = mdVariant?.pathname || image.value.pathname
+  return `/images/${pathname.startsWith('/') ? pathname.slice(1) : pathname}`
+})
+
+useSeoMeta({
+  title: imageTitle,
+  description: imageDesc,
+  ogTitle: () => `${imageTitle.value} — Zima Blue`,
+  ogDescription: imageDesc,
+  ogImage: imageUrl,
+  ogImageWidth: () => image.value?.w ? String(image.value.w) : undefined,
+  ogImageHeight: () => image.value?.h ? String(image.value.h) : undefined,
+  twitterTitle: () => `${imageTitle.value} — Zima Blue`,
+  twitterDescription: imageDesc,
+  twitterImage: imageUrl,
+})
+
+defineOgImageComponent('Illustration.takumi', {
+  title: () => imageTitle.value,
+  description: () => imageDesc.value,
+})
+
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: () => {
+      if (!image.value) return ''
+      return JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ImageObject',
+        name: image.value.name,
+        description: image.value.description || undefined,
+        contentUrl: `${siteConfig.public.siteUrl}/images/${image.value.pathname}`,
+        creator: {
+          '@type': 'Person',
+          name: 'rootasjey',
+          url: 'https://www.rootasjey.dev',
+        },
+        license: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      })
+    },
+  }],
+})
 
 // Tag search functionality
 const tagSearch = useTagSearch()
@@ -342,31 +417,6 @@ const handleCreateTag = async () => {
     editForm.value.tags = dedupeTags([...displayTags.value, { id: newTag.id, name: newTag.name }])
     searchQuery.value = ''
   }
-}
-
-const image = computed(() => {
-  // Try to get image from store first
-  if (gridStore.selectedImage?.slug.toString() === route.params.slug) {
-    return gridStore.selectedImage
-  }
-  // Fallback to history state
-  if (import.meta.client && history?.state?.imageData) {
-    return history.state.imageData
-  }
-  return undefined
-})
-
-// Fetch image if not available in store or history
-async function fetchImage() {
-  if (!image.value) {
-    const slug = route.params.slug
-    const data = await $fetch(`/api/images/slug/${slug}`)
-    gridStore.selectedImage = data
-  }
-}
-
-if (import.meta.server) {
-  await fetchImage()
 }
 
 const { parse: parseVariants } = useParseVariants()

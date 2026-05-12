@@ -136,6 +136,22 @@
 </template>
 
 <script setup>
+useSeoMeta({
+  title: 'Contact',
+  description: 'Get in touch — collaborations, enquiries, or just a hello',
+  ogTitle: 'Contact — Zima Blue',
+  ogDescription: 'Get in touch with the creator behind Zima Blue',
+  twitterTitle: 'Contact — Zima Blue',
+  twitterDescription: 'Get in touch with the creator behind Zima Blue',
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'Get in Touch',
+  description: 'Collaborations, enquiries, or just a hello',
+  bgFrom: '#44ACFF',
+  bgTo: '#89D4FF',
+})
+
 const form = ref({
   subject: '',
   email: '',

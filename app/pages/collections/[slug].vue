@@ -270,6 +270,34 @@ const isAdmin = computed(() => user.value?.role === 'admin')
 
 const store = useCollectionDetailStore()
 
+// Dynamic SEO meta based on collection data
+const collectionTitle = computed(() => store.collection?.name || 'Collection')
+const collectionDesc = computed(() => store.collection?.description || 'Explore this curated collection of digital illustrations')
+const config = useRuntimeConfig()
+const firstImagePath = computed(() => {
+  const firstImage = store.images?.[0]
+  if (!firstImage) return undefined
+  const p = firstImage.pathname
+  return p.startsWith('/') ? p : `/${p}`
+})
+
+useSeoMeta({
+  title: collectionTitle,
+  description: collectionDesc,
+  ogTitle: () => `${collectionTitle.value} — Zima Blue`,
+  ogDescription: collectionDesc,
+  ogImage: () => firstImagePath.value ? `${config.public.siteUrl}/images${firstImagePath.value}` : undefined,
+  twitterTitle: () => `${collectionTitle.value} — Zima Blue`,
+  twitterDescription: collectionDesc,
+  twitterImage: () => firstImagePath.value ? `${config.public.siteUrl}/images${firstImagePath.value}` : undefined,
+})
+
+defineOgImageComponent('Collection.takumi', {
+  title: () => collectionTitle.value,
+  description: () => collectionDesc.value,
+  imageCount: () => store.images?.length || 0,
+})
+
 // Ensure we render a loading state on first render when the store
 // doesn't yet have collection data. This prevents a brief flash of the
 // empty state ("nothing here yet") before fetchCollection runs.

@@ -33,10 +33,11 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
-      title: "zima blue",
+      title: "Zima Blue",
+      titleTemplate: "%s — Zima Blue",
       meta: [
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "description", content: "Borderless artistic space" },
+        { name: "description", content: "Borderless artistic space — A curated gallery of digital illustrations" },
       ],
       link: [
         { rel: "icon", type: "image/png", href: "/favicon.ico" },
@@ -66,7 +67,30 @@ export default defineNuxtConfig({
     "nuxt-auth-utils",
     "@nuxt/image",
     "@pinia/nuxt",
+    "@nuxtjs/seo",
   ],
+
+  // Site identity (used by all SEO sub-modules)
+  site: {
+    name: 'Zima Blue',
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    description: 'Borderless artistic space — A curated gallery of digital illustrations',
+    defaultLocale: 'en',
+  },
+
+  // Robots: block admin, allow everything else
+  robots: {
+    groups: [
+      { userAgent: '*', allow: '/', disallow: ['/admin', '/login', '/settings', '/time'] },
+    ],
+  },
+
+  // Sitemap: auto-discover routes + dynamic sources
+  sitemap: {
+    sources: [
+      '/api/sitemap-urls',
+    ],
+  },
 
   nitro: {
     experimental: {

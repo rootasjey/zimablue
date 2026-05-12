@@ -194,6 +194,40 @@ definePageMeta({
   disableViewTransition: true,
 })
 
+useSeoMeta({
+  title: 'Illustration Gallery',
+  description: 'Browse a curated collection of digital illustrations in an interactive borderless gallery',
+  ogTitle: 'Zima Blue — Illustration Gallery',
+  ogDescription: 'Browse a curated collection of digital illustrations in an interactive borderless gallery',
+  twitterTitle: 'Zima Blue — Illustration Gallery',
+  twitterDescription: 'Browse a curated collection of digital illustrations in an interactive borderless gallery',
+})
+
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Zima Blue',
+      description: 'Borderless artistic space — A curated gallery of digital illustrations',
+      url: useRuntimeConfig().public.siteUrl,
+      potentialAction: [{
+        '@type': 'SearchAction',
+        target: `${useRuntimeConfig().public.siteUrl}/search?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      }],
+    }),
+  }],
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'Illustration Gallery',
+  description: 'Browse a curated collection of digital illustrations',
+  bgFrom: '#2F2FE4',
+  bgTo: '#44ACFF',
+})
+
 const { loggedIn, clear, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const gridStore = useGridStore()

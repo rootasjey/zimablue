@@ -22,4 +22,10 @@ useHead({
     { name: 'view-transition', content: 'same-origin' }
   ]
 })
+
+useSeoMeta({
+  ogType: 'website',
+  ogSiteName: 'Zima Blue',
+  twitterCard: 'summary_large_image',
+})
 </script>

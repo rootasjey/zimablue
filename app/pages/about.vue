@@ -165,6 +165,22 @@ const randomColors = useRandomColors()
 
 const version = config.public.appVersion
 
+useSeoMeta({
+  title: 'About',
+  description: 'Learn about the illustrator and software engineer behind Zima Blue — a self-taught creator based in France exploring the intersection of technology and art',
+  ogTitle: 'About Zima Blue — Illustrator & Engineer',
+  ogDescription: 'Learn about the illustrator and software engineer behind Zima Blue',
+  twitterTitle: 'About Zima Blue — Illustrator & Engineer',
+  twitterDescription: 'Learn about the illustrator and software engineer behind Zima Blue',
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'About Zima Blue',
+  description: 'Illustrator & software engineer based in France',
+  bgFrom: '#2F2FE4',
+  bgTo: '#5478FF',
+})
+
 const formData = reactive({
   email: '',
   subject: '',
