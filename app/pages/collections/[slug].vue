@@ -262,6 +262,10 @@ import { useAddToCollectionModal } from '~/composables/collection/useAddToCollec
 import { useImageUpload } from '~/composables/image/useImageUpload'
 import type { Image } from '~~/shared/types/image'
 
+definePageMeta({
+  disableViewTransition: true,
+})
+
 const route = useRoute()
 const router = useRouter()
 const { toast } = useToast()
@@ -330,6 +334,29 @@ const imageToDelete = ref<Image | null>(null)
 const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
 
+// --- Query param sync ---
+const IMAGE_QUERY_KEY = 'image'
+
+const syncImageQueryParam = (slug?: string) => {
+  if (typeof window === 'undefined') return
+  const currentImageParam = route.query[IMAGE_QUERY_KEY] as string | undefined
+  if ((slug || undefined) === currentImageParam) return
+  const url = new URL(window.location.href)
+  if (slug) {
+    url.searchParams.set(IMAGE_QUERY_KEY, slug)
+  } else {
+    url.searchParams.delete(IMAGE_QUERY_KEY)
+  }
+  window.history.replaceState(window.history.state, '', url.toString())
+}
+
+watch([isImageModalOpen, isImageDrawerOpen], ([modal, drawer]) => {
+  if (!modal && !drawer) {
+    syncImageQueryParam()
+  }
+})
+// --- End query param sync ---
+
 // Image actions & add-to-collection modal used by the modal menu
 const imageActions = useImageActions()
 const addToCollection = useAddToCollectionModal()
@@ -380,6 +407,27 @@ onMounted(async () => {
   window.addEventListener('keydown', escapeKeyHandler, true)
 })
 
+// Auto-open image dialog from URL query param on page load
+let hasAutoOpenedFromQuery = false
+watch(() => store.isLoading, (isLoading, wasLoading) => {
+  if (isLoading || hasAutoOpenedFromQuery) return
+  const imageSlug = route.query.image as string | undefined
+  if (!imageSlug) return
+  hasAutoOpenedFromQuery = true
+  nextTick(() => {
+    const image = store.images.find(
+      img => img.slug === imageSlug || String(img.id) === imageSlug
+    )
+    if (image) {
+      openImageModal(image)
+    } else {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('image')
+      window.history.replaceState(window.history.state, '', url.toString())
+    }
+  })
+})
+
 const escapeKeyHandler = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     const hasOpenModal =
@@ -413,14 +461,22 @@ const navigateToPrevious = () => {
   if (!canNavigatePrevious.value) return
   const lastIndex = store.images.length - 1
   currentImageIndex.value = currentImageIndex.value > 0 ? currentImageIndex.value - 1 : lastIndex
-  selectedImage.value = store.images[currentImageIndex.value] ?? null
+  const prev = store.images[currentImageIndex.value] ?? null
+  if (prev) {
+    selectedImage.value = prev
+    syncImageQueryParam(prev.slug || String(prev.id))
+  }
 }
 
 const navigateToNext = () => {
   if (!canNavigateNext.value) return
   const lastIndex = store.images.length - 1
   currentImageIndex.value = currentImageIndex.value < lastIndex ? currentImageIndex.value + 1 : 0
-  selectedImage.value = store.images[currentImageIndex.value] ?? null
+  const next = store.images[currentImageIndex.value] ?? null
+  if (next) {
+    selectedImage.value = next
+    syncImageQueryParam(next.slug || String(next.id))
+  }
 }
 
 const navigateToFirst = () => {
@@ -437,12 +493,35 @@ const navigateToLast = () => {
 
 // Add this new method for the ImageModal component
 const openFullPage = () => {
-  if (selectedImage.value) {
-    // close modal/drawer before navigating for a smooth UX
-    isImageModalOpen.value = false
-    isImageDrawerOpen.value = false
-    router.push(`/illustrations/${selectedImage.value.slug}`)
+  if (!selectedImage.value) return
+
+  const item = selectedImage.value
+  syncImageQueryParam() // clean up query param before navigating away
+  isImageModalOpen.value = false
+  isImageDrawerOpen.value = false
+
+  gridStore.selectedImage = item
+
+  const urlPath = item.slug
+    ? `/illustrations/${item.slug}`
+    : `/illustrations/${item.id}`
+
+  const routePayload = {
+    path: urlPath,
+    state: {
+      imageData: JSON.parse(JSON.stringify(item)),
+      previousPath: router.currentRoute.value.fullPath
+    }
   }
+
+  if (typeof document === 'undefined' || typeof document.startViewTransition !== 'function') {
+    router.push(routePayload)
+    return
+  }
+
+  document.startViewTransition(async () => {
+    await router.push(routePayload)
+  })
 }
 
 const openImageModal = (image: Image, event?: MouseEvent | PointerEvent) => {
@@ -457,6 +536,8 @@ const openImageModal = (image: Image, event?: MouseEvent | PointerEvent) => {
   } else {
     isImageModalOpen.value = true
   }
+
+  syncImageQueryParam(image.slug || String(image.id))
 }
 
 const onUpdateImageModalOpen = (value: boolean) => {
@@ -521,9 +602,10 @@ const handleDrop = async (e: DragEvent) => {
   e.preventDefault()
   imageUpload.handleDragLeave(e)
 
-  if (!imageUpload.checkAuth()) return
+  // Ignore non-file drops (internal DOM drag-and-drop)
+  if (!e.dataTransfer?.files?.length) return
 
-  if (!e.dataTransfer) return
+  if (!imageUpload.checkAuth()) return
 
   const files = [...e.dataTransfer.files].filter(file =>
     file.type.startsWith('image/') && imageUpload.validateFile(file)
@@ -578,10 +660,6 @@ const handleDrop = async (e: DragEvent) => {
     opacity: 0;
     transform: translateY(-20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes fade-in-up {
@@ -589,20 +667,18 @@ const handleDrop = async (e: DragEvent) => {
     opacity: 0;
     transform: translateY(20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .animate-fade-in-down {
-  animation: fade-in-down 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
+  animation: fade-in-down 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  opacity: 1;
+  transform: none;
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  opacity: 1;
+  transform: none;
 }
 
 .animation-delay-200 {
@@ -631,13 +707,9 @@ const handleDrop = async (e: DragEvent) => {
 }
 
 @keyframes fadeScale {
-  0% {
+  from {
     opacity: 0;
     transform: scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 </style>

@@ -40,45 +40,81 @@
             }"
             @transitionend="onTransitionEnd"
           >
-            <!-- Slot gauche : image précédente (préchargée) -->
+             <!-- Slot gauche : image précédente (préchargée) -->
             <div class="flex justify-center items-center px-2" style="width: 33.333%;">
-              <NuxtImg
+              <div 
                 v-if="prevImage"
-                :src="getImageSrc(prevImage, 'drawer').src"
-                :provider="getImageSrc(prevImage, 'drawer').provider"
-                :alt="prevImage.name || ''"
-                width="400"
-                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
-                draggable="false"
-              />
+                class="relative rounded-lg overflow-hidden mx-auto transition-[max-height] duration-300 ease-in-out"
+                :style="{ maxHeight: isDrawerImageLoaded(prevImage) ? '50vh' : '150px' }"
+              >
+                <div 
+                  v-show="!isDrawerImageLoaded(prevImage)"
+                  class="absolute inset-0 drawer-shimmer rounded-lg"
+                />
+                <NuxtImg
+                  :src="getImageSrc(prevImage, 'drawer').src"
+                  :provider="getImageSrc(prevImage, 'drawer').provider"
+                  :alt="prevImage.name || ''"
+                  width="400"
+                  class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"
+                  :class="isDrawerImageLoaded(prevImage) ? 'opacity-100' : 'opacity-0'"
+                  @load="markDrawerLoaded(prevImage.id)"
+                  @error="markDrawerLoaded(prevImage.id)"
+                  draggable="false"
+                />
+              </div>
             </div>
 
-            <!-- Slot centre : image courante -->
+             <!-- Slot centre : image courante -->
             <div class="flex justify-center items-center px-2" style="width: 33.333%;">
-              <NuxtImg
+              <div 
                 v-if="selectedModalImage"
-                :src="getImageSrc(selectedModalImage, 'drawer').src"
-                :provider="getImageSrc(selectedModalImage, 'drawer').provider"
-                :alt="selectedModalImage.name || 'Image'"
-                width="400"
-                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
-                :style="{ viewTransitionName: `image-${selectedModalImage.id}` }"
-                @click="$emit('openFullPage')"
-                draggable="false"
-              />
+                class="relative rounded-lg overflow-hidden mx-auto transition-[max-height] duration-300 ease-in-out"
+                :style="{ maxHeight: isDrawerImageLoaded(selectedModalImage) ? '50vh' : '150px' }"
+              >
+                <div 
+                  v-show="!isDrawerImageLoaded(selectedModalImage)"
+                  class="absolute inset-0 drawer-shimmer rounded-lg"
+                />
+                <NuxtImg
+                  :src="getImageSrc(selectedModalImage, 'drawer').src"
+                  :provider="getImageSrc(selectedModalImage, 'drawer').provider"
+                  :alt="selectedModalImage.name || 'Image'"
+                  width="400"
+                  class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"
+                  :class="isDrawerImageLoaded(selectedModalImage) ? 'opacity-100' : 'opacity-0'"
+                  :style="{ viewTransitionName: `image-${selectedModalImage.id}` }"
+                  @load="markDrawerLoaded(selectedModalImage.id)"
+                  @error="markDrawerLoaded(selectedModalImage.id)"
+                  @click="$emit('openFullPage')"
+                  draggable="false"
+                />
+              </div>
             </div>
 
-            <!-- Slot droit : image suivante (préchargée) -->
+             <!-- Slot droit : image suivante (préchargée) -->
             <div class="flex justify-center items-center px-2" style="width: 33.333%;">
-              <NuxtImg
+              <div 
                 v-if="nextImage"
-                :src="getImageSrc(nextImage, 'drawer').src"
-                :provider="getImageSrc(nextImage, 'drawer').provider"
-                :alt="nextImage.name || ''"
-                width="400"
-                class="max-w-full max-h-[50vh] object-contain rounded-lg select-none"
-                draggable="false"
-              />
+                class="relative rounded-lg overflow-hidden mx-auto transition-[max-height] duration-300 ease-in-out"
+                :style="{ maxHeight: isDrawerImageLoaded(nextImage) ? '50vh' : '150px' }"
+              >
+                <div 
+                  v-show="!isDrawerImageLoaded(nextImage)"
+                  class="absolute inset-0 drawer-shimmer rounded-lg"
+                />
+                <NuxtImg
+                  :src="getImageSrc(nextImage, 'drawer').src"
+                  :provider="getImageSrc(nextImage, 'drawer').provider"
+                  :alt="nextImage.name || ''"
+                  width="400"
+                  class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"
+                  :class="isDrawerImageLoaded(nextImage) ? 'opacity-100' : 'opacity-0'"
+                  @load="markDrawerLoaded(nextImage.id)"
+                  @error="markDrawerLoaded(nextImage.id)"
+                  draggable="false"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -199,6 +235,17 @@ const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags)
 const handleDownload = () => {
   if (!props.selectedModalImage) return
   downloadImage(props.selectedModalImage)
+}
+
+const drawerLoadedMap = ref<Record<number, boolean>>({})
+
+const markDrawerLoaded = (imageId: number) => {
+  drawerLoadedMap.value[imageId] = true
+}
+
+const isDrawerImageLoaded = (image: Image | null) => {
+  if (!image) return true
+  return drawerLoadedMap.value[image.id] ?? false
 }
 
 const isEditableTarget = (event: KeyboardEvent) => {
@@ -377,3 +424,31 @@ const wrappedMenuItems = computed(() => {
   })
 })
 </script>
+
+<style scoped>
+.drawer-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 25%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 75%
+  );
+  background-size: 200% 100%;
+  animation: drawerShimmer 1.4s ease-in-out infinite;
+}
+
+.dark .drawer-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(39 39 42) 25%,
+    rgb(63 63 70) 50%,
+    rgb(39 39 42) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes drawerShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>

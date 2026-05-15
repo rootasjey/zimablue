@@ -239,7 +239,6 @@ const addToCollection = useAddToCollectionModal()
 const multiSelect = useHomeMultiSelect()
 
 const route = useRoute()
-const router = useRouter()
 
 import { watch, nextTick } from 'vue'
 
@@ -341,7 +340,9 @@ watch(() => gridStore.initialized, (initialized) => {
     if (image) {
       imageModal.openImageModal(image)
     } else {
-      router.replace({ query: { ...route.query, image: undefined } })
+      const url = new URL(window.location.href)
+      url.searchParams.delete('image')
+      window.history.replaceState(window.history.state, '', url.toString())
     }
   })
 })

@@ -71,18 +71,30 @@
           </div>
         </div>
 
-        <!-- Modal body -->
+         <!-- Modal body -->
         <div class="p-4">
           <div class="flex justify-center">
-            <NuxtImg 
+            <div 
               v-if="selectedModalImage"
-              :provider="selectedModalImage.pathname.includes('blob') ? 'ipx' : 'hubblob'"
-              :src="selectedModalImage.pathname"
-              :alt="selectedModalImage.name || 'Image'"
-              :width="600"
-              class="max-w-full max-h-[70vh] object-contain rounded-lg cursor-pointer"
-              @click="$emit('openFullPage')" 
-            />
+              class="relative rounded-lg overflow-hidden mx-auto transition-[max-height] duration-300 ease-in-out"
+              :style="{ maxHeight: imageLoaded ? '70vh' : '200px' }"
+            >
+              <div 
+                v-show="!imageLoaded"
+                class="absolute inset-0 modal-shimmer rounded-lg"
+              />
+              <NuxtImg 
+                :provider="selectedModalImage.pathname.includes('blob') ? 'ipx' : 'hubblob'"
+                :src="selectedModalImage.pathname"
+                :alt="selectedModalImage.name || 'Image'"
+                :width="600"
+                class="w-full h-auto object-contain rounded-lg cursor-pointer transition-opacity duration-300"
+                :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+                @load="imageLoaded = true"
+                @error="imageLoaded = true"
+                @click="$emit('openFullPage')" 
+              />
+            </div>
           </div>
         </div>
         
@@ -154,6 +166,12 @@ const emit = defineEmits<Emits>()
 
 const { normalizeTags } = useImageActions()
 const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags))
+
+const imageLoaded = ref(false)
+
+watch(() => props.selectedModalImage, () => {
+  imageLoaded.value = false
+})
 
 const modalContent = ref<HTMLElement>()
 
@@ -272,5 +290,31 @@ const handleKeydown = (event: KeyboardEvent) => {
   outline-offset: 12px;
   outline-style: dashed;
   outline-width: 1px;
+}
+
+.modal-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 25%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 75%
+  );
+  background-size: 200% 100%;
+  animation: modalShimmer 1.4s ease-in-out infinite;
+}
+
+.dark .modal-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(39 39 42) 25%,
+    rgb(63 63 70) 50%,
+    rgb(39 39 42) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes modalShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>

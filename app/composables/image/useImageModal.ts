@@ -29,17 +29,15 @@ export const useImageModal = () => {
 
   const syncImageQueryParam = (slug?: string) => {
     if (typeof window === 'undefined') return
-    const currentQuery = { ...route.query } as Record<string, string>
-    if (slug) {
-      currentQuery[IMAGE_QUERY_KEY] = slug
-    } else {
-      delete currentQuery[IMAGE_QUERY_KEY]
-    }
-    // Avoid redundant navigation
     const currentImageParam = route.query[IMAGE_QUERY_KEY] as string | undefined
-    if ((slug || undefined) !== currentImageParam) {
-      router.replace({ query: currentQuery })
+    if ((slug || undefined) === currentImageParam) return
+    const url = new URL(window.location.href)
+    if (slug) {
+      url.searchParams.set(IMAGE_QUERY_KEY, slug)
+    } else {
+      url.searchParams.delete(IMAGE_QUERY_KEY)
     }
+    window.history.replaceState(window.history.state, '', url.toString())
   }
 
   // Remove query param when modal/drawer both close
