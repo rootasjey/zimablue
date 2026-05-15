@@ -78,6 +78,11 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
   },
 
+  // Disabled: WASM renderer incompatible with Cloudflare Workers
+  ogImage: {
+    enabled: false,
+  },
+
   // Robots: block admin, allow everything else
   robots: {
     groups: [
