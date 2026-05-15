@@ -112,6 +112,7 @@ watch(() => props.images, (newImages) => {
 
 const handleDragStart = (index: number, event: DragEvent) => {
   draggedIndex.value = index
+  event.stopPropagation()
   
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
@@ -123,13 +124,15 @@ const handleDragStart = (index: number, event: DragEvent) => {
   }
 }
 
-const handleDragEnd = () => {
+const handleDragEnd = (event: DragEvent) => {
+  event.stopPropagation()
   draggedIndex.value = null
   dropTargetIndex.value = null
 }
 
 const handleDragOver = (event: DragEvent) => {
   event.preventDefault()
+  event.stopPropagation()
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'move'
   }
@@ -137,12 +140,14 @@ const handleDragOver = (event: DragEvent) => {
 
 const handleDragEnter = (index: number, event: DragEvent) => {
   event.preventDefault()
+  event.stopPropagation()
   if (draggedIndex.value !== null && draggedIndex.value !== index) {
     dropTargetIndex.value = index
   }
 }
 
 const handleDragLeave = (event: DragEvent) => {
+  event.stopPropagation()
   // Only clear drop target if we're leaving the element entirely
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
   const x = event.clientX
@@ -155,6 +160,7 @@ const handleDragLeave = (event: DragEvent) => {
 
 const handleDrop = (targetIndex: number, event: DragEvent) => {
   event.preventDefault()
+  event.stopPropagation()
   
   if (draggedIndex.value === null || draggedIndex.value === targetIndex) {
     return

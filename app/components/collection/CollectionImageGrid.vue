@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8 [content-visibility:auto]">
+    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8">
       <div  
         v-for="(image, index) in images" 
         :key="image.id" 
@@ -109,15 +109,12 @@ defineEmits<{
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  opacity: 1;
+  transform: none;
 }
 
 /* Enhanced hover animation */

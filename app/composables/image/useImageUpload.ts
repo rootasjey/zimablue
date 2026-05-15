@@ -94,9 +94,10 @@ export const useImageUpload = () => {
     isDragging.value = false
     dragCounter = 0
 
-    if (!checkAuth()) return
+    // Ignore non-file drops (internal DOM drag-and-drop)
+    if (!e.dataTransfer?.files?.length) return
 
-    if (!e.dataTransfer) return
+    if (!checkAuth()) return
 
     const files = [...e.dataTransfer.files].filter(file => 
       file.type.startsWith('image/') && validateFile(file)
