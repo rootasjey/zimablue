@@ -95,6 +95,7 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       tasks: true,
+      wasm: true,
     },
     scheduledTasks: {
       '8 6 * * *': ['social:autopost'],
