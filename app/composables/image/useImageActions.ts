@@ -20,7 +20,7 @@ export const useImageActions = () => {
    * Normalize tags from various formats to array of tag objects
    * Handles: JSON strings, arrays of strings, arrays of objects, null/undefined
    */
-  const normalizeTags = (input: any): Array<{ id?: number; name: string }> => {
+  const normalizeTags = (input: any): Array<{ id?: number; name: string; color?: string }> => {
     if (!input) return []
 
     // Handle JSON string (legacy format)
@@ -40,7 +40,7 @@ export const useImageActions = () => {
           return { name: item }
         }
         if (typeof item === 'object' && item.name) {
-          return { id: item.id, name: item.name }
+          return { id: item.id, name: item.name, color: item.color }
         }
         return { name: String(item) }
       })
@@ -48,7 +48,7 @@ export const useImageActions = () => {
 
     // Handle single object
     if (typeof input === 'object' && input.name) {
-      return [{ id: input.id, name: input.name }]
+      return [{ id: input.id, name: input.name, color: input.color }]
     }
 
     return []

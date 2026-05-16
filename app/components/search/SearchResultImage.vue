@@ -82,10 +82,11 @@
         <div v-if="parsedTags.length > 0" class="flex items-center gap-1 mt-1">
           <span
             v-for="tag in parsedTags.slice(0, 3)"
-            :key="tag"
-            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+            :key="tag.name"
+            :style="getTagBadgeStyles(tag.color)"
+            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
           >
-            {{ tag }}
+            {{ tag.name }}
           </span>
           <span
             v-if="parsedTags.length > 3"
@@ -128,10 +129,11 @@
       <div v-if="parsedTags.length > 0" class="flex flex-wrap gap-1">
         <span
           v-for="tag in parsedTags.slice(0, 5)"
-          :key="tag"
-          class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+          :key="tag.name"
+          :style="getTagBadgeStyles(tag.color)"
+          class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
         >
-          {{ tag }}
+          {{ tag.name }}
         </span>
         <span
           v-if="parsedTags.length > 5"
@@ -161,6 +163,7 @@
 
 <script lang="ts" setup>
 import type { ImageWithTags } from '~~/shared/types/image'
+import { useTagColor } from '~/composables/useTagColor'
 
 interface Props {
   image: ImageWithTags
@@ -170,6 +173,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { getTagBadgeStyles } = useTagColor()
+
 defineEmits<{
   select: [image: ImageWithTags]
   hover: []
@@ -177,7 +182,7 @@ defineEmits<{
 
 // Get tags from normalized structure
 const parsedTags = computed(() => {
-  return props.image.tags?.map(tag => tag.name) || []
+  return props.image.tags || []
 })
 
 // Format numbers for display

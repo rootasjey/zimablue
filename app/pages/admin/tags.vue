@@ -82,7 +82,8 @@
             <div class="flex items-center gap-3">
               <input v-model="tagForm.color" type="color"
                 class="w-10 h-9 rounded-lg border border-stone-200 dark:border-zinc-700 cursor-pointer bg-transparent" />
-              <span class="text-sm font-classic text-stone-500 dark:text-zinc-400">{{ tagForm.color }}</span>
+              <input v-model="tagForm.color" type="text" placeholder="#3B82F6"
+                class="w-24 px-2 h-9 rounded-lg text-sm font-mono bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
             </div>
           </div>
 
@@ -307,5 +308,26 @@ watch(() => showCreateModal.value, (isOpen) => {
   if (!isOpen) resetForm()
 })
 
-onMounted(() => fetchTags())
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (showCreateModal.value && !isSubmitting.value && tagForm.value.name.trim()) {
+      e.preventDefault()
+      submitTag()
+    }
+  }
+}
+
+watch(() => showCreateModal.value, (val) => {
+  if (val) window.addEventListener('keydown', handleKeydown)
+  else window.removeEventListener('keydown', handleKeydown)
+})
+
+onMounted(() => {
+  if (showCreateModal.value) window.addEventListener('keydown', handleKeydown)
+  fetchTags()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>

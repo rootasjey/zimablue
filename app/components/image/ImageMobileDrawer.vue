@@ -12,7 +12,8 @@
           <span
             v-for="tag in displayTags"
             :key="tag.name"
-            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs"
+            :style="getTagBadgeStyles(tag.color)"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
           >
             {{ tag.name }}
           </span>
@@ -197,6 +198,7 @@
 import type { Image } from '~~/shared/types/image'
 import { useImageActions } from '~/composables/image/useImageActions'
 import { useImageSrc } from '~/composables/image/useImageSrc'
+import { useTagColor } from '~/composables/useTagColor'
 const { getSrc: getImageSrc } = useImageSrc()
 
 
@@ -231,6 +233,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { downloadImage, normalizeTags } = useImageActions()
+const { getTagBadgeStyles } = useTagColor()
 const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags))
 const handleDownload = () => {
   if (!props.selectedModalImage) return

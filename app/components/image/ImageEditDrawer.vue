@@ -57,7 +57,8 @@
                   :key="tag.name"
                   role="button"
                   tabindex="0"
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm cursor-pointer"
+                  :style="getTagBadgeStyles(tag.color)"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-sm cursor-pointer bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
                   @click.stop="removeTag(tag)"
                   @keydown.enter.prevent.stop="removeTag(tag)"
                 >
@@ -111,8 +112,9 @@
 import { onMounted, onUnmounted, watch, computed } from 'vue';
 import { useImageActions } from '~/composables/image/useImageActions';
 import { useTagSearch } from '~/composables/image/useTagSearch';
+import { useTagColor } from '~/composables/useTagColor';
 
-type TagOption = { id?: number; name: string }
+type TagOption = { id?: number; name: string; color?: string }
 
 interface Props {
   isOpen: boolean
@@ -138,6 +140,7 @@ const emit = defineEmits<Emits>()
 
 // Tag search functionality
 const tagSearch = useTagSearch()
+const { getTagBadgeStyles } = useTagColor()
 const searchQuery = ref('')
 
 // Defensive computed for displaying tags (always returns array)
@@ -192,6 +195,14 @@ const dedupeTags = (tags: Array<TagOption | string>) => {
 const handleSearchQuery = (query: string) => {
   searchQuery.value = query
   tagSearch.searchTags(query)
+}
+
+const resolveTagOption = (name: string): TagOption => {
+  const normalized = normalizeTagName(name).toLowerCase()
+  const match = availableTagItems.value.find(
+    item => normalizeTagName(item.name).toLowerCase() === normalized
+  )
+  return match ? { id: match.id, name: match.name } : { name }
 }
 
 const toggleTagByName = (name: string) => {
