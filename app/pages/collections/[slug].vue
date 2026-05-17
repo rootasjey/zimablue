@@ -37,6 +37,7 @@
       @upload-to-collection="triggerUploadToCollection"
       @reorder="store.startReordering"
       @delete-collection="showCollectionDeleteDialog = true"
+      @enter-selection-mode="store.enterSelectionMode"
     />
 
     <!-- Content -->
@@ -77,13 +78,15 @@
         :can-edit="isOwner"
         :selected-images-map="store.selectedImagesMap"
         :has-selected-images="store.hasSelectedImages && !store.isAddImagesDialogOpen"
-        :cover-image-id="store.collection?.cover_image_id"
         :selection-count="store.selectionCount"
+        :is-selection-mode="store.isSelectionMode"
+        :image-menu-items="collectionImageMenuItems"
         class="animate-fade-in-up animation-delay-200"
         @image-click="openImageModal"
-        @set-cover="actions.setAsCover"
         @remove-images="actions.removeImages"
         @clear-selection="store.clearSelection"
+        @enter-selection-mode="handleEnterSelectionMode"
+        @toggle-image="store.toggleImageSelection"
       />
 
       <EmptyState
@@ -97,7 +100,7 @@
 
     <!-- Sticky Selection Toolbar with entrance animation -->
     <Transition name="toolbar-fade-slide">
-      <div v-if="store.hasSelectedImages && !store.isAddImagesDialogOpen" class="fixed left-0 right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.0rem+env(safe-area-inset-bottom))] z-10 pointer-events-none">
+      <div v-if="store.isSelectionMode && store.hasSelectedImages && !store.isAddImagesDialogOpen" class="fixed left-0 right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.0rem+env(safe-area-inset-bottom))] z-10 pointer-events-none">
         <div class="pointer-events-auto mx-auto max-w-xl px-4">
           <div class="rounded-xl border border-gray-200/60 dark:border-gray-800/60 backdrop-blur bg-white/90 dark:bg-gray-900/90 px-3 py-2 shadow-lg">
             <div class="flex items-center justify-between gap-3">
@@ -105,17 +108,17 @@
                 <span class="font-600">{{ store.selectionCount }}</span> selected
               </div>
               <div class="flex items-center gap-2">
-                <NButton size="12px" btn="soft-gray" @click="store.clearSelection">Clear</NButton>
+                <NButton size="12px" btn="soft-gray" @click="store.exitSelectionMode">Exit</NButton>
                 <NButton
-                  v-if="store.isAddingImages"
                   size="12px"
                   btn="soft-blue"
-                  @click="actions.addImages"
-                >Add</NButton>
+                  :disabled="store.selectionCount === 0"
+                  @click="openBulkAddToCollection"
+                >Add to collection</NButton>
                 <NButton
-                  v-else
                   size="12px"
                   btn="soft-error"
+                  :disabled="store.selectionCount === 0"
                   @click="actions.removeImages"
                 >Remove</NButton>
               </div>
@@ -260,6 +263,15 @@
       @delete="actions.deleteCollection"
     />
 
+    <ImageBulkAddToCollectionDialog
+      v-model:is-open="showBulkAddToCollectionDialog"
+      :image-count="selectedImageIds.length"
+      :selected-image-ids="selectedImageIds"
+      :collections="collectionsForBulkAdd"
+      :is-loading-collections="addToCollection.isLoading.value"
+      @confirm="handleBulkAddToCollection"
+    />
+
     <input
       ref="collectionFileInput"
       type="file"
@@ -350,6 +362,7 @@ const imageToDelete = ref<Image | null>(null)
 const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
 const showCollectionDeleteDialog = ref(false)
+const showBulkAddToCollectionDialog = ref(false)
 
 // --- Query param sync ---
 const IMAGE_QUERY_KEY = 'image'
@@ -384,6 +397,68 @@ const pageHeader = usePageHeader()
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
 const gridStore = useGridStore()
 
+// Per-image dropdown menu items for the collection grid (normal mode)
+const collectionImageMenuItems = (image: Image) => {
+  const coverId = store.collection?.cover_image_id
+  const isCover = coverId != null && coverId === image.id
+
+  const items: Array<Record<string, any>> = [
+    {
+      label: isCover ? 'Cover image' : 'Set as cover',
+      disabled: isCover,
+      onClick: () => {
+        if (!isCover) actions.setAsCover(image.id)
+      },
+    },
+    {
+      label: 'Remove from collection',
+      onClick: () => actions.removeSingleImage(image.id),
+    },
+    {},
+  ]
+
+  const standardItems = imageActions.generateImageMenuItems({
+    image,
+    openImagePageFn: openFullPage,
+    openAddToCollectionModalFn: (img: Image) => addToCollection.openModal(img),
+    replacementFileInput: replacementFileInput.value,
+  })
+
+  items.push(...standardItems)
+  return items
+}
+
+const handleEnterSelectionMode = (imageId: number) => {
+  store.enterSelectionMode()
+  nextTick(() => {
+    store.selectedImagesMap[imageId] = true
+  })
+}
+
+const collectionsForBulkAdd = computed(() =>
+  addToCollection.collections.value.filter((c: any) => c.slug !== slug)
+)
+
+const openBulkAddToCollection = async () => {
+  if (selectedImageIds.value.length === 0) return
+  addToCollection.refreshCollections()
+  showBulkAddToCollectionDialog.value = true
+}
+
+const handleBulkAddToCollection = async (imageIds: number[], targetSlug: string) => {
+  showBulkAddToCollectionDialog.value = false
+  const result = await actions.addImagesToAnotherCollection(imageIds, targetSlug)
+  if (result?.success) {
+    store.exitSelectionMode()
+    toast({
+      title: 'Success',
+      description: result.message,
+      toast: 'soft-success',
+      duration: 3000,
+    })
+  }
+}
+
 // Computed properties for navigation (circular when more than 1 image)
 const canNavigatePrevious = computed(() => store.images.length > 1)
 const canNavigateNext = computed(() => store.images.length > 1)
@@ -403,6 +478,12 @@ const nextImage = computed(() => {
     : 0
   return store.images[idx] ?? null
 })
+
+const selectedImageIds = computed(() =>
+  Object.entries(store.selectedImagesMap)
+    .filter(([_, selected]) => selected)
+    .map(([id]) => parseInt(id))
+)
 
 // Load collection data on mount
 onBeforeMount(() => {
@@ -459,9 +540,14 @@ const escapeKeyHandler = (e: KeyboardEvent) => {
       addToCollection.isDrawerOpen.value ||
       store.isEditDialogOpen ||
       store.isAddImagesDialogOpen ||
-      showCollectionDeleteDialog.value
+      showCollectionDeleteDialog.value ||
+      showBulkAddToCollectionDialog.value
 
     if (!hasOpenModal) {
+      if (store.isSelectionMode && store.hasSelectedImages) {
+        store.exitSelectionMode()
+        return
+      }
       router.back()
     }
   }
@@ -485,7 +571,8 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
     addToCollection.isDrawerOpen.value ||
     store.isEditDialogOpen ||
     store.isAddImagesDialogOpen ||
-    showCollectionDeleteDialog.value
+    showCollectionDeleteDialog.value ||
+    showBulkAddToCollectionDialog.value
 
   if (hasOpenModal) return
 
@@ -507,17 +594,26 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
   }
 
   if (e.key === 'r' || e.key === 'R') {
-    e.preventDefault()
-    if (store.isReordering) {
-      store.cancelReordering()
-    } else {
-      store.startReordering()
+    if (!e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      if (store.isReordering) {
+        store.cancelReordering()
+      } else {
+        store.startReordering()
+      }
     }
   }
 
   if (e.key === 'u' || e.key === 'U') {
     e.preventDefault()
     triggerUploadToCollection()
+  }
+
+  if (e.key === 'm' || e.key === 'M') {
+    if (!e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      store.toggleSelectionMode()
+    }
   }
 }
 

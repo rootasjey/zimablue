@@ -168,6 +168,7 @@ interface Emits {
   uploadToCollection: []
   reorder: []
   deleteCollection: []
+  enterSelectionMode: []
 }
 
 const props = defineProps<Props>()
@@ -261,6 +262,10 @@ const menuItems = computed(() => {
     items.push({
       label: 'Reorder images',
       onClick: () => emit('reorder'),
+    })
+    items.push({
+      label: 'Select images',
+      onClick: () => emit('enterSelectionMode'),
     })
   }
 

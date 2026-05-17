@@ -69,6 +69,15 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     }, 'Failed to remove images from collection.')
   }
 
+  const removeSingleImage = async (imageId: number) => {
+    return executeAction(async () => {
+      store.selectedImagesMap[imageId] = true
+      const result = await store.removeImagesFromCollection(collectionSlug)
+      if (!result.success) handleError(result.message)
+      return result
+    }, 'Failed to remove image from collection.')
+  }
+
   const saveOrder = async (newOrder: number[]) => {
     return executeAction(async () => {
       const result = await store.saveNewOrder(collectionSlug, newOrder)
@@ -83,6 +92,20 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
       if (!result.success) handleError(result.message)
       return result
     }, 'Failed to update cover image.')
+  }
+
+  const addImagesToAnotherCollection = async (imageIds: number[], targetSlug: string) => {
+    return executeAction(async () => {
+      await $fetch(`/api/collections/${targetSlug}`, {
+        method: 'PUT',
+        body: {
+          images: {
+            add: imageIds,
+          },
+        },
+      })
+      return { success: true, message: `Added ${imageIds.length} images to collection.` }
+    }, 'Failed to add images to collection.')
   }
 
   // Collection management actions
@@ -139,6 +162,8 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     // Individual actions
     addImages,
     removeImages,
+    removeSingleImage,
+    addImagesToAnotherCollection,
     saveOrder,
     setAsCover,
     updateCollection,

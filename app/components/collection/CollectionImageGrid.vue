@@ -1,74 +1,82 @@
 <template>
   <section>
-    <!-- Image selection controls for owner -->
+    <!-- Image count header + selection controls -->
     <div class="flex items-center mb-4">
       <h3 class="text-3 font-600 text-gray-800 dark:text-gray-200">
         {{ images.length }} Images
       </h3>
-      
-      <div v-if="canEdit" class="ml-12 flex gap-2" 
-        :class="{
-          'opacity-100': hasSelectedImages,
-          'opacity-0': !hasSelectedImages,
-        }"
+
+      <div
+        v-if="canEdit && isSelectionMode"
+        class="ml-12 flex gap-2 transition-opacity duration-200"
+        :class="hasSelectedImages ? 'opacity-100' : 'opacity-0'"
       >
         <NButton size="12px" btn="soft-gray" @click="$emit('clearSelection')">
           <i class="i-ph-x"></i>
           <span>Cancel</span>
         </NButton>
-        <NButton size="12px" btn="soft-error" @click="$emit('removeImages')">
+        <NButton
+          v-if="hasSelectedImages"
+          size="12px"
+          btn="soft-error"
+          @click="$emit('removeImages')"
+        >
           Remove {{ selectionCount }} Images
         </NButton>
       </div>
     </div>
 
     <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8">
-      <div  
-        v-for="(image, index) in images" 
-        :key="image.id" 
-        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60 
-        dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70 
+      <div
+        v-for="(image, index) in images"
+        :key="image.id"
+        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60
+        dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70
         transition-all duration-200 hover:shadow-md active:shadow-sm cursor-pointer animate-fade-in-up"
         :style="{ animationDelay: `${index * 50}ms` }"
-        @click="$emit('imageClick', image)"
+        @click="handleImageClick(image, index, $event)"
+        @pointerdown="handlePointerDown(image, index, $event)"
+        @pointermove="handlePointerMove($event)"
+        @pointerup="handlePointerUp"
+        @pointercancel="handlePointerUp"
       >
-        <!-- Selection checkbox for owner -->
-        <div 
-          v-if="canEdit" 
-          class="opacity-0 group-hover:opacity-100 absolute top-2 right-2 z-2" 
+        <!-- Selection mode: checkbox -->
+        <div
+          v-if="canEdit && isSelectionMode"
+          class="opacity-0 group-hover:opacity-100 absolute top-2 right-2 z-2 transition-opacity duration-150"
+          :class="{ 'opacity-100': hasSelectedImages }"
           @click.stop
-          :class="{ 
-            'opacity-100': hasSelectedImages
-          }"
         >
           <NCheckbox v-model:model-value="selectedImagesMap[image.id]" />
         </div>
-        
-        <!-- Set as cover button for owner -->
-        <div 
-          v-if="canEdit && !selectedImagesMap[image.id]" 
-          class="opacity-0 group-hover:opacity-100 absolute top-2 left-2 z-10" 
-          @click.stop
-        >
-          <NButton 
-            v-if="coverImageId !== image.id"
-            size="xs" 
-            icon 
-            btn="soft-gray" 
-            class="opacity-70 hover:opacity-100"
-            @click="$emit('setCover', image.id)"
+
+        <!-- Normal mode: dropdown menu (desktop only) -->
+        <ClientOnly>
+          <div
+            v-if="canEdit && !isSelectionMode"
+            class="hidden sm:block absolute top-2 right-2 z-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            @click.stop
           >
-            <span class="i-ph-star"></span>
-          </NButton>
-          <span v-else class="i-ph-star-fill text-amber-400"></span>
-        </div>
-        
-        <NuxtImg 
-          provider="hubblob" 
+            <NDropdownMenu
+              :items="imageMenuItems(image)"
+              size="xs"
+              :_dropdown-menu-content="{ class: 'w-48 rounded-2xl p-2 shadow-xl', align: 'end', side: 'bottom' }"
+              :_dropdown-menu-trigger="{
+                icon: true,
+                square: true,
+                label: 'i-ph-dots-three-bold',
+                class: 'dp-menu-trigger',
+              }"
+            />
+          </div>
+        </ClientOnly>
+
+        <NuxtImg
+          provider="hubblob"
           :width="100"
-          :src="`/${image.pathname}`" 
-          :alt="image.name || 'Image'" 
-          class="w-full aspect-[4/4] object-cover" 
+          :src="`/${image.pathname}`"
+          :alt="image.name || 'Image'"
+          class="w-full aspect-[4/4] object-cover"
           :style="{ viewTransitionName: `image-${image.id}` }"
           loading="lazy"
           decoding="async"
@@ -86,21 +94,77 @@ import type { Image } from '~~/shared/types/image'
 
 interface Props {
   canEdit: boolean
-  coverImageId?: number
   hasSelectedImages: boolean
   images: Image[]
+  isSelectionMode: boolean
   selectedImagesMap: Record<number, boolean>
   selectionCount: number
+  imageMenuItems: (image: Image) => Array<Record<string, any>>
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   clearSelection: []
   imageClick: [image: Image]
   removeImages: []
-  setCover: [imageId: number]
+  enterSelectionMode: [imageId: number]
+  toggleImage: [imageId: number]
 }>()
+
+// --- Long press detection ---
+const longPressDelay = 600
+const longPressThreshold = 10
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let longPressStartPos = { x: 0, y: 0 }
+let longPressTriggered = false
+let longPressImageId: number | null = null
+
+const handleImageClick = (image: Image, _index: number, _event: MouseEvent) => {
+  if (longPressTriggered) {
+    longPressTriggered = false
+    return
+  }
+  if (props.isSelectionMode && props.canEdit) {
+    emit('toggleImage', image.id)
+    return
+  }
+  emit('imageClick', image)
+}
+
+const handlePointerDown = (image: Image, _index: number, event: PointerEvent) => {
+  if (props.isSelectionMode) return
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+  }
+  longPressTriggered = false
+  longPressStartPos = { x: event.clientX, y: event.clientY }
+  longPressImageId = image.id
+
+  longPressTimer = setTimeout(() => {
+    longPressTriggered = true
+    if (longPressImageId != null) {
+      emit('enterSelectionMode', longPressImageId)
+    }
+  }, longPressDelay)
+}
+
+const handlePointerMove = (event: PointerEvent) => {
+  if (!longPressTimer) return
+  const dx = event.clientX - longPressStartPos.x
+  const dy = event.clientY - longPressStartPos.y
+  if (Math.abs(dx) > longPressThreshold || Math.abs(dy) > longPressThreshold) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+const handlePointerUp = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
 </script>
 
 <style scoped>
@@ -117,7 +181,6 @@ defineEmits<{
   transform: none;
 }
 
-/* Enhanced hover animation */
 .group:hover {
   transform: translateY(-2px);
 }

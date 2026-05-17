@@ -16,6 +16,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   const isAddingImages = ref(false)
   const isAddImagesDialogOpen = ref(false)
   const isReordering = ref(false)
+  const isSelectionMode = ref(false)
 
   // Dialog states
   const isEditDialogOpen = ref(false)
@@ -131,6 +132,24 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   function cancelReordering() {
     isReordering.value = false
     clearSelection()
+  }
+
+  function enterSelectionMode() {
+    isSelectionMode.value = true
+    clearSelection()
+  }
+
+  function exitSelectionMode() {
+    isSelectionMode.value = false
+    clearSelection()
+  }
+
+  function toggleSelectionMode() {
+    if (isSelectionMode.value) {
+      exitSelectionMode()
+    } else {
+      enterSelectionMode()
+    }
   }
 
   function normalizeImage(raw: Record<string, any>): Image {
@@ -447,6 +466,13 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   })
 
+  // Auto-exit selection mode when no images are selected
+  watch(hasSelectedImages, (hasSelected) => {
+    if (!hasSelected) {
+      isSelectionMode.value = false
+    }
+  })
+
   return {
     // State
     collection,
@@ -458,6 +484,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     isAddingImages,
     isAddImagesDialogOpen,
     isReordering,
+    isSelectionMode,
     isEditDialogOpen,
     editCollection,
 
@@ -477,6 +504,9 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     closeAddImagesDialog,
     startReordering,
     cancelReordering,
+    enterSelectionMode,
+    exitSelectionMode,
+    toggleSelectionMode,
     addImagesToCollection,
     removeImagesFromCollection,
     saveNewOrder,
