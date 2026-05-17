@@ -1,9 +1,9 @@
 <template>
   <div :class="['container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
-    @dragenter.prevent="imageUpload.handleDragEnter"
-    @dragover.prevent="imageUpload.handleDragOver"
-    @dragleave.prevent="imageUpload.handleDragLeave"
-    @drop.prevent="handleDrop"
+    @dragenter.prevent="!store.isReordering && imageUpload.handleDragEnter($event)"
+    @dragover.prevent="!store.isReordering && imageUpload.handleDragOver($event)"
+    @dragleave.prevent="!store.isReordering && imageUpload.handleDragLeave($event)"
+    @drop.prevent="!store.isReordering && handleDrop($event)"
   >
     <!-- Header (non-sticky). Only the internal action bar stays sticky. -->
     <!-- Header skeleton while loading -->
