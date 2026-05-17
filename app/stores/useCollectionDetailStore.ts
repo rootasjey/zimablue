@@ -14,6 +14,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
   // View modes
   const isAddingImages = ref(false)
+  const isAddImagesDialogOpen = ref(false)
   const isReordering = ref(false)
 
   // Dialog states
@@ -101,6 +102,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     try {
       await fetchAvailableImages()
       isAddingImages.value = true
+      isAddImagesDialogOpen.value = true
       clearSelection()
     } catch (err) {
       throw err
@@ -108,6 +110,14 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   }
 
   function cancelAddingImages() {
+    isAddingImages.value = false
+    isAddImagesDialogOpen.value = false
+    availableImages.value = []
+    clearSelection()
+  }
+
+  function closeAddImagesDialog() {
+    isAddImagesDialogOpen.value = false
     isAddingImages.value = false
     availableImages.value = []
     clearSelection()
@@ -143,6 +153,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       // Reset state and refresh data
       clearSelection()
       isAddingImages.value = false
+      isAddImagesDialogOpen.value = false
       await fetchCollection(slug)
 
       return { 
@@ -331,11 +342,21 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     selectedImagesMap.value = {}
     availableImages.value = []
     isAddingImages.value = false
+    isAddImagesDialogOpen.value = false
     isReordering.value = false
     isEditDialogOpen.value = false
     error.value = null
     resetEditForm()
   }
+
+  // Clear selection when dialog closes without confirming
+  watch(isAddImagesDialogOpen, (isOpen) => {
+    if (!isOpen) {
+      isAddingImages.value = false
+      availableImages.value = []
+      clearSelection()
+    }
+  })
 
   return {
     // State
@@ -346,6 +367,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     selectedImagesMap,
     availableImages,
     isAddingImages,
+    isAddImagesDialogOpen,
     isReordering,
     isEditDialogOpen,
     editCollection,
@@ -363,6 +385,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     toggleSelectAll,
     startAddingImages,
     cancelAddingImages,
+    closeAddImagesDialog,
     startReordering,
     cancelReordering,
     addImagesToCollection,

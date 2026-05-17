@@ -166,6 +166,7 @@ interface Emits {
   edit: []
   addImages: []
   reorder: []
+  deleteCollection: []
 }
 
 const props = defineProps<Props>()
@@ -257,6 +258,16 @@ const menuItems = computed(() => {
       onClick: () => emit('reorder'),
     })
   }
+
+  items.push({
+    type: 'separator',
+  })
+
+  items.push({
+    label: 'Delete collection',
+    class: 'text-red-600 dark:text-red-400',
+    onClick: () => emit('deleteCollection'),
+  })
 
   return items
 })

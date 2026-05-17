@@ -11,7 +11,7 @@
       <div class="h-6 w-52 rounded-md bg-gray-200/60 dark:bg-gray-800/60 animate-pulse"></div>
       <div class="h-4 w-80 rounded-md bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
     </div>
-    
+
     <ImageUploadProgress
       :session="imageUpload.currentUploadSession.value"
       @close="imageUpload.clearUploadSession"
@@ -26,7 +26,7 @@
       @upload="imageUpload.triggerFileUpload"
     />
 
-    <CollectionHeader 
+    <CollectionHeader
       v-if="!store.isLoading"
       :collection="store.collection"
       :image-count="store.images.length"
@@ -35,6 +35,7 @@
       @edit="store.openEditDialog"
       @add-images="store.startAddingImages"
       @reorder="store.startReordering"
+      @delete-collection="showCollectionDeleteDialog = true"
     />
 
     <!-- Content -->
@@ -60,22 +61,6 @@
         </div>
       </section>
 
-      <ImageSelectionMode
-        v-if="store.isAddingImages"
-        :images="store.availableImages"
-        :selected-images-map="store.selectedImagesMap"
-        :is-all-selected="store.isAllSelected"
-        :has-selected-images="store.hasSelectedImages"
-        :selection-count="store.selectionCount"
-        class="animate-fade-in-up animation-delay-200"
-        @toggle-select-all="store.toggleSelectAll"
-        @cancel="store.cancelAddingImages"
-        @confirm="actions.addImages"
-        @toggle-image="store.toggleImageSelection"
-        @toggle-image-range="store.toggleImageRange"
-        @empty-action="navigateToUpload"
-      />
-
       <!-- Reordering Mode -->
       <CollectionImageReorderMode
         v-else-if="store.isReordering"
@@ -90,7 +75,7 @@
         :images="store.images"
         :can-edit="isOwner"
         :selected-images-map="store.selectedImagesMap"
-        :has-selected-images="store.hasSelectedImages"
+        :has-selected-images="store.hasSelectedImages && !store.isAddImagesDialogOpen"
         :cover-image-id="store.collection?.cover_image_id"
         :selection-count="store.selectionCount"
         class="animate-fade-in-up animation-delay-200"
@@ -111,7 +96,7 @@
 
     <!-- Sticky Selection Toolbar with entrance animation -->
     <Transition name="toolbar-fade-slide">
-      <div v-if="store.hasSelectedImages" class="fixed left-0 right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.0rem+env(safe-area-inset-bottom))] z-10 pointer-events-none">
+      <div v-if="store.hasSelectedImages && !store.isAddImagesDialogOpen" class="fixed left-0 right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.0rem+env(safe-area-inset-bottom))] z-10 pointer-events-none">
         <div class="pointer-events-auto mx-auto max-w-xl px-4">
           <div class="rounded-xl border border-gray-200/60 dark:border-gray-800/60 backdrop-blur bg-white/90 dark:bg-gray-900/90 px-3 py-2 shadow-lg">
             <div class="flex items-center justify-between gap-3">
@@ -145,6 +130,21 @@
       @update="actions.updateCollection"
       @delete="actions.deleteCollection"
       @cancel="store.closeEditDialog"
+    />
+
+    <ImageAddImagesToCollectionDialog
+      v-model:is-open="store.isAddImagesDialogOpen"
+      :images="store.availableImages"
+      :selected-images-map="store.selectedImagesMap"
+      :is-all-selected="store.isAllSelected"
+      :has-selected-images="store.hasSelectedImages"
+      :selection-count="store.selectionCount"
+      :collection-name="store.collection?.name || 'Collection'"
+      @toggle-select-all="store.toggleSelectAll"
+      @clear-selection="store.clearSelection"
+      @confirm="actions.addImages"
+      @toggle-image="store.toggleImageSelection"
+      @toggle-image-range="store.toggleImageRange"
     />
 
     <ImageModal
@@ -185,7 +185,7 @@
       @update-field="imageActions.updateEditFormField"
       @is-open="imageActions.showEditModal.value = $event"
     />
-    
+
     <AddToCollectionModal
       v-model:is-open="addToCollection.isOpen.value"
       :selected-image="addToCollection.selectedImage.value"
@@ -197,7 +197,7 @@
       @add-to-collection="addToCollection.addImageToCollection"
       @select-collection="addToCollection.selectCollection"
     />
-    
+
     <ImageEditDrawer
       v-model:is-open="imageActions.showEditDrawer.value"
       :edit-form="imageActions.editForm.value"
@@ -220,7 +220,7 @@
       @add-to-collection="addToCollection.addImageToCollection"
       @select-collection="addToCollection.selectCollection"
     />
-    
+
     <ImageMobileDrawer
       :is-image-drawer-open="isImageDrawerOpen"
       :selected-modal-image="selectedImage"
@@ -251,6 +251,12 @@
       :image-name="imageToDelete?.name"
       :is-deleting="isDeletingImage"
       @confirm="confirmImageDelete"
+    />
+
+    <CollectionDeleteDialog
+      v-model:open="showCollectionDeleteDialog"
+      :collection="store.collection"
+      @delete="actions.deleteCollection"
     />
   </div>
 </template>
@@ -333,6 +339,7 @@ const isDeletingImage = ref(false)
 const imageToDelete = ref<Image | null>(null)
 const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
+const showCollectionDeleteDialog = ref(false)
 
 // --- Query param sync ---
 const IMAGE_QUERY_KEY = 'image'
@@ -405,6 +412,7 @@ onMounted(async () => {
     })
   }
   window.addEventListener('keydown', escapeKeyHandler, true)
+  window.addEventListener('keydown', collectionKeyboardHandler, true)
 })
 
 // Auto-open image dialog from URL query param on page load
@@ -438,7 +446,9 @@ const escapeKeyHandler = (e: KeyboardEvent) => {
       addToCollection.isOpen.value ||
       imageActions.showEditDrawer.value ||
       addToCollection.isDrawerOpen.value ||
-      store.isEditDialogOpen
+      store.isEditDialogOpen ||
+      store.isAddImagesDialogOpen ||
+      showCollectionDeleteDialog.value
 
     if (!hasOpenModal) {
       router.back()
@@ -446,8 +456,49 @@ const escapeKeyHandler = (e: KeyboardEvent) => {
   }
 }
 
+const collectionKeyboardHandler = (e: KeyboardEvent) => {
+  if (!isOwner.value) return
+
+  const target = e.target as HTMLElement
+  const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+  if (isInput) return
+
+  const hasOpenModal =
+    isImageModalOpen.value ||
+    isImageDrawerOpen.value ||
+    showImageDeleteDialog.value ||
+    imageActions.showEditModal.value ||
+    addToCollection.isOpen.value ||
+    imageActions.showEditDrawer.value ||
+    addToCollection.isDrawerOpen.value ||
+    store.isEditDialogOpen ||
+    store.isAddImagesDialogOpen ||
+    showCollectionDeleteDialog.value
+
+  if (hasOpenModal) return
+
+  if (e.key === 'a' || e.key === 'A') {
+    if (!e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      store.startAddingImages()
+    }
+  }
+
+  if (e.key === 'e' || e.key === 'E') {
+    e.preventDefault()
+    store.openEditDialog()
+  }
+
+  if (e.key === 'd' || e.key === 'D') {
+    e.preventDefault()
+    showCollectionDeleteDialog.value = true
+  }
+}
+
 onUnmounted(() => {
   window.removeEventListener('keydown', escapeKeyHandler, true)
+  window.removeEventListener('keydown', collectionKeyboardHandler, true)
   pageHeader.resetPageHeader()
   store.resetStore()
 })

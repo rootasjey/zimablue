@@ -1,7 +1,7 @@
 <template>
-  <div 
-    class="relative overflow-hidden rounded-sm shadow-md hover:shadow-lg 
-           hover:scale-102 active:scale-100 cursor-pointer 
+  <div
+    class="relative overflow-hidden rounded-sm shadow-md hover:shadow-lg
+           hover:scale-102 active:scale-100 cursor-pointer
            transition-all duration-150"
     :class="cardClasses"
     :tabindex="focused ? 0 : -1"
@@ -9,23 +9,16 @@
     @keydown="handleCardKeydown"
     @focus="$emit('focus')"
   >
-
-    <!-- Focus indicator -->
-    <div 
-      v-if="focused"
-      class="absolute inset-0 ring-2 ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 rounded-lg pointer-events-none z-20"
-    />
-
     <!-- Selection checkbox -->
     <div class="absolute top-2 right-2 z-10" @click.stop="handleToggle">
-      <NCheckbox 
-        checkbox="success" 
+      <NCheckbox
+        checkbox="indigo"
         :model-value="selected"
       />
     </div>
-    
+
     <!-- Range selection indicator -->
-    <div 
+    <div
       v-if="inRange && !selected"
       class="absolute top-2 left-2 z-10"
     >
@@ -33,26 +26,26 @@
         <span class="i-ph-selection-plus text-xs"></span>
       </div>
     </div>
-    
+
     <!-- Image -->
-    <NuxtImg 
+    <NuxtImg
       provider="hubblob"
-      :src="`/${image.pathname}`" 
+      :src="`/${image.pathname}`"
       :width="imageWidth"
-      :alt="image.name || 'Image'" 
-      class="w-full h-48 object-cover" 
+      :alt="image.name || 'Image'"
+      :class="['w-full object-cover', aspectRatio]"
       loading="lazy"
     />
-    
+
     <!-- Image info overlay -->
     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-3">
       <h3 class="text-gray-200 text-sm font-medium truncate">
         {{ image.name }}
       </h3>
     </div>
-    
+
     <!-- Selection indicator -->
-    <div 
+    <div
       v-if="selected"
       class="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center"
     >
@@ -60,9 +53,9 @@
         <span class="i-ph-check text-gray-200 text-lg"></span>
       </div>
     </div>
-    
+
     <!-- Range preview overlay -->
-    <div 
+    <div
       v-if="inRange && !selected"
       class="absolute inset-0 bg-blue-300 bg-opacity-30 border-2 border-blue-400 border-dashed"
     >
@@ -85,6 +78,7 @@ interface Props {
   inRange?: boolean
   imageWidth?: number
   focused?: boolean
+  aspectRatio?: string
 }
 
 interface Emits {
@@ -96,7 +90,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   imageWidth: 100,
   inRange: false,
-  focused: false
+  focused: false,
+  aspectRatio: 'h-48'
 })
 
 const emit = defineEmits<Emits>()
@@ -104,6 +99,7 @@ const emit = defineEmits<Emits>()
 // Computed classes for different states
 const cardClasses = computed(() => ({
   'ring-2 ring-blue-500': props.selected,
+  'border border-red shadow-xl scale-102': props.focused,
   'ring-2 ring-blue-300 ring-dashed': props.inRange && !props.selected,
   'ring-2 ring-blue-400': props.focused && !props.selected && !props.inRange,
   'ring-1 ring-gray-200 dark:ring-gray-700': !props.selected && !props.inRange && !props.focused
