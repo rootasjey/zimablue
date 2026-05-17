@@ -34,6 +34,7 @@
       class="animate-fade-in-down"
       @edit="store.openEditDialog"
       @add-images="store.startAddingImages"
+      @upload-to-collection="triggerUploadToCollection"
       @reorder="store.startReordering"
       @delete-collection="showCollectionDeleteDialog = true"
     />
@@ -258,6 +259,15 @@
       :collection="store.collection"
       @delete="actions.deleteCollection"
     />
+
+    <input
+      ref="collectionFileInput"
+      type="file"
+      class="hidden"
+      accept="image/*"
+      multiple
+      @change="handleCollectionFileSelect"
+    />
   </div>
 </template>
 
@@ -369,6 +379,7 @@ const imageActions = useImageActions()
 const addToCollection = useAddToCollectionModal()
 const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
+const collectionFileInput = ref<HTMLInputElement>()
 const pageHeader = usePageHeader()
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
 const gridStore = useGridStore()
@@ -503,6 +514,11 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
       store.startReordering()
     }
   }
+
+  if (e.key === 'u' || e.key === 'U') {
+    e.preventDefault()
+    triggerUploadToCollection()
+  }
 }
 
 onUnmounted(() => {
@@ -511,11 +527,6 @@ onUnmounted(() => {
   pageHeader.resetPageHeader()
   store.resetStore()
 })
-
-const navigateToUpload = () => {
-  // Navigate to upload page or open upload dialog
-  // router.push('/upload')
-}
 
 const navigateToPrevious = () => {
   if (!canNavigatePrevious.value) return
@@ -656,6 +667,62 @@ const confirmImageDelete = async () => {
   } finally {
     isDeletingImage.value = false
   }
+}
+
+const triggerUploadToCollection = () => {
+  if (!imageUpload.checkAuth()) return
+  collectionFileInput.value?.click()
+}
+
+const handleCollectionFileSelect = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+
+  const files = Array.from(input.files).filter(file =>
+    file.type.startsWith('image/') && imageUpload.validateFile(file)
+  )
+
+  if (files.length === 0) {
+    toast({
+      title: 'No Valid Files',
+      description: 'No valid image files were found.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+    return
+  }
+
+  try {
+    const results = await imageUpload.uploadFiles(files)
+    if (!results) return
+
+    const successfulIds = results.successful
+      .map(r => r.response?.id)
+      .filter((id): id is number => id != null)
+
+    if (successfulIds.length > 0) {
+      await $fetch(`/api/collections/${slug}`, {
+        method: 'PUT',
+        body: {
+          images: {
+            add: successfulIds
+          }
+        }
+      })
+
+      await store.fetchCollection(slug)
+    }
+  } catch (error) {
+    console.error('Upload to collection error:', error)
+    toast({
+      title: 'Upload Failed',
+      description: 'Failed to upload and add images to collection.',
+      toast: 'soft-warning',
+      showProgress: true,
+    })
+  }
+
+  input.value = ''
 }
 
 const handleDrop = async (e: DragEvent) => {

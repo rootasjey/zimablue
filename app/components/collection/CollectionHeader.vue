@@ -165,6 +165,7 @@ interface Props {
 interface Emits {
   edit: []
   addImages: []
+  uploadToCollection: []
   reorder: []
   deleteCollection: []
 }
@@ -245,6 +246,10 @@ const menuItems = computed(() => {
     {
       label: 'Add images',
       onClick: () => emit('addImages'),
+    },
+    {
+      label: 'Upload to collection',
+      onClick: () => emit('uploadToCollection'),
     },
     {
       label: 'Edit collection',
