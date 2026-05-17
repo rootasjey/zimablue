@@ -696,21 +696,21 @@ const handleCollectionFileSelect = async (event: Event) => {
     const results = await imageUpload.uploadFiles(files)
     if (!results) return
 
-    const successfulIds = results.successful
-      .map(r => r.response?.id)
-      .filter((id): id is number => id != null)
+    const successfulUploads = results.successful
+      .filter((r) => r.response?.id != null)
+      .map((r) => r.response)
 
-    if (successfulIds.length > 0) {
+    if (successfulUploads.length > 0) {
       await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
-            add: successfulIds
+            add: successfulUploads.map((img) => img.id)
           }
         }
       })
 
-      await store.fetchCollection(slug)
+      store.addImageObjects(successfulUploads)
     }
   } catch (error) {
     console.error('Upload to collection error:', error)
@@ -752,21 +752,21 @@ const handleDrop = async (e: DragEvent) => {
     const results = await imageUpload.uploadFiles(files)
     if (!results) return
 
-    const successfulIds = results.successful
-      .map(r => r.response?.id)
-      .filter((id): id is number => id != null)
+    const successfulUploads = results.successful
+      .filter((r) => r.response?.id != null)
+      .map((r) => r.response)
 
-    if (successfulIds.length > 0) {
+    if (successfulUploads.length > 0) {
       await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
-            add: successfulIds
+            add: successfulUploads.map((img) => img.id)
           }
         }
       })
 
-      await store.fetchCollection(slug)
+      store.addImageObjects(successfulUploads)
     }
   } catch (error) {
     console.error('Collection drop upload error:', error)

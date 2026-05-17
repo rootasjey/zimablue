@@ -133,6 +133,41 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     clearSelection()
   }
 
+  function normalizeImage(raw: Record<string, any>): Image {
+    return {
+      id: raw.id ?? 0,
+      name: raw.name ?? '',
+      description: raw.description ?? '',
+      pathname: raw.pathname ?? '',
+      slug: raw.slug ?? '',
+      w: raw.w ?? 0,
+      h: raw.h ?? 0,
+      x: raw.x ?? 0,
+      y: raw.y ?? 0,
+      variants: raw.variants ?? '[]',
+      stats_views: raw.stats_views ?? raw.statsViews ?? 0,
+      stats_downloads: raw.stats_downloads ?? raw.statsDownloads ?? 0,
+      stats_likes: raw.stats_likes ?? raw.statsLikes ?? 0,
+      created_at: raw.created_at ?? raw.createdAt ?? new Date().toISOString(),
+      updated_at: raw.updated_at ?? raw.updatedAt ?? new Date().toISOString(),
+      user_id: raw.user_id ?? raw.userId ?? 0,
+      sum: raw.sum ?? 0,
+      sum_abs: raw.sum_abs ?? raw.sumAbs ?? 0,
+      i: raw.i ?? raw.id ?? 0,
+      tags: raw.tags ?? [],
+      tag_ids: raw.tag_ids ?? raw.tagIds ?? [],
+      tag_names: raw.tag_names ?? raw.tagNames ?? [],
+    }
+  }
+
+  function addImageObjects(imageObjects: Record<string, any>[]) {
+    const normalized = imageObjects.map(normalizeImage)
+    images.value.push(...normalized)
+    if (collection.value) {
+      collection.value.image_count += imageObjects.length
+    }
+  }
+
   // Collection operations
   async function addImagesToCollection(slug: string) {
     try {
@@ -150,11 +185,14 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         }
       })
 
-      // Reset state and refresh data
+      // Optimistic local state update — push selected images without re-fetching
+      const selectedIds = new Set(selection.map(([id]) => parseInt(id)))
+      const selectedImageObjects = availableImages.value.filter((img) => selectedIds.has(img.id))
+      addImageObjects(selectedImageObjects)
+
       clearSelection()
       isAddingImages.value = false
       isAddImagesDialogOpen.value = false
-      await fetchCollection(slug)
 
       return { 
         success: true, 
@@ -173,7 +211,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         throw new Error('Please select at least one image to remove.')
       }
 
-      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
+      const { collection: apiCollection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
         body: {
           images: {
@@ -182,13 +220,21 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         }
       })
 
-      // Reset state and refresh data
+      // Update local state without re-fetching
+      const removedIds = new Set(selection.map(([id]) => Number(id)))
+      images.value = images.value.filter((img) => !removedIds.has(img.id))
+      if (collection.value) {
+        collection.value.image_count = images.value.length
+      }
+      if (collection.value?.cover_image_id && removedIds.has(collection.value.cover_image_id)) {
+        collection.value.cover_image_id = 0
+      }
+
       clearSelection()
-      await fetchCollection(slug)
 
       return { 
         success: true, 
-        message: `Removed ${selection.length} images from collection ${collection?.name ?? slug}.` 
+        message: `Removed ${selection.length} images from collection ${apiCollection?.name ?? slug}.` 
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove images from collection.'
@@ -197,6 +243,13 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   }
 
   async function saveNewOrder(slug: string, newOrder: number[]) {
+    const previousOrder = images.value.map((img) => img.id)
+
+    // Optimistic reorder — apply locally immediately
+    const orderMap = new Map(newOrder.map((id, idx) => [id, idx]))
+    images.value.sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity))
+    isReordering.value = false
+
     try {
       const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
         method: 'PUT',
@@ -207,20 +260,28 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         }
       })
 
-      isReordering.value = false
-      await fetchCollection(slug)
-
       return { 
         success: true, 
         message: `Collection ${collection?.name ?? slug} order updated successfully.` ,
       }
     } catch (err) {
+      // Rollback to previous order
+      const rollbackMap = new Map(previousOrder.map((id, idx) => [id, idx]))
+      images.value.sort((a, b) => (rollbackMap.get(a.id) ?? Infinity) - (rollbackMap.get(b.id) ?? Infinity))
+
       const message = err instanceof Error ? err.message : 'Failed to update image order.'
       return { success: false, message }
     }
   }
 
   async function setAsCover(slug: string, imageId: number) {
+    const previousCoverId = collection.value?.cover_image_id
+
+    // Optimistic update — set locally immediately
+    if (collection.value) {
+      collection.value.cover_image_id = imageId
+    }
+
     try {
       await $fetch(`/api/collections/${slug}`, {
         method: 'PUT',
@@ -229,13 +290,16 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         }
       })
 
-      await fetchCollection(slug)
-
       return { 
         success: true, 
         message: 'Cover image updated successfully.' 
       }
     } catch (err) {
+      // Rollback on failure
+      if (collection.value) {
+        collection.value.cover_image_id = previousCoverId as number
+      }
+
       const message = err instanceof Error ? err.message : 'Failed to update cover image.'
       return { success: false, message }
     }
@@ -273,25 +337,50 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
         throw new Error(`Collection name is required. Got: ${update.name}`)
       }
 
-      const { collection } = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
-        method: 'PUT',
-        body: {
-          name: update.name,
-          description: update.description,
-          is_public: update.isPublic,
-          slug: update.slug,
+      // Snapshot for rollback
+      const previousMeta = collection.value ? {
+        name: collection.value.name,
+        description: collection.value.description,
+        is_public: collection.value.is_public,
+      } : null
+
+      // Optimistic update — apply metadata locally immediately
+      if (collection.value) {
+        collection.value.name = update.name
+        collection.value.description = update.description
+        collection.value.is_public = update.isPublic
+      }
+
+      let result: { success: boolean; message?: string; collection?: Collection }
+      try {
+        result = await $fetch<{ success: boolean; message?: string; collection?: Collection }>(`/api/collections/${slug}`, {
+          method: 'PUT',
+          body: {
+            name: update.name,
+            description: update.description,
+            is_public: update.isPublic,
+            slug: update.slug,
+          }
+        })
+      } catch (fetchErr) {
+        // Rollback optimistic update on API failure
+        if (previousMeta && collection.value) {
+          collection.value.name = previousMeta.name
+          collection.value.description = previousMeta.description
+          collection.value.is_public = previousMeta.is_public
         }
-      })
+        throw fetchErr
+      }
 
       closeEditDialog()
-      const newSlug = collection?.slug ?? slug
-      await fetchCollection(newSlug)
+      const newSlug = result.collection?.slug ?? slug
+      const slugChanged = newSlug !== slug
 
       return { 
         success: true, 
-        message: `Collection ${collection?.name ?? slug} updated successfully.`,
-        slugChanged: newSlug !== slug,
-        slug: newSlug !== slug ? newSlug : "",
+        message: `Collection ${result.collection?.name ?? slug} updated successfully.`,
+        slugChanged,
+        slug: slugChanged ? newSlug : "",
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update collection. Please try again.'
@@ -399,6 +488,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     updateCollection,
     deleteCollection,
     updateImageInCollection,
+    addImageObjects,
     resetStore,
   }
 })
