@@ -494,6 +494,15 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
     e.preventDefault()
     showCollectionDeleteDialog.value = true
   }
+
+  if (e.key === 'r' || e.key === 'R') {
+    e.preventDefault()
+    if (store.isReordering) {
+      store.cancelReordering()
+    } else {
+      store.startReordering()
+    }
+  }
 }
 
 onUnmounted(() => {
