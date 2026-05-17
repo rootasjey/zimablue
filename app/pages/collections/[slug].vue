@@ -659,10 +659,10 @@ const navigateToLast = () => {
 }
 
 // Add this new method for the ImageModal component
-const openFullPage = () => {
-  if (!selectedImage.value) return
+const openFullPage = (img?: Image) => {
+  const item = img || selectedImage.value
+  if (!item) return
 
-  const item = selectedImage.value
   syncImageQueryParam() // clean up query param before navigating away
   isImageModalOpen.value = false
   isImageDrawerOpen.value = false
