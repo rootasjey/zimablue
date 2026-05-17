@@ -73,6 +73,7 @@ export const useImageUpload = () => {
   // Drag and drop handlers
   const handleDragEnter = (e: DragEvent) => {
     e.preventDefault()
+    if (!e.dataTransfer?.types.includes('Files')) return
     dragCounter++
     isDragging.value = true
   }
