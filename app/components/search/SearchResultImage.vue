@@ -62,7 +62,7 @@
 
       <!-- Image info -->
       <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 mb-1">
+        <div class="flex items-center gap-2 max-w-[calc(100%-2rem)]">
           <h3 class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
             {{ image.name || 'Untitled' }}
           </h3>
@@ -73,7 +73,7 @@
 
         <p
           v-if="image.description"
-          class="text-xs text-gray-600 dark:text-gray-400 truncate"
+          class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[calc(100%-2rem)]"
         >
           {{ image.description }}
         </p>

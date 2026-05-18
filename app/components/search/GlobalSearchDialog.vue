@@ -2,12 +2,10 @@
   <NDialog
     :open="searchStore.isDialogOpen"
     @update:open="handleDialogToggle"
-    :ui="{ 
-      width: 'sm:max-w-2xl',
-      height: 'max-h-[80vh]'
-    }"
-    :_dialog-close="{
-      btn: 'ghost-gray',
+    :_dialog="{ class: 'max-w-2xl' }"
+    :show-close="false"
+    :una="{
+      dialogContent: 'max-w-2xl',
     }"
   >
     <div class="flex flex-col max-h-[80vh]">
@@ -33,21 +31,23 @@
               <span class="i-ph-magnifying-glass w-4 h-4 text-gray-400"></span>
             </template>
             <template #trailing>
-              <div class="flex items-center gap-2">
-                <kbd 
+              <div class="flex items-center gap-2 pointer-events-auto cursor-pointer">
+                <kbd
                   v-if="!searchQuery"
+                  @click="() => handleDialogToggle(false)"
                   class="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs text-gray-500 dark:text-gray-400"
                 >
                   ESC
                 </kbd>
+
                 <NButton
                   v-if="searchQuery"
                   btn="ghost-gray"
                   size="xs"
+                  icon
+                  label="i-ph-x-bold"
                   @click="clearSearch"
-                >
-                  <span class="i-ph-x w-3 h-3"></span>
-                </NButton>
+                />
               </div>
             </template>
           </NInput>
@@ -69,7 +69,7 @@
 
       <!-- Search Results -->
       <div
-        class="flex-1 overflow-y-auto"
+        class="flex-1 overflow-y-auto overflow-x-hidden"
         role="listbox"
         aria-label="Search results"
         :aria-activedescendant="searchStore.selectedIndex >= 0 ? `search-result-${searchStore.selectedIndex}` : undefined"
