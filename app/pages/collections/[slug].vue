@@ -81,12 +81,14 @@
         :selection-count="store.selectionCount"
         :is-selection-mode="store.isSelectionMode"
         :image-menu-items="collectionImageMenuItems"
+        :highlighted-image-index="highlightedImageIndex"
         class="animate-fade-in-up animation-delay-200"
         @image-click="openImageModal"
         @remove-images="actions.removeImages"
         @clear-selection="store.clearSelection"
         @enter-selection-mode="handleEnterSelectionMode"
         @toggle-image="store.toggleImageSelection"
+        @set-highlight="setHighlightedImage"
       />
 
       <EmptyState
@@ -363,6 +365,36 @@ const selectedImage = ref<Image | null>(null)
 const currentImageIndex = ref(0)
 const showCollectionDeleteDialog = ref(false)
 const showBulkAddToCollectionDialog = ref(false)
+const highlightedImageIndex = ref(-1)
+
+const getGridColumns = (): number => {
+  if (typeof window === 'undefined') return 5
+  return window.innerWidth >= 768 ? 5 : 3
+}
+
+const setHighlightedImage = (index: number) => {
+  highlightedImageIndex.value = index
+}
+
+watch(() => highlightedImageIndex.value, (newIndex) => {
+  if (newIndex < 0) return
+  nextTick(() => {
+    const gridEl = document.querySelector('[data-collection-grid]')
+    if (!gridEl) return
+    const card = gridEl.children[newIndex] as HTMLElement
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+    }
+  })
+})
+
+watch(() => store.images.length, () => {
+  if (store.images.length === 0) {
+    highlightedImageIndex.value = -1
+  } else if (highlightedImageIndex.value >= store.images.length) {
+    highlightedImageIndex.value = store.images.length - 1
+  }
+})
 
 // --- Query param sync ---
 const IMAGE_QUERY_KEY = 'image'
@@ -430,6 +462,10 @@ const collectionImageMenuItems = (image: Image) => {
 
 const handleEnterSelectionMode = (imageId: number) => {
   store.enterSelectionMode()
+  const idx = store.images.findIndex(img => img.id === imageId)
+  if (idx >= 0) {
+    highlightedImageIndex.value = idx
+  }
   nextTick(() => {
     store.selectedImagesMap[imageId] = true
   })
@@ -544,6 +580,10 @@ const escapeKeyHandler = (e: KeyboardEvent) => {
       showBulkAddToCollectionDialog.value
 
     if (!hasOpenModal) {
+      if (highlightedImageIndex.value >= 0) {
+        highlightedImageIndex.value = -1
+        return
+      }
       if (store.isSelectionMode && store.hasSelectedImages) {
         store.exitSelectionMode()
         return
@@ -576,21 +616,203 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
 
   if (hasOpenModal) return
 
+  // Cmd/Ctrl+A: always enter selection mode + select all
+  if ((e.key === 'a' || e.key === 'A') && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault()
+    if (!store.isSelectionMode) {
+      store.enterSelectionMode()
+    }
+    store.toggleSelectAll()
+    return
+  }
+
+  const hasHighlighted = highlightedImageIndex.value >= 0
+
+  // Block collection-level shortcuts when in reorder mode (except R to exit)
+  if (store.isReordering) {
+    if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault()
+      store.cancelReordering()
+    }
+    return
+  }
+
+  if (hasHighlighted) {
+    // Allow Cmd/Ctrl+R to reload the page
+    if ((e.key === 'r' || e.key === 'R') && (e.ctrlKey || e.metaKey)) return
+
+    const gridCols = getGridColumns()
+    const totalImages = store.images.length
+    const currentIndex = highlightedImageIndex.value
+
+    // Arrow key navigation
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault()
+        const rightCol = currentIndex % gridCols
+        if (rightCol < gridCols - 1 && currentIndex + 1 < totalImages) {
+          highlightedImageIndex.value = currentIndex + 1
+        }
+        return
+      case 'ArrowLeft':
+        e.preventDefault()
+        const leftCol = currentIndex % gridCols
+        if (leftCol > 0 && currentIndex - 1 >= 0) {
+          highlightedImageIndex.value = currentIndex - 1
+        }
+        return
+      case 'ArrowDown':
+        e.preventDefault()
+        if (currentIndex + gridCols < totalImages) {
+          highlightedImageIndex.value = currentIndex + gridCols
+        }
+        return
+      case 'ArrowUp':
+        e.preventDefault()
+        if (currentIndex - gridCols >= 0) {
+          highlightedImageIndex.value = currentIndex - gridCols
+        }
+        return
+    }
+
+    // Space: toggle selection of highlighted image
+    if (e.key === ' ') {
+      e.preventDefault()
+      store.toggleHighlightedImageSelection()
+      return
+    }
+
+    // Enter: open image modal
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const highlightedImage = store.images[highlightedImageIndex.value]
+      if (highlightedImage) {
+        openImageModal(highlightedImage)
+      }
+      return
+    }
+
+    // Escape is handled by escapeKeyHandler
+
+    // Image-specific actions (only when NOT in selection mode)
+    if (!store.isSelectionMode) {
+      if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) imageActions.openEditModal(img)
+        return
+      }
+
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) actions.removeSingleImage(img.id)
+        return
+      }
+
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) imageActions.downloadImage(img)
+        return
+      }
+
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) imageActions.viewImageFullscreen(img, openFullPage)
+        return
+      }
+
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) addToCollection.openModal(img)
+        return
+      }
+
+      if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) actions.setAsCover(img.id)
+        return
+      }
+
+      if (e.key === 'u' || e.key === 'U') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) imageActions.triggerImageReplacement(img, replacementFileInput.value)
+        return
+      }
+
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault()
+        const img = store.images[highlightedImageIndex.value]
+        if (img) openImageDeleteDialog(img)
+        return
+      }
+    } else {
+      // Selection mode specific actions
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault()
+        actions.removeImages()
+        return
+      }
+
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault()
+        openBulkAddToCollection()
+        return
+      }
+    }
+
+    // M key works in both modes
+    if (e.key === 'm' || e.key === 'M') {
+      if (!e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+        store.toggleSelectionMode()
+      }
+      return
+    }
+
+    return
+  }
+
+  // NOT highlighted: collection-level shortcuts
+  if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    if (store.images.length > 0) {
+      highlightedImageIndex.value = 0
+    }
+    return
+  }
+
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    if (store.images.length > 0) {
+      highlightedImageIndex.value = store.images.length - 1
+    }
+    return
+  }
+
   if (e.key === 'a' || e.key === 'A') {
     if (!e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       store.startAddingImages()
     }
+    return
   }
 
   if (e.key === 'e' || e.key === 'E') {
     e.preventDefault()
     store.openEditDialog()
+    return
   }
 
   if (e.key === 'd' || e.key === 'D') {
     e.preventDefault()
     showCollectionDeleteDialog.value = true
+    return
   }
 
   if (e.key === 'r' || e.key === 'R') {
@@ -602,11 +824,13 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
         store.startReordering()
       }
     }
+    return
   }
 
   if (e.key === 'u' || e.key === 'U') {
     e.preventDefault()
     triggerUploadToCollection()
+    return
   }
 
   if (e.key === 'm' || e.key === 'M') {
@@ -614,6 +838,7 @@ const collectionKeyboardHandler = (e: KeyboardEvent) => {
       e.preventDefault()
       store.toggleSelectionMode()
     }
+    return
   }
 }
 
@@ -692,8 +917,9 @@ const openFullPage = (img?: Image) => {
 }
 
 const openImageModal = (image: Image, event?: MouseEvent | PointerEvent) => {
-  selectedImage.value = image
   const idx = store.images.findIndex(img => img.id === image.id)
+  highlightedImageIndex.value = idx > -1 ? idx : -1
+  selectedImage.value = image
   currentImageIndex.value = idx > -1 ? idx : 0
 
   // Detect mobile viewport and open drawer instead of modal

@@ -11,6 +11,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   // Image selection state
   const selectedImagesMap = ref<Record<number, boolean>>({})
   const availableImages = ref<Image[]>([])
+  const highlightedImageIndex = ref(-1)
 
   // View modes
   const isAddingImages = ref(false)
@@ -32,6 +33,10 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   // Computed properties
   const hasSelectedImages = computed(() => Object.values(selectedImagesMap.value).some(Boolean))
   const selectionCount = computed(() => Object.values(selectedImagesMap.value).filter(Boolean).length)
+  const highlightedImage = computed<Image | null>(() => {
+    if (highlightedImageIndex.value < 0 || highlightedImageIndex.value >= images.value.length) return null
+    return images.value[highlightedImageIndex.value] || null
+  })
   const isAllSelected = computed(() => {
     const currentImages = isAddingImages.value ? availableImages.value : images.value
     const isNotEmpty = currentImages.length > 0
@@ -433,6 +438,27 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       delete selectedImagesMap.value[imageId]
     })
   }
+
+  function setHighlightedImageIndex(index: number) {
+    if (index >= 0 && index < images.value.length) {
+      highlightedImageIndex.value = index
+    }
+  }
+
+  function clearHighlightedImageIndex() {
+    highlightedImageIndex.value = -1
+  }
+
+  function toggleHighlightedImageSelection() {
+    if (highlightedImageIndex.value < 0 || highlightedImageIndex.value >= images.value.length) return
+    const image = images.value[highlightedImageIndex.value]
+    if (!image) return
+    if (selectedImagesMap.value[image.id]) {
+      delete selectedImagesMap.value[image.id]
+    } else {
+      selectedImagesMap.value[image.id] = true
+    }
+  }
   
 
   // Update a single image in the collection
@@ -453,6 +479,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     isAddImagesDialogOpen.value = false
     isReordering.value = false
     isEditDialogOpen.value = false
+    highlightedImageIndex.value = -1
     error.value = null
     resetEditForm()
   }
@@ -487,11 +514,13 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     isSelectionMode,
     isEditDialogOpen,
     editCollection,
+    highlightedImageIndex,
 
     // Computed
     hasSelectedImages,
     selectionCount,
     isAllSelected,
+    highlightedImage,
 
     // Actions
     fetchCollection,
@@ -520,5 +549,8 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     updateImageInCollection,
     addImageObjects,
     resetStore,
+    setHighlightedImageIndex,
+    clearHighlightedImageIndex,
+    toggleHighlightedImageSelection,
   }
 })

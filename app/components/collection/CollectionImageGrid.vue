@@ -26,13 +26,18 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8">
+    <div data-collection-grid class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8">
       <div
         v-for="(image, index) in images"
         :key="image.id"
-        class="group relative overflow-hidden rounded-sm ring-1 ring-gray-200/60
-        dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70
-        transition-all duration-200 hover:shadow-md active:shadow-sm cursor-pointer animate-fade-in-up"
+        :class="[
+          'group relative overflow-hidden rounded-sm ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-150 cursor-pointer animate-fade-in-up',
+          highlightedImageIndex === index && isSelectionMode
+            ? 'ring-2 ring-blue-500'
+            : highlightedImageIndex === index
+              ? 'ring-2 ring-pink-500'
+              : 'ring-1 ring-gray-200/60 dark:ring-gray-800/60 hover:ring-gray-300/70 dark:hover:ring-gray-700/70 hover:shadow-md active:shadow-sm',
+        ]"
         :style="{ animationDelay: `${index * 50}ms` }"
         @click="handleImageClick(image, index, $event)"
         @pointerdown="handlePointerDown(image, index, $event)"
@@ -75,6 +80,7 @@
           provider="hubblob"
           :width="100"
           :src="`/${image.pathname}`"
+          :modifiers="{ v: image.updated_at }"
           :alt="image.name || 'Image'"
           class="w-full aspect-[4/4] object-cover"
           :style="{ viewTransitionName: `image-${image.id}` }"
@@ -100,6 +106,7 @@ interface Props {
   selectedImagesMap: Record<number, boolean>
   selectionCount: number
   imageMenuItems: (image: Image) => Array<Record<string, any>>
+  highlightedImageIndex: number
 }
 
 const props = defineProps<Props>()
@@ -110,6 +117,7 @@ const emit = defineEmits<{
   removeImages: []
   enterSelectionMode: [imageId: number]
   toggleImage: [imageId: number]
+  setHighlight: [index: number]
 }>()
 
 // --- Long press detection ---
@@ -120,7 +128,8 @@ let longPressStartPos = { x: 0, y: 0 }
 let longPressTriggered = false
 let longPressImageId: number | null = null
 
-const handleImageClick = (image: Image, _index: number, _event: MouseEvent) => {
+const handleImageClick = (image: Image, index: number, _event: MouseEvent) => {
+  emit('setHighlight', index)
   if (longPressTriggered) {
     longPressTriggered = false
     return
