@@ -16,9 +16,14 @@
             class="absolute left-1/2 -translate-x-1/2 font-title font-800 text-gray-800 dark:text-gray-200 text-center transition-[font-size,transform] duration-300 whitespace-nowrap"
             :style="titleStyle"
           >
-            <NuxtLink :to="linkTo" :aria-label="linkAriaLabel">
+            <button
+              type="button"
+              class="bg-transparent border-none p-0 cursor-pointer font-inherit text-inherit"
+              :aria-label="linkAriaLabel"
+              @click="handleTitleClick"
+            >
               zimablue
-            </NuxtLink>
+            </button>
           </h1>
         </div>
 
@@ -86,6 +91,14 @@ import { useSiteNavigation } from '~/composables/useSiteNavigation'
 
 const route = useRoute()
 const { desktopHeaderActions, handleActionClick } = useSiteNavigation()
+
+const handleTitleClick = () => {
+  if (window.scrollY > 10) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    navigateTo('/about')
+  }
+}
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress
@@ -245,13 +258,13 @@ onBeforeUnmount(() => {
   }
 })
 
-const linkTo = computed(() => {
-  if (route.path === '/') return '/about'
-  return '/'
-})
-
 const linkAriaLabel = computed(() => {
-  return route.path === '/' ? 'Learn more about zimablue' : 'Go to home'
+  if (route.path === '/') {
+    return typeof window !== 'undefined' && window.scrollY > 10
+      ? 'Scroll to top'
+      : 'Learn more about zimablue'
+  }
+  return 'Go to home'
 })
 </script>
 
