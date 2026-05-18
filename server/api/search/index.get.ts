@@ -5,7 +5,7 @@ import { db } from 'hub:db'
 import { like, or, eq, sql, and, desc, inArray } from 'drizzle-orm'
 import type { ImageWithTags } from "~~/shared/types/image"
 import type { Collection } from "~~/shared/types/collection"
-import { images, collections, users, tags, imageTags } from '../../db/schema'
+import { images, collections, users, tags, imageTags, collectionImages } from '../../db/schema'
 import { keysToSnake } from '../../utils/case'
 
 interface SearchResult {
@@ -106,8 +106,13 @@ export default defineEventHandler(async (event): Promise<SearchResult> => {
 
     // Search collections if requested
     if (includeCollections) {
-      // Get collection results
-      const collectionResults = await db.select()
+      // Get collection results with cover image and image count
+      const collectionResults = await db.select({
+          collection: collections,
+          user: users,
+          imageCount: sql<number>`(SELECT COUNT(*) FROM ${collectionImages} WHERE ${collectionImages.collectionId} = ${collections.id})`,
+          coverImagePathname: sql<string | null>`(SELECT ${images.pathname} FROM ${images} WHERE ${images.id} = ${collections.coverImageId})`
+        })
         .from(collections)
         .leftJoin(users, eq(collections.userId, users.id))
         .where(and(
@@ -124,13 +129,14 @@ export default defineEventHandler(async (event): Promise<SearchResult> => {
       totalCollections = collectionResults.length
 
       collectionsResult = collectionResults.map((row: any) => ({
-        ...keysToSnake(row.collections),
-        owner_name: row.users?.name || 'Unknown',
-        image_count: 0, // Would need separate query
-        is_public: Boolean(row.collections.isPublic),
+        ...keysToSnake(row.collection),
+        owner_name: row.user?.name || 'Unknown',
+        cover_image_pathname: row.coverImagePathname,
+        image_count: row.imageCount,
+        is_public: Boolean(row.collection.isPublic),
         owner: {
-          id: row.collections.userId,
-          name: row.users?.name || 'Unknown'
+          id: row.collection.userId,
+          name: row.user?.name || 'Unknown'
         }
       })) as unknown as Collection[]
     }

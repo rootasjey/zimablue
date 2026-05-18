@@ -22,7 +22,7 @@
       <!-- Collection thumbnail/icon -->
       <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
         <NuxtImg
-          v-if="collection.cover_image_id && coverImagePath"
+          v-if="coverImagePath"
           provider="hubblob"
           :width="48"
           :height="48"
@@ -63,7 +63,7 @@
       <!-- Collection thumbnail/icon -->
       <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
         <NuxtImg
-          v-if="collection.cover_image_id && coverImagePath"
+          v-if="coverImagePath"
           provider="hubblob"
           :width="48"
           :height="48"
@@ -179,12 +179,13 @@ const showFallbackIcon = ref(false)
 
 // Generate cover image path if available
 const coverImagePath = computed(() => {
-  if (!props.collection.cover_image_id || showFallbackIcon.value) {
+  if (showFallbackIcon.value) {
     return null
   }
-  // This assumes the cover image path can be constructed from the ID
-  // You might need to adjust this based on your actual image storage structure
-  return `/api/images/id/${props.collection.cover_image_id}/thumbnail`
+  if (props.collection.cover_image_pathname) {
+    return `/${props.collection.cover_image_pathname}`
+  }
+  return null
 })
 
 // Format numbers for display

@@ -564,8 +564,12 @@ watch(() => store.isLoading, (isLoading, wasLoading) => {
   })
 })
 
+const searchStore = useGlobalSearchStore()
+
 const escapeKeyHandler = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
+    if (searchStore.isDialogOpen) return
+
     const hasOpenModal =
       isImageModalOpen.value ||
       isImageDrawerOpen.value ||
