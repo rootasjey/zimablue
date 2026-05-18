@@ -36,6 +36,23 @@ export const useHomeMultiSelect = () => {
     isSelectionMode.value = false
   }
 
+  const enterSelectionMode = () => {
+    isSelectionMode.value = true
+  }
+
+  const exitSelectionMode = () => {
+    selectedImagesMap.value = {}
+    isSelectionMode.value = false
+  }
+
+  const toggleSelectionMode = () => {
+    if (isSelectionMode.value) {
+      exitSelectionMode()
+    } else {
+      enterSelectionMode()
+    }
+  }
+
   const selectAll = (images: Image[]) => {
     images.forEach(image => {
       selectedImagesMap.value[image.id] = true
@@ -264,6 +281,9 @@ export const useHomeMultiSelect = () => {
     // Methods
     toggleImageSelection,
     clearSelection,
+    enterSelectionMode,
+    exitSelectionMode,
+    toggleSelectionMode,
     selectAll,
     isAllSelected,
     toggleSelectAll,

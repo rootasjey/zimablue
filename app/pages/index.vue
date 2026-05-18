@@ -30,13 +30,16 @@
       :is-selection-mode="multiSelect.isSelectionMode.value"
       :selected-images-map="multiSelect.selectedImagesMap.value"
       :has-selected-images="multiSelect.hasSelectedImages.value"
+      :highlighted-image-index="keyboardNav.highlightedImageIndex.value"
       :show-initial-skeleton="!isInitialGridLoading"
       @image-click="imageModal.openImageModal"
       @image-toggle="handleImageToggle"
       @mouse-down="imageModal.handleMouseDown"
+      @enter-selection-mode="multiSelect.enterSelectionMode"
       @layout-update="gridStore.applyIncomingLayout"
       @layout-ready="layoutReady"
       @layout-updated="layoutUpdated"
+      @set-highlight="keyboardNav.setHighlightedImage"
       :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
         image: item,
         openImagePageFn: imageModal.openImagePage,
@@ -189,6 +192,7 @@ import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageActions } from '~/composables/image/useImageActions'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 import { useHomeMultiSelect } from '~/composables/image/useHomeMultiSelect'
+import { useHomeKeyboardNav } from '~/composables/image/useHomeKeyboardNav'
 
 definePageMeta({
   disableViewTransition: true,
@@ -241,6 +245,7 @@ const multiSelect = useHomeMultiSelect()
 const route = useRoute()
 
 import { watch, nextTick } from 'vue'
+import type { Ref } from 'vue'
 
 const replacementFileInput = imageUpload.replacementFileInput
 
@@ -302,7 +307,8 @@ onMounted(() => {
   }
   updateRowHeight()
   window.addEventListener('resize', updateRowHeight)
-  window.addEventListener('keydown', handleGlobalKeydown)
+  window.addEventListener('keydown', keyboardNav.escapeKeyHandler, true)
+  window.addEventListener('keydown', keyboardNav.homeKeyboardHandler, true)
 
   // Global drag listeners to capture drags anywhere on the page
   window.addEventListener('dragenter', imageUpload.handleDragEnter)
@@ -317,7 +323,8 @@ onMounted(() => {
     }
 
     window.removeEventListener('resize', updateRowHeight)
-    window.removeEventListener('keydown', handleGlobalKeydown)
+    window.removeEventListener('keydown', keyboardNav.escapeKeyHandler, true)
+    window.removeEventListener('keydown', keyboardNav.homeKeyboardHandler, true)
 
     window.removeEventListener('dragenter', imageUpload.handleDragEnter)
     window.removeEventListener('dragover', imageUpload.handleDragOver)
@@ -346,20 +353,6 @@ watch(() => gridStore.initialized, (initialized) => {
     }
   })
 })
-
-// Global keyboard shortcuts
-const handleGlobalKeydown = (event: KeyboardEvent) => {
-  const target = event.target as HTMLElement | null
-  const isEditable = target?.tagName === 'INPUT' ||
-    target?.tagName === 'TEXTAREA' ||
-    target?.isContentEditable
-
-  if (isEditable) return
-
-  if (loggedIn.value) {
-    multiSelect.handleKeyboardShortcuts(event, layout.value)
-  }
-}
 
 const refocusImageModal = () => {
   if (!imageModal.isImageModalOpen.value) return
@@ -432,6 +425,66 @@ const openImageDeleteDialog = (image: Image | null) => {
   imageToDelete.value = image
   showImageDeleteDialog.value = true
 }
+
+const hasOpenModal = computed(() =>
+  imageModal.isImageModalOpen.value ||
+  imageModal.isImageDrawerOpen.value ||
+  showImageDeleteDialog.value ||
+  imageActions.showEditModal.value ||
+  addToCollection.isOpen.value ||
+  imageActions.showEditDrawer.value ||
+  addToCollection.isDrawerOpen.value ||
+  showBulkDeleteDialog.value ||
+  showBulkAddToCollectionDialog.value
+)
+
+const keyboardNav = useHomeKeyboardNav({
+  layout,
+  isAdmin,
+  hasOpenModal,
+  imageModal: {
+    isImageModalOpen: imageModal.isImageModalOpen,
+    isImageDrawerOpen: imageModal.isImageDrawerOpen,
+    openImageModal: imageModal.openImageModal,
+    openImagePage: imageModal.openImagePage,
+  },
+  imageActions: {
+    showEditModal: imageActions.showEditModal,
+    showEditDrawer: imageActions.showEditDrawer,
+    openEditModal: imageActions.openEditModal,
+    downloadImage: imageActions.downloadImage,
+    viewImageFullscreen: imageActions.viewImageFullscreen,
+    triggerImageReplacement: imageActions.triggerImageReplacement,
+    deleteImage: imageActions.deleteImage,
+  },
+  addToCollection: {
+    isOpen: addToCollection.isOpen,
+    isDrawerOpen: addToCollection.isDrawerOpen,
+    openModal: addToCollection.openModal,
+  },
+  multiSelect: {
+    selectedImagesMap: multiSelect.selectedImagesMap as Ref<Record<number, boolean>>,
+    isSelectionMode: multiSelect.isSelectionMode as Ref<boolean>,
+    hasSelectedImages: multiSelect.hasSelectedImages,
+    toggleImageSelection: multiSelect.toggleImageSelection,
+    clearSelection: multiSelect.clearSelection,
+    enterSelectionMode: multiSelect.enterSelectionMode,
+    toggleSelectionMode: multiSelect.toggleSelectionMode,
+    toggleSelectAll: multiSelect.toggleSelectAll,
+    selectionCount: multiSelect.selectionCount,
+    selectedImageIds: multiSelect.selectedImageIds,
+    bulkDeleteImages: multiSelect.bulkDeleteImages,
+    bulkAddToCollection: multiSelect.bulkAddToCollection,
+    bulkDownloadImages: multiSelect.bulkDownloadImages,
+  },
+  imageUpload: {
+    triggerFileUpload: imageUpload.triggerFileUpload,
+  },
+  replacementFileInput,
+  openImageDeleteDialog,
+  openBulkDeleteDialog,
+  openBulkAddToCollectionDialog,
+})
 
 const confirmImageDelete = async () => {
   if (!imageToDelete.value) return

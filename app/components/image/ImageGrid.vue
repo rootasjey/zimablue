@@ -26,10 +26,12 @@
     >
       <div v-for="(item, index) in layout" :key="item.i"
         class="mobile-grid-item relative overflow-hidden cursor-pointer transition-all duration-300"
+        :data-home-grid-index="index"
         :class="[
           getMobileGridItemClass(index),
           {
-            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
+            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && (highlightedImageIndex === index || selectedImagesMap?.[item.id]),
+            'ring-2 ring-pink-500 ring-offset-2': highlightedImageIndex === index && !isSelectionMode,
             'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
           }
         ]"
@@ -127,8 +129,10 @@
       >
         <div
           class="group h-full relative overflow-hidden rounded-lg z-10 cursor-pointer"
+          :data-home-grid-index="index"
           :class="{
-            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && selectedImagesMap?.[item.id],
+            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && (highlightedImageIndex === index || selectedImagesMap?.[item.id]),
+            'ring-2 ring-pink-500 ring-offset-2': highlightedImageIndex === index && !isSelectionMode,
             'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
           }"
         >
@@ -231,6 +235,8 @@ interface Props {
   isSelectionMode?: boolean
   selectedImagesMap?: Record<number, boolean>
   hasSelectedImages?: boolean
+  // Highlight navigation
+  highlightedImageIndex?: number
   // Loading state for skeleton
   isLoading?: boolean
   showInitialSkeleton?: boolean
@@ -245,10 +251,13 @@ interface Emits {
   // Multi-select emits
   imageToggle: [imageId: number, index: number, event: MouseEvent]
   enterSelectionMode: []
+  // Highlight emit
+  setHighlight: [index: number]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showInitialSkeleton: true,
+  highlightedImageIndex: -1,
 })
 const emit = defineEmits<Emits>()
 
@@ -314,7 +323,8 @@ const dragThreshold = 10 // pixels - if pointer moves more than this, it's consi
 
 // Handle image click - either for selection or normal modal
 const handleImageClick = (item: Image, index: number, event: MouseEvent) => {
-  // Prevent action if we just completed a long press
+  emit('setHighlight', index)
+
   if (isLongPressing.value) {
     isLongPressing.value = false
     return
