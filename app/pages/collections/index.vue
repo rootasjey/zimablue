@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24"
     @dragenter.prevent="handlePageDragEnter"
     @dragover.prevent="handlePageDragOver"
@@ -41,7 +41,7 @@
         </NButton>
       </div>
     </div>
-    
+
     <!-- Loading skeleton (client-only) -->
     <ImageUploadProgress
       :session="imageUpload.currentUploadSession.value"
@@ -64,7 +64,9 @@
         <article
           v-for="(collection, index) in collectionStore.collections"
           :key="collection.id"
-          class="group relative"
+          :data-collection-index="index"
+          class="group relative rounded-[1px] transition-shadow duration-200"
+          :class="[highlightedCollectionIndex === index ? 'ring-2 ring-indigo ring-offset-6 ring-offset-white dark:ring-offset-gray-950' : '']"
           :style="{ animationDelay: `${300 + index * 100}ms` }"
           @dragenter.prevent.stop="handleCardDragEnter($event, collection.id)"
           @dragover.prevent.stop
@@ -91,16 +93,16 @@
 
               <!-- Artistic Overlays -->
               <div class="absolute inset-0 bg-transparent group-hover:bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              
+
               <!-- Drop overlay on card -->
-              <div 
-                v-if="isDraggingOnCard === collection.id" 
+              <div
+                v-if="isDraggingOnCard === collection.id"
                 class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-primary/10 dark:bg-primary/20 backdrop-blur-sm transition-all duration-300"
               >
                 <div class="i-ph-image-square text-6xl text-primary mb-2 animate-bounce"></div>
                 <span class="text-sm font-600 text-primary uppercase tracking-widest">Add to collection</span>
               </div>
-              
+
               <!-- Subtle Frame / Internal Border on Hover -->
               <div class="absolute inset-4 border border-white/20 scale-105 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
             </div>
@@ -111,9 +113,9 @@
                 <h2 class="font-title text-size-5 sm:text-size-6 font-500 tracking-wide text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors duration-500">
                   {{ collection.name }}
                 </h2>
-                
+
                 <div class="h-[1px] flex-1 bg-gray-100 dark:bg-gray-800 group-hover:bg-primary/30 transition-colors duration-500" />
-                
+
                 <span class="font-mono text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                   {{ index + 1 < 10 ? `0${index + 1}` : index + 1 }}
                 </span>
@@ -123,7 +125,7 @@
                 <span class="text-[11px] uppercase tracking-[0.2em] font-500 text-gray-400 dark:text-gray-600 transition-colors duration-500 group-hover:text-gray-500">
                   Series Vol. {{ index + 1 }}
                 </span>
-                
+
                 <div v-if="loggedIn" class="flex items-center gap-2">
                   <div :class="[collection.is_public ? 'bg-blue-400/20 text-blue-500' : 'bg-gray-400/20 text-gray-500', 'w-1.5 h-1.5 rounded-full animate-pulse']" />
                   <span class="text-[9px] uppercase tracking-tighter text-gray-400">
@@ -142,11 +144,11 @@
                 size="sm"
                 dropdown-menu="ghost-gray"
                 :_dropdown-menu-content="{ class: 'w-48', align: 'end', side: 'bottom' }"
-                :_dropdown-menu-trigger="{ 
-                  icon: true, 
-                  square: true, 
-                  label: 'i-lucide-more-horizontal', 
-                  class: 'bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-full w-8 h-8 shadow-sm hover:scale-110 active:scale-95 transition-all text-gray-800 dark:text-white' 
+                :_dropdown-menu-trigger="{
+                  icon: true,
+                  square: true,
+                  label: 'i-lucide-more-horizontal',
+                  class: 'bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-full w-8 h-8 shadow-sm hover:scale-110 active:scale-95 transition-all text-gray-800 dark:text-white'
                 }"
               />
             </ClientOnly>
@@ -169,7 +171,7 @@
           Create your first collection
         </NButton>
       </div>
-    </section> 
+    </section>
 
     <!-- Dialogs -->
     <CollectionCreateDialog
@@ -181,8 +183,8 @@
 
     <!-- Full-page drag overlay -->
     <Transition name="fade">
-      <div 
-        v-if="isDraggingOnPage" 
+      <div
+        v-if="isDraggingOnPage"
         class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none"
       >
         <div class="i-ph-upload-simple text-8xl text-white mb-4 animate-bounce"></div>
@@ -236,6 +238,7 @@ const collectionStore = useCollectionStore()
 const { lightModeColors } = useRandomColors()
 const pageHeader = usePageHeader()
 const imageUpload = useImageUpload()
+const router = useRouter()
 
 // Drag state
 const isDraggingOnPage = ref(false)
@@ -256,6 +259,11 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
   pageHeader.resetPageHeader()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', escapeKeyHandler, true)
+  window.removeEventListener('keydown', collectionsKeyboardHandler, true)
 })
 
 // Server: for anonymous visitors fetch collections during SSR and attach
@@ -310,6 +318,9 @@ onMounted(async () => {
     // without showing the loading skeleton to avoid UI flicker.
     collectionStore.fetchCollections(loggedIn.value).catch(() => {})
   }
+
+  window.addEventListener('keydown', escapeKeyHandler, true)
+  window.addEventListener('keydown', collectionsKeyboardHandler, true)
 })
 
 // Helpers
@@ -330,57 +341,158 @@ const handleImageError = (payload: Event | string) => {
   if (img && 'src' in img) img.src = '/loading.jpg'
 }
 
-const truncate = (text: string, max = 120) => {
-  if (!text) return ''
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text
+const highlightedCollectionIndex = ref(-1)
+
+const getGridColumns = (): number => {
+  if (typeof window === 'undefined') return 4
+  const w = window.innerWidth
+  if (w < 640) return 1
+  if (w < 1024) return 2
+  if (w < 1280) return 3
+  return 4
 }
 
-// Horizontal scroll helpers
-const scrollEl = ref<HTMLElement | null>(null)
-const progressWidth = ref(0)
-const progressTranslate = ref(0)
+// Scroll highlighted collection into view
+watch(() => highlightedCollectionIndex.value, (newIndex) => {
+  if (newIndex < 0) return
+  nextTick(() => {
+    const card = document.querySelector(`[data-collection-index="${newIndex}"]`) as HTMLElement
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+    }
+  })
+})
 
-const onScroll = () => {
-  const el = scrollEl.value
-  if (!el) return
-  const { scrollLeft, scrollWidth, clientWidth } = el
-  const max = Math.max(scrollWidth - clientWidth, 1)
-  const pct = Math.min(Math.max(scrollLeft / max, 0), 1)
-  progressWidth.value = (clientWidth / scrollWidth) * 100
-  progressTranslate.value = pct * (100 - progressWidth.value)
+// Clamp highlight when collections list changes
+watch(() => collectionStore.collections.length, () => {
+  if (collectionStore.collections.length === 0) {
+    highlightedCollectionIndex.value = -1
+  } else if (highlightedCollectionIndex.value >= collectionStore.collections.length) {
+    highlightedCollectionIndex.value = collectionStore.collections.length - 1
+  }
+})
+
+const escapeKeyHandler = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    const hasOpenModal =
+      collectionStore.isCreateDialogOpen ||
+      collectionStore.isEditDialogOpen ||
+      collectionStore.isDeleteDialogOpen
+
+    if (!hasOpenModal) {
+      if (highlightedCollectionIndex.value >= 0) {
+        highlightedCollectionIndex.value = -1
+        return
+      }
+      router.back()
+    }
+  }
 }
 
-const scrollByAmount = (dir: number) => {
-  const el = scrollEl.value
-  if (!el) return
-  const amount = Math.round(el.clientWidth * 0.9) * dir
-  el.scrollBy({ left: amount, behavior: 'smooth' })
-}
+const collectionsKeyboardHandler = (e: KeyboardEvent) => {
+  const target = e.target as HTMLElement
+  const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+  if (isInput) return
 
-// Parallax per-card
-const parallax = reactive<Record<number, { x: number; y: number }>>({})
+  const hasOpenModal =
+    collectionStore.isCreateDialogOpen ||
+    collectionStore.isEditDialogOpen ||
+    collectionStore.isDeleteDialogOpen
+  if (hasOpenModal) return
 
-const onParallax = (e: MouseEvent, id: number) => {
-  const target = e.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  const cx = rect.left + rect.width / 2
-  const cy = rect.top + rect.height / 2
-  const dx = (e.clientX - cx) / rect.width
-  const dy = (e.clientY - cy) / rect.height
-  parallax[id] = { x: dx, y: dy }
-}
+  const hasHighlighted = highlightedCollectionIndex.value >= 0
+  const gridCols = getGridColumns()
+  const total = collectionStore.collections.length
+  const currentIndex = highlightedCollectionIndex.value
+  const isAdminUser = isAdmin.value
 
-const resetParallax = (id: number) => { parallax[id] = { x: 0, y: 0 } }
-const getParallaxStyle = (id: number) => {
-  const p = parallax[id] || { x: 0, y: 0 }
-  const moveX = p.x * 10 // px
-  const moveY = p.y * 10 // px
-  return { transform: `scale(1.04) translate(${moveX}px, ${moveY}px)` }
+  if (hasHighlighted) {
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault()
+        {
+          const rightCol = currentIndex % gridCols
+          if (rightCol < gridCols - 1 && currentIndex + 1 < total) {
+            highlightedCollectionIndex.value = currentIndex + 1
+          }
+        }
+        return
+      case 'ArrowLeft':
+        e.preventDefault()
+        {
+          const leftCol = currentIndex % gridCols
+          if (leftCol > 0 && currentIndex - 1 >= 0) {
+            highlightedCollectionIndex.value = currentIndex - 1
+          }
+        }
+        return
+      case 'ArrowDown':
+        e.preventDefault()
+        if (currentIndex + gridCols < total) {
+          highlightedCollectionIndex.value = currentIndex + gridCols
+        }
+        return
+      case 'ArrowUp':
+        e.preventDefault()
+        if (currentIndex - gridCols >= 0) {
+          highlightedCollectionIndex.value = currentIndex - gridCols
+        }
+        return
+      case 'Enter':
+        e.preventDefault()
+        {
+          const col = collectionStore.collections[currentIndex]
+          if (col) router.push(`/collections/${col.slug}`)
+        }
+        return
+    }
+
+    if (isAdminUser) {
+      if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault()
+        const col = collectionStore.collections[currentIndex]
+        if (col) collectionStore.openEditDialog(col)
+        return
+      }
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault()
+        const col = collectionStore.collections[currentIndex]
+        if (col) collectionStore.openDeleteDialog(col)
+        return
+      }
+    }
+    return
+  }
+
+  // No collection highlighted
+  if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    if (total > 0) {
+      highlightedCollectionIndex.value = 0
+    }
+    return
+  }
+
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    if (total > 0) {
+      highlightedCollectionIndex.value = total - 1
+    }
+    return
+  }
+
+  if (isAdminUser) {
+    if (e.key === 'n' || e.key === 'N') {
+      e.preventDefault()
+      collectionStore.openCreateDialog()
+      return
+    }
+  }
 }
 
 const handleCreateCollection = async () => {
   const result = await collectionStore.createCollection()
-  
+
   toast({
     title: result.success ? 'Success' : 'Error',
     description: result.message,
@@ -393,7 +505,7 @@ const handleCreateCollection = async () => {
 
 const handleUpdateCollection = async (data: CollectionFormData) => {
   const result = await collectionStore.updateCollection(data)
-  
+
   toast({
     title: result.success ? 'Success' : 'Error',
     description: result.message,
