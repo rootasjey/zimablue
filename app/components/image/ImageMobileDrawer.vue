@@ -55,6 +55,7 @@
                 <NuxtImg
                   :src="getImageSrc(prevImage, 'drawer').src"
                   :provider="getImageSrc(prevImage, 'drawer').provider"
+                  :modifiers="getImageSrc(prevImage, 'drawer').modifiers"
                   :alt="prevImage.name || ''"
                   width="400"
                   class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"
@@ -80,6 +81,7 @@
                 <NuxtImg
                   :src="getImageSrc(selectedModalImage, 'drawer').src"
                   :provider="getImageSrc(selectedModalImage, 'drawer').provider"
+                  :modifiers="getImageSrc(selectedModalImage, 'drawer').modifiers"
                   :alt="selectedModalImage.name || 'Image'"
                   width="400"
                   class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"
@@ -107,6 +109,7 @@
                 <NuxtImg
                   :src="getImageSrc(nextImage, 'drawer').src"
                   :provider="getImageSrc(nextImage, 'drawer').provider"
+                  :modifiers="getImageSrc(nextImage, 'drawer').modifiers"
                   :alt="nextImage.name || ''"
                   width="400"
                   class="w-full h-auto object-contain rounded-lg select-none transition-opacity duration-300"

@@ -1,4 +1,5 @@
 import type { Image } from '~~/shared/types/image'
+import { useCollectionDetailStore } from './useCollectionDetailStore'
 
 export const useGridStore = defineStore('grid', () => {
   const layout = ref<Image[]>([])
@@ -121,13 +122,36 @@ export const useGridStore = defineStore('grid', () => {
         throw new Error('Replace failed')
       }
   
-      const updatedImage = response.results[0] as Image
-      if (!updatedImage) throw new Error('Failed to update image')
+      const updatedRaw = response.results[0] as Record<string, any>
+      if (!updatedRaw) throw new Error('Failed to update image')
 
-      imageToReplace.pathname = updatedImage.pathname
-      imageToReplace.updated_at = updatedImage.updated_at
-      imageToReplace.variants = updatedImage.variants
-      imageToReplace.slug = updatedImage.slug
+      // Drizzle returns camelCase keys (e.g. updatedAt is a unix timestamp number).
+      // Normalize to the snake_case string format expected by the Image type.
+      const rawUpdatedAt: unknown = updatedRaw.updatedAt
+      let updated_at: string
+      if (typeof rawUpdatedAt === 'number') {
+        updated_at = new Date(rawUpdatedAt > 9_999_999_999 ? rawUpdatedAt : rawUpdatedAt * 1000).toISOString()
+      } else if (typeof rawUpdatedAt === 'string') {
+        updated_at = rawUpdatedAt
+      } else {
+        updated_at = imageToReplace.updated_at
+      }
+
+      imageToReplace.pathname = updatedRaw.pathname ?? imageToReplace.pathname
+      imageToReplace.updated_at = updated_at
+      imageToReplace.variants = updatedRaw.variants ?? imageToReplace.variants
+      imageToReplace.slug = updatedRaw.slug ?? imageToReplace.slug
+
+      // Update collection store if active (e.g. replace from collection page modal)
+      try {
+        const collectionStore = useCollectionDetailStore()
+        collectionStore.updateImageInCollection({
+          ...imageToReplace,
+          updated_at,
+        } as Image)
+      } catch (_) {
+        // Collection store may not be instantiated — safe to ignore
+      }
 
       // Ensure cached grid data is refreshed so the server-side KV state wins
       try {

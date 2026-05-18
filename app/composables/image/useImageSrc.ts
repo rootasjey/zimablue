@@ -24,7 +24,7 @@ export const useImageSrc = () => {
       return {
         src: image.pathname,
         provider: 'hubblob' as const,
-        modifiers: {} as Record<string, string | number>,
+        modifiers: { v: image.updated_at } as Record<string, string | number>,
       }
     }
 
@@ -42,7 +42,7 @@ export const useImageSrc = () => {
     return {
       src: best.pathname,
       provider: 'hubblob' as const,
-      modifiers: {} as Record<string, string | number>,
+      modifiers: { v: image.updated_at } as Record<string, string | number>,
     }
   }
 

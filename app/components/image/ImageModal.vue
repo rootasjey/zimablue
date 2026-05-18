@@ -87,6 +87,7 @@
               <NuxtImg 
                 :provider="selectedModalImage.pathname.includes('blob') ? 'ipx' : 'hubblob'"
                 :src="selectedModalImage.pathname"
+                :modifiers="selectedModalImage.pathname.includes('blob') ? {} : { v: selectedModalImage.updated_at }"
                 :alt="selectedModalImage.name || 'Image'"
                 :width="600"
                 class="w-full h-auto object-contain rounded-lg cursor-pointer transition-opacity duration-300"

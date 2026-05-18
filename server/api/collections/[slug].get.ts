@@ -8,6 +8,8 @@ import { collections, images, collectionImages, users } from '../../db/schema'
 import { keysToSnake } from '../../utils/case'
 
 export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate')
+
   const slug = getRouterParam(event, 'slug')
   
   if (typeof slug !== 'string' || slug.length === 0) {
