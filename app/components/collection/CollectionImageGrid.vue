@@ -45,6 +45,15 @@
         @pointerup="handlePointerUp"
         @pointercancel="handlePointerUp"
       >
+        <!-- Cover image badge -->
+        <div
+          v-if="coverImageId != null && image.id === coverImageId"
+          class="absolute top-2 left-2 z-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-600 text-white bg-black/50 backdrop-blur-sm shadow-sm select-none"
+        >
+          <i class="i-ph-star-fill text-xs" />
+          <span>Cover</span>
+        </div>
+
         <!-- Selection mode: checkbox -->
         <div
           v-if="canEdit && isSelectionMode"
@@ -100,6 +109,7 @@ import type { Image } from '~~/shared/types/image'
 
 interface Props {
   canEdit: boolean
+  coverImageId: number | null
   hasSelectedImages: boolean
   images: Image[]
   isSelectionMode: boolean

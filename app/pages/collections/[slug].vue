@@ -76,6 +76,7 @@
         v-else-if="store.images.length > 0"
         :images="store.images"
         :can-edit="isOwner"
+        :cover-image-id="store.collection?.cover_image_id ?? null"
         :selected-images-map="store.selectedImagesMap"
         :has-selected-images="store.hasSelectedImages && !store.isAddImagesDialogOpen"
         :selection-count="store.selectionCount"
