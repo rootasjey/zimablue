@@ -114,7 +114,7 @@
       </div>
     </header>
 
-    <!-- Search Content -->
+      <!-- Search Content -->
     <main class="px-4 py-4 sm:px-6 sm:max-w-4xl sm:mx-auto">
       <!-- Search Hints (when no query) -->
       <div v-if="!searchQuery.trim()" class="text-center py-12">
@@ -124,6 +124,9 @@
         </h2>
         <p class="text-gray-600 dark:text-gray-400 text-sm">
           Start typing to find images and collections
+        </p>
+        <p class="text-gray-500 dark:text-gray-500 text-xs mt-2">
+          Type <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to jump to a page
         </p>
         
         <!-- Search suggestions -->
@@ -167,12 +170,22 @@
       <!-- No Results -->
       <div v-else-if="searchQuery.trim() && !searchStore.hasResults" class="text-center py-12">
         <div class="i-ph-magnifying-glass-minus w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4"></div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
-          No results found
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">
-          Try different keywords or check your spelling
-        </p>
+        <template v-if="searchStore.isNavSearch">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+            No pages found
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">
+            Try a different page name or remove <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to search content
+          </p>
+        </template>
+        <template v-else>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+            No results found
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">
+            Try different keywords or check your spelling
+          </p>
+        </template>
       </div>
 
       <!-- Search Results -->
@@ -185,8 +198,27 @@
           </p>
         </div>
 
+        <!-- Pages Section (@ navigation) -->
+        <section v-if="searchStore.isNavSearch">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
+            <span class="i-ph-compass"></span>
+            Pages ({{ searchStore.filteredNavPaths.length }})
+          </h2>
+          <div class="space-y-2">
+            <SearchResultNavPath
+              v-for="(navPath, index) in searchStore.filteredNavPaths"
+              :key="navPath.path"
+              :id="`search-result-${index}`"
+              :nav-path="navPath"
+              :is-selected="index === searchStore.selectedIndex"
+              @select="handleNavPathSelect"
+              @hover="handleResultHover(index)"
+            />
+          </div>
+        </section>
+
         <!-- Images Section -->
-        <section v-if="searchStore.results.images.length > 0">
+        <section v-if="!searchStore.isNavSearch && searchStore.results.images.length > 0">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
             <span class="i-ph-image"></span>
             Images ({{ searchStore.results.images.length }})
@@ -205,7 +237,7 @@
         </section>
 
         <!-- Collections Section -->
-        <section v-if="searchStore.results.collections.length > 0">
+        <section v-if="!searchStore.isNavSearch && searchStore.results.collections.length > 0">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
             <span class="i-ph-folder"></span>
             Collections ({{ searchStore.results.collections.length }})
@@ -230,6 +262,13 @@
 <script lang="ts" setup>
 import type { ImageWithTags as Image } from '~~/shared/types/image'
 import type { Collection } from '~~/shared/types/collection'
+
+interface NavPath {
+  label: string
+  path: string
+  icon: string
+  description: string
+}
 
 // Meta
 definePageMeta({
@@ -363,7 +402,11 @@ const handleInputKeydown = (event: KeyboardEvent) => {
 const handleEnterKey = () => {
   const result = searchStore.selectResult()
   if (result) {
-    navigateToResult(result.type, result.item)
+    if (result.type === 'nav') {
+      navigateToResult('nav', result.item as NavPath)
+    } else {
+      navigateToResult(result.type, result.item)
+    }
   }
 }
 
@@ -371,6 +414,11 @@ const handleEnterKey = () => {
 const handleResultSelect = (item: Image | Collection) => {
   const isImage = 'pathname' in item
   navigateToResult(isImage ? 'image' : 'collection', item)
+}
+
+// Handle nav path selection
+const handleNavPathSelect = (navPath: NavPath) => {
+  navigateToResult('nav', navPath)
 }
 
 // Handle result hover
@@ -398,11 +446,13 @@ const scrollSelectedIntoView = () => {
 }
 
 // Navigate to selected result
-const navigateToResult = (type: 'image' | 'collection', item: Image | Collection) => {
+const navigateToResult = (type: 'image' | 'collection' | 'nav', item: Image | Collection | NavPath) => {
   if (type === 'image') {
-    router.push(`/illustrations/${item.slug}`)
-  } else {
-    router.push(`/collections/${item.slug}`)
+    router.push(`/illustrations/${(item as Image).slug}`)
+  } else if (type === 'collection') {
+    router.push(`/collections/${(item as Collection).slug}`)
+  } else if (type === 'nav') {
+    router.push((item as NavPath).path)
   }
 }
 

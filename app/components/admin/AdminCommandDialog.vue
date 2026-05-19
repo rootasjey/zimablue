@@ -183,6 +183,20 @@ const commands = computed<Command[]>(() => {
 
   return [
     {
+      id: 'nav-home',
+      label: 'Home',
+      description: 'Return to the public gallery homepage.',
+      group: 'navigation',
+      kind: 'route',
+      to: '/',
+      icon: 'i-ph-house',
+      iconClass: route.path === '/'
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+        : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300',
+      keywords: ['home', 'public', 'gallery', 'site'],
+      hint: 'Public'
+    },
+    {
       id: 'nav-dashboard',
       label: 'Dashboard',
       description: 'Jump back to the admin overview.',

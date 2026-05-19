@@ -103,8 +103,14 @@
         <div v-else-if="searchQuery && !searchStore.hasResults" class="flex items-center justify-center py-12">
           <div class="text-center">
             <span class="i-ph-magnifying-glass w-8 h-8 text-gray-400 mx-auto mb-2"></span>
-            <p class="text-sm text-gray-600 dark:text-gray-400">No results found for "{{ searchQuery }}"</p>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Try different keywords or check your spelling</p>
+            <template v-if="searchStore.isNavSearch">
+              <p class="text-sm text-gray-600 dark:text-gray-400">No pages found for "{{ searchQuery }}"</p>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Try a different page name or remove <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to search content</p>
+            </template>
+            <template v-else>
+              <p class="text-sm text-gray-600 dark:text-gray-400">No results found for "{{ searchQuery }}"</p>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Try different keywords or check your spelling</p>
+            </template>
           </div>
         </div>
 
@@ -118,14 +124,34 @@
                 <kbd class="px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded">{{ isMac ? '⌘' : 'Ctrl' }}+K</kbd>
                 <span>to search</span>
               </div>
+              <span class="text-gray-300 dark:text-gray-600">|</span>
+              <span>Type <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to jump to a page</span>
             </div>
           </div>
         </div>
 
         <!-- Results -->
         <div v-else-if="searchStore.hasResults" class="py-2">
+          <!-- Pages section (@ navigation) -->
+          <div v-if="searchStore.isNavSearch" class="mb-4">
+            <h3 class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              Pages ({{ searchStore.filteredNavPaths.length }})
+            </h3>
+            <div class="px-2">
+              <SearchResultNavPath
+                v-for="(navPath, index) in searchStore.filteredNavPaths"
+                :key="navPath.path"
+                :id="`search-result-${index}`"
+                :nav-path="navPath"
+                :is-selected="index === searchStore.selectedIndex"
+                @select="handleNavPathSelect"
+                @hover="handleResultHover(index)"
+              />
+            </div>
+          </div>
+
           <!-- Images section -->
-          <div v-if="searchStore.results.images.length > 0" class="mb-4">
+          <div v-if="!searchStore.isNavSearch && searchStore.results.images.length > 0" class="mb-4">
             <h3 class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Images ({{ searchStore.results.images.length }})
             </h3>
@@ -143,7 +169,7 @@
           </div>
 
           <!-- Collections section -->
-          <div v-if="searchStore.results.collections.length > 0">
+          <div v-if="!searchStore.isNavSearch && searchStore.results.collections.length > 0">
             <h3 class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Collections ({{ searchStore.results.collections.length }})
             </h3>
@@ -168,6 +194,13 @@
 <script lang="ts" setup>
 import type { ImageWithTags as Image } from '~~/shared/types/image'
 import type { Collection } from '~~/shared/types/collection'
+
+interface NavPath {
+  label: string
+  path: string
+  icon: string
+  description: string
+}
 
 const searchStore = useGlobalSearchStore()
 const router = useRouter()
@@ -244,7 +277,11 @@ const handleEnterKey = async () => {
   const result = searchStore.selectResult()
   if (result) {
     // selectResult already closes the dialog, but let the navigation wait for the dialog to finish hiding
-    await navigateToResult(result.type, result.item)
+    if (result.type === 'nav') {
+      await navigateToResult('nav', result.item as NavPath)
+    } else {
+      await navigateToResult(result.type, result.item)
+    }
   }
 }
 
@@ -253,6 +290,11 @@ const handleResultSelect = async (item: Image | Collection) => {
   const isImage = 'pathname' in item
   // close dialog + wait before navigation so new screen isn't hidden behind the dialog
   await navigateToResult(isImage ? 'image' : 'collection', item)
+}
+
+// Handle nav path selection
+const handleNavPathSelect = async (navPath: NavPath) => {
+  await navigateToResult('nav', navPath)
 }
 
 // Handle result hover
@@ -281,7 +323,7 @@ const scrollSelectedIntoView = () => {
 }
 
 // Navigate to selected result
-const navigateToResult = async (type: 'image' | 'collection', item: Image | Collection) => {
+const navigateToResult = async (type: 'image' | 'collection' | 'nav', item: Image | Collection | NavPath) => {
   // ensure the dialog is closed first
   searchStore.closeDialog()
 
@@ -290,9 +332,11 @@ const navigateToResult = async (type: 'image' | 'collection', item: Image | Coll
   await new Promise((res) => setTimeout(res, 180))
 
   if (type === 'image') {
-    await router.push(`/illustrations/${item.slug}`)
-  } else {
-    await router.push(`/collections/${item.slug}`)
+    await router.push(`/illustrations/${(item as Image).slug}`)
+  } else if (type === 'collection') {
+    await router.push(`/collections/${(item as Collection).slug}`)
+  } else if (type === 'nav') {
+    await router.push((item as NavPath).path)
   }
 }
 

@@ -21,6 +21,9 @@ export default {
     'i-ph-paint-roller-duotone',
     'i-ph-gear-duotone',
     'i-ph-dots-three-vertical',
+    'i-lucide-log-in',
+    'i-lucide-tool-case',
+    'i-lucide-clock-2',
   ],
   presets: [
     presetWind3(),

@@ -122,6 +122,12 @@ const isCurrentRoute = (path: string) => {
 const navigationItems = computed<any[]>(() => {
   return [
     {
+      label: 'Home',
+      value: 'home',
+      to: '/',
+      active: route.path === '/',
+    },
+    {
       label: 'Dashboard',
       value: 'dashboard',
       to: '/admin',
