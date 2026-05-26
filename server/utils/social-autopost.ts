@@ -1,4 +1,5 @@
 import { db, schema } from 'hub:db'
+import { blob } from 'hub:blob'
 import { and, asc, eq, isNull, lte, or, sql } from 'drizzle-orm'
 import {
   SOCIAL_AUTOPOST_PLATFORMS,
@@ -669,6 +670,41 @@ async function postToFacebook(message: string, imageUrl: string): Promise<Publis
 }
 
 async function fetchImagePayload(imageUrl: string): Promise<{ bytes: ArrayBuffer, contentType: string }> {
+  const runtimeConfig = useRuntimeConfig()
+  const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/$/, '')
+
+  if (siteUrl && imageUrl.startsWith(siteUrl)) {
+    try {
+      const { pathname } = new URL(imageUrl)
+      const imageDbPath = pathname.replace(/^\//, '')
+
+      const imageData = await db.select({ variants: schema.images.variants })
+        .from(schema.images)
+        .where(eq(schema.images.pathname, imageDbPath))
+        .limit(1)
+        .get()
+
+      const variantList: Array<{ pathname: string; size: string }> =
+        imageData?.variants ? JSON.parse(imageData.variants as string) : []
+
+      const bestVariant = variantList.find((v) => v.size === 'lg')
+        || variantList.find((v) => v.size === 'md')
+        || variantList[0]
+
+      if (bestVariant) {
+        const blobData = await blob.get(bestVariant.pathname)
+        if (blobData) {
+          return {
+            bytes: await blobData.arrayBuffer(),
+            contentType: blobData.type || 'image/jpeg',
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[social-autopost] unable to read image from R2, falling back to HTTP:', error)
+    }
+  }
+
   const response = await fetch(imageUrl)
   if (!response.ok) {
     throw new Error(`Failed to fetch image asset (${response.status})`)
