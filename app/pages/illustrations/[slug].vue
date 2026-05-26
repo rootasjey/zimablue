@@ -31,7 +31,7 @@
         </button>
         
         <button 
-          @click="router.back()"
+          @click="navigateBackOrHome()"
           class="text-gray-200 hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
           title="Close"
         >
@@ -193,6 +193,14 @@ import { useImageUpload } from '~/composables/image/useImageUpload'
 import type { Image } from '~~/shared/types/image'
 
 const router = useRouter()
+
+function navigateBackOrHome() {
+  if (window.history.length <= 1) {
+    router.push('/')
+  } else {
+    router.back()
+  }
+}
 const route = useRoute()
 const gridStore = useGridStore()
 const { loggedIn, user } = useUserSession()
@@ -452,7 +460,7 @@ const confirmImageDelete = async () => {
   try {
     await imageActions.deleteImage(image.value.id)
     showImageDeleteDialog.value = false
-    router.back()
+    navigateBackOrHome()
   } finally {
     isDeletingImage.value = false
   }
@@ -547,7 +555,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
     if (showEditDrawer.value) {
       showEditDrawer.value = false
     } else {
-      router.back()
+      navigateBackOrHome()
     }
     return
   }
