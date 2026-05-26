@@ -1,10 +1,5 @@
 import type { SocialAutopostPlatform } from '@verbatims/social-autopost-core'
 
-declare function hubKV(): {
-  get<T = unknown>(key: string): Promise<T | null>
-  set(key: string, value: unknown): Promise<void>
-}
-
 export const SOCIAL_ADMIN_PROVIDER_PLATFORMS = ['x', 'bluesky', 'instagram', 'threads', 'facebook'] as const
 
 export type SocialAdminProviderPlatform = typeof SOCIAL_ADMIN_PROVIDER_PLATFORMS[number]
@@ -66,26 +61,14 @@ export function getDefaultEnabledPlatformCandidates(config: Record<string, any>)
 }
 
 async function getSocialProviderStorage() {
-  try {
-    const kv = hubKV()
-    return {
-      async get<T>(key: string): Promise<T | null> {
-        return (await kv.get(key)) as T | null
-      },
-      async set(key: string, value: unknown) {
-        await kv.set(key, value)
-      },
-    }
-  } catch {
-    const storage = useStorage('social-provider-config')
-    return {
-      async get<T>(key: string): Promise<T | null> {
-        return (await storage.getItem(key)) as T | null
-      },
-      async set(key: string, value: unknown) {
-        await storage.setItem(key, value as any)
-      },
-    }
+  const storage = useStorage('kv')
+  return {
+    async get<T>(key: string): Promise<T | null> {
+      return (await storage.getItem(key)) as T | null
+    },
+    async set(key: string, value: unknown) {
+      await storage.setItem(key, value as any)
+    },
   }
 }
 
