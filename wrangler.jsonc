@@ -36,6 +36,9 @@
     "NUXT_AUTH_ORIGIN": "https://zimablue.cc",
     "NUXT_PUBLIC_SITE_URL": "https://zimablue.cc"
   },
+  "triggers": {
+    "crons": ["8 6 * * *", "8 7 * * *"]
+  },
   "routes": [
     {
       "pattern": "zimablue.cc",
