@@ -106,6 +106,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private keys (only available on server-side)
     authSecret: process.env.NUXT_AUTH_SECRET,
+    metaOAuth: {
+      appId: process.env.NUXT_META_APP_ID || '',
+      appSecret: process.env.NUXT_META_APP_SECRET || '',
+    },
+    threadsOAuth: {
+      appId: process.env.NUXT_THREADS_APP_ID || '',
+      appSecret: process.env.NUXT_THREADS_APP_SECRET || '',
+    },
     socialAutopost: {
       enabledPlatforms: [],
       timezone: process.env.NUXT_SOCIAL_DAILY_TIMEZONE || 'Europe/Paris',

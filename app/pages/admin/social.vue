@@ -3,7 +3,7 @@
     <section class="space-y-6">
       <div class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
         <div class="overflow-hidden border-none p-5 sm:p-6">
-          <h1 class="font-classic text-3xl sm:text-3xl font-600 text-stone-800 dark:text-zinc-500">
+          <h1 class="font-body text-3xl sm:text-3xl font-400 tracking-[0.19em] text-stone-800 dark:text-zinc-500">
             {{ currentPlatformLabel }}
           </h1>
 
@@ -25,29 +25,20 @@
             </NTooltip>
 
             <div class="ml-2 flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400">
-              <span>•</span>
-              <ClientOnly>
-                <NDropdownMenu
-                  :items="platformMenuItems"
-                  size="xs"
-                  dropdown-menu="ghost-gray"
-                  :_dropdown-menu-trigger="{
-                    icon: true,
-                    square: true,
-                    rounded: 'full',
-                    label: 'i-ph-gear',
-                  }"
-                >
-                </NDropdownMenu>
-                <template #fallback>
-                  <button
-                    type="button"
-                    class="inline-flex h-8 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
-                  >
-                    <span>Configure</span>
-                  </button>
-                </template>
-              </ClientOnly>
+              <NButton
+                size="xs"
+                btn="ghost-gray"
+                :_button="{ class: 'hidden sm:inline-flex h-8 rounded-lg px-3 text-xs font-medium' }"
+                @click="isProviderDialogOpen = true"
+              >
+                <span class="i-ph-gear text-sm"></span>
+                Configure
+              </NButton>
+              <span class="hidden sm:inline">•</span>
+              <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" :class="providerStatusPillClass">
+                <span :class="providerStatusDotClass"></span>
+                {{ selectedProviderStatusLabel }}
+              </span>
             </div>
           </div>
 
@@ -196,68 +187,12 @@
       </template>
     </AdminTable>
 
-    <NDialog v-model:open="isProviderDialogOpen" :_dialog="{ class: 'max-w-2xl' }">
-      <template #content>
-          <div class="space-y-4 p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-medium uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">Provider config</p>
-              <h3 class="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{{ activeProviderLabel }}</h3>
-                <p class="mt-1 text-sm text-stone-500 dark:text-zinc-400">Saved to {{ providerDialogStorageLabel }}. Runtime values stay as the fallback.</p>
-            </div>
-            <button type="button" class="text-stone-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200" @click="isProviderDialogOpen = false">
-              <span class="i-ph-x text-lg"></span>
-            </button>
-          </div>
-
-          <div v-if="isProviderDialogLoading" class="flex items-center gap-2 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
-            <span class="i-ph-spinner-gap animate-spin"></span>
-            Loading provider configuration...
-          </div>
-
-          <div v-else class="grid gap-4 sm:grid-cols-2">
-            <div v-for="field in providerFields" :key="field.key" class="sm:col-span-1" :class="field.fullWidth ? 'sm:col-span-2' : ''">
-              <template v-if="field.type === 'toggle'">
-                <label class="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 px-4 py-3 dark:border-zinc-700">
-                  <div>
-                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ field.label }}</p>
-                    <p v-if="field.help" class="mt-1 text-xs text-stone-500 dark:text-zinc-400">{{ field.help }}</p>
-                  </div>
-                  <input type="checkbox" class="h-4 w-4 rounded border-stone-300 text-blue-600 focus:ring-blue-500/30 dark:border-zinc-600" :checked="Boolean(providerForm[field.key])" @change="updateProviderBooleanField(field.key, ($event.target as HTMLInputElement).checked)">
-                </label>
-              </template>
-
-              <template v-else>
-                <label class="space-y-1.5">
-                  <span class="text-xs font-medium text-stone-500 dark:text-zinc-400">{{ field.label }}</span>
-                  <input
-                    :type="field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'"
-                    :placeholder="field.placeholder || ''"
-                    :value="formatProviderFieldValue(field.key)"
-                    class="h-11 w-full rounded-2xl border border-stone-200 bg-stone-100 px-3 text-sm text-zinc-900 outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                    @input="updateProviderField(field.key, field.type === 'number' ? Number(($event.target as HTMLInputElement).value) : ($event.target as HTMLInputElement).value)"
-                  >
-                  <p v-if="field.help" class="text-xs leading-5 text-stone-400 dark:text-zinc-500">{{ field.help }}</p>
-                </label>
-              </template>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-4 py-3 text-xs text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
-            <span>{{ providerDialogConfigured ? 'Provider is configured.' : 'Provider still needs setup.' }}</span>
-            <span>{{ providerDialogStorageLabel }}</span>
-          </div>
-
-          <div class="flex justify-end gap-2">
-            <button class="h-10 rounded-xl bg-stone-100 px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="isProviderDialogOpen = false">Cancel</button>
-            <button class="h-10 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-60" :disabled="isProviderDialogSaving" @click="saveProviderConfig">
-              <span v-if="isProviderDialogSaving" class="mr-1.5 inline-block animate-spin i-ph-spinner-gap"></span>
-              Save configuration
-            </button>
-          </div>
-        </div>
-      </template>
-    </NDialog>
+    <AdminSocialProviderDialog
+      v-model:open="isProviderDialogOpen"
+      :default-platform="selectedPlatform"
+      :platform-options="platformOptions"
+      @saved="fetchProviders"
+    />
 
     <AdminSocialQueueDialog
       v-model:open="isAddDialogOpen"
@@ -279,15 +214,13 @@ definePageMeta({
 
 type QueueStatus = 'queued' | 'processing' | 'posted' | 'failed'
 type Platform = 'x' | 'bluesky' | 'instagram' | 'threads' | 'facebook'
-type ProviderStorage = 'kv' | 'runtime'
-
 interface ProviderCard {
   platform: Platform
   label: string
   enabled: boolean
   configured: boolean
   detail: string
-  storage: ProviderStorage
+  storage: 'kv' | 'runtime'
 }
 
 interface QueueRow {
@@ -303,47 +236,6 @@ interface QueueRow {
   publishedAt: string | null
   publishedPostUrl: string | null
   lastError: string | null
-}
-
-interface ProviderField {
-  key: keyof ProviderFormState
-  label: string
-  type: 'text' | 'password' | 'number' | 'toggle'
-  placeholder?: string
-  help?: string
-  fullWidth?: boolean
-}
-
-interface ProviderConfigResponse {
-  success: boolean
-  data: {
-    platform: Platform
-    storage: ProviderStorage
-    configured: boolean
-    config: Partial<ProviderFormState>
-  }
-}
-
-interface ProviderFormState {
-  enabled: boolean
-  requireMedia: boolean
-  service: string
-  identifier: string
-  password: string
-  hashtags: string
-  oauth2AccessToken: string
-  oauth1ConsumerKey: string
-  oauth1ConsumerSecret: string
-  oauth1AccessToken: string
-  oauth1AccessTokenSecret: string
-  accessToken: string
-  userId: string
-  baseUrl: string
-  apiVersion: string
-  pollIntervalMs: number
-  pollTimeoutMs: number
-  pageAccessToken: string
-  pageId: string
 }
 
 interface SelectOption<T> {
@@ -368,50 +260,6 @@ const statusFilterOptions: Array<SelectOption<string>> = [
   { label: 'Posted', value: 'posted' },
   { label: 'Failed', value: 'failed' },
 ]
-
-const providerFieldMap: Record<Platform, ProviderField[]> = {
-  x: [
-    { key: 'enabled', label: 'Enable X autopost', type: 'toggle', help: 'Use this provider in the daily queue once credentials are valid.', fullWidth: true },
-    { key: 'requireMedia', label: 'Require media upload', type: 'toggle', help: 'Fail instead of posting text-only when media upload fails.', fullWidth: true },
-    { key: 'oauth2AccessToken', label: 'OAuth 2 access token', type: 'password', placeholder: 'User access token', fullWidth: true },
-    { key: 'oauth1ConsumerKey', label: 'OAuth 1 consumer key', type: 'text' },
-    { key: 'oauth1ConsumerSecret', label: 'OAuth 1 consumer secret', type: 'password' },
-    { key: 'oauth1AccessToken', label: 'OAuth 1 access token', type: 'password' },
-    { key: 'oauth1AccessTokenSecret', label: 'OAuth 1 access token secret', type: 'password' },
-  ],
-  bluesky: [
-    { key: 'enabled', label: 'Enable Bluesky autopost', type: 'toggle', fullWidth: true },
-    { key: 'service', label: 'Service URL', type: 'text', placeholder: 'https://bsky.social' },
-    { key: 'identifier', label: 'Identifier', type: 'text', placeholder: 'handle or email' },
-    { key: 'password', label: 'App password', type: 'password' },
-    { key: 'hashtags', label: 'Default hashtags', type: 'text', placeholder: '#art #illustration', help: 'Merged with image tags and trimmed for Bluesky.', fullWidth: true },
-  ],
-  instagram: [
-    { key: 'enabled', label: 'Enable Instagram autopost', type: 'toggle', fullWidth: true },
-    { key: 'accessToken', label: 'Access token', type: 'password', fullWidth: true },
-    { key: 'userId', label: 'Business account id', type: 'text' },
-    { key: 'baseUrl', label: 'Base URL', type: 'text', placeholder: 'https://graph.facebook.com' },
-    { key: 'apiVersion', label: 'API version', type: 'text', placeholder: 'v24.0' },
-    { key: 'pollIntervalMs', label: 'Poll interval (ms)', type: 'number' },
-    { key: 'pollTimeoutMs', label: 'Poll timeout (ms)', type: 'number' },
-  ],
-  threads: [
-    { key: 'enabled', label: 'Enable Threads autopost', type: 'toggle', fullWidth: true },
-    { key: 'accessToken', label: 'Access token', type: 'password', fullWidth: true },
-    { key: 'userId', label: 'Threads user id', type: 'text' },
-    { key: 'baseUrl', label: 'Base URL', type: 'text', placeholder: 'https://graph.threads.net' },
-    { key: 'apiVersion', label: 'API version', type: 'text', placeholder: 'v1.0' },
-    { key: 'pollIntervalMs', label: 'Poll interval (ms)', type: 'number' },
-    { key: 'pollTimeoutMs', label: 'Poll timeout (ms)', type: 'number' },
-  ],
-  facebook: [
-    { key: 'enabled', label: 'Enable Facebook autopost', type: 'toggle', fullWidth: true },
-    { key: 'pageAccessToken', label: 'Page access token', type: 'password', fullWidth: true },
-    { key: 'pageId', label: 'Page id', type: 'text' },
-    { key: 'baseUrl', label: 'Base URL', type: 'text', placeholder: 'https://graph.facebook.com' },
-    { key: 'apiVersion', label: 'API version', type: 'text', placeholder: 'v25.0' },
-  ],
-}
 
 const tableColumns = [
   { accessorKey: 'imageName', header: 'Illustration' },
@@ -438,15 +286,9 @@ const isRetrying = ref(false)
 const isClearing = ref(false)
 const isAddDialogOpen = ref(false)
 const isProviderDialogOpen = ref(false)
-const isProviderDialogLoading = ref(false)
-const isProviderDialogSaving = ref(false)
-const providerDialogPlatform = ref<Platform>('bluesky')
-const providerDialogStorage = ref<ProviderStorage>('runtime')
-const providerDialogConfigured = ref(false)
 const lastRunLabel = ref('Not run yet')
 const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false })
 const queueStats = ref({ queued: 0, processing: 0, posted: 0, failed: 0 })
-const providerForm = reactive<ProviderFormState>(getEmptyProviderForm())
 
 const currentPlatformLabel = computed(() => platformOptions.find(option => option.value === selectedPlatform.value)?.label || selectedPlatform.value)
 const providerTabs = computed<ProviderCard[]>(() => platformOptions.map((option) => {
@@ -467,16 +309,22 @@ const selectedProviderStatusLabel = computed(() => {
   if (selectedProviderCard.value.enabled) return 'Needs setup'
   return 'Disabled'
 })
+const providerStatusPillClass = computed(() => {
+  if (!selectedProviderCard.value) return 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'
+  if (selectedProviderCard.value.configured) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+  if (selectedProviderCard.value.enabled) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+  return 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'
+})
+const providerStatusDotClass = computed(() => {
+  if (!selectedProviderCard.value) return 'h-1.5 w-1.5 rounded-full bg-stone-400'
+  if (selectedProviderCard.value.configured) return 'h-1.5 w-1.5 rounded-full bg-emerald-500'
+  if (selectedProviderCard.value.enabled) return 'h-1.5 w-1.5 rounded-full bg-amber-500'
+  return 'h-1.5 w-1.5 rounded-full bg-stone-400'
+})
 const selectedProviderStorageLabel = computed(() => {
   if (!selectedProviderCard.value) return 'Runtime fallback'
   return selectedProviderCard.value.storage === 'kv' ? 'Cloudflare KV' : 'Runtime fallback'
 })
-const platformMenuItems = computed(() => [
-  {
-    label: `Configure ${currentPlatformLabel.value}`,
-    onClick: () => openProviderConfig(selectedPlatform.value),
-  },
-])
 const queueActionItems = computed(() => [
   {
     label: 'Add to queue',
@@ -496,9 +344,6 @@ const queueActionItems = computed(() => [
     onClick: () => clearFinished(),
   },
 ])
-const activeProviderLabel = computed(() => platformOptions.find(option => option.value === providerDialogPlatform.value)?.label || providerDialogPlatform.value)
-const providerFields = computed(() => providerFieldMap[providerDialogPlatform.value])
-const providerDialogStorageLabel = computed(() => providerDialogStorage.value === 'kv' ? 'Cloudflare KV' : 'runtime defaults')
 const selectedStatusOption = computed({
   get: (): SelectOption<string> => statusFilterOptions.find(option => option.value === statusFilter.value) ?? statusFilterOptions[0] ?? { label: 'All statuses', value: '' },
   set: (option: SelectOption<string>) => {
@@ -547,52 +392,6 @@ const fetchProviders = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch provider statuses:', error)
-  }
-}
-
-const openProviderConfig = async (platform: Platform) => {
-  providerDialogPlatform.value = platform
-  providerDialogConfigured.value = false
-  providerDialogStorage.value = 'runtime'
-  resetProviderForm()
-  isProviderDialogOpen.value = true
-  isProviderDialogLoading.value = true
-
-  try {
-    const response = await $fetch<ProviderConfigResponse>(`/api/admin/social-queue/provider-config/${platform}`)
-    if (response.success) {
-      providerDialogStorage.value = response.data.storage
-      providerDialogConfigured.value = response.data.configured
-      applyProviderForm(response.data.config)
-    }
-  } catch (error) {
-    console.error('Failed to load provider config:', error)
-    toast({ title: 'Error', description: 'Failed to load provider configuration.', toast: 'soft-error' })
-  } finally {
-    isProviderDialogLoading.value = false
-  }
-}
-
-const saveProviderConfig = async () => {
-  isProviderDialogSaving.value = true
-  try {
-    const response = await $fetch<{ success: boolean }>(`/api/admin/social-queue/provider-config/${providerDialogPlatform.value}`, {
-      method: 'PUT',
-      body: buildProviderPayload(providerDialogPlatform.value)
-    })
-
-    if (response.success) {
-      providerDialogStorage.value = 'kv'
-      providerDialogConfigured.value = isCurrentProviderConfigured(providerDialogPlatform.value)
-      toast({ title: 'Saved', description: `${activeProviderLabel.value} configuration saved to Cloudflare KV.`, toast: 'soft-success' })
-      await fetchProviders()
-      isProviderDialogOpen.value = false
-    }
-  } catch (error) {
-    console.error('Failed to save provider config:', error)
-    toast({ title: 'Error', description: 'Failed to save provider configuration.', toast: 'soft-error' })
-  } finally {
-    isProviderDialogSaving.value = false
   }
 }
 
@@ -809,132 +608,6 @@ const formatDateTime = (value: string | null) => {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-const updateProviderField = (key: keyof ProviderFormState, value: string | number) => {
-  if (typeof providerForm[key] === 'number') {
-    providerForm[key] = (Number.isFinite(value) ? Number(value) : 0) as never
-    return
-  }
-
-  providerForm[key] = String(value) as never
-}
-
-const updateProviderBooleanField = (key: keyof ProviderFormState, value: boolean) => {
-  providerForm[key] = value as never
-}
-
-const formatProviderFieldValue = (key: keyof ProviderFormState) => {
-  const value = providerForm[key]
-  return typeof value === 'number' ? String(value) : String(value || '')
-}
-
-const resetProviderForm = () => {
-  Object.assign(providerForm, getEmptyProviderForm())
-}
-
-const applyProviderForm = (config: Partial<ProviderFormState>) => {
-  resetProviderForm()
-  for (const [key, value] of Object.entries(config)) {
-    if (!(key in providerForm)) continue
-    ;(providerForm as Record<string, unknown>)[key] = value as unknown
-  }
-}
-
-const buildProviderPayload = (platform: Platform) => {
-  if (platform === 'x') {
-    return {
-      enabled: providerForm.enabled,
-      requireMedia: providerForm.requireMedia,
-      oauth2AccessToken: providerForm.oauth2AccessToken,
-      oauth1ConsumerKey: providerForm.oauth1ConsumerKey,
-      oauth1ConsumerSecret: providerForm.oauth1ConsumerSecret,
-      oauth1AccessToken: providerForm.oauth1AccessToken,
-      oauth1AccessTokenSecret: providerForm.oauth1AccessTokenSecret,
-    }
-  }
-
-  if (platform === 'bluesky') {
-    return {
-      enabled: providerForm.enabled,
-      service: providerForm.service,
-      identifier: providerForm.identifier,
-      password: providerForm.password,
-      hashtags: providerForm.hashtags,
-    }
-  }
-
-  if (platform === 'instagram') {
-    return {
-      enabled: providerForm.enabled,
-      accessToken: providerForm.accessToken,
-      userId: providerForm.userId,
-      baseUrl: providerForm.baseUrl,
-      apiVersion: providerForm.apiVersion,
-      pollIntervalMs: providerForm.pollIntervalMs,
-      pollTimeoutMs: providerForm.pollTimeoutMs,
-    }
-  }
-
-  if (platform === 'threads') {
-    return {
-      enabled: providerForm.enabled,
-      accessToken: providerForm.accessToken,
-      userId: providerForm.userId,
-      baseUrl: providerForm.baseUrl,
-      apiVersion: providerForm.apiVersion,
-      pollIntervalMs: providerForm.pollIntervalMs,
-      pollTimeoutMs: providerForm.pollTimeoutMs,
-    }
-  }
-
-  return {
-    enabled: providerForm.enabled,
-    pageAccessToken: providerForm.pageAccessToken,
-    pageId: providerForm.pageId,
-    baseUrl: providerForm.baseUrl,
-    apiVersion: providerForm.apiVersion,
-  }
-}
-
-const isCurrentProviderConfigured = (platform: Platform) => {
-  if (platform === 'x') {
-    return Boolean(
-      providerForm.oauth2AccessToken
-      || (providerForm.oauth1ConsumerKey && providerForm.oauth1ConsumerSecret && providerForm.oauth1AccessToken && providerForm.oauth1AccessTokenSecret)
-    )
-  }
-  if (platform === 'bluesky') {
-    return Boolean(providerForm.identifier && providerForm.password)
-  }
-  if (platform === 'facebook') {
-    return Boolean(providerForm.pageAccessToken && providerForm.pageId)
-  }
-  return Boolean(providerForm.accessToken && providerForm.userId)
-}
-
-function getEmptyProviderForm(): ProviderFormState {
-  return {
-    enabled: false,
-    requireMedia: false,
-    service: 'https://bsky.social',
-    identifier: '',
-    password: '',
-    hashtags: '',
-    oauth2AccessToken: '',
-    oauth1ConsumerKey: '',
-    oauth1ConsumerSecret: '',
-    oauth1AccessToken: '',
-    oauth1AccessTokenSecret: '',
-    accessToken: '',
-    userId: '',
-    baseUrl: 'https://graph.facebook.com',
-    apiVersion: 'v24.0',
-    pollIntervalMs: 5000,
-    pollTimeoutMs: 300000,
-    pageAccessToken: '',
-    pageId: '',
-  }
-}
-
 watch([selectedPlatform, statusFilter], () => {
   pagination.value.page = 1
   fetchQueue()
@@ -942,5 +615,24 @@ watch([selectedPlatform, statusFilter], () => {
 
 onMounted(async () => {
   await Promise.all([fetchProviders(), fetchQueue()])
+
+  const route = useRoute()
+  const connected = route.query.connected as string | undefined
+  const errorMsg = route.query.error as string | undefined
+  const partial = route.query.partial as string | undefined
+
+  if (errorMsg) {
+    toast({ title: 'Connection failed', description: errorMsg, toast: 'soft-error' })
+    await navigateTo('/admin/social', { replace: true })
+  } else if (connected) {
+    const platforms = connected.split('+')
+    const label = platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' + ')
+    if (partial === 'instagram') {
+      toast({ title: `${label} connected`, description: 'Facebook configured, but no Instagram Business Account was found.', toast: 'soft-warning' })
+    } else {
+      toast({ title: `${label} connected`, description: 'Provider credentials saved to Cloudflare KV.', toast: 'soft-success' })
+    }
+    await navigateTo('/admin/social', { replace: true })
+  }
 })
 </script>

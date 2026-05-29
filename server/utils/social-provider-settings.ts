@@ -104,6 +104,8 @@ function sanitizeProviderConfig(platform: SocialAdminProviderPlatform, input: Re
       apiVersion: asTrimmedString(input.apiVersion) || 'v24.0',
       pollIntervalMs: asPositiveNumber(input.pollIntervalMs, 5000),
       pollTimeoutMs: asPositiveNumber(input.pollTimeoutMs, 300000),
+      metaAppId: asTrimmedString(input.metaAppId),
+      metaAppSecret: asTrimmedString(input.metaAppSecret),
     }
   }
 
@@ -116,6 +118,8 @@ function sanitizeProviderConfig(platform: SocialAdminProviderPlatform, input: Re
       apiVersion: asTrimmedString(input.apiVersion) || 'v1.0',
       pollIntervalMs: asPositiveNumber(input.pollIntervalMs, 4000),
       pollTimeoutMs: asPositiveNumber(input.pollTimeoutMs, 120000),
+      appId: asTrimmedString(input.appId),
+      appSecret: asTrimmedString(input.appSecret),
     }
   }
 
@@ -125,6 +129,8 @@ function sanitizeProviderConfig(platform: SocialAdminProviderPlatform, input: Re
     pageId: asTrimmedString(input.pageId),
     baseUrl: asTrimmedString(input.baseUrl) || 'https://graph.facebook.com',
     apiVersion: asTrimmedString(input.apiVersion) || 'v25.0',
+    metaAppId: asTrimmedString(input.metaAppId),
+    metaAppSecret: asTrimmedString(input.metaAppSecret),
   }
 }
 
