@@ -7,6 +7,7 @@
       </div>
 
       <div class="flex items-center gap-2 sm:flex-shrink-0">
+        <slot name="header-tabs" />
         <label class="relative block">
           <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400 i-ph-magnifying-glass dark:text-zinc-500"></span>
           <input
@@ -115,8 +116,24 @@
             <tr
               v-for="(row, index) in data"
               :key="getRowKey(row, index)"
-              class="group cursor-pointer transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/50"
+              :draggable="isDraggableRow(row, index)"
+              :class="[
+                'group transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/50',
+                {
+                  'cursor-pointer': !isDraggableRow(row, index),
+                  'cursor-grab active:cursor-grabbing select-none': isDraggableRow(row, index),
+                  'opacity-40': dragIndex === index,
+                  'ring-2 ring-amber-400/60 ring-inset': dropIndex === index && dragIndex !== null && dragIndex !== index,
+                  'grabbing': isDraggableRow(row, index) && dragIndex !== null,
+                }
+              ]"
               @click="handleRowClick(row, $event)"
+              @dragstart="handleDragStart(index, $event)"
+              @dragend="handleDragEnd"
+              @dragover="handleDragOver($event)"
+              @dragenter="handleDragEnter(index, $event)"
+              @dragleave="handleDragLeave($event)"
+              @drop="handleDrop(index, $event)"
             >
               <td class="py-3 pl-5 pr-3">
                 <input
@@ -220,6 +237,8 @@ interface Props {
   pagination?: Pagination
   bulkActions?: AdminBulkAction[]
   emptyMessage?: string
+  draggableRows?: boolean
+  isRowDraggable?: (row: any, index: number) => boolean
 }
 
 interface Emits {
@@ -230,6 +249,7 @@ interface Emits {
   (e: 'edit', row: any): void
   (e: 'delete', row: any): void
   (e: 'row-click', row: any): void
+  (e: 'reorder', dragIndex: number, dropIndex: number): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -360,6 +380,61 @@ const handleRowClick = (row: any, event: MouseEvent) => {
   }
 
   emit('row-click', row)
+}
+
+// Drag-and-drop reorder
+const dragIndex = ref<number | null>(null)
+const dropIndex = ref<number | null>(null)
+
+const isDraggableRow = (row: any, index: number) => {
+  if (!props.draggableRows) return false
+  return props.isRowDraggable ? props.isRowDraggable(row, index) : true
+}
+
+const handleDragStart = (index: number, event: DragEvent) => {
+  if (!isDraggableRow(props.data[index], index)) return
+  dragIndex.value = index
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', String(index))
+  }
+}
+
+const handleDragEnd = () => {
+  dragIndex.value = null
+  dropIndex.value = null
+}
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+const handleDragEnter = (index: number, event: DragEvent) => {
+  event.preventDefault()
+  if (dragIndex.value !== null && dragIndex.value !== index && isDraggableRow(props.data[index], index)) {
+    dropIndex.value = index
+  }
+}
+
+const handleDragLeave = (event: DragEvent) => {
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  if (
+    event.clientX < rect.left || event.clientX > rect.right ||
+    event.clientY < rect.top || event.clientY > rect.bottom
+  ) {
+    dropIndex.value = null
+  }
+}
+
+const handleDrop = (index: number, event: DragEvent) => {
+  event.preventDefault()
+  if (dragIndex.value === null || dragIndex.value === index) return
+  emit('reorder', dragIndex.value, index)
+  dragIndex.value = null
+  dropIndex.value = null
 }
 
 watch(() => props.data, clearSelection)

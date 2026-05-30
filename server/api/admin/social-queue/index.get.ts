@@ -1,5 +1,5 @@
 import { db, schema } from 'hub:db'
-import { and, asc, count, desc, eq, like, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, like, or, sql } from 'drizzle-orm'
 import { isAdminSession } from '../../../utils/auth'
 import { getSocialAutopostPlatformError, isSocialAutopostPlatform } from '../../../utils/social-autopost'
 
@@ -24,11 +24,16 @@ export default defineEventHandler(async (event) => {
   const conditions = [eq(schema.socialQueue.platform, platform)]
 
   if (status) {
-    if (!['queued', 'processing', 'posted', 'failed'].includes(status)) {
-      throw createError({ statusCode: 400, statusMessage: 'status must be queued, processing, posted, or failed' })
+    const statuses = status.split(',').map(s => s.trim()).filter(s => ['queued', 'processing', 'posted', 'failed'].includes(s))
+    if (statuses.length === 0) {
+      throw createError({ statusCode: 400, statusMessage: 'status must be one or more of: queued, processing, posted, failed' })
     }
 
-    conditions.push(eq(schema.socialQueue.status, status as 'queued' | 'processing' | 'posted' | 'failed'))
+    if (statuses.length === 1) {
+      conditions.push(eq(schema.socialQueue.status, statuses[0] as 'queued' | 'processing' | 'posted' | 'failed'))
+    } else {
+      conditions.push(inArray(schema.socialQueue.status, statuses as Array<'queued' | 'processing' | 'posted' | 'failed'>))
+    }
   }
 
   if (search) {

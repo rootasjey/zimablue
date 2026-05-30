@@ -56,14 +56,38 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :draggable-rows="true"
+      :is-row-draggable="(row: QueueRow) => row.status === 'queued'"
       empty-message="No queued or historical rows yet on this platform."
       @search="handleSearch"
       @refresh="fetchQueue"
       @page-change="handlePageChange"
       @bulk-action="handleBulkAction"
+      @reorder="handleTableReorder"
     >
+      <template #header-tabs>
+        <div class="flex rounded-lg border border-stone-200 p-0.5 dark:border-zinc-700">
+          <button
+            type="button"
+            class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+            :class="activeView === 'queue' ? 'bg-amber-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
+            @click="activeView = 'queue'"
+          >
+            Queue
+          </button>
+          <button
+            type="button"
+            class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+            :class="activeView === 'history' ? 'bg-amber-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
+            @click="activeView = 'history'"
+          >
+            History
+          </button>
+        </div>
+      </template>
+
       <template #status-header>
-        <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
           <NTooltip disable-closing-trigger :_tooltip-content="{ class: 'max-w-56 bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-700' }">
             <template #default>
               <NButton
@@ -90,14 +114,6 @@
           </NTooltip>
 
           <span class="admin-section-title">Status</span>
-          <NSelect
-            v-model="selectedStatusOption"
-            :items="statusFilterOptions"
-            item-key="label"
-            value-key="label"
-            size="xs"
-            class="w-36"
-          />
         </div>
       </template>
 
@@ -242,10 +258,7 @@ interface QueueRow {
   lastError: string | null
 }
 
-interface SelectOption<T> {
-  label: string
-  value: T
-}
+type QueueView = 'queue' | 'history'
 
 const { toast } = useToast()
 
@@ -255,14 +268,6 @@ const platformOptions: Array<{ value: Platform, label: string, icon: string }> =
   { value: 'instagram', label: 'Instagram', icon: 'i-ph-instagram-logo' },
   { value: 'threads', label: 'Threads', icon: 'i-ph-threads-logo' },
   { value: 'facebook', label: 'Facebook', icon: 'i-ph-facebook-logo' },
-]
-
-const statusFilterOptions: Array<SelectOption<string>> = [
-  { label: 'All statuses', value: '' },
-  { label: 'Queued', value: 'queued' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Posted', value: 'posted' },
-  { label: 'Failed', value: 'failed' },
 ]
 
 const tableColumns = [
@@ -293,6 +298,8 @@ const isProviderDialogOpen = ref(false)
 const lastRunLabel = ref('Not run yet')
 const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false })
 const queueStats = ref({ queued: 0, processing: 0, posted: 0, failed: 0 })
+const activeView = ref<QueueView>('queue')
+const pageByView = ref<Record<QueueView, number>>({ queue: 1, history: 1 })
 
 const currentPlatformLabel = computed(() => platformOptions.find(option => option.value === selectedPlatform.value)?.label || selectedPlatform.value)
 const providerTabs = computed<ProviderCard[]>(() => platformOptions.map((option) => {
@@ -348,12 +355,6 @@ const queueActionItems = computed(() => [
     onClick: () => clearFinished(),
   },
 ])
-const selectedStatusOption = computed({
-  get: (): SelectOption<string> => statusFilterOptions.find(option => option.value === statusFilter.value) ?? statusFilterOptions[0] ?? { label: 'All statuses', value: '' },
-  set: (option: SelectOption<string>) => {
-    statusFilter.value = option?.value || ''
-  }
-})
 const readyProviderCount = computed(() => providerTabs.value.filter(provider => provider.enabled && provider.configured).length)
 const queuedRows = computed(() => rows.value.filter(row => row.status === 'queued'))
 
@@ -567,6 +568,33 @@ const moveRow = async (row: QueueRow, direction: -1 | 1) => {
   }
 }
 
+const handleTableReorder = async (dragIndex: number, dropIndex: number) => {
+  const fullItems = [...rows.value]
+  const [moved] = fullItems.splice(dragIndex, 1)
+  if (!moved) return
+  fullItems.splice(dropIndex, 0, moved)
+
+  const orderedIds = fullItems
+    .filter(item => item.status === 'queued')
+    .map(item => item.id)
+
+  if (orderedIds.length < 2) return
+
+  try {
+    await $fetch('/api/admin/social-queue/reorder', {
+      method: 'POST',
+      body: {
+        platform: selectedPlatform.value,
+        queueIds: orderedIds,
+      }
+    })
+    await fetchQueue()
+  } catch (error) {
+    console.error('Failed to reorder queue:', error)
+    toast({ title: 'Error', description: 'Failed to reorder the social queue.', toast: 'soft-error' })
+  }
+}
+
 const selectPlatform = (platform: Platform) => {
   selectedPlatform.value = platform
 }
@@ -612,7 +640,17 @@ const formatDateTime = (value: string | null) => {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-watch([selectedPlatform, statusFilter], () => {
+watch(activeView, (view, oldView) => {
+  if (oldView) {
+    pageByView.value[oldView] = pagination.value.page
+  }
+  pagination.value.page = pageByView.value[view]
+  statusFilter.value = view === 'queue' ? 'queued,processing,failed' : 'posted'
+  fetchQueue()
+}, { immediate: true })
+
+watch(selectedPlatform, () => {
+  pageByView.value = { queue: 1, history: 1 }
   pagination.value.page = 1
   fetchQueue()
 })
