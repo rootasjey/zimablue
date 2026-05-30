@@ -285,6 +285,14 @@ const bulkActions: AdminBulkAction[] = [
 ]
 
 const selectedPlatform = ref<Platform>('bluesky')
+if (import.meta.client) {
+  try {
+    const saved = localStorage.getItem('zima:socialPlatform')
+    if (saved && platformOptions.some(p => p.value === saved)) {
+      selectedPlatform.value = saved as Platform
+    }
+  } catch { /* localStorage unavailable */ }
+}
 const searchQuery = ref('')
 const rows = ref<QueueRow[]>([])
 const providerCards = ref<ProviderCard[]>([])
@@ -650,10 +658,13 @@ watch(activeView, (view, oldView) => {
   fetchQueue()
 })
 
-watch(selectedPlatform, () => {
+watch(selectedPlatform, (val) => {
   pageByView.value = { queue: 1, history: 1 }
   pagination.value.page = 1
   fetchQueue()
+  if (import.meta.client) {
+    try { localStorage.setItem('zima:socialPlatform', val) } catch { /* ignore */ }
+  }
 })
 
 onMounted(async () => {
