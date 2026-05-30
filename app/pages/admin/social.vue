@@ -285,7 +285,6 @@ const bulkActions: AdminBulkAction[] = [
 ]
 
 const selectedPlatform = ref<Platform>('bluesky')
-const statusFilter = ref('')
 const searchQuery = ref('')
 const rows = ref<QueueRow[]>([])
 const providerCards = ref<ProviderCard[]>([])
@@ -300,6 +299,7 @@ const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0
 const queueStats = ref({ queued: 0, processing: 0, posted: 0, failed: 0 })
 const activeView = ref<QueueView>('queue')
 const pageByView = ref<Record<QueueView, number>>({ queue: 1, history: 1 })
+const statusFilter = computed(() => activeView.value === 'queue' ? 'queued,processing,failed' : 'posted')
 
 const currentPlatformLabel = computed(() => platformOptions.find(option => option.value === selectedPlatform.value)?.label || selectedPlatform.value)
 const providerTabs = computed<ProviderCard[]>(() => platformOptions.map((option) => {
@@ -647,9 +647,8 @@ watch(activeView, (view, oldView) => {
     pageByView.value[oldView] = pagination.value.page
   }
   pagination.value.page = pageByView.value[view]
-  statusFilter.value = view === 'queue' ? 'queued,processing,failed' : 'posted'
   fetchQueue()
-}, { immediate: true })
+})
 
 watch(selectedPlatform, () => {
   pageByView.value = { queue: 1, history: 1 }
