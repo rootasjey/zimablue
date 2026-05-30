@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
   const limit = Math.min(Math.max(parseInt(String(query.limit || '20'), 10) || 20, 1), 100)
   const offset = (page - 1) * limit
   const search = String(query.search || '').trim()
-  const status = String(query.status || '').trim()
   const platform = String(query.platform || 'bluesky').trim()
 
   if (!isSocialAutopostPlatform(platform)) {
@@ -23,16 +22,19 @@ export default defineEventHandler(async (event) => {
 
   const conditions = [eq(schema.socialQueue.platform, platform)]
 
-  if (status) {
-    const statuses = status.split(',').map(s => s.trim()).filter(s => ['queued', 'processing', 'posted', 'failed'].includes(s))
-    if (statuses.length === 0) {
-      throw createError({ statusCode: 400, statusMessage: 'status must be one or more of: queued, processing, posted, failed' })
-    }
+  const rawStatus = query.status
+  const statusValues: string[] = Array.isArray(rawStatus)
+    ? rawStatus.filter((s): s is string => typeof s === 'string')
+    : typeof rawStatus === 'string' && rawStatus
+      ? [rawStatus]
+      : []
 
-    if (statuses.length === 1) {
-      conditions.push(eq(schema.socialQueue.status, statuses[0] as 'queued' | 'processing' | 'posted' | 'failed'))
+  const validStatuses = statusValues.filter(s => ['queued', 'processing', 'posted', 'failed'].includes(s))
+  if (validStatuses.length > 0) {
+    if (validStatuses.length === 1) {
+      conditions.push(eq(schema.socialQueue.status, validStatuses[0] as 'queued' | 'processing' | 'posted' | 'failed'))
     } else {
-      conditions.push(inArray(schema.socialQueue.status, statuses as Array<'queued' | 'processing' | 'posted' | 'failed'>))
+      conditions.push(inArray(schema.socialQueue.status, validStatuses as Array<'queued' | 'processing' | 'posted' | 'failed'>))
     }
   }
 

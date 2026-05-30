@@ -366,7 +366,9 @@ const fetchQueue = async () => {
       limit: String(pagination.value.limit),
       platform: selectedPlatform.value,
     })
-    if (statusFilter.value) query.append('status', statusFilter.value)
+    if (statusFilter.value) {
+      statusFilter.value.split(',').forEach(s => query.append('status', s.trim()))
+    }
     if (searchQuery.value) query.append('search', searchQuery.value)
 
     const response = await $fetch<{
