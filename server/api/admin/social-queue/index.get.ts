@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
       LIMIT 1
     )`.as('published_status'),
     publishedAt: sql<string | null>`(
-      SELECT sp.posted_at
+      SELECT CAST(CAST(sp.posted_at AS INTEGER) * 1000 AS TEXT)
       FROM social_posts sp
       WHERE sp.queue_id = ${schema.socialQueue.id}
       ORDER BY sp.created_at DESC, sp.id DESC

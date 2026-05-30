@@ -39,6 +39,10 @@
                 <span :class="providerStatusDotClass"></span>
                 {{ selectedProviderStatusLabel }}
               </span>
+              <span v-if="isRunningNow" class="hidden sm:inline-flex items-center gap-1.5 text-stone-400 dark:text-zinc-500">
+                <span class="i-ph-spinner-gap animate-spin text-sm"></span>
+                Posting...
+              </span>
             </div>
           </div>
 

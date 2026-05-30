@@ -8,6 +8,8 @@ interface InstagramPostConfig {
   apiVersion: string
   pollIntervalMs: number
   pollTimeoutMs: number
+  metaAppId: string
+  metaAppSecret: string
 }
 
 interface ThreadsPostConfig {
@@ -18,6 +20,8 @@ interface ThreadsPostConfig {
   apiVersion: string
   pollIntervalMs: number
   pollTimeoutMs: number
+  appId: string
+  appSecret: string
 }
 
 interface FacebookPostConfig {
@@ -26,6 +30,8 @@ interface FacebookPostConfig {
   pageId: string
   baseUrl: string
   apiVersion: string
+  metaAppId: string
+  metaAppSecret: string
 }
 
 export async function resolveInstagramPostConfig(runtimeConfig = useRuntimeConfig()): Promise<InstagramPostConfig> {
@@ -39,6 +45,8 @@ export async function resolveInstagramPostConfig(runtimeConfig = useRuntimeConfi
     apiVersion: String(config.apiVersion || 'v24.0').replace(/^\/+/, ''),
     pollIntervalMs: Math.max(1000, Number(config.pollIntervalMs || 5000)),
     pollTimeoutMs: Math.max(10000, Number(config.pollTimeoutMs || 300000)),
+    metaAppId: String(config.metaAppId || '').trim(),
+    metaAppSecret: String(config.metaAppSecret || '').trim(),
   }
 }
 
@@ -53,6 +61,8 @@ export async function resolveThreadsPostConfig(runtimeConfig = useRuntimeConfig(
     apiVersion: String(config.apiVersion || 'v1.0').replace(/^\/+/, ''),
     pollIntervalMs: Math.max(1000, Number(config.pollIntervalMs || 4000)),
     pollTimeoutMs: Math.max(10000, Number(config.pollTimeoutMs || 120000)),
+    appId: String(config.appId || '').trim(),
+    appSecret: String(config.appSecret || '').trim(),
   }
 }
 
@@ -65,5 +75,7 @@ export async function resolveFacebookPostConfig(runtimeConfig = useRuntimeConfig
     pageId: String(config.pageId || '').trim(),
     baseUrl: String(config.baseUrl || 'https://graph.facebook.com').replace(/\/$/, ''),
     apiVersion: String(config.apiVersion || 'v25.0').replace(/^\/+/, ''),
+    metaAppId: String(config.metaAppId || '').trim(),
+    metaAppSecret: String(config.metaAppSecret || '').trim(),
   }
 }
