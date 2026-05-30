@@ -285,14 +285,6 @@ const bulkActions: AdminBulkAction[] = [
 ]
 
 const selectedPlatform = ref<Platform>('bluesky')
-if (import.meta.client) {
-  try {
-    const saved = localStorage.getItem('zima:socialPlatform')
-    if (saved && platformOptions.some(p => p.value === saved)) {
-      selectedPlatform.value = saved as Platform
-    }
-  } catch { /* localStorage unavailable */ }
-}
 const searchQuery = ref('')
 const rows = ref<QueueRow[]>([])
 const providerCards = ref<ProviderCard[]>([])
@@ -668,7 +660,19 @@ watch(selectedPlatform, (val) => {
 })
 
 onMounted(async () => {
-  await Promise.all([fetchProviders(), fetchQueue()])
+  let needsQueueFetch = true
+
+  if (import.meta.client) {
+    try {
+      const saved = localStorage.getItem('zima:socialPlatform')
+      if (saved && platformOptions.some(p => p.value === saved) && saved !== selectedPlatform.value) {
+        selectedPlatform.value = saved as Platform
+        needsQueueFetch = false // watch(selectedPlatform) already calls fetchQueue
+      }
+    } catch { /* localStorage unavailable */ }
+  }
+
+  await Promise.all([needsQueueFetch ? fetchQueue() : Promise.resolve(), fetchProviders()])
 
   const route = useRoute()
   const connected = route.query.connected as string | undefined
