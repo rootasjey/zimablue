@@ -616,7 +616,10 @@ const moveRow = async (row: QueueRow, direction: -1 | 1) => {
         queueIds: nextIds,
       }
     })
-    await fetchQueue()
+    const queuedItems = rows.value.filter(r => r.status === 'queued')
+    const nonQueuedItems = rows.value.filter(r => r.status !== 'queued')
+    const reorderedQueued = nextIds.map(id => queuedItems.find(r => r.id === id)).filter(Boolean) as QueueRow[]
+    rows.value = [...reorderedQueued, ...nonQueuedItems]
   } catch (error) {
     console.error('Failed to reorder queue:', error)
     toast({ title: 'Error', description: 'Failed to reorder the social queue.', toast: 'soft-error' })
@@ -643,7 +646,7 @@ const handleTableReorder = async (dragIndex: number, dropIndex: number) => {
         queueIds: orderedIds,
       }
     })
-    await fetchQueue()
+    rows.value = fullItems
   } catch (error) {
     console.error('Failed to reorder queue:', error)
     toast({ title: 'Error', description: 'Failed to reorder the social queue.', toast: 'soft-error' })
