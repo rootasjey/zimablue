@@ -98,8 +98,7 @@ export default defineNuxtConfig({
       wasm: true,
     },
     scheduledTasks: {
-      '8 6 * * *': ['social:autopost'],
-      '8 7 * * *': ['social:autopost'],
+      '0 7 * * *': ['social:autopost'],
     },
   },
 
