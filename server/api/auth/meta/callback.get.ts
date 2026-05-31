@@ -113,14 +113,32 @@ async function configureFacebook(accessToken: string, apiVersion: string): Promi
   const res = await fetch(pagesUrl.toString())
   const body = await res.json() as { data?: Array<{ id: string; name: string; access_token: string }>; error?: { message?: string } }
 
-  if (!res.ok || !body.data || body.data.length === 0) {
+  if (res.ok && body.data && body.data.length > 0) {
+    const page = body.data[0]!
+    return saveFacebookConfig(page.id, page.access_token, apiVersion)
+  }
+
+  const storedConfig = await getStoredProviderConfig()
+  const storedPageId = storedConfig.facebook?.pageId as string | undefined
+  if (!storedPageId) {
     return null
   }
 
-  const page = body.data[0]!
-  const pageId = page.id
-  const pageAccessToken = page.access_token
+  const pageUrl = new URL(`https://graph.facebook.com/${apiVersion}/${storedPageId}`)
+  pageUrl.searchParams.set('fields', 'access_token')
+  pageUrl.searchParams.set('access_token', accessToken)
 
+  const pageRes = await fetch(pageUrl.toString())
+  const pageBody = await pageRes.json() as { id?: string; access_token?: string; error?: { message?: string } }
+
+  if (!pageRes.ok || !pageBody.access_token) {
+    return null
+  }
+
+  return saveFacebookConfig(storedPageId, pageBody.access_token, apiVersion)
+}
+
+async function saveFacebookConfig(pageId: string, pageAccessToken: string, apiVersion: string): Promise<{ pageId: string; pageAccessToken: string }> {
   const storedConfig = await getStoredProviderConfig()
   const nextConfig = {
     ...storedConfig,
