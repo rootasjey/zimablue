@@ -272,6 +272,20 @@ type QueueView = 'queue' | 'history'
 
 const { toast } = useToast()
 
+function toastWithCopy(title: string, description: string, toastType: string) {
+  toast({
+    title,
+    description,
+    toast: toastType,
+    closable: true,
+    actions: [{
+      label: 'Copy',
+      altText: 'Copy error message',
+      onClick: () => navigator.clipboard.writeText(description),
+    }],
+  })
+}
+
 const platformOptions: Array<{ value: Platform, label: string, icon: string }> = [
   { value: 'bluesky', label: 'Bluesky', icon: 'i-ph-butterfly' },
   { value: 'x', label: 'X', icon: 'i-ph-twitter-logo' },
@@ -451,7 +465,7 @@ const runNow = async () => {
       } else if ('skipped' in data && data.skipped) {
         toast({ title: 'Run skipped', description: data.reason || 'No item was processed.', toast: 'soft-warning' })
       } else {
-        toast({ title: 'Run finished', description: data.reason || 'Execution completed with a failure.', toast: 'soft-warning' })
+        toastWithCopy('Run finished', data.reason || 'Execution completed with a failure.', 'soft-warning')
       }
       await fetchQueue()
     }
@@ -700,7 +714,7 @@ onMounted(async () => {
   const partial = route.query.partial as string | undefined
 
   if (errorMsg) {
-    toast({ title: 'Connection failed', description: errorMsg, toast: 'soft-error' })
+    toastWithCopy('Connection failed', errorMsg, 'soft-error')
     await navigateTo('/admin/social', { replace: true })
   } else if (connected) {
     const platforms = connected.split('+')
