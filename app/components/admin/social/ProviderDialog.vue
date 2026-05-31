@@ -215,7 +215,7 @@ const providerFieldMap: Record<Platform, ProviderField[]> = {
   ],
   facebook: [
     { key: 'enabled', label: 'Enable Facebook autopost', type: 'toggle', fullWidth: true },
-    { key: 'pageAccessToken', label: 'Page access token', type: 'password', fullWidth: true },
+    { key: 'pageAccessToken', label: 'Page access token', type: 'password', help: 'Page Access Token with pages_manage_posts scope. Generate from Graph API Explorer → select "Page Token".', fullWidth: true },
     { key: 'pageId', label: 'Page id', type: 'text' },
     { key: 'baseUrl', label: 'Base URL', type: 'text', placeholder: 'https://graph.facebook.com' },
     { key: 'apiVersion', label: 'API version', type: 'text', placeholder: 'v25.0' },
