@@ -159,7 +159,12 @@
           </button>
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ row.imageName }}</p>
-            <p class="truncate text-xs text-stone-400 dark:text-zinc-500">/{{ row.imageSlug }}</p>
+            <button
+              type="button"
+              class="truncate text-xs text-stone-400 decoration-dashed underline-offset-2 transition-colors hover:underline hover:text-amber-600 dark:text-zinc-500 dark:hover:text-amber-400"
+              title="Copy illustration link"
+              @click.stop="copySlug(row)"
+            >/{{ row.imageSlug }}</button>
           </div>
         </div>
       </template>
@@ -228,7 +233,8 @@
     <ImagePreviewDialog
       v-model:is-open="isPreviewOpen"
       :src="previewSrc"
-      :alt="previewAlt"
+      :title="previewTitle"
+      :description="previewDescription"
     />
   </div>
 </template>
@@ -257,6 +263,7 @@ interface QueueRow {
   id: number
   imageId: number
   imageName: string
+  imageDescription: string | null
   imageSlug: string
   imagePathname: string | null
   userName: string | null
@@ -320,7 +327,8 @@ const isAddDialogOpen = ref(false)
 const isProviderDialogOpen = ref(false)
 const isPreviewOpen = ref(false)
 const previewSrc = ref<string | null>(null)
-const previewAlt = ref<string | null>(null)
+const previewTitle = ref<string | null>(null)
+const previewDescription = ref<string | null>(null)
 const lastRunLabel = ref('Not run yet')
 const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false })
 const queueStats = ref({ queued: 0, processing: 0, posted: 0, failed: 0 })
@@ -436,8 +444,19 @@ const openAddDialog = () => {
 const openPreview = (row: QueueRow) => {
   if (!row.imagePathname) return
   previewSrc.value = row.imagePathname
-  previewAlt.value = row.imageName
+  previewTitle.value = row.imageName
+  previewDescription.value = row.imageDescription
   isPreviewOpen.value = true
+}
+
+const copySlug = async (row: QueueRow) => {
+  const url = `${window.location.origin}/illustrations/${row.imageSlug}`
+  try {
+    await navigator.clipboard.writeText(url)
+    toast({ title: 'Link copied', description: url, toast: 'soft-success' })
+  } catch {
+    toast({ title: 'Copy failed', description: 'Could not copy to clipboard.', toast: 'soft-error' })
+  }
 }
 
 const handleQueueSubmitted = async (payload: { platform: Platform }) => {
