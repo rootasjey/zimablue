@@ -777,11 +777,11 @@ async function waitForInstagramContainerReady(input: {
 }): Promise<{ ok: boolean, error?: string }> {
   const startedAt = Date.now()
   while ((Date.now() - startedAt) < input.pollTimeoutMs) {
-    const response = await fetch(`${input.baseUrl}/${input.apiVersion}/${input.containerId}?fields=status_code,status,error_message`, {
+    const response = await fetch(`${input.baseUrl}/${input.apiVersion}/${input.containerId}?fields=status_code,status`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${input.accessToken}` },
     })
-    const payload = await response.json().catch(() => null) as { status_code?: string, status?: string, error_message?: string, error?: { message?: string } } | null
+    const payload = await response.json().catch(() => null) as { status_code?: string, status?: string, error?: { message?: string } } | null
     if (!response.ok) {
       return { ok: false, error: readGraphApiError(payload, `Instagram container status error (${response.status})`) }
     }
@@ -791,7 +791,7 @@ async function waitForInstagramContainerReady(input: {
       return { ok: true }
     }
     if (status === 'ERROR' || status === 'EXPIRED') {
-      return { ok: false, error: payload?.error_message || `Instagram container is ${status.toLowerCase()}` }
+      return { ok: false, error: payload?.error?.message || `Instagram container is ${status.toLowerCase()}` }
     }
 
     await delay(input.pollIntervalMs)
@@ -810,11 +810,11 @@ async function waitForThreadsContainerReady(input: {
 }): Promise<{ ok: boolean, error?: string }> {
   const startedAt = Date.now()
   while ((Date.now() - startedAt) < input.pollTimeoutMs) {
-    const response = await fetch(`${input.baseUrl}/${input.apiVersion}/${input.containerId}?fields=status,error_message`, {
+    const response = await fetch(`${input.baseUrl}/${input.apiVersion}/${input.containerId}?fields=status`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${input.accessToken}` },
     })
-    const payload = await response.json().catch(() => null) as { status?: string, error_message?: string, error?: { message?: string } } | null
+    const payload = await response.json().catch(() => null) as { status?: string, error?: { message?: string } } | null
     if (!response.ok) {
       return { ok: false, error: readGraphApiError(payload, `Threads container status error (${response.status})`) }
     }
@@ -824,7 +824,7 @@ async function waitForThreadsContainerReady(input: {
       return { ok: true }
     }
     if (status === 'ERROR' || status === 'EXPIRED') {
-      return { ok: false, error: payload?.error_message || `Threads container is ${status.toLowerCase()}` }
+      return { ok: false, error: payload?.error?.message || `Threads container is ${status.toLowerCase()}` }
     }
 
     await delay(input.pollIntervalMs)
