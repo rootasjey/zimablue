@@ -149,10 +149,14 @@
 
       <template #imageName-cell="{ row }">
         <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-stone-100 text-stone-400 dark:bg-zinc-800 dark:text-zinc-500">
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-stone-100 text-stone-400 transition-transform hover:scale-110 dark:bg-zinc-800 dark:text-zinc-500"
+            @click.stop="openPreview(row)"
+          >
             <NuxtImg v-if="row.imagePathname" :src="row.imagePathname" provider="hubblob" :alt="row.imageName" class="h-full w-full object-cover" />
             <span v-else class="i-ph-image text-lg"></span>
-          </div>
+          </button>
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ row.imageName }}</p>
             <p class="truncate text-xs text-stone-400 dark:text-zinc-500">/{{ row.imageSlug }}</p>
@@ -219,6 +223,12 @@
       :default-platform="selectedPlatform"
       :platform-options="platformOptions"
       @submitted="handleQueueSubmitted"
+    />
+
+    <ImagePreviewDialog
+      v-model:is-open="isPreviewOpen"
+      :src="previewSrc"
+      :alt="previewAlt"
     />
   </div>
 </template>
@@ -294,6 +304,9 @@ const isRetrying = ref(false)
 const isClearing = ref(false)
 const isAddDialogOpen = ref(false)
 const isProviderDialogOpen = ref(false)
+const isPreviewOpen = ref(false)
+const previewSrc = ref<string | null>(null)
+const previewAlt = ref<string | null>(null)
 const lastRunLabel = ref('Not run yet')
 const pagination = ref<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false })
 const queueStats = ref({ queued: 0, processing: 0, posted: 0, failed: 0 })
@@ -404,6 +417,13 @@ const fetchProviders = async () => {
 
 const openAddDialog = () => {
   isAddDialogOpen.value = true
+}
+
+const openPreview = (row: QueueRow) => {
+  if (!row.imagePathname) return
+  previewSrc.value = row.imagePathname
+  previewAlt.value = row.imageName
+  isPreviewOpen.value = true
 }
 
 const handleQueueSubmitted = async (payload: { platform: Platform }) => {
