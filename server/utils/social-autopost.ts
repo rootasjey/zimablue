@@ -189,6 +189,7 @@ const processQueueCandidate: SocialAutopostQueueProcessor<SocialAutopostPlatform
   const instagramHashtags = nextItem.platform === 'instagram'
     ? buildInstagramHashtags(resolvedContent.content.hashtags)
     : undefined
+  const description = resolvedContent.content.description?.trim()
   const postText = buildSocialPostText(nextItem.platform, {
     ...resolvedContent.content,
     canonicalUrl,
@@ -196,9 +197,12 @@ const processQueueCandidate: SocialAutopostQueueProcessor<SocialAutopostPlatform
     blueskyHashtags,
     instagramHashtags,
   })
+  const finalPostText = description
+    ? injectDescriptionIntoText(postText, description, nextItem.platform)
+    : postText
 
   const publishResult = await publishByPlatform(nextItem.platform, {
-    text: postText,
+    text: finalPostText,
     canonicalUrl,
     imageUrl: resolvedContent.media?.url || '',
     alt: resolvedContent.media?.alt,
@@ -214,7 +218,7 @@ const processQueueCandidate: SocialAutopostQueueProcessor<SocialAutopostPlatform
       platform: nextItem.platform,
       reason: publishResult.error || `${nextItem.platform} publish failed`,
       canonicalUrl,
-      postText,
+    postText: finalPostText,
     })
 
     return {
@@ -233,7 +237,7 @@ const processQueueCandidate: SocialAutopostQueueProcessor<SocialAutopostPlatform
     sourceId: Number(resolvedContent.content.sourceId),
     platform: nextItem.platform,
     status: 'success',
-    postText,
+    postText: finalPostText,
     postUrl: publishResult.postUrl || canonicalUrl,
     externalPostId: publishResult.postId,
     idempotencyKey: `${nextItem.platform}:${nextItem.queueId}`,
@@ -871,6 +875,36 @@ async function getThreadsPermalink(input: {
 
 function readGraphApiError(payload: { error?: { message?: string } } | null | undefined, fallback: string): string {
   return payload?.error?.message || fallback
+}
+
+const PLATFORM_MAX_LENGTHS: Record<SocialAutopostPlatform, number> = {
+  instagram: 2200,
+  facebook: 5000,
+  threads: 500,
+  x: 280,
+  bluesky: 300,
+  pinterest: 500,
+}
+
+function injectDescriptionIntoText(text: string, description: string, platform: SocialAutopostPlatform): string {
+  const maxLength = PLATFORM_MAX_LENGTHS[platform] || 300
+  const cleanDescription = description.replace(/\n{3,}/g, '\n\n').trim()
+
+  const firstNewline = text.indexOf('\n')
+  if (firstNewline === -1) {
+    const result = `${text}\n\n${cleanDescription}`
+    return result.length <= maxLength ? result : text
+  }
+
+  const titleLine = text.slice(0, firstNewline)
+  const rest = text.slice(firstNewline)
+  const result = `${titleLine}\n\n${cleanDescription}${rest}`
+  if (result.length <= maxLength) return result
+
+  const available = maxLength - titleLine.length - rest.length - 3
+  if (available <= 10) return text
+  const truncated = cleanDescription.slice(0, available - 1) + '…'
+  return `${titleLine}\n\n${truncated}${rest}`
 }
 
 function delay(ms: number) {
