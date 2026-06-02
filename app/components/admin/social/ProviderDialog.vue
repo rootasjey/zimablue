@@ -328,7 +328,7 @@ const testConnection = async () => {
   testConnectionError.value = ''
 
   try {
-    const response = await $fetch<{ success: boolean; handle?: string; error?: string }>(`/api/admin/social-queue/test-connection/${dialogPlatform.value}`, {
+    const response = await $fetch<{ success: boolean; handle?: string; error?: string }>('/api/admin/social-queue/test-connection', {
       method: 'POST',
       body: buildProviderPayload(dialogPlatform.value)
     })
