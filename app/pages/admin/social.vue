@@ -196,23 +196,32 @@
       </template>
 
       <template #actions="{ row }">
-        <div class="flex items-center justify-end gap-1">
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" :disabled="row.status !== 'queued' || !canMoveRow(row, -1)" title="Move up" @click.stop="moveRow(row, -1)">
-            <span class="i-ph-arrow-up text-sm"></span>
-          </button>
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" :disabled="row.status !== 'queued' || !canMoveRow(row, 1)" title="Move down" @click.stop="moveRow(row, 1)">
-            <span class="i-ph-arrow-down text-sm"></span>
-          </button>
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-cyan-50 hover:text-cyan-700 disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-cyan-900/20 dark:hover:text-cyan-300" :disabled="row.status !== 'failed'" title="Retry" @click.stop="retryFailed([row.id])">
-            <span class="i-ph-arrow-counter-clockwise text-sm"></span>
-          </button>
-          <a v-if="row.publishedPostUrl" :href="row.publishedPostUrl" target="_blank" class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" title="Open published post" @click.stop>
-            <span class="i-ph-arrow-square-out text-sm"></span>
-          </a>
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-500 dark:hover:bg-rose-900/20 dark:hover:text-rose-400" title="Delete" @click.stop="deleteQueueRow(row)">
-            <span class="i-ph-trash-simple text-sm"></span>
-          </button>
-        </div>
+        <ClientOnly>
+          <NDropdownMenu
+            :items="rowActionItems(row)"
+            size="xs"
+            :_dropdown-menu-content="{
+              class: 'w-48',
+              align: 'end',
+              side: 'bottom',
+            }"
+          >
+            <button
+              type="button"
+              class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            >
+              <span class="i-ph-dots-three-vertical text-sm"></span>
+            </button>
+          </NDropdownMenu>
+          <template #fallback>
+            <button
+              type="button"
+              class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 dark:text-zinc-500"
+            >
+              <span class="i-ph-dots-three-vertical text-sm"></span>
+            </button>
+          </template>
+        </ClientOnly>
       </template>
     </AdminTable>
 
@@ -390,6 +399,55 @@ const queueActionItems = computed(() => [
     onClick: () => clearFinished(),
   },
 ])
+const rowActionItems = (row: QueueRow) => {
+  const items: Array<Record<string, any>> = [
+    {
+      label: 'Move up',
+      leading: 'i-ph-arrow-up',
+      disabled: row.status !== 'queued' || !canMoveRow(row, -1),
+      onClick: () => moveRow(row, -1),
+    },
+    {
+      label: 'Move down',
+      leading: 'i-ph-arrow-down',
+      disabled: row.status !== 'queued' || !canMoveRow(row, 1),
+      onClick: () => moveRow(row, 1),
+    },
+  ]
+
+  const conditionalItems: Array<Record<string, any>> = []
+
+  if (row.status === 'failed') {
+    conditionalItems.push({
+      label: 'Retry',
+      leading: 'i-ph-arrow-counter-clockwise',
+      onClick: () => retryFailed([row.id]),
+    })
+  }
+
+  if (row.publishedPostUrl) {
+    conditionalItems.push({
+      label: 'Open post',
+      leading: 'i-ph-arrow-square-out',
+      onClick: () => window.open(row.publishedPostUrl!, '_blank'),
+    })
+  }
+
+  if (conditionalItems.length > 0) {
+    items.push({})
+    items.push(...conditionalItems)
+  }
+
+  items.push({})
+  items.push({
+    label: 'Delete',
+    leading: 'i-ph-trash-simple',
+    onClick: () => deleteQueueRow(row),
+  })
+
+  return items
+}
+
 const readyProviderCount = computed(() => providerTabs.value.filter(provider => provider.enabled && provider.configured).length)
 const queuedRows = computed(() => rows.value.filter(row => row.status === 'queued'))
 
