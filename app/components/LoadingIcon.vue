@@ -4,7 +4,7 @@
       <div class="grid grid-cols-3 gap-[3px] w-14 h-14 transform -rotate-6 animation-float">
         <div class="bg-blue-400 rounded-[2px] animate-pulse" />
         <div class="bg-purple-400 rounded-[2px] row-span-2 animate-pulse" style="animation-delay: 200ms" />
-        <div class="bg-amber-400 rounded-[2px] animate-pulse" style="animation-delay: 400ms" />
+        <div class="bg-pink-400 rounded-[2px] animate-pulse" style="animation-delay: 400ms" />
         <div class="bg-rose-400 rounded-[2px] col-span-2 animate-pulse" style="animation-delay: 600ms" />
         <div class="bg-emerald-400 rounded-[2px] animate-pulse" style="animation-delay: 800ms" />
       </div>
@@ -13,7 +13,7 @@
     <div v-else-if="activeVariant === 'painting'" class="loading-icon__visual">
       <div class="relative w-16 h-16 flex items-center justify-center animation-float">
         <span class="i-ph-paint-brush-broad-duotone text-4xl text-gray-800 dark:text-gray-200 absolute z-10 animation-wipe" />
-        <div class="absolute w-14 h-3 top-8 rounded-full bg-gradient-to-r from-cyan-400 via-purple-400 to-amber-400 animation-paint-trail opacity-0 shadow-lg mix-blend-multiply dark:mix-blend-screen" />
+        <div class="absolute w-14 h-3 top-8 rounded-full bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 animation-paint-trail opacity-0 shadow-lg mix-blend-multiply dark:mix-blend-screen" />
       </div>
     </div>
 
@@ -44,7 +44,7 @@
       <div class="relative w-16 h-16 flex flex-wrap justify-center content-center gap-1.5 z-10 animation-float">
         <div class="w-[18px] h-[18px] rounded-full bg-cyan-400 shadow-sm animate-[bounce_1s_infinite]" />
         <div class="w-[18px] h-[18px] rounded-full bg-fuchsia-400 shadow-sm animate-[bounce_1s_infinite]" style="animation-delay: 150ms" />
-        <div class="w-[18px] h-[18px] rounded-full bg-yellow-400 shadow-sm animate-[bounce_1s_infinite]" style="animation-delay: 300ms" />
+        <div class="w-[18px] h-[18px] rounded-full bg-pink-400 shadow-sm animate-[bounce_1s_infinite]" style="animation-delay: 300ms" />
         <div class="w-[18px] h-[18px] rounded-full bg-emerald-400 shadow-sm animate-[bounce_1s_infinite]" style="animation-delay: 450ms" />
       </div>
     </div>

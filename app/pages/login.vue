@@ -6,17 +6,17 @@
       <div class="absolute inset-0">
         <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-cyan-400/30 via-transparent to-transparent"></div>
         <div class="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-pink-500/30 via-transparent to-transparent"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-300/20 via-transparent to-transparent"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-pink-300/20 via-transparent to-transparent"></div>
       </div>
       
       <!-- Floating shapes with neon colors -->
       <div class="absolute inset-0 overflow-hidden">
         <div class="absolute top-20 left-20 w-64 h-64 rounded-full bg-gradient-to-br from-cyan-400/30 to-blue-500/30 blur-3xl animate-float"></div>
         <div class="absolute bottom-32 right-20 w-48 h-48 rounded-full bg-gradient-to-br from-pink-500/40 to-fuchsia-500/30 blur-3xl animate-float-delayed"></div>
-        <div class="absolute top-1/2 left-1/3 w-32 h-32 rounded-full bg-gradient-to-br from-yellow-300/30 to-amber-400/20 blur-2xl animate-float-slow"></div>
+        <div class="absolute top-1/2 left-1/3 w-32 h-32 rounded-full bg-gradient-to-br from-pink-300/30 to-pink-400/20 blur-2xl animate-float-slow"></div>
         <!-- Speed lines like in the image -->
         <div class="absolute top-1/4 left-0 w-32 h-1 bg-gradient-to-r from-cyan-400 to-transparent rounded-full animate-speed-line"></div>
-        <div class="absolute top-1/3 right-0 w-48 h-1 bg-gradient-to-l from-yellow-300 to-transparent rounded-full animate-speed-line-delayed"></div>
+        <div class="absolute top-1/3 right-0 w-48 h-1 bg-gradient-to-l from-pink-300 to-transparent rounded-full animate-speed-line-delayed"></div>
         <div class="absolute bottom-1/4 left-0 w-40 h-1 bg-gradient-to-r from-pink-400 to-transparent rounded-full animate-speed-line-slow"></div>
       </div>
 
@@ -31,7 +31,7 @@
         
         <div class="max-w-md">
           <h2 class="text-6xl font-200 mb-4 leading-tight">
-            Your creative space for <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-pink-300 to-yellow-300">beautiful imagery</span>
+            Your creative space for <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-pink-300 to-pink-300">beautiful imagery</span>
           </h2>
           <p class="text-gray-200/70 text-lg">
             Organize, showcase, and share your visual content with an elegant gallery experience.
@@ -42,7 +42,7 @@
           <div class="flex -space-x-2">
             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-500 ring-2 ring-[#0066CC]"></div>
             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 ring-2 ring-[#0066CC]"></div>
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-amber-400 ring-2 ring-[#0066CC]"></div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-300 to-pink-400 ring-2 ring-[#0066CC]"></div>
           </div>
           <p class="text-gray-200/60 text-sm">Join our creative community</p>
         </div>

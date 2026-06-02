@@ -4,7 +4,7 @@
       <div class="flex flex-col gap-4 border-b border-stone-200 pb-5 dark:border-zinc-800 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <span class="h-2.5 w-2.5 rounded-full" :class="message.read ? 'bg-stone-300 dark:bg-zinc-600' : 'bg-amber-400'"></span>
+            <span class="h-2.5 w-2.5 rounded-full" :class="message.read ? 'bg-stone-300 dark:bg-zinc-600' : 'bg-indigo-400'"></span>
             <span class="text-xs uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">
               {{ message.read ? 'Read' : 'Unread' }}
             </span>
@@ -31,7 +31,7 @@
             class="inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors"
             :class="message.read
               ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-              : 'bg-amber-500 text-white hover:bg-amber-400'"
+              : 'bg-indigo-500 text-white hover:bg-indigo-400'"
             @click="handleMarkRead(!message.read)"
           >
             <span :class="message.read ? 'i-ph-circle' : 'i-ph-check'"></span>

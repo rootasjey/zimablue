@@ -27,7 +27,7 @@
 
           <button
             v-if="onAdd"
-            class="flex items-center justify-center w-5 h-5 rounded text-stone-400 dark:text-zinc-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+            class="flex items-center justify-center w-5 h-5 rounded text-stone-400 dark:text-zinc-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
             :title="`Add to ${col.label}`"
             @click="onAdd(col.id)"
           >
@@ -145,7 +145,7 @@ const priorityClass = (priority?: string) => {
   if (!priority) return 'admin-badge-stone'
   const p = priority.toLowerCase()
   if (p === 'high') return 'admin-badge-rose'
-  if (p === 'medium') return 'admin-badge-amber'
+  if (p === 'medium') return 'admin-badge-indigo'
   return 'admin-badge-cyan'
 }
 

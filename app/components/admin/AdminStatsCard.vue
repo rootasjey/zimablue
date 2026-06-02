@@ -56,7 +56,7 @@ interface Props {
   value: string | number
   icon: string
   to?: string
-  iconColor?: 'amber' | 'cyan' | 'rose' | 'emerald' | 'stone'
+  iconColor?: 'indigo' | 'pink' | 'cyan' | 'rose' | 'emerald' | 'stone'
   change?: number
   changeLabel?: string
   subLabel?: string
@@ -64,18 +64,19 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  iconColor: 'amber',
+  iconColor: 'indigo',
 })
 
 const colorMap = {
-  amber:   { bg: 'bg-amber-100 dark:bg-amber-900/30',   icon: 'text-amber-600 dark:text-amber-400',   spark: 'bg-amber-300 dark:bg-amber-600' },
+  indigo:   { bg: 'bg-indigo-100 dark:bg-indigo-900/30',   icon: 'text-indigo-600 dark:text-indigo-400',   spark: 'bg-indigo-300 dark:bg-indigo-600' },
+  pink:     { bg: 'bg-pink-100 dark:bg-pink-900/30',       icon: 'text-pink-600 dark:text-pink-400',       spark: 'bg-pink-300 dark:bg-pink-600' },
   cyan:    { bg: 'bg-cyan-100 dark:bg-cyan-900/30',     icon: 'text-cyan-600 dark:text-cyan-400',     spark: 'bg-cyan-300 dark:bg-cyan-600' },
   rose:    { bg: 'bg-rose-100 dark:bg-rose-900/30',     icon: 'text-rose-600 dark:text-rose-400',     spark: 'bg-rose-300 dark:bg-rose-600' },
   emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', icon: 'text-emerald-600 dark:text-emerald-400', spark: 'bg-emerald-300 dark:bg-emerald-600' },
   stone:   { bg: 'bg-stone-100 dark:bg-zinc-800',       icon: 'text-stone-600 dark:text-zinc-400',   spark: 'bg-stone-300 dark:bg-zinc-600' },
 } as const
 
-const palette = computed(() => colorMap[props.iconColor ?? 'amber'])
+const palette = computed(() => colorMap[props.iconColor ?? 'indigo'])
 const iconBgClass = computed(() => palette.value.bg)
 const iconColorClass = computed(() => palette.value.icon)
 const sparklineColorClass = computed(() => palette.value.spark)

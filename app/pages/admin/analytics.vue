@@ -24,7 +24,7 @@
 
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <AdminStatsCard title="New users" :value="userGrowth.this_month" icon="i-ph-users-three" icon-color="emerald" :change="Math.round(userGrowth.percentage_change)" change-label="vs last month" :sparkline="[Math.max(userGrowth.last_month, 1), Math.max(userGrowth.this_month, 1), Math.max(userGrowth.total, 1)]" />
-      <AdminStatsCard title="Uploads" :value="contentActivity.last_30_days" icon="i-ph-image" icon-color="amber" :sub-label="`${contentActivity.last_7_days} in the last 7 days`" :sparkline="[Math.max(contentActivity.last_7_days, 1), Math.max(contentActivity.last_30_days, 1), Math.max(contentActivity.total, 1)]" />
+      <AdminStatsCard title="Uploads" :value="contentActivity.last_30_days" icon="i-ph-image" icon-color="indigo" :sub-label="`${contentActivity.last_7_days} in the last 7 days`" :sparkline="[Math.max(contentActivity.last_7_days, 1), Math.max(contentActivity.last_30_days, 1), Math.max(contentActivity.total, 1)]" />
       <AdminStatsCard title="Top image views" :value="topImages[0]?.stats_views ?? 0" icon="i-ph-eye" icon-color="cyan" :sub-label="topImages[0]?.name || 'No image data yet'" :sparkline="topImagesSparkline" />
       <AdminStatsCard title="Top collection views" :value="topCollections[0]?.stats_views ?? 0" icon="i-ph-folders" icon-color="rose" :sub-label="topCollections[0]?.name || 'No collection data yet'" :sparkline="topCollectionsSparkline" />
     </section>
@@ -75,7 +75,7 @@
             <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-classic">Top Images</h3>
             <p class="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">Best performing illustrations</p>
           </div>
-          <select v-model="imageMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopImages">
+          <select v-model="imageMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopImages">
             <option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
@@ -115,7 +115,7 @@
             <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-classic">Top Collections</h3>
             <p class="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">Best performing collections</p>
           </div>
-          <select v-model="collectionMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopCollections">
+          <select v-model="collectionMetricValue" class="h-9 rounded-xl border border-stone-200 bg-white px-3 text-xs text-zinc-700 outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300" @change="fetchTopCollections">
             <option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>

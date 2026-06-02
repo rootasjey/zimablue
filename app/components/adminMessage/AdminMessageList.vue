@@ -22,7 +22,7 @@
         :key="message.id"
         class="group relative w-full rounded-2xl border p-4 text-left transition-all duration-200"
         :class="selectedMessages[message.id] || message.id === activeMessageId
-          ? 'border-amber-300 bg-amber-50 shadow-sm dark:border-amber-900/80 dark:bg-amber-950/20'
+          ? 'border-indigo-300 bg-indigo-50 shadow-sm dark:border-indigo-900/80 dark:bg-indigo-950/20'
           : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-900'"
         @click="multiSelectActive ? $emit('select-message', message.id) : $emit('view-message', message)"
       >
@@ -40,7 +40,7 @@
                 <p class="mt-1 truncate text-xs text-stone-500 dark:text-zinc-400">{{ message.sender_email }}</p>
               </div>
               <div class="flex flex-col items-end gap-2">
-                <span v-if="!message.read" class="admin-badge-amber">Unread</span>
+                <span v-if="!message.read" class="admin-badge-indigo">Unread</span>
                 <span class="text-[11px] text-stone-400 dark:text-zinc-500">{{ formatDate(message.created_at) }}</span>
               </div>
             </div>

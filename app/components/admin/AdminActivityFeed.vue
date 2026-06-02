@@ -63,7 +63,7 @@
     <div v-if="activities.length" class="mt-3 pt-3 border-t border-stone-100 dark:border-zinc-800">
       <NuxtLink
         to="/admin/analytics"
-        class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium transition-colors"
+        class="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
       >
         View all activity
         <span class="i-ph-arrow-right text-xs"></span>
@@ -85,7 +85,7 @@ const activities = ref<ActivityItem[]>([])
 const loading = ref(false)
 
 const typeConfig: Record<string, { icon: string; bg: string; color: string }> = {
-  image:      { icon: 'i-ph-image-duotone',      bg: 'bg-amber-100 dark:bg-amber-900/30',   color: 'text-amber-600 dark:text-amber-400' },
+  image:      { icon: 'i-ph-image-duotone',      bg: 'bg-indigo-100 dark:bg-indigo-900/30',   color: 'text-indigo-600 dark:text-indigo-400' },
   collection: { icon: 'i-ph-folder-duotone',     bg: 'bg-cyan-100 dark:bg-cyan-900/30',     color: 'text-cyan-600 dark:text-cyan-400' },
   message:    { icon: 'i-ph-envelope-duotone',   bg: 'bg-rose-100 dark:bg-rose-900/30',     color: 'text-rose-600 dark:text-rose-400' },
   user:       { icon: 'i-ph-user-circle-duotone', bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600 dark:text-emerald-400' },

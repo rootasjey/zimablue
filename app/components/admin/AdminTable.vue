@@ -14,7 +14,7 @@
             v-model="searchQuery"
             type="search"
             placeholder="Search..."
-            class="h-8 w-32 rounded-lg border border-stone-200 bg-stone-100 pl-8 pr-3 text-sm text-zinc-900 outline-none transition placeholder:text-stone-400 focus:ring-2 focus:ring-amber-500/40 sm:w-44 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            class="h-8 w-32 rounded-lg border border-stone-200 bg-stone-100 pl-8 pr-3 text-sm text-zinc-900 outline-none transition placeholder:text-stone-400 focus:ring-2 focus:ring-indigo-500/40 sm:w-44 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             @input="debouncedSearch"
             @keyup.enter="handleSearch"
           >
@@ -40,7 +40,7 @@
               <input
                 ref="selectAllCheckboxRef"
                 type="checkbox"
-                class="h-4 w-4 cursor-pointer rounded border-stone-300 bg-transparent text-amber-500 focus:ring-amber-500/30 dark:border-zinc-600"
+                class="h-4 w-4 cursor-pointer rounded border-stone-300 bg-transparent text-indigo-500 focus:ring-indigo-500/30 dark:border-zinc-600"
                 :checked="allRowsSelected"
                 @change="toggleSelectAll"
               >
@@ -66,7 +66,7 @@
         <tbody class="divide-y divide-stone-100 dark:divide-zinc-800/70">
           <tr v-if="loading">
             <td :colspan="columns.length + 2" class="px-5 py-16 text-center">
-              <span class="mx-auto mb-3 block animate-spin text-3xl text-amber-500 i-ph-spinner-gap"></span>
+              <span class="mx-auto mb-3 block animate-spin text-3xl text-indigo-500 i-ph-spinner-gap"></span>
               <p class="text-sm text-stone-400 dark:text-zinc-500">Loading...</p>
             </td>
           </tr>
@@ -90,10 +90,10 @@
                   'cursor-pointer': !isDraggableRow(row, index),
                   'cursor-grab active:cursor-grabbing select-none': isDraggableRow(row, index),
                   'opacity-40': dragIndex === index,
-                  'ring-2 ring-amber-400/60 ring-inset': dropIndex === index && dragIndex !== null && dragIndex !== index,
+                  'ring-2 ring-indigo-400/60 ring-inset': dropIndex === index && dragIndex !== null && dragIndex !== index,
                   'grabbing': isDraggableRow(row, index) && dragIndex !== null,
                   'bg-rose-50/80 dark:bg-rose-900/20 ring-1 ring-inset ring-rose-300/60 dark:ring-rose-700/40': rowSelection[index] && !(keyboardNav && highlightedIndex === index),
-                  'ring-1 ring-inset ring-amber-400/40 bg-amber-50/50 dark:bg-amber-900/10': keyboardNav && highlightedIndex === index,
+                  'ring-1 ring-inset ring-indigo-400/40 bg-indigo-50/50 dark:bg-indigo-900/10': keyboardNav && highlightedIndex === index,
                 }
               ]"
               :data-highlighted-index="keyboardNav ? index : undefined"
@@ -108,7 +108,7 @@
               <td class="py-3 pl-5 pr-3">
                 <input
                   type="checkbox"
-                  class="h-4 w-4 cursor-pointer rounded border-stone-300 bg-transparent text-amber-500 focus:ring-amber-500/30 dark:border-zinc-600"
+                  class="h-4 w-4 cursor-pointer rounded border-stone-300 bg-transparent text-indigo-500 focus:ring-indigo-500/30 dark:border-zinc-600"
                   :checked="Boolean(rowSelection[index])"
                   @click="handleCheckboxClick(index, $event)"
                 >
@@ -161,10 +161,10 @@
     <Transition name="slide-up">
       <div
         v-if="selectedRows.length"
-        class="fixed bottom-0 z-50 left-1/2 -translate-x-1/2 w-full max-w-screen-2xl flex items-center gap-2 border-t border-amber-200 bg-amber-50/95 px-5 py-2.5 shadow-lg backdrop-blur-sm dark:border-amber-800/30 dark:bg-amber-900/90 md:px-7"
+        class="fixed bottom-0 z-50 left-1/2 -translate-x-1/2 w-full max-w-screen-2xl flex items-center gap-2 border-t border-indigo-200 bg-indigo-50/95 px-5 py-2.5 shadow-lg backdrop-blur-sm dark:border-indigo-800/30 dark:bg-indigo-900/90 md:px-7"
       >
-        <span class="text-sm text-amber-600 i-ph-selection-all dark:text-amber-400"></span>
-        <span class="text-xs font-medium text-amber-700 dark:text-amber-400">{{ selectedRows.length }} selected</span>
+        <span class="text-sm text-indigo-600 i-ph-selection-all dark:text-indigo-400"></span>
+        <span class="text-xs font-medium text-indigo-700 dark:text-indigo-400">{{ selectedRows.length }} selected</span>
 
         <div class="ml-1 flex items-center gap-1.5">
           <slot name="bulk-actions" :selected="selectedRows">

@@ -68,13 +68,13 @@
           <div class="space-y-1">
             <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Name *</label>
             <input v-model="tagForm.name" type="text" placeholder="Tag name"
-              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
           </div>
 
           <div class="space-y-1">
             <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Description</label>
             <input v-model="tagForm.description" type="text" placeholder="Optional description"
-              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
           </div>
 
           <div class="space-y-1">
@@ -83,7 +83,7 @@
               <input v-model="tagForm.color" type="color"
                 class="w-10 h-9 rounded-lg border border-stone-200 dark:border-zinc-700 cursor-pointer bg-transparent" />
               <input v-model="tagForm.color" type="text" placeholder="#3B82F6"
-                class="w-24 px-2 h-9 rounded-lg text-sm font-mono bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+                class="w-24 px-2 h-9 rounded-lg text-sm font-mono bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
             </div>
           </div>
 
@@ -93,7 +93,7 @@
               @click="showCreateModal = false"
             >Cancel</button>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-60"
               :disabled="!tagForm.name.trim() || isSubmitting"
               @click="submitTag"
             >
@@ -117,7 +117,7 @@
               <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Delete Tag</h3>
               <p class="text-sm text-stone-500 dark:text-zinc-400">
                 Delete <strong class="text-zinc-700 dark:text-zinc-300">{{ tagToDelete?.name }}</strong>?
-                <span v-if="tagToDelete && tagToDelete.usage_count > 0" class="block mt-1 text-amber-600 dark:text-amber-400">This tag is used by {{ tagToDelete.usage_count }} image(s). Deleting will remove it from all images.</span>
+                <span v-if="tagToDelete && tagToDelete.usage_count > 0" class="block mt-1 text-indigo-600 dark:text-indigo-400">This tag is used by {{ tagToDelete.usage_count }} image(s). Deleting will remove it from all images.</span>
               </p>
             </div>
           </div>

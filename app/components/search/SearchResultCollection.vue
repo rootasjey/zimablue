@@ -46,7 +46,7 @@
           </h3>
           <span
             v-if="!collection.is_public"
-            class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+            class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200"
           >
             <span class="i-ph-lock w-3 h-3 mr-1"></span>
             Private
@@ -87,7 +87,7 @@
           </h3>
           <span
             v-if="!collection.is_public"
-            class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+            class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200"
           >
             <span class="i-ph-lock w-3 h-3 mr-1"></span>
             Private

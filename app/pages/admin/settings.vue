@@ -5,8 +5,8 @@
         <!-- Appearance Settings -->
         <div class="admin-card p-6">
           <div class="flex items-center gap-3 mb-5">
-            <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <span class="i-ph-palette text-amber-600 dark:text-amber-400"></span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+              <span class="i-ph-palette text-indigo-600 dark:text-indigo-400"></span>
             </div>
             <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">Appearance</h2>
           </div>
@@ -21,7 +21,7 @@
                   @click="selectedTheme = themeOption.value"
                   class="px-4 py-3 rounded-xl border-2 transition-all text-sm font-medium"
                   :class="selectedTheme === themeOption.value 
-                    ? 'border-amber-500 bg-amber-500 text-white' 
+                    ? 'border-indigo-500 bg-indigo-500 text-white' 
                     : 'bg-stone-100 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-stone-400'"
                 >
                   <span :class="themeOption.icon" class="text-lg mb-1"></span>
@@ -142,7 +142,7 @@
           Cancel
         </button>
         <button
-          class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+          class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-60"
           @click="saveSettings"
           :disabled="isSaving"
         >

@@ -52,8 +52,8 @@
       <!-- Error State -->
       <section v-else-if="store.error" class="py-8">
         <div class="mx-auto max-w-2xl">
-          <div class="flex items-start gap-3 rounded-xl border border-amber-300/40 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3">
-            <div class="i-ph-warning-circle text-size-6 text-amber-500 mt-0.5"></div>
+          <div class="flex items-start gap-3 rounded-xl border border-indigo-300/40 bg-indigo-50/50 dark:bg-indigo-950/20 px-4 py-3">
+            <div class="i-ph-warning-circle text-size-6 text-indigo-500 mt-0.5"></div>
             <div class="flex-1">
               <h3 class="text-size-5 font-600 text-gray-800 dark:text-gray-200 mb-1">Something went wrong</h3>
               <p class="text-gray-600 dark:text-gray-400 mb-3">{{ store.error }}</p>

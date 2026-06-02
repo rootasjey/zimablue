@@ -24,7 +24,7 @@
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
             :class="row.role === 'admin'
-              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
               : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400'"
           >
             {{ (row.name || row.email || '?')[0]?.toUpperCase() }}
@@ -45,7 +45,7 @@
         <span :class="[
           'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
           row.role === 'admin'
-            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
             : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400'
         ]">
           <span :class="row.role === 'admin' ? 'i-ph-crown' : 'i-ph-user'" class="mr-1 text-xs"></span>
@@ -83,7 +83,7 @@
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Name</label>
               <input v-model="editForm.name" type="text" placeholder="Full name"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
             </div>
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Email</label>
@@ -93,7 +93,7 @@
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Role</label>
               <select v-model="editForm.role"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition">
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition">
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
@@ -101,12 +101,12 @@
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Job Title</label>
               <input v-model="editForm.job" type="text" placeholder="e.g., Designer"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
             </div>
             <div class="space-y-1 col-span-2">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Location</label>
               <input v-model="editForm.location" type="text" placeholder="e.g., Paris, France"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
             </div>
           </div>
 
@@ -116,7 +116,7 @@
               @click="isEditDialogOpen = false"
             >Cancel</button>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-60"
               :disabled="isSaving"
               @click="saveUser"
             >

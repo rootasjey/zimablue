@@ -72,7 +72,7 @@
           <button
             type="button"
             class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-            :class="activeView === 'queue' ? 'bg-amber-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
+            :class="activeView === 'queue' ? 'bg-indigo-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
             @click="activeView = 'queue'"
           >
             Queue
@@ -80,7 +80,7 @@
           <button
             type="button"
             class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-            :class="activeView === 'history' ? 'bg-amber-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
+            :class="activeView === 'history' ? 'bg-indigo-500 text-white shadow-xs' : 'text-stone-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'"
             @click="activeView = 'history'"
           >
             History
@@ -163,7 +163,7 @@
             <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ row.imageName }}</p>
             <button
               type="button"
-              class="truncate text-xs text-stone-400 decoration-dashed underline-offset-2 transition-colors hover:underline hover:text-amber-600 dark:text-zinc-500 dark:hover:text-amber-400"
+              class="truncate text-xs text-stone-400 decoration-dashed underline-offset-2 transition-colors hover:underline hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400"
               title="Copy illustration link"
               @click.stop="copySlug(row)"
             >/{{ row.imageSlug }}</button>
@@ -369,13 +369,13 @@ const selectedProviderStatusLabel = computed(() => {
 const providerStatusPillClass = computed(() => {
   if (!selectedProviderCard.value) return 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'
   if (selectedProviderCard.value.configured) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-  if (selectedProviderCard.value.enabled) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+  if (selectedProviderCard.value.enabled) return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
   return 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'
 })
 const providerStatusDotClass = computed(() => {
   if (!selectedProviderCard.value) return 'h-1.5 w-1.5 rounded-full bg-stone-400'
   if (selectedProviderCard.value.configured) return 'h-1.5 w-1.5 rounded-full bg-emerald-500'
-  if (selectedProviderCard.value.enabled) return 'h-1.5 w-1.5 rounded-full bg-amber-500'
+  if (selectedProviderCard.value.enabled) return 'h-1.5 w-1.5 rounded-full bg-indigo-500'
   return 'h-1.5 w-1.5 rounded-full bg-stone-400'
 })
 const selectedProviderStorageLabel = computed(() => {
@@ -727,13 +727,13 @@ const providerAccentClass = (provider: ProviderCard) => {
 
 const providerIconWrapClass = (provider: ProviderCard) => {
   if (provider.configured && provider.enabled) return 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
-  if (provider.enabled) return 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300'
+  if (provider.enabled) return 'border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300'
   return 'border-stone-200 bg-stone-50 text-stone-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500'
 }
 
 const providerPillClass = (provider: ProviderCard) => {
   if (provider.configured && provider.enabled) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-  if (provider.enabled) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+  if (provider.enabled) return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
   return 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'
 }
 
@@ -741,7 +741,7 @@ const statusClass = (status: QueueStatus) => {
   if (status === 'posted') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
   if (status === 'failed') return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
   if (status === 'processing') return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300'
-  return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+  return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
 }
 
 const statusIcon = (status: QueueStatus) => {

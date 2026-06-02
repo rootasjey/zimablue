@@ -28,7 +28,7 @@
         </div>
 
         <button
-          class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+          class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-1.5"
           @click="openCreateDialog"
         >
           <span class="i-ph-plus text-sm"></span>
@@ -91,7 +91,7 @@
       <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">No tasks found</h3>
       <p class="text-xs text-stone-400 dark:text-zinc-500 mb-4">Create your first task to get started</p>
       <button
-        class="px-4 h-8 rounded-lg text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+        class="px-4 h-8 rounded-lg text-xs font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-1.5"
         @click="openCreateDialog"
       >
         <span class="i-ph-plus text-xs"></span>
@@ -112,7 +112,7 @@
             class="w-8 h-8 sm:w-6 sm:h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-colors"
             :class="todo.status === 'completed'
               ? 'bg-emerald-500 border-emerald-500 text-white'
-              : 'border-stone-300 dark:border-zinc-600 hover:border-amber-400'"
+              : 'border-stone-300 dark:border-zinc-600 hover:border-indigo-400'"
             @click="toggleTodoStatus(todo)"
           >
             <span v-if="todo.status === 'completed'" class="i-ph-check text-xs"></span>
@@ -193,25 +193,25 @@
           <div class="space-y-1">
             <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Title *</label>
             <input v-model="formData.title" type="text" placeholder="Task title"
-              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
           </div>
 
           <div class="space-y-1">
             <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Description</label>
             <textarea v-model="formData.description" placeholder="Optional description" rows="3"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition resize-none"></textarea>
+              class="w-full px-3 py-2 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition resize-none"></textarea>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Due Date *</label>
               <input v-model="formData.due_date" type="date"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition" />
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition" />
             </div>
             <div class="space-y-1">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Priority</label>
               <select v-model="formData.priority"
-                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition">
+                class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition">
                 <option v-for="p in priorityOptions" :key="p" :value="p">{{ p }}</option>
               </select>
             </div>
@@ -220,7 +220,7 @@
           <div v-if="editingTodo" class="space-y-1">
             <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Status</label>
             <select v-model="formData.status"
-              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition">
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition">
               <option v-for="s in statusOptions" :key="s" :value="s">{{ s }}</option>
             </select>
           </div>
@@ -231,7 +231,7 @@
               @click="closeDialog"
             >Cancel</button>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-60"
               :disabled="!formData.title || !formData.due_date || isSaving"
               @click="saveTodo"
             >
@@ -353,7 +353,7 @@ const kanbanColumns = computed<KanbanColumn[]>(() => [
   {
     id: 'in_progress',
     label: 'In Progress',
-    dotColor: 'bg-amber-400',
+    dotColor: 'bg-indigo-400',
     items: todos.value
       .filter(t => t.status === 'in_progress')
       .map(t => toKanbanItem(t))
@@ -518,7 +518,7 @@ const getStatusLabel = (status: string) => {
 
 const priorityBadgeClass = (priority: string) => {
   if (priority === 'high') return 'admin-badge-rose'
-  if (priority === 'medium') return 'admin-badge-amber'
+  if (priority === 'medium') return 'admin-badge-indigo'
   return 'admin-badge-cyan'
 }
 

@@ -36,7 +36,7 @@
 
     <!-- Main FAB button -->
     <button
-      class="w-12 h-12 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+      class="w-12 h-12 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
       :class="{ 'rotate-45': isOpen }"
       aria-label="Quick actions"
       @click="toggle"
@@ -82,7 +82,7 @@ const actions: QuickAction[] = [
     label: 'Upload images',
     icon: 'i-ph-upload-simple',
     href: '/admin/images',
-    colorClass: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/60',
+    colorClass: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/60',
   },
   {
     id: 'collection',

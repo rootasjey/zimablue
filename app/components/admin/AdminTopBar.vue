@@ -65,7 +65,7 @@
           <div class="mx-1 hidden h-5 w-px bg-stone-200 dark:bg-zinc-700 md:block"></div>
 
           <NuxtLink to="/admin/settings" class="flex items-center gap-2 rounded-xl py-1 pl-1 pr-2 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-800 group">
-            <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-xs font-bold uppercase text-white">
+            <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500 text-xs font-bold uppercase text-white">
               {{ userInitials }}
             </div>
             <span class="hidden max-w-[96px] truncate text-xs font-medium text-zinc-700 transition-colors group-hover:text-zinc-900 md:block dark:text-zinc-300 dark:group-hover:text-zinc-100">

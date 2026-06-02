@@ -22,8 +22,8 @@
       <!-- Name + description -->
       <template #name-cell="{ row }">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-            <span class="i-ph-folder text-amber-600 dark:text-amber-400"></span>
+          <div class="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+            <span class="i-ph-folder text-indigo-600 dark:text-indigo-400"></span>
           </div>
           <div class="min-w-0">
             <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-48">{{ row.name }}</p>
@@ -140,7 +140,7 @@
               View
             </NuxtLink>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
               @click="editCollection(selectedCollection)"
             >Edit</button>
           </div>

@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex flex-wrap items-center gap-2">
         <span class="admin-badge-stone">{{ totalMessages }} total</span>
-        <span class="admin-badge-amber">{{ unreadCount }} unread</span>
+        <span class="admin-badge-indigo">{{ unreadCount }} unread</span>
         <span v-if="selectedCount > 0" class="admin-badge-cyan">{{ selectedCount }} selected</span>
       </div>
 

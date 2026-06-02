@@ -25,7 +25,7 @@
             :value="stats?.images.total ?? 0"
             to="/admin/images"
             icon="i-ph-image"
-            icon-color="amber"
+            icon-color="indigo"
             :change="contentActivityChange"
             change-label="vs previous 30-day rhythm"
             :sparkline="contentSparkline"
@@ -68,7 +68,7 @@
                 <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Studio pulse</p>
                 <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">What needs attention now</h2>
               </div>
-              <NuxtLink to="/admin/analytics" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+              <NuxtLink to="/admin/analytics" class="text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
                 Open analytics
               </NuxtLink>
             </div>
@@ -80,7 +80,7 @@
                     <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Content cadence</p>
                     <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Uploads over the last week and month.</p>
                   </div>
-                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                     <span class="i-ph-shooting-star text-lg"></span>
                   </div>
                 </div>
@@ -92,7 +92,7 @@
                       <span>{{ contentActivity.last_7_days }}</span>
                     </div>
                     <div class="h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-zinc-800">
-                      <div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="{ width: `${contentLastWeekWidth}%` }"></div>
+                      <div class="h-full rounded-full bg-indigo-400 transition-all duration-500" :style="{ width: `${contentLastWeekWidth}%` }"></div>
                     </div>
                   </div>
 
@@ -152,7 +152,7 @@
                   <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Focus block</p>
                   <h2 class="mt-2 font-classic text-xl font-semibold text-zinc-900 dark:text-zinc-100">Next task</h2>
                 </div>
-                <NuxtLink to="/admin/todos" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+                <NuxtLink to="/admin/todos" class="text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
                   Open tasks
                 </NuxtLink>
               </div>
@@ -185,7 +185,7 @@
                   <p class="text-xs font-medium uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Inbox</p>
                   <h2 class="mt-2 font-classic text-xl font-semibold text-zinc-900 dark:text-zinc-100">Recent messages</h2>
                 </div>
-                <NuxtLink to="/admin/messages" class="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
+                <NuxtLink to="/admin/messages" class="text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
                   Open inbox
                 </NuxtLink>
               </div>
@@ -211,7 +211,7 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                       <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ message.subject }}</p>
-                      <span v-if="!message.read" class="h-2 w-2 rounded-full bg-amber-400"></span>
+                      <span v-if="!message.read" class="h-2 w-2 rounded-full bg-indigo-400"></span>
                     </div>
                     <p class="mt-1 truncate text-xs text-stone-500 dark:text-zinc-400">{{ message.sender_email }}</p>
                   </div>
@@ -245,7 +245,7 @@
                     <p class="text-xs text-stone-500 dark:text-zinc-400">{{ action.description }}</p>
                   </div>
                 </div>
-                <span class="i-ph-arrow-up-right text-stone-300 transition-colors group-hover:text-amber-500 dark:text-zinc-600 dark:group-hover:text-amber-400"></span>
+                <span class="i-ph-arrow-up-right text-stone-300 transition-colors group-hover:text-indigo-500 dark:text-zinc-600 dark:group-hover:text-indigo-400"></span>
               </NuxtLink>
             </div>
           </div>
@@ -370,7 +370,7 @@ const quickActions = [
     label: 'Images',
     description: 'Upload, edit and curate illustrations.',
     icon: 'i-ph-image-square',
-    iconClass: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+    iconClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
   },
   {
     to: '/admin/collections',
@@ -451,7 +451,7 @@ const getStatusLabel = (status: Todo['status']) => {
 
 const priorityBadgeClass = (priority: Todo['priority']) => {
   if (priority === 'high') return 'admin-badge-rose'
-  if (priority === 'medium') return 'admin-badge-amber'
+  if (priority === 'medium') return 'admin-badge-indigo'
   return 'admin-badge-cyan'
 }
 

@@ -43,7 +43,7 @@
       <!-- Owner -->
       <template #user_name-cell="{ row }">
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
             {{ (row.user_name || row.user_email || '?')[0]?.toUpperCase() }}
           </div>
           <div class="min-w-0">
@@ -135,7 +135,7 @@
               v-model="editForm.name"
               type="text"
               placeholder="Image name"
-              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition"
+              class="w-full px-3 h-9 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition"
             />
           </div>
 
@@ -143,7 +143,7 @@
             <div class="flex items-center justify-between">
               <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Slug *</label>
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input v-model="autoSlug" type="checkbox" class="w-3 h-3 rounded text-amber-500" />
+                <input v-model="autoSlug" type="checkbox" class="w-3 h-3 rounded text-indigo-500" />
                 <span class="text-xs text-stone-400 dark:text-zinc-500">Auto-generate</span>
               </label>
             </div>
@@ -152,7 +152,7 @@
               type="text"
               placeholder="image-slug"
               :disabled="autoSlug"
-              class="w-full px-3 h-9 rounded-lg text-sm font-classic bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition disabled:opacity-50"
+              class="w-full px-3 h-9 rounded-lg text-sm font-classic bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition disabled:opacity-50"
             />
           </div>
 
@@ -162,7 +162,7 @@
               v-model="editForm.description"
               placeholder="Image description"
               rows="3"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/40 transition resize-none"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/40 transition resize-none"
             ></textarea>
           </div>
 
@@ -172,7 +172,7 @@
               @click="isEditDialogOpen = false"
             >Cancel</button>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-60"
+              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-60"
               :disabled="!editForm.name || !editForm.slug || isSavingEdit"
               @click="saveEditedImage"
             >
