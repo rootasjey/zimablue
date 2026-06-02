@@ -402,6 +402,7 @@ const handleCheckboxClick = (index: number, event: MouseEvent) => {
   }
   if (props.keyboardNav) {
     selectionAnchor.value = index
+    highlightedIndex.value = index
   }
   toggleRowSelection(index)
 }
@@ -431,7 +432,8 @@ const handleRowClick = (row: any, event: MouseEvent) => {
 // Keyboard navigation
 const handleKeyDown = (e: KeyboardEvent) => {
   const target = e.target as HTMLElement
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+  if (target.tagName === 'TEXTAREA' || target.isContentEditable) return
+  if (target.tagName === 'INPUT' && !['checkbox', 'radio'].includes((target as HTMLInputElement).type)) return
   if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return
 
   const hasHighlighted = highlightedIndex.value >= 0
