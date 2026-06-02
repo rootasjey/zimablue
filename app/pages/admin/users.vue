@@ -8,6 +8,7 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :keyboard-nav="true"
       empty-message="No users found."
       @search="handleSearch"
       @refresh="fetchUsers"
@@ -16,6 +17,7 @@
       @row-click="editUser"
       @edit="editUser"
       @delete="showDeleteDialog"
+      @duplicate="handleDuplicate"
     >
       <!-- Name + avatar -->
       <template #name-cell="{ row }">
@@ -349,6 +351,10 @@ const deleteUser = async () => {
   } finally {
     isDeleting.value = false
   }
+}
+
+const handleDuplicate = () => {
+  toast({ title: 'Coming Soon', description: 'Duplicate user is not yet implemented.', toast: 'soft-info', duration: 3000 })
 }
 
 onMounted(() => fetchUsers())

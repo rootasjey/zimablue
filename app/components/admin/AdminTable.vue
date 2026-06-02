@@ -632,7 +632,7 @@ onUnmounted(() => {
 
 .slide-up-enter-from,
 .slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(4px);
+  opacity: 0 !important;
+  bottom: -3rem !important;
 }
 </style>

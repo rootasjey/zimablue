@@ -56,6 +56,7 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :keyboard-nav="true"
       :draggable-rows="true"
       :is-row-draggable="(row: QueueRow) => row.status === 'queued'"
       empty-message="No queued or historical rows yet on this platform."
@@ -64,6 +65,7 @@
       @page-change="handlePageChange"
       @bulk-action="handleBulkAction"
       @reorder="handleTableReorder"
+      @duplicate="handleDuplicate"
     >
       <template #header-tabs>
         <div class="flex rounded-lg border border-stone-200 p-0.5 dark:border-zinc-700">
@@ -772,6 +774,10 @@ watch(selectedPlatform, (val) => {
     try { localStorage.setItem('zima:socialPlatform', val) } catch { /* ignore */ }
   }
 })
+
+const handleDuplicate = () => {
+  toast({ title: 'Coming Soon', description: 'Duplicate queue item is not yet implemented.', toast: 'soft-info', duration: 3000 })
+}
 
 onMounted(async () => {
   let needsQueueFetch = true

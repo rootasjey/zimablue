@@ -8,6 +8,7 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :keyboard-nav="true"
       empty-message="No collections found."
       @search="handleSearch"
       @refresh="fetchCollections"
@@ -16,6 +17,7 @@
       @row-click="viewCollection"
       @edit="editCollection"
       @delete="showDeleteDialog"
+      @duplicate="handleDuplicate"
     >
       <!-- Name + description -->
       <template #name-cell="{ row }">
@@ -358,6 +360,10 @@ const deleteCollection = async () => {
   } finally {
     isDeleting.value = false
   }
+}
+
+const handleDuplicate = () => {
+  toast({ title: 'Coming Soon', description: 'Duplicate collection is not yet implemented.', toast: 'soft-info', duration: 3000 })
 }
 
 onMounted(() => fetchCollections())

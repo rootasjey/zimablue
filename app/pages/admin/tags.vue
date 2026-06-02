@@ -8,6 +8,7 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :keyboard-nav="true"
       empty-message="No tags found."
       @search="handleSearch"
       @refresh="fetchTags"
@@ -16,6 +17,7 @@
       @row-click="editTag"
       @edit="editTag"
       @delete="deleteTag"
+      @duplicate="handleDuplicate"
     >
       <template #header-tabs>
         <button
@@ -319,6 +321,10 @@ watch(() => showCreateModal.value, (val) => {
   if (val) window.addEventListener('keydown', handleKeydown)
   else window.removeEventListener('keydown', handleKeydown)
 })
+
+const handleDuplicate = () => {
+  toast({ title: 'Coming Soon', description: 'Duplicate tag is not yet implemented.', toast: 'soft-info', duration: 3000 })
+}
 
 onMounted(() => {
   if (showCreateModal.value) window.addEventListener('keydown', handleKeydown)
