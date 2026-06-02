@@ -144,8 +144,7 @@
                   type="checkbox"
                   class="h-4 w-4 cursor-pointer rounded border-stone-300 bg-transparent text-amber-500 focus:ring-amber-500/30 dark:border-zinc-600"
                   :checked="Boolean(rowSelection[index])"
-                  @change="toggleRowSelection(index)"
-                  @click.stop
+                  @click="handleCheckboxClick(index, $event)"
                 >
               </td>
 
@@ -381,6 +380,32 @@ const toggleSelectAll = () => {
   }, {})
 }
 
+const selectRange = (from: number, to: number) => {
+  const lo = Math.min(from, to)
+  const hi = Math.max(from, to)
+  const next = { ...rowSelection.value }
+  for (let i = lo; i <= hi; i++) {
+    next[i] = true
+  }
+  rowSelection.value = next
+  highlightedIndex.value = to
+  selectionAnchor.value = to
+}
+
+const handleCheckboxClick = (index: number, event: MouseEvent) => {
+  if (event.shiftKey && props.keyboardNav) {
+    const anchor = selectionAnchor.value >= 0 ? selectionAnchor.value : 0
+    selectRange(anchor, index)
+    const el = event.target as HTMLInputElement
+    el.checked = Boolean(rowSelection.value[index])
+    return
+  }
+  if (props.keyboardNav) {
+    selectionAnchor.value = index
+  }
+  toggleRowSelection(index)
+}
+
 const handleRowClick = (row: any, event: MouseEvent) => {
   const target = event.target as HTMLElement
   if (target.closest('button') || target.closest('input') || target.closest('a')) {
@@ -389,7 +414,15 @@ const handleRowClick = (row: any, event: MouseEvent) => {
 
   if (props.keyboardNav) {
     const index = props.data.indexOf(row)
-    if (index >= 0) highlightedIndex.value = index
+    if (index >= 0) {
+      if (event.shiftKey) {
+        const anchor = selectionAnchor.value >= 0 ? selectionAnchor.value : 0
+        selectRange(anchor, index)
+        return
+      }
+      selectionAnchor.value = index
+      highlightedIndex.value = index
+    }
   }
 
   emit('row-click', row)
@@ -428,13 +461,16 @@ const handleKeyDown = (e: KeyboardEvent) => {
     if (dataLen === 0) return
     e.preventDefault()
     highlightedIndex.value = e.key === 'ArrowRight' ? 0 : dataLen - 1
+    selectionAnchor.value = highlightedIndex.value
     return
   }
 
   if (e.key === 'ArrowUp') {
     if (hasHighlighted && highlightedIndex.value > 0) {
       e.preventDefault()
+      if (e.shiftKey) toggleRowSelection(highlightedIndex.value)
       highlightedIndex.value--
+      selectionAnchor.value = highlightedIndex.value
     }
     return
   }
@@ -442,7 +478,9 @@ const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'ArrowDown') {
     if (hasHighlighted && highlightedIndex.value < dataLen - 1) {
       e.preventDefault()
+      if (e.shiftKey) toggleRowSelection(highlightedIndex.value)
       highlightedIndex.value++
+      selectionAnchor.value = highlightedIndex.value
     }
     return
   }
@@ -498,6 +536,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 const dragIndex = ref<number | null>(null)
 const dropIndex = ref<number | null>(null)
 const highlightedIndex = ref(-1)
+const selectionAnchor = ref(-1)
 
 const isDraggableRow = (row: any, index: number) => {
   if (!props.draggableRows) return false
