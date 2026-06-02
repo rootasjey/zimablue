@@ -413,8 +413,29 @@ const deleteImage = async () => {
   }
 }
 
-const handleDuplicate = () => {
-  toast({ title: 'Coming Soon', description: 'Duplicate action is not yet implemented.', toast: 'soft-info', duration: 3000 })
+const handleDuplicate = async (payload: { highlighted: any; selected: any[] }) => {
+  const image = payload?.highlighted
+  if (!image) {
+    toast({ title: 'No Image', description: 'Select an image to duplicate.', toast: 'soft-warning', duration: 3000 })
+    return
+  }
+
+  try {
+    const response: any = await $fetch(`/api/admin/images/${image.id}/duplicate`, { method: 'POST' })
+    if (response.success && response.data) {
+      const duplicated = {
+        ...response.data,
+        user_name: user.value?.name || '—',
+        user_email: user.value?.email || '',
+      }
+      images.value.unshift(duplicated)
+      pagination.value.total++
+      toast({ title: 'Duplicated', description: `"${image.name}" has been duplicated.`, toast: 'soft-success', duration: 3000 })
+    }
+  } catch (error) {
+    console.error('Error duplicating image:', error)
+    toast({ title: 'Error', description: 'Failed to duplicate image.', toast: 'soft-error', duration: 5000 })
+  }
 }
 
 const handleImageError = (payload: string | Event) => {

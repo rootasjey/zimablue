@@ -244,6 +244,24 @@ export const useImageActions = () => {
           onClick: () => triggerImageReplacement(image, replacementFileInput),
         },
         {
+          label: 'Duplicate',
+          onClick: async () => {
+            try {
+              await $fetch(`/api/admin/images/${image.id}/duplicate`, { method: 'POST' })
+              await gridStore.fetchGrid()
+            } catch (error) {
+              console.error('Duplicate error:', error)
+              toast({
+                title: 'Duplicate Failed',
+                description: 'Failed to duplicate image',
+                duration: 5000,
+                showProgress: true,
+                toast: 'soft-warning'
+              })
+            }
+          },
+        },
+        {
           label: 'Add to collection',
           onClick: () => openAddToCollectionModalFn(image),
 
