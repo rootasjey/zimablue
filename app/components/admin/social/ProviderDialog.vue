@@ -84,6 +84,40 @@
         <span>{{ providerDialogConfigured ? 'Provider is configured.' : 'Provider still needs setup.' }}</span>
         <span>{{ providerDialogStorageLabel }}</span>
       </div>
+
+      <!-- Test Connection (Bluesky only) -->
+      <div v-if="dialogPlatform === 'bluesky'" class="rounded-2xl border border-dashed border-stone-200 p-4 dark:border-zinc-700">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-xs font-medium uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+              Test credentials
+            </p>
+            <p class="mt-0.5 text-sm text-stone-600 dark:text-zinc-300">
+              <template v-if="testConnectionStatus === 'success'">
+                <span class="i-ph-check-circle text-green-500"></span>
+                Connected as <code class="rounded bg-green-100 px-1 py-0.5 text-xs font-mono text-green-700 dark:bg-green-900/30 dark:text-green-300">{{ testConnectionHandle }}</code>
+              </template>
+              <template v-else-if="testConnectionStatus === 'error'">
+                <span class="i-ph-x-circle text-red-500"></span>
+                {{ testConnectionError }}
+              </template>
+              <template v-else>
+                Verify your identifier and app password before saving.
+              </template>
+            </p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition-all hover:bg-stone-50 active:scale-[0.97] disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            :disabled="isTestingConnection"
+            @click="testConnection"
+          >
+            <span v-if="isTestingConnection" class="i-ph-spinner-gap animate-spin"></span>
+            <span v-else class="i-ph-plug text-sm"></span>
+            {{ isTestingConnection ? 'Testing...' : 'Test' }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <template #footer>
@@ -168,6 +202,10 @@ const dialogOpen = computed({
 const dialogPlatform = ref<Platform>(props.defaultPlatform)
 const isLoading = ref(false)
 const isSaving = ref(false)
+const isTestingConnection = ref(false)
+const testConnectionStatus = ref<'idle' | 'success' | 'error'>('idle')
+const testConnectionHandle = ref('')
+const testConnectionError = ref('')
 const providerDialogStorage = ref<ProviderStorage>('runtime')
 const providerDialogConfigured = ref(false)
 const providerForm = reactive<ProviderFormState>(getEmptyProviderForm())
@@ -280,6 +318,33 @@ const startOAuthFlow = (platform: Platform) => {
   const url = endpoints[platform]
   if (url) {
     window.location.href = url
+  }
+}
+
+const testConnection = async () => {
+  isTestingConnection.value = true
+  testConnectionStatus.value = 'idle'
+  testConnectionHandle.value = ''
+  testConnectionError.value = ''
+
+  try {
+    const response = await $fetch<{ success: boolean; handle?: string; error?: string }>(`/api/admin/social-queue/test-connection/${dialogPlatform.value}`, {
+      method: 'POST',
+      body: buildProviderPayload(dialogPlatform.value)
+    })
+
+    if (response.success) {
+      testConnectionStatus.value = 'success'
+      testConnectionHandle.value = response.handle || ''
+    } else {
+      testConnectionStatus.value = 'error'
+      testConnectionError.value = response.error || 'Connection failed'
+    }
+  } catch (error: any) {
+    testConnectionStatus.value = 'error'
+    testConnectionError.value = error?.data?.error || error?.message || 'Connection failed'
+  } finally {
+    isTestingConnection.value = false
   }
 }
 
@@ -422,6 +487,9 @@ function getEmptyProviderForm(): ProviderFormState {
 watch(() => props.open, async (open) => {
   if (!open) return
   dialogPlatform.value = props.defaultPlatform
+  testConnectionStatus.value = 'idle'
+  testConnectionHandle.value = ''
+  testConnectionError.value = ''
   await openProviderConfig(props.defaultPlatform)
 })
 

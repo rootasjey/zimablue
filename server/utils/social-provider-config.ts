@@ -46,7 +46,7 @@ export async function resolveBlueskyProviderConfig(runtimeConfig = useRuntimeCon
   return {
     enabled: Boolean(bluesky.enabled),
     service: String(bluesky.service || 'https://bsky.social').replace(/\/$/, ''),
-    identifier: String(bluesky.identifier || '').trim(),
+    identifier: String(bluesky.identifier || '').trim().replace(/^@/, ''),
     password: String(bluesky.password || '').trim(),
     hashtags: String(bluesky.hashtags || '').trim(),
   }

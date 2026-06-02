@@ -89,7 +89,7 @@ function sanitizeProviderConfig(platform: SocialAdminProviderPlatform, input: Re
     return {
       enabled: Boolean(input.enabled),
       service: asTrimmedString(input.service) || 'https://bsky.social',
-      identifier: asTrimmedString(input.identifier),
+      identifier: asTrimmedString(input.identifier).replace(/^@/, ''),
       password: asTrimmedString(input.password),
       hashtags: asTrimmedString(input.hashtags),
     }
