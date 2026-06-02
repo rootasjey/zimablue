@@ -81,69 +81,11 @@
       </template>
     </AdminTable>
 
-    <!-- View Image Dialog -->
-    <NDialog v-model:open="isViewDialogOpen" :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-3xl' }">
-      <template #content>
-        <div v-if="selectedImage" class="p-6">
-          <div class="flex items-start justify-between mb-6">
-            <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{{ selectedImage.name }}</h2>
-            <button @click="isViewDialogOpen = false" class="text-stone-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
-              <span class="i-ph-x text-lg"></span>
-            </button>
-          </div>
-
-          <!-- Image preview -->
-          <div class="aspect-video rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 mb-6">
-            <NuxtImg
-              :src="getVariantSrc(selectedImage, ['lg', 'md', 'sm'])"
-              provider="hubblob"
-              :alt="selectedImage.name"
-              class="w-full h-full object-contain"
-              @error="handleImageError"
-            />
-          </div>
-
-          <!-- Info grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-            <div v-if="selectedImage.description" class="col-span-2 sm:col-span-3">
-              <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Description</p>
-              <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ selectedImage.description }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Slug</p>
-              <p class="text-sm font-classic text-zinc-700 dark:text-zinc-300">{{ selectedImage.slug }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Views</p>
-              <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ selectedImage.stats_views?.toLocaleString() ?? 0 }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-stone-400 dark:text-zinc-500 mb-1">Downloads</p>
-              <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ selectedImage.stats_downloads?.toLocaleString() ?? 0 }}</p>
-            </div>
-          </div>
-
-          <div class="flex justify-end gap-2 pt-4 border-t border-stone-200 dark:border-zinc-800">
-            <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
-              @click="isViewDialogOpen = false"
-            >Close</button>
-            <NuxtLink
-              :to="`/illustrations/${selectedImage.slug}`"
-              target="_blank"
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5"
-            >
-              <span class="i-ph-arrow-square-out text-sm"></span>
-              View
-            </NuxtLink>
-            <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors"
-              @click="editImage(selectedImage)"
-            >Edit</button>
-          </div>
-        </div>
-      </template>
-    </NDialog>
+    <AdminImageViewDialog
+      v-model:is-open="isViewDialogOpen"
+      :image="selectedImage"
+      @edit="editImage"
+    />
 
     <!-- Delete Confirmation Dialog -->
     <NDialog v-model:open="isDeleteDialogOpen">
