@@ -81,6 +81,52 @@
           </span>
         </ClientOnly>
       </template>
+
+      <!-- Actions override: Duplicate, Replace, Add to Collection, Edit, Delete -->
+      <template #actions="{ row }">
+        <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Duplicate"
+            @click.stop="handleDuplicate({ highlighted: row, selected: [] })"
+          >
+            <span class="text-sm i-ph-copy-simple"></span>
+          </button>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Replace"
+            @click.stop="handleReplace(row)"
+          >
+            <span class="text-sm i-ph-swap"></span>
+          </button>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Add to Collection"
+            @click.stop="handleAddToCollection(row)"
+          >
+            <span class="text-sm i-ph-folder-plus"></span>
+          </button>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Edit"
+            @click.stop="editImage(row)"
+          >
+            <span class="text-sm i-ph-pencil-simple"></span>
+          </button>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+            title="Delete"
+            @click.stop="showDeleteDialog(row)"
+          >
+            <span class="text-sm i-ph-trash-simple"></span>
+          </button>
+        </div>
+      </template>
     </AdminTable>
 
     <AdminImageViewDialog
@@ -183,6 +229,41 @@
         </div>
       </template>
     </NDialog>
+
+    <!-- Hidden file input for replace -->
+    <input
+      ref="replaceInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleReplaceFileSelect"
+    />
+
+    <!-- Add to Collection Modal -->
+    <AddToCollectionModal
+      v-model:is-open="addToCollection.isOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
+
+    <!-- Add to Collection Drawer (mobile) -->
+    <AddToCollectionDrawer
+      v-model:is-open="addToCollection.isDrawerOpen.value"
+      :selected-image="addToCollection.selectedImage.value"
+      :collections="addToCollection.collections.value"
+      :selected-collection="addToCollection.selectedCollection.value"
+      :is-loading="addToCollection.isLoading.value"
+      :is-adding="addToCollection.isAdding.value"
+      :error="addToCollection.error.value"
+      @add-to-collection="addToCollection.addImageToCollection"
+      @select-collection="addToCollection.selectCollection"
+    />
   </div>
 </template>
 
@@ -190,6 +271,7 @@
 import type { Image, VariantType } from '~~/shared/types/image'
 import type { Pagination } from '~~/shared/types/pagination'
 import type { AdminBulkAction } from '~~/shared/types/admin'
+import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 
 const { user } = useUserSession()
 const { toast } = useToast()
@@ -208,6 +290,8 @@ const isLoading = ref(false)
 const isDeleting = ref(false)
 const isEditDialogOpen = ref(false)
 const isSavingEdit = ref(false)
+const isReplacing = ref(false)
+const replaceInputRef = ref<HTMLInputElement>()
 
 const editForm = reactive({
   name: '',
@@ -224,6 +308,8 @@ const autoSlug = computed({
     }
   }
 })
+
+const addToCollection = useAddToCollectionModal()
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -488,6 +574,68 @@ const saveEditedImage = async () => {
   } finally {
     isSavingEdit.value = false
   }
+}
+
+const handleReplace = (image: Image) => {
+  selectedImage.value = image
+  nextTick(() => {
+    replaceInputRef.value?.click()
+  })
+}
+
+const handleReplaceFileSelect = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+
+  const file = input.files[0]
+  if (!file) return
+
+  const image = selectedImage.value
+  if (!image || !file.type.startsWith('image/')) {
+    input.value = ''
+    return
+  }
+
+  isReplacing.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('fileName', file.name)
+    formData.append('type', file.type)
+    formData.append('imageId', String(image.id))
+
+    const response: any = await $fetch(`/api/images/id/${image.id}/replace`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (response.success && response.results?.length) {
+      const updated = response.results[0] as Record<string, any>
+      const idx = images.value.findIndex(img => img.id === image.id)
+      if (idx !== -1 && images.value[idx]) {
+        const current = images.value[idx]
+        images.value[idx] = {
+          ...current,
+          pathname: updated.pathname || current.pathname,
+          variants: updated.variants || current.variants,
+          updated_at: updated.updated_at || updated.updatedAt || current.updated_at,
+        }
+      }
+    } else {
+      toast({ title: 'Error', description: 'Failed to replace image.', toast: 'soft-error', duration: 5000 })
+    }
+  } catch (error) {
+    console.error('Error replacing image:', error)
+    toast({ title: 'Error', description: 'Failed to replace image.', toast: 'soft-error', duration: 5000 })
+  } finally {
+    isReplacing.value = false
+    input.value = ''
+  }
+}
+
+const handleAddToCollection = (image: Image) => {
+  selectedImage.value = image
+  addToCollection.openModal(image)
 }
 
 // Helpers
