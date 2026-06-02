@@ -64,6 +64,8 @@ export default defineEventHandler(async (event) => {
       params = 'connected=meta&partial=instagram'
     }
 
+    await saveMetaAppCredentials(appId, appSecret)
+
     return sendRedirect(event, `/admin/social?${params}`)
   } catch (err: any) {
     console.error('[meta-oauth-callback]', err)
@@ -204,4 +206,16 @@ async function getStoredProviderConfig(): Promise<Record<string, any>> {
 async function saveProviderConfigToKv(config: Record<string, any>) {
   const storage = useStorage('kv')
   await storage.setItem('admin:social:provider-config', config)
+}
+
+async function saveMetaAppCredentials(appId: string, appSecret: string) {
+  const storedConfig = await getStoredProviderConfig()
+  const nextConfig = { ...storedConfig }
+  if (nextConfig.facebook) {
+    nextConfig.facebook = { ...nextConfig.facebook as Record<string, unknown>, metaAppId: appId, metaAppSecret: appSecret }
+  }
+  if (nextConfig.instagram) {
+    nextConfig.instagram = { ...nextConfig.instagram as Record<string, unknown>, metaAppId: appId, metaAppSecret: appSecret }
+  }
+  await saveProviderConfigToKv(nextConfig)
 }

@@ -529,11 +529,17 @@ async function postToInstagram(caption: string, imageUrl: string): Promise<Publi
     return { ok: false, error: 'Missing Instagram access token or user id' }
   }
 
+  const newToken = await tryRefreshToken(resolved, 'meta')
+  const effectiveToken = newToken || resolved.accessToken
+  if (newToken) {
+    await saveAccessTokenToKv('instagram', newToken)
+  }
+
   try {
     const createContainerResponse = await fetch(`${resolved.baseUrl}/${resolved.apiVersion}/${resolved.userId}/media`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resolved.accessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ image_url: imageUrl, caption }),
@@ -547,7 +553,7 @@ async function postToInstagram(caption: string, imageUrl: string): Promise<Publi
     const readyStatus = await waitForInstagramContainerReady({
       baseUrl: resolved.baseUrl,
       apiVersion: resolved.apiVersion,
-      accessToken: resolved.accessToken,
+      accessToken: effectiveToken,
       containerId: createContainerPayload.id,
       pollIntervalMs: resolved.pollIntervalMs,
       pollTimeoutMs: resolved.pollTimeoutMs,
@@ -560,7 +566,7 @@ async function postToInstagram(caption: string, imageUrl: string): Promise<Publi
     const publishResponse = await fetch(`${resolved.baseUrl}/${resolved.apiVersion}/${resolved.userId}/media_publish`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resolved.accessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ creation_id: createContainerPayload.id }),
@@ -574,7 +580,7 @@ async function postToInstagram(caption: string, imageUrl: string): Promise<Publi
     const postUrl = await getInstagramPermalink({
       baseUrl: resolved.baseUrl,
       apiVersion: resolved.apiVersion,
-      accessToken: resolved.accessToken,
+      accessToken: effectiveToken,
       mediaId: publishPayload.id,
     })
 
@@ -590,11 +596,17 @@ async function postToThreads(text: string, imageUrl: string): Promise<PublishRes
     return { ok: false, error: 'Missing Threads access token or user id' }
   }
 
+  const newToken = await tryRefreshToken(resolved, 'threads')
+  const effectiveToken = newToken || resolved.accessToken
+  if (newToken) {
+    await saveAccessTokenToKv('threads', newToken)
+  }
+
   try {
     const createContainerResponse = await fetch(`${resolved.baseUrl}/${resolved.apiVersion}/${resolved.userId}/threads`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resolved.accessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ media_type: 'IMAGE', image_url: imageUrl, text }),
@@ -608,7 +620,7 @@ async function postToThreads(text: string, imageUrl: string): Promise<PublishRes
     const readyStatus = await waitForThreadsContainerReady({
       baseUrl: resolved.baseUrl,
       apiVersion: resolved.apiVersion,
-      accessToken: resolved.accessToken,
+      accessToken: effectiveToken,
       containerId: createContainerPayload.id,
       pollIntervalMs: resolved.pollIntervalMs,
       pollTimeoutMs: resolved.pollTimeoutMs,
@@ -621,7 +633,7 @@ async function postToThreads(text: string, imageUrl: string): Promise<PublishRes
     const publishResponse = await fetch(`${resolved.baseUrl}/${resolved.apiVersion}/${resolved.userId}/threads_publish`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resolved.accessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ creation_id: createContainerPayload.id }),
@@ -635,7 +647,7 @@ async function postToThreads(text: string, imageUrl: string): Promise<PublishRes
     const postUrl = await getThreadsPermalink({
       baseUrl: resolved.baseUrl,
       apiVersion: resolved.apiVersion,
-      accessToken: resolved.accessToken,
+      accessToken: effectiveToken,
       mediaId: publishPayload.id,
     })
 
@@ -651,11 +663,18 @@ async function postToFacebook(message: string, imageUrl: string): Promise<Publis
     return { ok: false, error: 'Missing Facebook page token or page id' }
   }
 
+  const newToken = await tryRefreshToken({ ...resolved, accessToken: resolved.pageAccessToken }, 'meta')
+  const effectiveToken = newToken || resolved.pageAccessToken
+  if (newToken) {
+    await saveAccessTokenToKv('facebook', newToken)
+    resolved.pageAccessToken = newToken
+  }
+
   try {
     const response = await fetch(`${resolved.baseUrl}/${resolved.apiVersion}/${resolved.pageId}/photos`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resolved.pageAccessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ url: imageUrl, message, published: true }),
@@ -875,6 +894,55 @@ async function getThreadsPermalink(input: {
 
 function readGraphApiError(payload: { error?: { message?: string } } | null | undefined, fallback: string): string {
   return payload?.error?.message || fallback
+}
+
+async function tryRefreshToken(resolved: { accessToken: string; appId?: string; appSecret?: string; metaAppId?: string; metaAppSecret?: string; apiVersion: string; baseUrl: string }, platform: 'threads' | 'meta'): Promise<string | null> {
+  try {
+    if (platform === 'threads') {
+      const refreshUrl = new URL(`${resolved.baseUrl}/${resolved.apiVersion}/refresh_access_token`)
+      refreshUrl.searchParams.set('grant_type', 'th_refresh_token')
+      refreshUrl.searchParams.set('access_token', resolved.accessToken)
+      const res = await fetch(refreshUrl.toString())
+      const payload = await res.json() as { access_token?: string; error?: { message?: string } } | null
+      if (res.ok && payload?.access_token && payload.access_token !== resolved.accessToken) {
+        return payload.access_token
+      }
+      return null
+    }
+
+    const appId = resolved.metaAppId || resolved.appId
+    const appSecret = resolved.metaAppSecret || resolved.appSecret
+    if (!appId || !appSecret) return null
+
+    const refreshUrl = new URL(`${resolved.baseUrl}/${resolved.apiVersion}/oauth/access_token`)
+    refreshUrl.searchParams.set('grant_type', 'fb_exchange_token')
+    refreshUrl.searchParams.set('client_id', appId)
+    refreshUrl.searchParams.set('client_secret', appSecret)
+    refreshUrl.searchParams.set('fb_exchange_token', resolved.accessToken)
+    const res = await fetch(refreshUrl.toString())
+    const payload = await res.json() as { access_token?: string; error?: { message?: string } } | null
+    if (res.ok && payload?.access_token && payload.access_token !== resolved.accessToken) {
+      return payload.access_token
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+async function saveAccessTokenToKv(platform: string, newToken: string) {
+  try {
+    const storage = useStorage('kv')
+    const storedConfig = await storage.getItem<Record<string, any>>('admin:social:provider-config') || {}
+    const nextConfig = { ...storedConfig }
+    if (nextConfig[platform]) {
+      const tokenKey = platform === 'facebook' ? 'pageAccessToken' : 'accessToken'
+      nextConfig[platform] = { ...nextConfig[platform] as Record<string, unknown>, [tokenKey]: newToken }
+    }
+    await storage.setItem('admin:social:provider-config', nextConfig)
+  } catch {
+    console.warn(`[social-autopost] Failed to save refreshed ${platform} token to KV`)
+  }
 }
 
 const PLATFORM_MAX_LENGTHS: Record<SocialAutopostPlatform, number> = {

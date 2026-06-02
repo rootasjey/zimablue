@@ -85,6 +85,40 @@
         <span>{{ providerDialogStorageLabel }}</span>
       </div>
 
+      <!-- Refresh Token (Threads, Facebook, Instagram) -->
+      <div v-if="dialogPlatform === 'threads' || dialogPlatform === 'facebook' || dialogPlatform === 'instagram'" class="rounded-2xl border border-dashed border-stone-200 p-4 dark:border-zinc-700">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-xs font-medium uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+              Access token
+            </p>
+            <p class="mt-0.5 text-sm text-stone-600 dark:text-zinc-300">
+              <template v-if="refreshTokenStatus === 'success'">
+                <span class="i-ph-check-circle text-green-500"></span>
+                Token refreshed successfully
+              </template>
+              <template v-else-if="refreshTokenStatus === 'error'">
+                <span class="i-ph-x-circle text-red-500"></span>
+                {{ refreshTokenError }}
+              </template>
+              <template v-else>
+                Token expires after 60 days. Refresh before it expires.
+              </template>
+            </p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition-all hover:bg-stone-50 active:scale-[0.97] disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            :disabled="isRefreshingToken"
+            @click="refreshToken"
+          >
+            <span v-if="isRefreshingToken" class="i-ph-spinner-gap animate-spin"></span>
+            <span v-else class="i-ph-arrow-clockwise text-sm"></span>
+            {{ isRefreshingToken ? 'Refreshing...' : 'Refresh' }}
+          </button>
+        </div>
+      </div>
+
       <!-- Test Connection (Bluesky only) -->
       <div v-if="dialogPlatform === 'bluesky'" class="rounded-2xl border border-dashed border-stone-200 p-4 dark:border-zinc-700">
         <div class="flex items-start justify-between gap-4">
@@ -206,6 +240,9 @@ const isTestingConnection = ref(false)
 const testConnectionStatus = ref<'idle' | 'success' | 'error'>('idle')
 const testConnectionHandle = ref('')
 const testConnectionError = ref('')
+const isRefreshingToken = ref(false)
+const refreshTokenStatus = ref<'idle' | 'success' | 'error'>('idle')
+const refreshTokenError = ref('')
 const providerDialogStorage = ref<ProviderStorage>('runtime')
 const providerDialogConfigured = ref(false)
 const providerForm = reactive<ProviderFormState>(getEmptyProviderForm())
@@ -345,6 +382,58 @@ const testConnection = async () => {
     testConnectionError.value = error?.data?.error || error?.message || 'Connection failed'
   } finally {
     isTestingConnection.value = false
+  }
+}
+
+const refreshToken = async () => {
+  isRefreshingToken.value = true
+  refreshTokenStatus.value = 'idle'
+  refreshTokenError.value = ''
+
+  const buildRefreshPayload = () => {
+    if (dialogPlatform.value === 'threads') {
+      return {
+        platform: 'threads',
+        accessToken: providerForm.accessToken,
+        apiVersion: providerForm.apiVersion,
+      }
+    }
+
+    const appId = dialogPlatform.value === 'facebook' ? providerForm.metaAppId : providerForm.metaAppId
+    const appSecret = dialogPlatform.value === 'facebook' ? providerForm.metaAppSecret : providerForm.metaAppSecret
+    const accessToken = dialogPlatform.value === 'facebook' ? providerForm.pageAccessToken : providerForm.accessToken
+
+    return {
+      platform: 'meta',
+      accessToken,
+      appId,
+      appSecret,
+      apiVersion: providerForm.apiVersion,
+    }
+  }
+
+  try {
+    const response = await $fetch<{ success: boolean; accessToken?: string; error?: string }>('/api/admin/social-queue/refresh-token', {
+      method: 'POST',
+      body: buildRefreshPayload()
+    })
+
+    if (response.success && response.accessToken) {
+      if (dialogPlatform.value === 'threads' || dialogPlatform.value === 'instagram') {
+        providerForm.accessToken = response.accessToken
+      } else if (dialogPlatform.value === 'facebook') {
+        providerForm.pageAccessToken = response.accessToken
+      }
+      refreshTokenStatus.value = 'success'
+    } else {
+      refreshTokenStatus.value = 'error'
+      refreshTokenError.value = response.error || 'Token refresh failed'
+    }
+  } catch (error: any) {
+    refreshTokenStatus.value = 'error'
+    refreshTokenError.value = error?.data?.error || error?.message || 'Connection failed'
+  } finally {
+    isRefreshingToken.value = false
   }
 }
 
@@ -490,6 +579,8 @@ watch(() => props.open, async (open) => {
   testConnectionStatus.value = 'idle'
   testConnectionHandle.value = ''
   testConnectionError.value = ''
+  refreshTokenStatus.value = 'idle'
+  refreshTokenError.value = ''
   await openProviderConfig(props.defaultPlatform)
 })
 

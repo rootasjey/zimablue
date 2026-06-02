@@ -39,8 +39,9 @@ export default defineEventHandler(async (event) => {
   const apiVersion = config.socialAutopost?.threads?.apiVersion || 'v1.0'
 
   try {
-    const token = await exchangeThreadsCode(code, redirectUri, appId, appSecret)
-    const userId = await getThreadsUserId(token, apiVersion)
+    const shortToken = await exchangeThreadsCode(code, redirectUri, appId, appSecret)
+    const longToken = await exchangeThreadsLongLivedToken(shortToken, appId, appSecret)
+    const userId = await getThreadsUserId(longToken, apiVersion)
 
     const storedConfig = await getStoredProviderConfig()
     const nextConfig = {
@@ -48,12 +49,14 @@ export default defineEventHandler(async (event) => {
       threads: {
         ...(storedConfig.threads || {}),
         enabled: true,
-        accessToken: token,
+        accessToken: longToken,
         userId,
         baseUrl: 'https://graph.threads.net',
         apiVersion,
         pollIntervalMs: 4000,
         pollTimeoutMs: 120000,
+        appId,
+        appSecret,
       },
     }
     await saveProviderConfigToKv(nextConfig)
@@ -77,6 +80,23 @@ async function exchangeThreadsCode(code: string, redirectUri: string, appId: str
 
   if (!res.ok || !body.access_token) {
     throw new Error(body.error?.message || `Threads token exchange failed (${res.status})`)
+  }
+
+  return body.access_token
+}
+
+async function exchangeThreadsLongLivedToken(shortToken: string, appId: string, appSecret: string): Promise<string> {
+  const tokenUrl = new URL('https://graph.threads.net/oauth/access_token')
+  tokenUrl.searchParams.set('grant_type', 'th_exchange_token')
+  tokenUrl.searchParams.set('client_id', appId)
+  tokenUrl.searchParams.set('client_secret', appSecret)
+  tokenUrl.searchParams.set('access_token', shortToken)
+
+  const res = await fetch(tokenUrl.toString(), { method: 'POST' })
+  const body = await res.json() as { access_token?: string; error?: { message?: string } }
+
+  if (!res.ok || !body.access_token) {
+    throw new Error(body.error?.message || `Threads long-lived token exchange failed (${res.status})`)
   }
 
   return body.access_token
