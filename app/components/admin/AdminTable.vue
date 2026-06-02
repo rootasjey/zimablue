@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-hidden">
+  <div class="relative" :class="{ 'pb-14': selectedRows.length > 0 }">
     <div class="flex flex-col gap-4 border-stone-200 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
         <h3 v-if="title" class="truncate font-body text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ title }}</h3>
@@ -31,40 +31,6 @@
         </button>
       </div>
     </div>
-
-    <Transition name="slide-down">
-      <div
-        v-if="selectedRows.length"
-        class="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 dark:border-amber-800/30 dark:bg-amber-900/10"
-      >
-        <span class="text-sm text-amber-600 i-ph-selection-all dark:text-amber-400"></span>
-        <span class="text-xs font-medium text-amber-700 dark:text-amber-400">{{ selectedRows.length }} selected</span>
-
-        <div class="ml-1 flex items-center gap-1.5">
-          <slot name="bulk-actions" :selected="selectedRows">
-            <button
-              v-for="action in bulkActions"
-              :key="action.id"
-              type="button"
-              class="h-9 sm:h-7 rounded-lg px-3 text-xs font-medium transition-colors"
-              :class="bulkActionClass(action.variant)"
-              @click="emit('bulk-action', action.id, selectedRows)"
-            >
-              <span v-if="action.icon" :class="[action.icon, 'mr-1.5']"></span>
-              {{ action.label }}
-            </button>
-          </slot>
-        </div>
-
-        <button
-          type="button"
-          class="ml-auto text-xs text-stone-400 transition-colors hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300"
-          @click="clearSelection"
-        >
-          Clear
-        </button>
-      </div>
-    </Transition>
 
     <div class="overflow-x-auto">
       <table class="min-w-full border-separate border-spacing-0">
@@ -191,6 +157,40 @@
         </tbody>
       </table>
     </div>
+
+    <Transition name="slide-up">
+      <div
+        v-if="selectedRows.length"
+        class="fixed bottom-0 z-50 left-1/2 -translate-x-1/2 w-full max-w-screen-2xl flex items-center gap-2 border-t border-amber-200 bg-amber-50/95 px-5 py-2.5 shadow-lg backdrop-blur-sm dark:border-amber-800/30 dark:bg-amber-900/90 md:px-7"
+      >
+        <span class="text-sm text-amber-600 i-ph-selection-all dark:text-amber-400"></span>
+        <span class="text-xs font-medium text-amber-700 dark:text-amber-400">{{ selectedRows.length }} selected</span>
+
+        <div class="ml-1 flex items-center gap-1.5">
+          <slot name="bulk-actions" :selected="selectedRows">
+            <button
+              v-for="action in bulkActions"
+              :key="action.id"
+              type="button"
+              class="h-9 sm:h-7 rounded-lg px-3 text-xs font-medium transition-colors"
+              :class="bulkActionClass(action.variant)"
+              @click="emit('bulk-action', action.id, selectedRows)"
+            >
+              <span v-if="action.icon" :class="[action.icon, 'mr-1.5']"></span>
+              {{ action.label }}
+            </button>
+          </slot>
+        </div>
+
+        <button
+          type="button"
+          class="ml-auto text-xs text-stone-400 transition-colors hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+          @click="clearSelection"
+        >
+          Clear
+        </button>
+      </div>
+    </Transition>
 
     <div
       v-if="pagination && pagination.totalPages > 1"
@@ -625,14 +625,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.slide-down-enter-active,
-.slide-down-leave-active {
+.slide-up-enter-active,
+.slide-up-leave-active {
   transition: all 0.2s ease;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
+.slide-up-enter-from,
+.slide-up-leave-to {
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(4px);
 }
 </style>
