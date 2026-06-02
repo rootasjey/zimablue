@@ -126,8 +126,11 @@
                   'opacity-40': dragIndex === index,
                   'ring-2 ring-amber-400/60 ring-inset': dropIndex === index && dragIndex !== null && dragIndex !== index,
                   'grabbing': isDraggableRow(row, index) && dragIndex !== null,
+                  'bg-rose-50/80 dark:bg-rose-900/20 ring-1 ring-inset ring-rose-300/60 dark:ring-rose-700/40': rowSelection[index] && !(keyboardNav && highlightedIndex === index),
+                  'ring-1 ring-inset ring-amber-400/40 bg-amber-50/50 dark:bg-amber-900/10': keyboardNav && highlightedIndex === index,
                 }
               ]"
+              :data-highlighted-index="keyboardNav ? index : undefined"
               @click="handleRowClick(row, $event)"
               @dragstart="handleDragStart(index, $event)"
               @dragend="handleDragEnd"
@@ -241,6 +244,7 @@ interface Props {
   emptyMessage?: string
   draggableRows?: boolean
   isRowDraggable?: (row: any, index: number) => boolean
+  keyboardNav?: boolean
 }
 
 interface Emits {
@@ -252,11 +256,13 @@ interface Emits {
   (e: 'delete', row: any): void
   (e: 'row-click', row: any): void
   (e: 'reorder', dragIndex: number, dropIndex: number): void
+  (e: 'duplicate', payload: { highlighted: any; selected: any[] }): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   bulkActions: () => [],
+  keyboardNav: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -381,12 +387,117 @@ const handleRowClick = (row: any, event: MouseEvent) => {
     return
   }
 
+  if (props.keyboardNav) {
+    const index = props.data.indexOf(row)
+    if (index >= 0) highlightedIndex.value = index
+  }
+
   emit('row-click', row)
+}
+
+// Keyboard navigation
+const handleKeyDown = (e: KeyboardEvent) => {
+  const target = e.target as HTMLElement
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+  if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return
+
+  const hasHighlighted = highlightedIndex.value >= 0
+  const hasSelection = Object.keys(rowSelection.value).length > 0
+  const dataLen = props.data.length
+
+  if ((e.key === 'a' || e.key === 'A') && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault()
+    toggleSelectAll()
+    return
+  }
+
+  if (e.key === 'Escape') {
+    if (hasSelection) {
+      e.preventDefault()
+      clearSelection()
+      return
+    }
+    if (hasHighlighted) {
+      e.preventDefault()
+      highlightedIndex.value = -1
+    }
+    return
+  }
+
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    if (dataLen === 0) return
+    e.preventDefault()
+    highlightedIndex.value = e.key === 'ArrowRight' ? 0 : dataLen - 1
+    return
+  }
+
+  if (e.key === 'ArrowUp') {
+    if (hasHighlighted && highlightedIndex.value > 0) {
+      e.preventDefault()
+      highlightedIndex.value--
+    }
+    return
+  }
+
+  if (e.key === 'ArrowDown') {
+    if (hasHighlighted && highlightedIndex.value < dataLen - 1) {
+      e.preventDefault()
+      highlightedIndex.value++
+    }
+    return
+  }
+
+  const handleDeleteAction = () => {
+    e.preventDefault()
+    if (hasSelection) {
+      emit('bulk-action', 'delete_selected', selectedRows.value)
+    } else if (hasHighlighted) {
+      const row = props.data[highlightedIndex.value]
+      if (row) emit('delete', row)
+    }
+  }
+
+  if (e.key === 'Backspace') {
+    handleDeleteAction()
+    return
+  }
+
+  if (e.key === 't' || e.key === 'T') {
+    if (e.metaKey || e.ctrlKey || e.altKey) return
+    handleDeleteAction()
+    return
+  }
+
+  if (!hasHighlighted) return
+
+  const highlightedRow = props.data[highlightedIndex.value]
+  if (!highlightedRow) return
+
+  if (e.key === ' ') {
+    e.preventDefault()
+    toggleRowSelection(highlightedIndex.value)
+    return
+  }
+
+  if (e.key === 'e' || e.key === 'E') {
+    if (e.metaKey || e.ctrlKey || e.altKey) return
+    e.preventDefault()
+    emit('edit', highlightedRow)
+    return
+  }
+
+  if (e.key === 'd' || e.key === 'D') {
+    if (e.metaKey || e.ctrlKey || e.altKey) return
+    e.preventDefault()
+    emit('duplicate', { highlighted: highlightedRow, selected: selectedRows.value })
+    return
+  }
 }
 
 // Drag-and-drop reorder
 const dragIndex = ref<number | null>(null)
 const dropIndex = ref<number | null>(null)
+const highlightedIndex = ref(-1)
 
 const isDraggableRow = (row: any, index: number) => {
   if (!props.draggableRows) return false
@@ -439,12 +550,35 @@ const handleDrop = (index: number, event: DragEvent) => {
   dropIndex.value = null
 }
 
-watch(() => props.data, clearSelection)
+watch(() => props.data, () => {
+  clearSelection()
+  highlightedIndex.value = -1
+})
+
+watch(highlightedIndex, (newIndex) => {
+  if (!props.keyboardNav || newIndex < 0) return
+  nextTick(() => {
+    const el = document.querySelector(`[data-highlighted-index="${newIndex}"]`)
+    if (el) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  })
+})
+
 watch([allRowsSelected, hasPartialSelection], syncSelectAllCheckbox, { immediate: true })
 
-onBeforeUnmount(() => {
+onMounted(() => {
+  if (props.keyboardNav) {
+    window.addEventListener('keydown', handleKeyDown)
+  }
+})
+
+onUnmounted(() => {
   if (searchTimer) {
     clearTimeout(searchTimer)
+  }
+  if (props.keyboardNav) {
+    window.removeEventListener('keydown', handleKeyDown)
   }
 })
 </script>

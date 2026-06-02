@@ -8,6 +8,7 @@
       :loading="isLoading"
       :pagination="pagination"
       :bulk-actions="bulkActions"
+      :keyboard-nav="true"
       empty-message="No images found. Upload some to get started."
       @search="handleSearch"
       @refresh="fetchImages"
@@ -16,6 +17,7 @@
       @row-click="viewImage"
       @edit="editImage"
       @delete="showDeleteDialog"
+      @duplicate="handleDuplicate"
     >
       <!-- Thumbnail + name -->
       <template #pathname-cell="{ row }">
@@ -409,6 +411,10 @@ const deleteImage = async () => {
   } finally {
     isDeleting.value = false
   }
+}
+
+const handleDuplicate = () => {
+  toast({ title: 'Coming Soon', description: 'Duplicate action is not yet implemented.', toast: 'soft-info', duration: 3000 })
 }
 
 const handleImageError = (payload: string | Event) => {
