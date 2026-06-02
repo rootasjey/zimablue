@@ -1,39 +1,5 @@
 <template>
   <div class="space-y-6">
-    <section class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
-      <div class="admin-card overflow-hidden border-none bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] p-5 shadow-sm dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(17,24,39,0.94))] sm:p-6">
-        <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Collections</p>
-        <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Series visibility and editorial structure</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
-          Keep public series clean, watch how many images are grouped together, and adjust visibility without dropping into a heavier editor flow.
-        </p>
-
-        <div class="mt-5 flex flex-wrap gap-2">
-          <span class="admin-badge admin-badge-stone">{{ pagination.total }} total collections</span>
-          <span class="admin-badge admin-badge-cyan">{{ collections.length }} on this page</span>
-          <span class="admin-badge admin-badge-amber">{{ publicCollections }} public here</span>
-        </div>
-      </div>
-
-      <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Public ratio</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ publicRatio }}%</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Share of visible collections exposed to visitors.</p>
-        </div>
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Grouped images</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleGroupedImages.toLocaleString() }}</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Images currently represented on this page.</p>
-        </div>
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Page reach</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleCollectionViews.toLocaleString() }}</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Combined collection views across the visible rows.</p>
-        </div>
-      </div>
-    </section>
-
     <AdminTable
       title="Collections"
       description="Manage all collections in the system"
@@ -116,7 +82,7 @@
     </AdminTable>
 
     <!-- View Collection Dialog -->
-    <NDialog v-model:open="isViewDialogOpen" :_dialog="{ class: 'max-w-lg' }">
+    <NDialog v-model:open="isViewDialogOpen" :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-lg' }">
       <template #content>
         <div v-if="selectedCollection" class="p-6">
           <div class="flex items-start justify-between mb-4">
@@ -261,8 +227,8 @@ const unaColumns = [
   { accessorKey: 'user_name', header: 'Owner' },
   { accessorKey: 'is_public', header: 'Visibility' },
   { accessorKey: 'image_count', header: 'Images' },
-  { accessorKey: 'stats_views', header: 'Views' },
-  { accessorKey: 'created_at', header: 'Created' },
+  { accessorKey: 'stats_views', header: 'Views', hideOnMobile: true },
+  { accessorKey: 'created_at', header: 'Created', hideOnMobile: true },
 ]
 
 const bulkActions: AdminBulkAction[] = [
@@ -270,23 +236,6 @@ const bulkActions: AdminBulkAction[] = [
   { id: 'make_private', label: 'Make Private', icon: 'i-ph-lock', variant: 'soft-gray' },
   { id: 'delete_selected', label: 'Delete Selected', icon: 'i-ph-trash', variant: 'soft-red' },
 ]
-
-const publicCollections = computed(() => {
-  return collections.value.filter((collection) => collection.is_public).length
-})
-
-const publicRatio = computed(() => {
-  if (!collections.value.length) return 0
-  return Math.round((publicCollections.value / collections.value.length) * 100)
-})
-
-const visibleGroupedImages = computed(() => {
-  return collections.value.reduce((total, collection) => total + Number(collection.image_count ?? 0), 0)
-})
-
-const visibleCollectionViews = computed(() => {
-  return collections.value.reduce((total, collection) => total + Number(collection.stats_views ?? 0), 0)
-})
 
 // Methods
 const fetchCollections = async () => {

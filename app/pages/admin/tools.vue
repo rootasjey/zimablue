@@ -5,9 +5,9 @@
         <div class="admin-card p-6">
           <h3 class="text-lg font-semibold mb-2">Regenerate thumbnails</h3>
           <p class="text-stone-500 dark:text-zinc-400 mb-4">Rebuild resized variants for one image or all images. Useful after updating processing or when a variant is missing.</p>
-          <div class="flex gap-3 items-end">
-            <NInput v-model.number="imageId" type="number" placeholder="Image ID (optional)" class="w-48" />
-            <NButton :loading="regenLoading" btn="soft-blue" @click="regenerate">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <NInput v-model.number="imageId" type="number" placeholder="Image ID (optional)" class="w-full sm:w-48" />
+            <NButton :loading="regenLoading" btn="soft-blue" @click="regenerate" class="w-full sm:w-auto">
               <span class="i-ph-arrows-clockwise mr-2"></span>
               <span>{{ imageId ? 'Regenerate image' : 'Regenerate all (batch)' }}</span>
             </NButton>

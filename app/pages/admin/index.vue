@@ -23,6 +23,7 @@
           <AdminStatsCard
             title="Illustrations"
             :value="stats?.images.total ?? 0"
+            to="/admin/images"
             icon="i-ph-image"
             icon-color="amber"
             :change="contentActivityChange"
@@ -32,6 +33,7 @@
           <AdminStatsCard
             title="Collections"
             :value="stats?.collections.total ?? 0"
+            to="/admin/collections"
             icon="i-ph-folders"
             icon-color="cyan"
             :sub-label="`${stats?.collections.public ?? 0} public / ${stats?.collections.private ?? 0} private`"
@@ -40,6 +42,7 @@
           <AdminStatsCard
             title="Messages"
             :value="stats?.messages.total ?? 0"
+            to="/admin/messages"
             icon="i-ph-envelope"
             icon-color="rose"
             :change="messageFreshness"
@@ -49,6 +52,7 @@
           <AdminStatsCard
             title="Users"
             :value="stats?.users.total ?? 0"
+            to="/admin/users"
             icon="i-ph-users-three"
             icon-color="emerald"
             :change="Math.round(userGrowth.percentage_change)"

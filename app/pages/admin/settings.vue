@@ -14,7 +14,7 @@
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-600 text-stone-700 mb-2 dark:text-zinc-300">Theme</label>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-3 gap-2 min-[0px]:grid-cols-3">
                 <button
                   v-for="themeOption in themeOptions"
                   :key="themeOption.value"

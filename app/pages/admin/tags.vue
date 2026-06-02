@@ -1,16 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Create tag button -->
-    <div class="flex justify-end">
-      <button
-        class="px-4 h-9 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center gap-1.5"
-        @click="showCreateModal = true"
-      >
-        <span class="i-ph-plus text-sm"></span>
-        New Tag
-      </button>
-    </div>
-
     <AdminTable
       title="Tags"
       description="Manage tags used throughout the system"
@@ -28,6 +17,15 @@
       @edit="editTag"
       @delete="deleteTag"
     >
+      <template #header-tabs>
+        <button
+          class="flex h-8 items-center gap-1.5 rounded-lg border border-stone-200 bg-stone-100 px-3 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-200 hover:text-zinc-900 sm:h-8 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+          @click="showCreateModal = true"
+        >
+          <span class="i-ph-plus text-sm"></span>
+          New Tag
+        </button>
+      </template>
       <!-- Tag name with color dot -->
       <template #name-cell="{ row }">
         <div class="flex items-center gap-2.5">
@@ -181,7 +179,7 @@ const sortLabelToKey: Record<string, string> = {
 const unaColumns = [
   { accessorKey: 'name', header: 'Tag' },
   { accessorKey: 'usage_count', header: 'Usage' },
-  { accessorKey: 'created_at', header: 'Created' },
+  { accessorKey: 'created_at', header: 'Created', hideOnMobile: true },
 ]
 
 const bulkActions: AdminBulkAction[] = [

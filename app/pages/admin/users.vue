@@ -214,9 +214,9 @@ const unaColumns = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'role', header: 'Role' },
-  { accessorKey: 'job', header: 'Job' },
-  { accessorKey: 'location', header: 'Location' },
-  { accessorKey: 'created_at', header: 'Joined' },
+  { accessorKey: 'job', header: 'Job', hideOnMobile: true },
+  { accessorKey: 'location', header: 'Location', hideOnMobile: true },
+  { accessorKey: 'created_at', header: 'Joined', hideOnMobile: true },
 ]
 
 const bulkActions: AdminBulkAction[] = [

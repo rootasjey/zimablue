@@ -1,39 +1,5 @@
 <template>
   <div class="space-y-6">
-    <section class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
-      <div class="admin-card overflow-hidden border-none bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] p-5 shadow-sm dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(17,24,39,0.94))] sm:p-6">
-        <p class="text-xs font-medium uppercase tracking-[0.22em] text-stone-400 dark:text-zinc-500">Library</p>
-        <h2 class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Illustrations, ownership and quick cleanup</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500 dark:text-zinc-400">
-          Keep uploads tidy, inspect who owns what, and spot high-performing pieces without leaving the management view.
-        </p>
-
-        <div class="mt-5 flex flex-wrap gap-2">
-          <span class="admin-badge admin-badge-stone">{{ pagination.total }} total images</span>
-          <span class="admin-badge admin-badge-amber">{{ images.length }} on this page</span>
-          <span class="admin-badge admin-badge-cyan">{{ visibleOwners }} active owners here</span>
-        </div>
-      </div>
-
-      <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Visible views</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageViews.toLocaleString() }}</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Combined view count on the current page.</p>
-        </div>
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Visible likes</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ visibleImageLikes.toLocaleString() }}</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">A quick signal for what resonates now.</p>
-        </div>
-        <div class="admin-card p-4">
-          <p class="text-[11px] uppercase tracking-[0.2em] text-stone-400 dark:text-zinc-500">Current page</p>
-          <p class="mt-2 font-classic text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{{ pagination.page }} / {{ Math.max(1, pagination.totalPages) }}</p>
-          <p class="mt-1 text-xs text-stone-500 dark:text-zinc-400">Pagination stays light while the layout remains readable.</p>
-        </div>
-      </div>
-    </section>
-
     <AdminTable
       title="Images"
       description="Manage all illustrations in the system"
@@ -116,7 +82,7 @@
     </AdminTable>
 
     <!-- View Image Dialog -->
-    <NDialog v-model:open="isViewDialogOpen" :_dialog="{ class: 'max-w-3xl' }">
+    <NDialog v-model:open="isViewDialogOpen" :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-3xl' }">
       <template #content>
         <div v-if="selectedImage" class="p-6">
           <div class="flex items-start justify-between mb-6">
@@ -333,27 +299,15 @@ const unaColumns = [
   { accessorKey: 'pathname', header: 'Image' },
   { accessorKey: 'user_name', header: 'Owner' },
   { accessorKey: 'stats_views', header: 'Views' },
-  { accessorKey: 'stats_downloads', header: 'Downloads' },
-  { accessorKey: 'stats_likes', header: 'Likes' },
-  { accessorKey: 'created_at', header: 'Added' },
+  { accessorKey: 'stats_downloads', header: 'Downloads', hideOnMobile: true },
+  { accessorKey: 'stats_likes', header: 'Likes', hideOnMobile: true },
+  { accessorKey: 'created_at', header: 'Added', hideOnMobile: true },
 ]
 
 const bulkActions: AdminBulkAction[] = [
   { id: 'delete_selected', label: 'Delete Selected', icon: 'i-ph-trash', variant: 'soft-red' },
   { id: 'regenerate_thumbnails', label: 'Regenerate Thumbnails', icon: 'i-ph-arrows-clockwise', variant: 'soft-blue' },
 ]
-
-const visibleOwners = computed(() => {
-  return new Set(images.value.map((image) => image.user_id ?? image.user_email ?? image.id)).size
-})
-
-const visibleImageViews = computed(() => {
-  return images.value.reduce((total, image) => total + Number(image.stats_views ?? 0), 0)
-})
-
-const visibleImageLikes = computed(() => {
-  return images.value.reduce((total, image) => total + Number(image.stats_likes ?? 0), 0)
-})
 
 // Methods
 const fetchImages = async () => {

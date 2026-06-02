@@ -10,7 +10,7 @@
         <!-- View toggle -->
         <div class="flex items-center bg-stone-100 dark:bg-zinc-800 rounded-lg p-0.5 gap-0.5">
           <button
-            class="w-7 h-7 rounded-md flex items-center justify-center text-sm transition-colors"
+            class="w-8 h-8 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-sm transition-colors"
             :class="viewMode === 'list' ? 'bg-white dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 shadow-xs' : 'text-stone-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'"
             @click="viewMode = 'list'"
             title="List view"
@@ -18,7 +18,7 @@
             <span class="i-ph-list-bullets"></span>
           </button>
           <button
-            class="w-7 h-7 rounded-md flex items-center justify-center text-sm transition-colors"
+            class="w-8 h-8 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-sm transition-colors"
             :class="viewMode === 'kanban' ? 'bg-white dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 shadow-xs' : 'text-stone-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'"
             @click="viewMode = 'kanban'"
             title="Kanban view"
@@ -42,7 +42,7 @@
       <button
         v-for="sf in statusFilters"
         :key="sf.value"
-        class="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-medium transition-colors"
+        class="inline-flex items-center gap-1.5 px-4 h-9 sm:px-3 sm:h-8 rounded-lg text-xs font-medium transition-colors"
         :class="selectedStatus === sf.value
           ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
           : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'"
@@ -56,7 +56,7 @@
         <button
           v-for="pf in priorityFilters"
           :key="pf.value"
-          class="px-3 h-8 rounded-lg text-xs font-medium transition-colors"
+          class="px-4 h-9 sm:px-3 sm:h-8 rounded-lg text-xs font-medium transition-colors"
           :class="selectedPriority === pf.value
             ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
             : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'"
@@ -109,7 +109,7 @@
         <div class="flex items-start gap-3">
           <!-- Status toggle -->
           <button
-            class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-colors"
+            class="w-8 h-8 sm:w-6 sm:h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-colors"
             :class="todo.status === 'completed'
               ? 'bg-emerald-500 border-emerald-500 text-white'
               : 'border-stone-300 dark:border-zinc-600 hover:border-amber-400'"
@@ -132,13 +132,13 @@
                   {{ todo.priority }}
                 </span>
                 <button
-                  class="w-6 h-6 flex items-center justify-center rounded text-stone-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+                  class="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded text-stone-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
                   @click="openEditDialog(todo)"
                 >
                   <span class="i-ph-pencil-simple text-xs"></span>
                 </button>
                 <button
-                  class="w-6 h-6 flex items-center justify-center rounded text-stone-400 dark:text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+                  class="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded text-stone-400 dark:text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
                   @click="openDeleteDialog(todo)"
                 >
                   <span class="i-ph-trash-simple text-xs"></span>
@@ -165,7 +165,7 @@
       <!-- Pagination -->
       <div v-if="pagination.totalPages > 1" class="flex items-center justify-center gap-2 pt-2">
         <button
-          class="px-3 h-8 rounded-lg text-xs font-medium bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+          class="px-3 h-9 sm:h-8 rounded-lg text-xs font-medium bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
           :disabled="!pagination.hasPrev"
           @click="handlePageChange(pagination.page - 1)"
         >
@@ -173,7 +173,7 @@
         </button>
         <span class="text-xs text-stone-500 dark:text-zinc-400">Page {{ pagination.page }} of {{ pagination.totalPages }}</span>
         <button
-          class="px-3 h-8 rounded-lg text-xs font-medium bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+          class="px-3 h-9 sm:h-8 rounded-lg text-xs font-medium bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
           :disabled="!pagination.hasNext"
           @click="handlePageChange(pagination.page + 1)"
         >

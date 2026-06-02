@@ -304,10 +304,10 @@ const platformOptions: Array<{ value: Platform, label: string, icon: string }> =
 const tableColumns = [
   { accessorKey: 'imageName', header: 'Illustration' },
   { accessorKey: 'status', header: 'Status' },
-  { accessorKey: 'position', header: 'Order' },
-  { accessorKey: 'userName', header: 'Author' },
+  { accessorKey: 'position', header: 'Order', hideOnMobile: true },
+  { accessorKey: 'userName', header: 'Author', hideOnMobile: true },
   { accessorKey: 'scheduledFor', header: 'Scheduled' },
-  { accessorKey: 'publishedAt', header: 'Last attempt' },
+  { accessorKey: 'publishedAt', header: 'Last attempt', hideOnMobile: true },
 ]
 
 const bulkActions: AdminBulkAction[] = [

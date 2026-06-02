@@ -14,7 +14,7 @@
             v-model="searchQuery"
             type="search"
             placeholder="Search..."
-            class="h-8 w-44 rounded-lg border border-stone-200 bg-stone-100 pl-8 pr-3 text-sm text-zinc-900 outline-none transition placeholder:text-stone-400 focus:ring-2 focus:ring-amber-500/40 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            class="h-8 w-32 rounded-lg border border-stone-200 bg-stone-100 pl-8 pr-3 text-sm text-zinc-900 outline-none transition placeholder:text-stone-400 focus:ring-2 focus:ring-amber-500/40 sm:w-44 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             @input="debouncedSearch"
             @keyup.enter="handleSearch"
           >
@@ -22,7 +22,7 @@
 
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-stone-500 transition-colors hover:bg-stone-200 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+          class="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-stone-500 transition-colors hover:bg-stone-200 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
           :disabled="loading"
           title="Refresh"
           @click="emit('refresh')"
@@ -46,7 +46,7 @@
               v-for="action in bulkActions"
               :key="action.id"
               type="button"
-              class="h-7 rounded-lg px-3 text-xs font-medium transition-colors"
+              class="h-9 sm:h-7 rounded-lg px-3 text-xs font-medium transition-colors"
               :class="bulkActionClass(action.variant)"
               @click="emit('bulk-action', action.id, selectedRows)"
             >
@@ -83,6 +83,7 @@
               v-for="column in columns"
               :key="column.accessorKey"
               class="bg-[#F7F7F7] px-3 py-3 text-left dark:bg-zinc-800/50"
+              :class="column.hideOnMobile ? 'hidden md:table-cell' : ''"
             >
               <slot :name="`${column.accessorKey}-header`" :column="column">
                 <span class="admin-section-title">{{ column.header }}</span>
@@ -149,6 +150,7 @@
                 v-for="column in columns"
                 :key="column.accessorKey"
                 class="px-3 py-3 text-sm text-zinc-700 dark:text-zinc-300"
+                :class="column.hideOnMobile ? 'hidden md:table-cell' : ''"
               >
                 <slot
                   :name="`${column.accessorKey}-cell`"
@@ -162,10 +164,10 @@
 
               <td class="px-3 py-3 pr-5 text-right">
                 <slot name="actions" :row="row">
-                  <div class="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
                     <button
                       type="button"
-                      class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                      class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
                       title="Edit"
                       @click.stop="emit('edit', row)"
                     >
@@ -173,7 +175,7 @@
                     </button>
                     <button
                       type="button"
-                      class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-500 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+                      class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
                       title="Delete"
                       @click.stop="emit('delete', row)"
                     >
@@ -200,7 +202,7 @@
       <div class="flex items-center gap-1">
         <button
           type="button"
-          class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-30 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
           :disabled="!pagination.hasPrev"
           @click="emit('page-change', pagination.page - 1)"
         >
@@ -213,7 +215,7 @@
 
         <button
           type="button"
-          class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-30 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
           :disabled="!pagination.hasNext"
           @click="emit('page-change', pagination.page + 1)"
         >

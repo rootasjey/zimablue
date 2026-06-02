@@ -1,5 +1,10 @@
 <template>
-  <div class="admin-card p-5 flex flex-col gap-3 hover:shadow-sm transition-shadow duration-200">
+  <component
+    :is="to ? 'a' : 'div'"
+    :href="to"
+    class="admin-card p-5 flex flex-col gap-3 transition-shadow duration-200"
+    :class="to ? 'cursor-pointer hover:shadow-md' : 'hover:shadow-sm'"
+  >
     <!-- Header row: title + icon -->
     <div class="flex items-start justify-between gap-2">
       <p class="text-xs font-medium text-stone-500 dark:text-zinc-400 uppercase tracking-wide font-body">{{ title }}</p>
@@ -42,7 +47,7 @@
         :class="sparklineColorClass"
       ></div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script lang="ts" setup>
@@ -50,6 +55,7 @@ interface Props {
   title: string
   value: string | number
   icon: string
+  to?: string
   iconColor?: 'amber' | 'cyan' | 'rose' | 'emerald' | 'stone'
   change?: number
   changeLabel?: string

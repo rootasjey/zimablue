@@ -1,11 +1,17 @@
 <template>
   <div>
     <!-- Column headers -->
-    <div class="grid gap-4" :style="gridStyle">
+    <div
+      class="gap-4"
+      :class="isMobile
+        ? 'flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mb-2'
+        : 'grid'"
+      :style="isMobile ? undefined : gridStyle"
+    >
       <div
         v-for="col in columns"
         :key="col.id"
-        class="min-w-0"
+        :class="isMobile ? 'min-w-[80vw] snap-start flex-shrink-0' : 'min-w-0'"
       >
         <!-- Column header -->
         <div class="flex items-center justify-between mb-3 px-1">
@@ -127,6 +133,9 @@ defineEmits<{
   (e: 'edit', item: KanbanItem): void
   (e: 'delete', item: KanbanItem): void
 }>()
+
+const breakpoints = useBreakpoints({ mobile: 0, desktop: 768 })
+const isMobile = breakpoints.smaller('desktop')
 
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(3, minmax(0, 1fr))`,

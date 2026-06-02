@@ -35,6 +35,7 @@ export interface AdminTableColumn {
   header: string;
   sortable?: boolean;
   filterable?: boolean;
+  hideOnMobile?: boolean;
   cell?: (value: any, row: any) => string;
 }
 

@@ -12,6 +12,7 @@
             size="sm"
             navigation-menu="ghost-white"
             navigation-menu-link="ghost-white"
+            class="hidden lg:flex"
           />
         </div>
 
@@ -27,12 +28,13 @@
 
           <button
             type="button"
-            class="relative hidden h-9 items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 text-stone-400 transition-colors hover:bg-stone-50 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800"
+            class="relative hidden h-9 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-400 transition-colors hover:bg-stone-50 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800"
+            :class="isCommandCompact ? 'w-9' : 'gap-2 px-3'"
             @click="$emit('open-command-dialog')"
           >
             <span class="i-ph-command text-sm"></span>
-            <span class="flex-1 text-left text-xs">Go to a page or run an action…</span>
-            <kbd class="inline-flex items-center gap-0.5 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-classic text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <span class="flex-1 text-left text-xs" :class="isCommandCompact ? 'hidden' : ''">Go to a page or run an action…</span>
+            <kbd :class="isCommandCompact ? 'hidden' : 'inline-flex items-center gap-0.5 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-classic text-stone-500 dark:bg-zinc-800 dark:text-zinc-400'">
               <span>⌘K</span>
             </kbd>
           </button>
@@ -108,6 +110,8 @@ defineEmits<{
 const { user } = useUserSession()
 const route = useRoute()
 const unreadMessagesCount = computed(() => props.unreadCount ?? 0)
+const breakpoints = useBreakpoints({ compact: 0, wide: 1280 })
+const isCommandCompact = breakpoints.smaller('wide')
 
 const userName = computed(() => user.value?.name || 'Admin')
 const userInitials = computed(() => {
@@ -121,12 +125,6 @@ const isCurrentRoute = (path: string) => {
 
 const navigationItems = computed<any[]>(() => {
   return [
-    {
-      label: 'Home',
-      value: 'home',
-      to: '/',
-      active: route.path === '/',
-    },
     {
       label: 'Dashboard',
       value: 'dashboard',
