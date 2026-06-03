@@ -92,9 +92,6 @@
               <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">{{ selectedCollection.name }}</h2>
               <p class="text-sm text-stone-400 dark:text-zinc-500 mt-0.5">{{ selectedCollection.description || 'No description' }}</p>
             </div>
-            <button @click="isViewDialogOpen = false" class="text-stone-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
-              <span class="i-ph-x text-lg"></span>
-            </button>
           </div>
 
           <!-- Stats grid -->
@@ -127,10 +124,6 @@
           </div>
 
           <div class="flex justify-end gap-2">
-            <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
-              @click="isViewDialogOpen = false"
-            >Close</button>
             <NuxtLink
               :to="`/collections/${selectedCollection.slug}`"
               target="_blank"
@@ -140,7 +133,7 @@
               View
             </NuxtLink>
             <button
-              class="px-4 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
+              class="px-10 h-9 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
               @click="editCollection(selectedCollection)"
             >Edit</button>
           </div>
