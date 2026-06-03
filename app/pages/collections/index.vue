@@ -544,6 +544,7 @@ const getGradientStyle = (collection: any) => {
 // Page-level drag handlers
 const handlePageDragEnter = (e: DragEvent) => {
   e.preventDefault()
+  if (!e.dataTransfer?.types.includes('Files')) return
   pageDragCounter++
   isDraggingOnPage.value = true
   isDraggingOnCard.value = null
@@ -565,6 +566,7 @@ const handlePageDragLeave = (e: DragEvent) => {
 const handleCardDragEnter = (e: DragEvent, collectionId: number) => {
   e.preventDefault()
   e.stopPropagation()
+  if (!e.dataTransfer?.types.includes('Files')) return
   cardDragCounter++
   isDraggingOnPage.value = false
   isDraggingOnCard.value = collectionId
@@ -599,7 +601,8 @@ const handleDropOnCollection = async (e: DragEvent, collection: Collection) => {
 
   if (!e.dataTransfer) return
 
-  const files = [...e.dataTransfer.files].filter(file =>
+  const allFiles = await imageUpload.readFilesFromDataTransfer(e.dataTransfer)
+  const files = allFiles.filter(file =>
     file.type.startsWith('image/') && imageUpload.validateFile(file)
   )
 
@@ -653,7 +656,8 @@ const handleDropOnEmptySpace = async (e: DragEvent) => {
 
   if (!e.dataTransfer) return
 
-  const files = [...e.dataTransfer.files].filter(file =>
+  const allFiles = await imageUpload.readFilesFromDataTransfer(e.dataTransfer)
+  const files = allFiles.filter(file =>
     file.type.startsWith('image/') && imageUpload.validateFile(file)
   )
 

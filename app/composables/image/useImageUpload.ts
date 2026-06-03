@@ -70,6 +70,64 @@ export const useImageUpload = () => {
     return true
   }
 
+  // Read files from a DataTransfer, recursively extracting files from directories
+  const readFilesFromDataTransfer = async (dataTransfer: DataTransfer): Promise<File[]> => {
+    const files: File[] = []
+
+    if (dataTransfer.items?.length) {
+      const entries = Array.from(dataTransfer.items)
+        .map(item => item.webkitGetAsEntry?.())
+        .filter(Boolean) as FileSystemEntry[]
+
+      for (const entry of entries) {
+        const extracted = await readEntry(entry)
+        files.push(...extracted)
+      }
+    }
+
+    // Fallback: if items API didn't yield files, use dataTransfer.files directly
+    if (files.length === 0 && dataTransfer.files.length > 0) {
+      files.push(...Array.from(dataTransfer.files))
+    }
+
+    return files
+  }
+
+  async function readEntry(entry: FileSystemEntry): Promise<File[]> {
+    if (entry.isFile) {
+      const file = await fileFromEntry(entry as FileSystemFileEntry)
+      return file ? [file] : []
+    }
+    if (entry.isDirectory) {
+      return readDirectory(entry as FileSystemDirectoryEntry)
+    }
+    return []
+  }
+
+  function fileFromEntry(entry: FileSystemFileEntry): Promise<File | null> {
+    return new Promise(resolve => {
+      entry.file(file => resolve(file), () => resolve(null))
+    })
+  }
+
+  async function readDirectory(entry: FileSystemDirectoryEntry): Promise<File[]> {
+    const reader = entry.createReader()
+    const allFiles: File[] = []
+    let entries: FileSystemEntry[] = []
+
+    do {
+      entries = await new Promise<FileSystemEntry[]>((resolve, reject) => {
+        reader.readEntries(resolve, reject)
+      })
+      for (const child of entries) {
+        const childFiles = await readEntry(child)
+        allFiles.push(...childFiles)
+      }
+    } while (entries.length > 0)
+
+    return allFiles
+  }
+
   // Drag and drop handlers
   const handleDragEnter = (e: DragEvent) => {
     e.preventDefault()
@@ -95,12 +153,13 @@ export const useImageUpload = () => {
     isDragging.value = false
     dragCounter = 0
 
-    // Ignore non-file drops (internal DOM drag-and-drop)
-    if (!e.dataTransfer?.files?.length) return
+    if (!e.dataTransfer) return
 
     if (!checkAuth()) return
 
-    const files = [...e.dataTransfer.files].filter(file => 
+    const allFiles = await readFilesFromDataTransfer(e.dataTransfer)
+
+    const files = allFiles.filter(file => 
       file.type.startsWith('image/') && validateFile(file)
     )
 
@@ -307,6 +366,7 @@ export const useImageUpload = () => {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    readFilesFromDataTransfer,
     triggerFileUpload,
     handleFileSelect,
     handleReplaceFileSelect,

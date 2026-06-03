@@ -1056,12 +1056,12 @@ const handleDrop = async (e: DragEvent) => {
   e.preventDefault()
   imageUpload.handleDragLeave(e)
 
-  // Ignore non-file drops (internal DOM drag-and-drop)
-  if (!e.dataTransfer?.files?.length) return
+  if (!e.dataTransfer) return
 
   if (!imageUpload.checkAuth()) return
 
-  const files = [...e.dataTransfer.files].filter(file =>
+  const allFiles = await imageUpload.readFilesFromDataTransfer(e.dataTransfer)
+  const files = allFiles.filter(file =>
     file.type.startsWith('image/') && imageUpload.validateFile(file)
   )
 
