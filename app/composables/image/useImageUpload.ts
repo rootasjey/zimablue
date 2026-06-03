@@ -31,11 +31,11 @@ export const useImageUpload = () => {
     }
 
     // Optional: Add file size validation
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const maxSize = 30 * 1024 * 1024 // 30MB
     if (file.size > maxSize) {
       toast({
         title: 'File Too Large',
-        description: 'Please select files smaller than 10MB.',
+        description: 'Please select files smaller than 30MB.',
         toast: 'soft-warning',
         showProgress: true,
       })
