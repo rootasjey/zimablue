@@ -69,6 +69,32 @@ type ZimablueAutopostResult = SocialAutopostExecutionResult<SocialAutopostPlatfo
 
 const utf8Encoder = new TextEncoder()
 
+async function proactivelyRefreshTokens(runtimeConfig: ReturnType<typeof useRuntimeConfig>, enabledPlatforms: SocialAutopostPlatform[]) {
+  const refreshable: { platform: 'threads' | 'instagram' | 'facebook'; config: Promise<any>; tokenKey: string }[] = []
+  if (enabledPlatforms.includes('threads')) {
+    refreshable.push({ platform: 'threads', config: resolveThreadsPostConfig(runtimeConfig), tokenKey: 'accessToken' })
+  }
+  if (enabledPlatforms.includes('instagram')) {
+    refreshable.push({ platform: 'instagram', config: resolveInstagramPostConfig(runtimeConfig), tokenKey: 'accessToken' })
+  }
+  if (enabledPlatforms.includes('facebook')) {
+    refreshable.push({ platform: 'facebook', config: resolveFacebookPostConfig(runtimeConfig), tokenKey: 'pageAccessToken' })
+  }
+
+  for (const entry of refreshable) {
+    const resolved = await entry.config
+    const currentToken = entry.platform === 'facebook' ? (resolved as any).pageAccessToken : resolved.accessToken
+    if (!currentToken) continue
+
+    const result = await tryRefreshToken(resolved as any, entry.platform === 'threads' ? 'threads' : 'meta')
+    if (typeof result === 'string') {
+      await saveAccessTokenToKv(entry.platform, result)
+    } else if (result === undefined) {
+      console.warn(`[social-autopost] ${entry.platform} token is expired — re-authentication required`)
+    }
+  }
+}
+
 export async function runSocialAutopost() {
   return runSocialAutopostWithOptions({ force: false })
 }
@@ -79,6 +105,9 @@ export async function runSocialAutopostWithOptions(options: SocialAutopostRunOpt
   const runtimeConfig = useRuntimeConfig()
   const socialAutopost = runtimeConfig.socialAutopost || {}
   const enabledPlatforms = await getEnabledSocialAutopostPlatforms(runtimeConfig)
+
+  await proactivelyRefreshTokens(runtimeConfig, enabledPlatforms)
+
   const timezone = String(socialAutopost.timezone || 'Europe/Paris')
   const targetTime = String(socialAutopost.targetTime || '09:00')
   const siteUrl = String(options.baseSiteUrl || runtimeConfig.public.siteUrl || 'http://localhost:3000').replace(/\/$/, '')
@@ -529,10 +558,13 @@ async function postToInstagram(caption: string, imageUrl: string): Promise<Publi
     return { ok: false, error: 'Missing Instagram access token or user id' }
   }
 
-  const newToken = await tryRefreshToken(resolved, 'meta')
-  const effectiveToken = newToken || resolved.accessToken
-  if (newToken) {
-    await saveAccessTokenToKv('instagram', newToken)
+  const refreshResult = await tryRefreshToken(resolved, 'meta')
+  if (refreshResult === undefined) {
+    return { ok: false, error: 'Instagram access token has expired. Please re-authenticate via the admin social settings.' }
+  }
+  const effectiveToken = refreshResult || resolved.accessToken
+  if (refreshResult) {
+    await saveAccessTokenToKv('instagram', refreshResult)
   }
 
   try {
@@ -596,10 +628,13 @@ async function postToThreads(text: string, imageUrl: string): Promise<PublishRes
     return { ok: false, error: 'Missing Threads access token or user id' }
   }
 
-  const newToken = await tryRefreshToken(resolved, 'threads')
-  const effectiveToken = newToken || resolved.accessToken
-  if (newToken) {
-    await saveAccessTokenToKv('threads', newToken)
+  const refreshResult = await tryRefreshToken(resolved, 'threads')
+  if (refreshResult === undefined) {
+    return { ok: false, error: 'Threads access token has expired. Please re-authenticate via the admin social settings.' }
+  }
+  const effectiveToken = refreshResult || resolved.accessToken
+  if (refreshResult) {
+    await saveAccessTokenToKv('threads', refreshResult)
   }
 
   try {
@@ -663,11 +698,14 @@ async function postToFacebook(message: string, imageUrl: string): Promise<Publis
     return { ok: false, error: 'Missing Facebook page token or page id' }
   }
 
-  const newToken = await tryRefreshToken({ ...resolved, accessToken: resolved.pageAccessToken }, 'meta')
-  const effectiveToken = newToken || resolved.pageAccessToken
-  if (newToken) {
-    await saveAccessTokenToKv('facebook', newToken)
-    resolved.pageAccessToken = newToken
+  const refreshResult = await tryRefreshToken({ ...resolved, accessToken: resolved.pageAccessToken }, 'meta')
+  if (refreshResult === undefined) {
+    return { ok: false, error: 'Facebook access token has expired. Please re-authenticate via the admin social settings.' }
+  }
+  const effectiveToken = refreshResult || resolved.pageAccessToken
+  if (refreshResult) {
+    await saveAccessTokenToKv('facebook', refreshResult)
+    resolved.pageAccessToken = refreshResult
   }
 
   try {
@@ -896,7 +934,7 @@ function readGraphApiError(payload: { error?: { message?: string } } | null | un
   return payload?.error?.message || fallback
 }
 
-async function tryRefreshToken(resolved: { accessToken: string; appId?: string; appSecret?: string; metaAppId?: string; metaAppSecret?: string; apiVersion: string; baseUrl: string }, platform: 'threads' | 'meta'): Promise<string | null> {
+async function tryRefreshToken(resolved: { accessToken: string; appId?: string; appSecret?: string; metaAppId?: string; metaAppSecret?: string; apiVersion: string; baseUrl: string }, platform: 'threads' | 'meta'): Promise<string | null | undefined> {
   try {
     if (platform === 'threads') {
       const refreshUrl = new URL(`${resolved.baseUrl}/${resolved.apiVersion}/refresh_access_token`)
@@ -904,10 +942,13 @@ async function tryRefreshToken(resolved: { accessToken: string; appId?: string; 
       refreshUrl.searchParams.set('access_token', resolved.accessToken)
       const res = await fetch(refreshUrl.toString())
       const payload = await res.json() as { access_token?: string; error?: { message?: string } } | null
-      if (res.ok && payload?.access_token && payload.access_token !== resolved.accessToken) {
-        return payload.access_token
+      if (res.ok && payload?.access_token) {
+        if (payload.access_token !== resolved.accessToken) {
+          return payload.access_token
+        }
+        return null
       }
-      return null
+      return undefined
     }
 
     const appId = resolved.metaAppId || resolved.appId
@@ -921,10 +962,13 @@ async function tryRefreshToken(resolved: { accessToken: string; appId?: string; 
     refreshUrl.searchParams.set('fb_exchange_token', resolved.accessToken)
     const res = await fetch(refreshUrl.toString())
     const payload = await res.json() as { access_token?: string; error?: { message?: string } } | null
-    if (res.ok && payload?.access_token && payload.access_token !== resolved.accessToken) {
-      return payload.access_token
+    if (res.ok && payload?.access_token) {
+      if (payload.access_token !== resolved.accessToken) {
+        return payload.access_token
+      }
+      return null
     }
-    return null
+    return undefined
   } catch {
     return null
   }
