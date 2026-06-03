@@ -3,7 +3,7 @@
     <section class="space-y-6">
       <div class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
         <div class="overflow-hidden border-none p-5 sm:p-6">
-          <h1 class="font-body text-3xl sm:text-3xl font-400 tracking-[0.19em] text-stone-800 dark:text-zinc-500">
+          <h1 class="font-body text-3xl sm:text-3xl font-600 tracking-[0.19em] text-stone-800 dark:text-zinc-500">
             {{ currentPlatformLabel }}
           </h1>
 

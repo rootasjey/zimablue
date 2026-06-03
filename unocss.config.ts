@@ -2,6 +2,7 @@ import extratorUna from '@una-ui/extractor-vue-script'
 import presetUna from '@una-ui/preset'
 import prefixes from '@una-ui/preset/prefixes'
 import presetAnimations from 'unocss-preset-animations'
+import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 
 import {
   presetAttributify,
@@ -42,6 +43,13 @@ export default {
         classic: 'Montserrat',
         body: 'Chillax',
       },
+      processors: [
+        createLocalFontProcessor({
+          cacheDir: 'node_modules/.cache/unocss/fonts',
+          fontAssetsDir: 'public/fonts',
+          fontServeBaseUrl: '/fonts',
+        }),
+      ],
     }),
     presetUna(),
     presetAnimations(),
