@@ -173,7 +173,7 @@
 
       <template #status-cell="{ row }">
         <div class="space-y-1">
-          <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(row.status)">
+          <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" :class="[statusClass(row.status), row.status === 'failed' ? 'cursor-pointer' : '']" @click="row.status === 'failed' && row.lastError && copyError(row.lastError)">
             <span :class="statusIcon(row.status)"></span>
             {{ row.status }}
           </span>
@@ -507,6 +507,15 @@ const openPreview = (row: QueueRow) => {
   previewTitle.value = row.imageName
   previewDescription.value = row.imageDescription
   isPreviewOpen.value = true
+}
+
+const copyError = async (error: string) => {
+  try {
+    await navigator.clipboard.writeText(error)
+    toast({ title: 'Error copied', description: error, toast: 'soft-success' })
+  } catch {
+    toast({ title: 'Copy failed', description: 'Could not copy to clipboard.', toast: 'soft-error' })
+  }
 }
 
 const copySlug = async (row: QueueRow) => {
