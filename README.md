@@ -1,15 +1,17 @@
-
-<h1 align="center" style="font-weight: 100;">zima blue</h1>
-
-Discover new illustrations regularly.
-
-![zima blue screenshot](./screenshots/zimablue-screenshot-dark-1.jpeg)
+![zima blue screenshot](./screenshots/zimablue-home-desktop-light.jpeg)
 
 [Go to website ↗ 🌓](https://zimablue.cc/)
 
+**CC BY-SA 4.0 License.**
+
+Finally sharing my illustrations with the world.
+
+Contemplate. Download. Share. Edit.
+But do not re-sell without permission.
+
 ## Features
 
-### 🖼️ Image Management
+### Image Management
 - **Drag & drop uploads** with automatic processing and variant generation
 - **Multiple image variants** automatically created (xxs, xs, sm, md, lg, original)
 - **Grid-based layout** with draggable and resizable image positioning
@@ -18,30 +20,29 @@ Discover new illustrations regularly.
 - **Tagging system** for advanced image organization
 - **Bulk operations** for efficient image management
 
-### 📚 Collections System
+### Collections System
 - **Create and manage collections** to organize related images
 - **Public/private visibility** controls for collection sharing
 - **Collection cover images** and rich metadata support
 - **Easy add/remove** images from collections
 - **Collection analytics** and performance tracking
 
-### 👤 User System
+### User System
 - **Secure authentication** with session management
 - **Rich user profiles** with biography, job, location, and social links
 - **Role-based access control** (user/admin permissions)
 - **Personal galleries** and collection management
 
-### 🎨 Modern UI/UX
+### Modern UI/UX
 - **Fully responsive design** optimized for all devices
 - **Dark/light theme support** with smooth transitions
 - **View transitions** and smooth animations
-- **Interactive click fireworks** — a lightweight, full-screen fireworks animation plays when you click anywhere in the app. The effect is implemented in `components/ClickFireworks.vue` and uses the login page palette (cyan / blue / pink / fuchsia / yellow / amber).
 - **Customizable grid layout** (draggable, resizable components)
 - **Modern component library** with consistent design system
 	- **Component prefix used in this repo:** UnaUI components are registered with the `N` prefix (e.g. `NButton`, `NDialog`, `NInput`) so the project uses PascalCase `N*` components across templates.
 - **Accessibility-first** approach
 
-### ⚡ Performance & Infrastructure
+### Performance & Infrastructure
 - **Edge deployment** on Cloudflare Workers for global performance
 - **Automatic image optimization** and CDN delivery
 - **Server-side rendering** for optimal SEO
