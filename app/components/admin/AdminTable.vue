@@ -76,6 +76,7 @@
               <span class="mx-auto mb-3 block text-4xl text-stone-300 i-ph-tray dark:text-zinc-600"></span>
               <p class="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">Nothing here yet</p>
               <p class="text-xs text-stone-400 dark:text-zinc-500">{{ emptyMessage || 'No records match your search.' }}</p>
+              <slot name="empty-state" />
             </td>
           </tr>
 

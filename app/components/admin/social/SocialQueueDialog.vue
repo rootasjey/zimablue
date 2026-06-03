@@ -56,7 +56,8 @@
 
           <div class="grid min-h-0 h-full gap-4 lg:grid-cols-2">
             <section
-              class="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-stone-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-900/40"
+              class="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-stone-50/70 p-4 transition-all duration-150 dark:border-zinc-700 dark:bg-zinc-900/40"
+              :class="selectedZoneDropClass"
               @dragover.prevent="handleSelectedZoneDragOver"
               @drop.prevent="handleSelectedZoneDrop"
             >
@@ -75,7 +76,7 @@
                 </button>
               </div>
 
-              <div v-if="selectedCandidateRows.length === 0" class="mt-4 flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-white/70 px-4 py-8 text-center text-sm text-stone-500 dark:border-zinc-700 dark:bg-zinc-950/40 dark:text-zinc-400">
+              <div v-if="selectedCandidateRows.length === 0" class="mt-4 flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-dashed bg-white/70 px-4 py-8 text-center text-sm text-stone-500 transition-colors duration-150 dark:bg-zinc-950/40 dark:text-zinc-400" :class="dropState?.target === 'selected' ? 'border-blue-400 bg-blue-50/60 dark:border-blue-400 dark:bg-blue-500/10' : 'border-stone-200 dark:border-zinc-700'">
                 Drop illustrations here or pick them from the available list.
               </div>
 
@@ -270,6 +271,10 @@ const selectedCandidateRows = computed(() => selectedCandidateIds.value
   .map(id => candidateCache[id])
   .filter((candidate): candidate is SocialQueueCandidate => Boolean(candidate)))
 const unselectedCandidateRows = computed(() => candidateRows.value.filter(candidate => !selectedCandidateIds.value.includes(candidate.id)))
+const selectedZoneDropClass = computed(() => dropState.value?.target === 'selected'
+  ? 'ring-2 ring-blue-400/60 bg-blue-50/40 dark:bg-blue-500/10'
+  : '')
+
 const selectedPlatformDropZoneClass = computed(() => draggedCandidate.value?.source === 'selected' && dropState.value?.target === 'available'
   ? 'ring-2 ring-dashed ring-blue-400/60 bg-blue-50/40 dark:bg-blue-500/10'
   : '')
@@ -397,7 +402,6 @@ const addRandomCandidates = async () => {
 
     rememberCandidateRows(picked)
     selectedCandidateIds.value = [...selectedCandidateIds.value, ...picked.map(candidate => candidate.id)]
-    toast({ title: 'Added', description: `${picked.length} random illustration(s) added to the selection.`, toast: 'soft-success' })
   } finally {
     isRandomAdding.value = false
   }

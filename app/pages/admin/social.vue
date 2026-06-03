@@ -67,6 +67,18 @@
       @reorder="handleTableReorder"
       @duplicate="handleDuplicate"
     >
+      <template #empty-state>
+        <div v-if="activeView === 'queue'" class="mt-4">
+          <NButton
+            size="xs"
+            btn="solid-gray"
+            @click="openAddDialog"
+          >
+            <span class="i-ph-plus text-sm"></span>
+            Add to queue
+          </NButton>
+        </div>
+      </template>
       <template #header-tabs>
         <div class="flex rounded-lg border border-stone-200 p-0.5 dark:border-zinc-700">
           <button
