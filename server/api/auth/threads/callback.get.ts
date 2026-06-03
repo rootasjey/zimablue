@@ -86,13 +86,13 @@ async function exchangeThreadsCode(code: string, redirectUri: string, appId: str
 }
 
 async function exchangeThreadsLongLivedToken(shortToken: string, appId: string, appSecret: string): Promise<string> {
-  const tokenUrl = new URL('https://graph.threads.net/oauth/access_token')
+  const tokenUrl = new URL('https://graph.threads.net/access_token')
   tokenUrl.searchParams.set('grant_type', 'th_exchange_token')
   tokenUrl.searchParams.set('client_id', appId)
   tokenUrl.searchParams.set('client_secret', appSecret)
   tokenUrl.searchParams.set('access_token', shortToken)
 
-  const res = await fetch(tokenUrl.toString(), { method: 'POST' })
+  const res = await fetch(tokenUrl.toString())
   const body = await res.json() as { access_token?: string; error?: { message?: string } }
 
   if (!res.ok || !body.access_token) {
