@@ -483,70 +483,87 @@ async function postToBluesky(payload: {
       return { ok: false, error: sessionPayload?.message || sessionPayload?.error || `Bluesky session error (${sessionResponse.status})` }
     }
 
-    const imagePayload = await fetchImagePayload(payload.imageUrl)
-    const uploadResponse = await fetch(`${resolved.service}/xrpc/com.atproto.repo.uploadBlob`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${sessionPayload.accessJwt}`,
-        'Content-Type': imagePayload.contentType,
-      },
-      body: imagePayload.bytes,
-    })
+    const sizeFallbacks = [undefined, 'sm', 'xs', 'xxs'] as const
+    let lastError: string | undefined
 
-    const uploadPayload = await uploadResponse.json().catch(() => null) as {
-      blob?: unknown
-      message?: string
-      error?: string
-    } | null
-
-    if (!uploadResponse.ok || !uploadPayload?.blob) {
-      return { ok: false, error: uploadPayload?.message || uploadPayload?.error || `Bluesky image upload error (${uploadResponse.status})` }
-    }
-
-    const facets = buildBlueskyFacets(payload.text, payload.canonicalUrl, payload.blueskyHashtags)
-    const recordResponse = await fetch(`${resolved.service}/xrpc/com.atproto.repo.createRecord`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${sessionPayload.accessJwt}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        repo: sessionPayload.did,
-        collection: 'app.bsky.feed.post',
-        record: {
-          $type: 'app.bsky.feed.post',
-          text: payload.text,
-          createdAt: new Date().toISOString(),
-          ...(facets ? { facets } : {}),
-          embed: {
-            $type: 'app.bsky.embed.images',
-            images: [
-              {
-                alt: payload.alt || 'Illustration',
-                image: uploadPayload.blob,
-              }
-            ]
-          }
-        }
+    for (const preferredSize of sizeFallbacks) {
+      const imagePayload = await fetchImagePayload(payload.imageUrl, preferredSize)
+      const uploadResponse = await fetch(`${resolved.service}/xrpc/com.atproto.repo.uploadBlob`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionPayload.accessJwt}`,
+          'Content-Type': imagePayload.contentType,
+        },
+        body: imagePayload.bytes,
       })
-    })
 
-    const recordPayload = await recordResponse.json().catch(() => null) as {
-      uri?: string
-      message?: string
-      error?: string
-    } | null
+      const uploadPayload = await uploadResponse.json().catch(() => null) as {
+        blob?: unknown
+        message?: string
+        error?: string
+      } | null
 
-    if (!recordResponse.ok || !recordPayload?.uri) {
-      return { ok: false, error: recordPayload?.message || recordPayload?.error || `Bluesky post error (${recordResponse.status})` }
+      if (!uploadResponse.ok || !uploadPayload?.blob) {
+        const errMsg = uploadPayload?.message || uploadPayload?.error || `Bluesky image upload error (${uploadResponse.status})`
+        if (isBlobTooBigError(errMsg)) {
+          lastError = errMsg
+          continue
+        }
+        return { ok: false, error: errMsg }
+      }
+
+      const facets = buildBlueskyFacets(payload.text, payload.canonicalUrl, payload.blueskyHashtags)
+      const recordResponse = await fetch(`${resolved.service}/xrpc/com.atproto.repo.createRecord`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionPayload.accessJwt}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repo: sessionPayload.did,
+          collection: 'app.bsky.feed.post',
+          record: {
+            $type: 'app.bsky.feed.post',
+            text: payload.text,
+            createdAt: new Date().toISOString(),
+            ...(facets ? { facets } : {}),
+            embed: {
+              $type: 'app.bsky.embed.images',
+              images: [
+                {
+                  alt: payload.alt || 'Illustration',
+                  image: uploadPayload.blob,
+                }
+              ]
+            }
+          }
+        })
+      })
+
+      const recordPayload = await recordResponse.json().catch(() => null) as {
+        uri?: string
+        message?: string
+        error?: string
+      } | null
+
+      if (!recordResponse.ok || !recordPayload?.uri) {
+        const errMsg = recordPayload?.message || recordPayload?.error || `Bluesky post error (${recordResponse.status})`
+        if (isBlobTooBigError(errMsg)) {
+          lastError = errMsg
+          continue
+        }
+        return { ok: false, error: errMsg }
+      }
+
+      const postKey = recordPayload.uri.split('/').pop() || ''
+      return {
+        ok: true,
+        postId: recordPayload.uri,
+        postUrl: postKey ? `https://bsky.app/profile/${sessionPayload.handle}/post/${postKey}` : undefined,
+      }
     }
 
-    const postKey = recordPayload.uri.split('/').pop() || ''
-    return {
-      ok: true,
-      postId: recordPayload.uri,
-      postUrl: postKey ? `https://bsky.app/profile/${sessionPayload.handle}/post/${postKey}` : undefined,
-    }
+    return { ok: false, error: lastError || 'Failed to post to Bluesky after trying all image sizes' }
   } catch (error: any) {
     return { ok: false, error: error?.message || 'Network error while posting to Bluesky' }
   }
@@ -730,7 +747,9 @@ async function postToFacebook(message: string, imageUrl: string): Promise<Publis
   }
 }
 
-async function fetchImagePayload(imageUrl: string): Promise<{ bytes: ArrayBuffer, contentType: string }> {
+const IMAGE_SIZE_ORDER = ['lg', 'md', 'sm', 'xs', 'xxs', 'original']
+
+async function fetchImagePayload(imageUrl: string, preferredSize?: string): Promise<{ bytes: ArrayBuffer, contentType: string }> {
   const runtimeConfig = useRuntimeConfig()
   const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/$/, '')
 
@@ -748,12 +767,27 @@ async function fetchImagePayload(imageUrl: string): Promise<{ bytes: ArrayBuffer
       const variantList: Array<{ pathname: string; size: string }> =
         imageData?.variants ? JSON.parse(imageData.variants as string) : []
 
-      const bestVariant = variantList.find((v) => v.size === 'lg')
-        || variantList.find((v) => v.size === 'md')
-        || variantList[0]
+      let selectedVariant: { pathname: string; size: string } | undefined
 
-      if (bestVariant) {
-        const blobData = await blob.get(bestVariant.pathname)
+      if (preferredSize) {
+        const preferredIndex = IMAGE_SIZE_ORDER.indexOf(preferredSize)
+        if (preferredIndex !== -1) {
+          const sizesToTry = IMAGE_SIZE_ORDER.slice(preferredIndex)
+          for (const size of sizesToTry) {
+            selectedVariant = variantList.find((v) => v.size === size)
+            if (selectedVariant) break
+          }
+        }
+      }
+
+      if (!selectedVariant) {
+        selectedVariant = variantList.find((v) => v.size === 'lg')
+          || variantList.find((v) => v.size === 'md')
+          || variantList[0]
+      }
+
+      if (selectedVariant) {
+        const blobData = await blob.get(selectedVariant.pathname)
         if (blobData) {
           return {
             bytes: await blobData.arrayBuffer(),
@@ -785,6 +819,11 @@ function buildBlueskyHashtags(tags: string[] | undefined, source?: string): stri
 function buildInstagramHashtags(tags: string[] | undefined): string {
   const inlineTags = Array.isArray(tags) ? tags.map(tag => `#${String(tag).replace(/[^\p{L}\p{N}_]+/gu, '')}`).join(' ') : ''
   return normalizeHashtagString(inlineTags, 12)
+}
+
+function isBlobTooBigError(message: string): boolean {
+  const lower = message.toLowerCase()
+  return lower.includes('blob too big') || lower.includes('too large')
 }
 
 function buildBlueskyFacets(text: string, canonicalUrl: string, hashtagsSource?: string): BlueskyFacet[] | undefined {
