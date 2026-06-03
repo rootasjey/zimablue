@@ -130,7 +130,8 @@ export default defineEventHandler(async (event) => {
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      hasMore: page * limit < total,
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
     },
     stats: {
       queued: Number(queueStats[0]?.queued || 0),

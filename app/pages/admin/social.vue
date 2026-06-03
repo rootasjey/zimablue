@@ -186,7 +186,7 @@
       </template>
 
       <template #scheduledFor-cell="{ row }">
-        <span class="text-sm text-stone-500 dark:text-zinc-400">{{ formatDateTime(row.scheduledFor) }}</span>
+        <span class="text-sm" :class="row.scheduledFor ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-zinc-400'">{{ formatDateTime(row.scheduledFor || row.publishedAt) }}</span>
       </template>
 
       <template #publishedAt-cell="{ row }">
@@ -198,32 +198,43 @@
       </template>
 
       <template #actions="{ row }">
-        <ClientOnly>
-          <NDropdownMenu
-            :items="rowActionItems(row)"
-            size="xs"
-            :_dropdown-menu-content="{
-              class: 'w-48',
-              align: 'end',
-              side: 'bottom',
-            }"
+        <div class="flex items-center gap-1">
+          <button
+            v-if="row.publishedPostUrl"
+            type="button"
+            class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-indigo-600 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-indigo-400"
+            title="Open external link"
+            @click.stop="openExternalLink(row.publishedPostUrl!)"
           >
-            <button
-              type="button"
-              class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            <span class="i-ph-arrow-square-out text-sm"></span>
+          </button>
+          <ClientOnly>
+            <NDropdownMenu
+              :items="rowActionItems(row)"
+              size="xs"
+              :_dropdown-menu-content="{
+                class: 'w-48',
+                align: 'end',
+                side: 'bottom',
+              }"
             >
-              <span class="i-ph-dots-three-vertical text-sm"></span>
-            </button>
-          </NDropdownMenu>
-          <template #fallback>
-            <button
-              type="button"
-              class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 dark:text-zinc-500"
-            >
-              <span class="i-ph-dots-three-vertical text-sm"></span>
-            </button>
-          </template>
-        </ClientOnly>
+              <button
+                type="button"
+                class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+              >
+                <span class="i-ph-dots-three-vertical text-sm"></span>
+              </button>
+            </NDropdownMenu>
+            <template #fallback>
+              <button
+                type="button"
+                class="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 dark:text-zinc-500"
+              >
+                <span class="i-ph-dots-three-vertical text-sm"></span>
+              </button>
+            </template>
+          </ClientOnly>
+        </div>
       </template>
     </AdminTable>
 
@@ -499,6 +510,10 @@ const fetchProviders = async () => {
 
 const openAddDialog = () => {
   isAddDialogOpen.value = true
+}
+
+const openExternalLink = (url: string) => {
+  window.open(url, '_blank')
 }
 
 const openPreview = (row: QueueRow) => {
