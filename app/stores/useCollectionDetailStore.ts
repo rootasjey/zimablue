@@ -469,6 +469,17 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
+  // Remove a deleted image from the local collection state
+  function removeDeletedImage(imageId: number) {
+    images.value = images.value.filter(img => img.id !== imageId)
+    if (collection.value) {
+      collection.value.image_count = images.value.length
+      if (collection.value.cover_image_id === imageId) {
+        collection.value.cover_image_id = 0
+      }
+    }
+  }
+
   // Reset store state
   function resetStore() {
     collection.value = null
@@ -548,6 +559,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     deleteCollection,
     updateImageInCollection,
     addImageObjects,
+    removeDeletedImage,
     resetStore,
     setHighlightedImageIndex,
     clearHighlightedImageIndex,

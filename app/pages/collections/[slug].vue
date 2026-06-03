@@ -455,6 +455,14 @@ const collectionImageMenuItems = (image: Image) => {
     openImagePageFn: openFullPage,
     openAddToCollectionModalFn: (img: Image) => addToCollection.openModal(img),
     replacementFileInput: replacementFileInput.value,
+  }).map((item: any) => {
+    if (item.label === 'Delete') {
+      return {
+        ...item,
+        onClick: () => openImageDeleteDialog(image),
+      }
+    }
+    return item
   })
 
   items.push(...standardItems)
@@ -986,7 +994,9 @@ const confirmImageDelete = async () => {
   if (!imageToDelete.value) return
   isDeletingImage.value = true
   try {
-    await imageActions.deleteImage(imageToDelete.value.id)
+    const deletedId = imageToDelete.value.id
+    await imageActions.deleteImage(deletedId)
+    store.removeDeletedImage(deletedId)
     showImageDeleteDialog.value = false
     imageToDelete.value = null
     isImageModalOpen.value = false

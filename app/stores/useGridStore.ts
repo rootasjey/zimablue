@@ -52,38 +52,51 @@ export const useGridStore = defineStore('grid', () => {
   async function deleteImage(imageId: number) {
     // Save the target image data to revert changes if the delete request fails
     const targetImage = layout.value.find((item) => item.id === imageId)
-    if (!targetImage) return
 
-    // Mark as pending delete to prevent incoming layout updates from re-adding it
-    pendingDeletes.add(imageId)
+    if (targetImage) {
+      // Mark as pending delete to prevent incoming layout updates from re-adding it
+      pendingDeletes.add(imageId)
 
-    // Remove the image from the layout optimistically
-    layout.value = layout.value.filter((item) => item.id !== imageId)
+      // Remove the image from the layout optimistically
+      layout.value = layout.value.filter((item) => item.id !== imageId)
+    }
+
     const response = await $fetch(`/api/images/${imageId}`, {
       method: 'DELETE',
+    }).catch((err) => {
+      // Revert the layout changes if the delete request fails
+      if (targetImage) {
+        layout.value = [...layout.value, targetImage]
+        pendingDeletes.delete(imageId)
+      }
+      throw err
     })
 
     if (!response.ok) {
       // Revert the layout changes if the delete request fails
-      layout.value = [...layout.value, targetImage]
-      pendingDeletes.delete(imageId)
+      if (targetImage) {
+        layout.value = [...layout.value, targetImage]
+        pendingDeletes.delete(imageId)
+      }
       return {
         success: false,
         message: 'Failed to delete image',
       }
     }
 
-    // Refresh the grid from the server to reflect KV updates made server-side
-    try {
-      await refreshNuxtData('grid')
-      // After the global refresh, re-run fetchGrid to copy fresh data into the store
-      await fetchGrid()
-    } catch (err) {
-      console.warn('Failed to refresh grid after delete:', err)
-    }
+    if (targetImage) {
+      // Refresh the grid from the server to reflect KV updates made server-side
+      try {
+        await refreshNuxtData('grid')
+        // After the global refresh, re-run fetchGrid to copy fresh data into the store
+        await fetchGrid()
+      } catch (err) {
+        console.warn('Failed to refresh grid after delete:', err)
+      }
 
-    // Remove from pendingDeletes now that operation is complete
-    pendingDeletes.delete(imageId)
+      // Remove from pendingDeletes now that operation is complete
+      pendingDeletes.delete(imageId)
+    }
 
     return {
       success: true,
