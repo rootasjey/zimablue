@@ -215,6 +215,7 @@
 import type { Image } from '~~/shared/types/image'
 import { GridLayout, GridItem } from 'grid-layout-plus'
 import { useImageSrc } from '~/composables/image/useImageSrc'
+import { useDragScroll } from '~/composables/image/useDragScroll'
 const { getSrc: getImageSrc } = useImageSrc()
 
 interface Props {
@@ -447,6 +448,8 @@ const clearLongPressTimer = () => {
     longPressTimer.value = null
   }
 }
+
+useDragScroll()
 
 // Cleanup on unmount
 onUnmounted(() => {
