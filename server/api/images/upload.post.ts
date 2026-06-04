@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
 import { isAllowedImageType, getFileExtension, getBaseName } from '../../utils/contact'
+import { IMAGE_SIZES } from '../../utils/images'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -51,14 +52,7 @@ export default eventHandler(async (event) => {
   // Process the original image with Jimp
   const originalImage = await Jimp.fromBuffer(file)
 
-  const sizes = [
-    { width: 160, suffix: 'xxs' },
-    { width: 320, suffix: 'xs' },
-    { width: 640, suffix: 'sm' },
-    { width: 1024, suffix: 'md' },
-    { width: 1920, suffix: 'lg' },
-    // Original size will be stored as 'original'
-  ]
+  const sizes = IMAGE_SIZES
   
   // Store all generated pathnames
   const generatedVariants = []
