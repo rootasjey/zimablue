@@ -1,19 +1,12 @@
-// POST /api/contact/submit
-// Handles contact form submissions and saves them to the messages table
-
 import { db } from 'hub:db'
 import { messages } from '../../db/schema'
+import { validateContactInput } from '../../utils/contact'
 
 export default defineEventHandler(async (event) => {
-  // Get the form data from the request body
   const body = await readBody(event)
-  
-  // Validate the required fields
-  if (!body.email || !body.message || !body.subject) {
-    throw createError({
-      statusCode: 400,
-      message: 'Email, subject, and message are required'
-    })
+  const validation = validateContactInput(body)
+  if (!validation.valid) {
+    throw createError({ statusCode: 400, message: validation.error! })
   }
 
   try {

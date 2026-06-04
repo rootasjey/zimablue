@@ -5,6 +5,7 @@ import { generateUniqueSlug } from './utils/generateUniqueSlug'
 import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
+import { isAllowedImageType, getFileExtension, getBaseName } from '../../utils/contact'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -35,18 +36,15 @@ export default eventHandler(async (event) => {
     })
   }
 
-  // Check if the file is an image
-  if (type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/bmp' 
-    && type !== 'image/tiff' && type !== 'image/x-ms-bmp' && type !== 'image/gif') {
+  if (!isAllowedImageType(type)) {
     throw createError({
       statusCode: 400,
       message: 'File must be an image',
     })
   }
 
-  // Create a unique ID for the image folder
-  const extension = type.split('/')[1] || 'jpg'
-  const baseName = fileName.substring(0, fileName.lastIndexOf('.'))
+  const extension = getFileExtension(type)
+  const baseName = getBaseName(fileName)
   const imagePrefix = await generateUniquePathname(baseName, extension || 'jpg')
 
 

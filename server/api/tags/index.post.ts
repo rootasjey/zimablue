@@ -5,6 +5,7 @@ import { db } from 'hub:db'
 import { eq } from 'drizzle-orm'
 import type { TagCreateRequest } from "~~/shared/types/tag"
 import { tags } from '../../db/schema'
+import { generateSlug } from '../../utils/slug'
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -49,13 +50,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Generate slug
-    let slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
+    const slug = generateSlug(name)
 
     // Ensure slug uniqueness
     let finalSlug = slug
