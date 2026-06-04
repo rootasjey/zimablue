@@ -213,6 +213,13 @@ export const useGridStore = defineStore('grid', () => {
     onFileComplete?: (fileId: string, result: any) => void,
     onFileError?: (fileId: string, error: string) => void
   ) {
+    // Find the maximum bottom edge (y + h) among existing grid items
+    // so new images always appear below existing content.
+    const gridBottom = layout.value.reduce((maxY, item) => {
+      const itemBottom = (item.y || 0) + (item.h || 0)
+      return itemBottom > maxY ? itemBottom : maxY
+    }, 0)
+
     const uploads = files.map(async (file, index) => {
       const fileId = `file_${index}_${Date.now()}`
       let newGridItem: Image | null = null
@@ -231,10 +238,11 @@ export const useGridStore = defineStore('grid', () => {
         onProgress?.(fileId, 15)
 
         // Create optimistic grid item with base64 preview
+        // y is placed at gridBottom with stacking offset for multiple uploads
         newGridItem = {
           created_at: new Date().toString(),
           x: (layout.value.length * 2) % 14,
-          y: layout.value.length + 14,
+          y: gridBottom + (index * 6),
           w: 2,
           h: 6,
           i: layout.value.length + 1,
