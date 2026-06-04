@@ -493,12 +493,14 @@ const collectionsKeyboardHandler = (e: KeyboardEvent) => {
 const handleCreateCollection = async () => {
   const result = await collectionStore.createCollection()
 
-  toast({
-    title: result.success ? 'Success' : 'Error',
-    description: result.message,
-    toast: result.success ? 'soft-success' : 'soft-error',
-    duration: result.success ? 3000 : 5000
-  })
+  if (!result.success) {
+    toast({
+      title: 'Error',
+      description: result.message,
+      toast: 'soft-error',
+      duration: 5000
+    })
+  }
 }
 
 // Note: we load collections on mount in the block above (client-only).
@@ -506,12 +508,14 @@ const handleCreateCollection = async () => {
 const handleUpdateCollection = async (data: CollectionFormData) => {
   const result = await collectionStore.updateCollection(data)
 
-  toast({
-    title: result.success ? 'Success' : 'Error',
-    description: result.message,
-    toast: result.success ? 'soft-success' : 'soft-error',
-    duration: result.success ? 3000 : 5000
-  })
+  if (!result.success) {
+    toast({
+      title: 'Error',
+      description: result.message,
+      toast: 'soft-error',
+      duration: 5000
+    })
+  }
 }
 
 // Deterministic gradient generator for fallback covers

@@ -455,10 +455,8 @@ const saveTodo = async () => {
   try {
     if (editingTodo.value) {
       await $fetch(`/api/admin/todos/${editingTodo.value.id}`, { method: 'PATCH', body: formData.value })
-      toast({ title: 'Updated', description: 'Task updated.', toast: 'soft-success', duration: 4000 })
     } else {
       await $fetch('/api/admin/todos', { method: 'POST', body: formData.value })
-      toast({ title: 'Created', description: 'Task created.', toast: 'soft-success', duration: 4000 })
     }
     closeDialog()
     fetchTodos()
@@ -475,7 +473,6 @@ const confirmDelete = async () => {
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/todos/${deletingTodo.value.id}`, { method: 'DELETE' })
-    toast({ title: 'Deleted', description: 'Task deleted.', toast: 'soft-success', duration: 4000 })
     closeDeleteDialog()
     fetchTodos()
   } catch (error) {

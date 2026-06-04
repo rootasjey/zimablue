@@ -229,13 +229,6 @@ const markAsRead = async (messageId: number, read: boolean = true) => {
       }
 
       await fetchUnreadCount()
-
-      toast({
-        title: 'Success',
-        description: `Message marked as ${read ? 'read' : 'unread'}`,
-        toast: 'soft-success',
-        duration: 3000
-      })
     }
   } catch (error) {
     console.error('Error updating message:', error)
@@ -268,13 +261,6 @@ const deleteMessage = async (messageId: number) => {
       // Update pagination total
       pagination.value.total--
       await fetchUnreadCount()
-
-      toast({
-        title: 'Success',
-        description: 'Message deleted successfully',
-        toast: 'soft-success',
-        duration: 3000
-      })
     }
   } catch (error) {
     console.error('Error deleting message:', error)
@@ -317,12 +303,7 @@ const handleBulkAction = async (action: 'mark_read' | 'mark_unread' | 'confirm_d
       await fetchMessages()
       selectedMessages.value = {}
 
-      toast({
-        title: 'Success',
-        description: `Successfully processed ${response.processedCount} messages`,
-        toast: 'soft-success',
-        duration: 3000
-      })
+      // Success is visually evident from the updated list
     }
   } catch (error) {
     console.error('Error processing bulk action:', error)

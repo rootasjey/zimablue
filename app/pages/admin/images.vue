@@ -447,7 +447,7 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
     if (successCount > 0) pagination.value.total = Math.max(0, pagination.value.total - successCount)
 
     if (failed.length === 0) {
-      toast({ title: 'Deleted', description: `Deleted ${successCount} image${successCount > 1 ? 's' : ''}.`, toast: 'soft-success' })
+      // Success is visually evident from the updated list
     } else if (successCount > 0) {
       toast({ title: 'Partial', description: `Deleted ${successCount}, ${failed.length} failed.`, toast: 'soft-warning' })
     } else {
@@ -489,7 +489,6 @@ const deleteImage = async () => {
       images.value = images.value.filter(img => img.id !== selectedImage.value!.id)
       isDeleteDialogOpen.value = false
       pagination.value.total--
-      toast({ title: 'Deleted', description: 'Image deleted successfully', toast: 'soft-success', duration: 3000 })
     }
   } catch (error) {
     console.error('Error deleting image:', error)
@@ -516,7 +515,6 @@ const handleDuplicate = async (payload: { highlighted: any; selected: any[] }) =
       }
       images.value.unshift(duplicated)
       pagination.value.total++
-      toast({ title: 'Duplicated', description: `"${image.name}" has been duplicated.`, toast: 'soft-success', duration: 3000 })
     }
   } catch (error) {
     console.error('Error duplicating image:', error)
@@ -566,7 +564,6 @@ const saveEditedImage = async () => {
         selectedImage.value = { ...selectedImage.value, name: payload.name, description: payload.description, slug: payload.slug }
       }
       isEditDialogOpen.value = false
-      toast({ title: 'Saved', description: 'Image updated successfully.', toast: 'soft-success' })
     }
   } catch (e: any) {
     const msg = e?.data?.message || e?.message || 'Failed to update image.'

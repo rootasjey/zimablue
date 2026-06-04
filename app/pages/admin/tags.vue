@@ -241,7 +241,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
         await $fetch(`/api/tags/${t.id}`, { method: 'DELETE', query: { force: (t as any).usage_count > 0 ? 'true' : 'false' } })
       } catch {}
     }
-    toast({ title: 'Deleted', description: `Deleted ${rows.length} tag(s).`, toast: 'soft-success' })
     await fetchTags()
   }
 }

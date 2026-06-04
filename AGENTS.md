@@ -244,6 +244,13 @@ Images use the View Transition API for smooth navigation:
 - **Don't commit `.env`** — secrets (`NUXT_SESSION_PASSWORD`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`) stay local. Use `.env.example` as the template.
 - **Don't skip the `requireUserSession` check** on protected API routes — all `/api/admin/*` endpoints must verify the session and admin role.
 - **Don't show success toasts for uploads** — upload success is visually obvious via the progress widget and UI state changes. Only toast errors (failures, invalid files, auth issues). Success notifications are noise.
+- **Toast variant rules**: Always use prefixed variants like `soft-success`, `soft-error`, `soft-warning`, `soft-info`, `soft-gray`. Never use bare values like `success` or `error` — they make the background transparent.
+- **Toast necessity rules**:
+  - ❌ **Don't** show a success toast when the change is immediately visible in the UI (e.g., a row deleted from a table, a status toggle, a dialog closing after a save). The visual feedback is enough.
+  - ❌ **Don't** show a toast after a dialog close — the user just confirmed the action, they know what happened.
+  - ✅ **Do** show a toast for errors — the user needs to know something went wrong even if the UI didn't update.
+  - ✅ **Do** show a toast for background/async actions whose result isn't immediately visible (e.g., thumbnail regeneration, queued operations).
+  - ✅ **Do** show a toast for validation failures or auth issues that block an action.
 
 ---
 

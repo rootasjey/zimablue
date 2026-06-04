@@ -71,14 +71,6 @@ export const useTagSearch = () => {
       // Add to local cache
       tags.value = [newTag, ...tags.value]
 
-      toast({
-        title: 'Tag Created',
-        description: `Tag "${name}" created successfully`,
-        duration: 3000,
-        showProgress: true,
-        toast: 'soft-success',
-      })
-
       return newTag
     } catch (error: any) {
       console.error('Failed to create tag:', error)

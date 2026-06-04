@@ -97,12 +97,14 @@ const openCollectionCreateDialog = () => {
 const handleCreateCollection = async () => {
   const result = await collectionStore.createCollection()
 
-  toast({
-    title: result.success ? 'Success' : 'Error',
-    description: result.message,
-    toast: result.success ? 'soft-success' : 'soft-error',
-    duration: result.success ? 3000 : 5000,
-  })
+  if (!result.success) {
+    toast({
+      title: 'Error',
+      description: result.message,
+      toast: 'soft-error',
+      duration: 5000,
+    })
+  }
 }
 
 const handleCommandKeydown = (event: KeyboardEvent) => {

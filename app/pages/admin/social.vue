@@ -609,7 +609,6 @@ const retryFailed = async (queueIds?: number[]) => {
       }
     })
     if (response.success) {
-      toast({ title: 'Retry queued', description: `${response.count} failed item(s) reset to queued.`, toast: 'soft-success' })
       await fetchQueue()
     }
   } catch (error) {
@@ -633,7 +632,6 @@ const clearFinished = async () => {
       }
     })
     if (response.success) {
-      toast({ title: 'Cleared', description: `${response.count} finished row(s) removed from the queue.`, toast: 'soft-success' })
       pagination.value.page = 1
       await fetchQueue()
     }
@@ -652,7 +650,6 @@ const deleteQueueRow = async (row: QueueRow) => {
   try {
     const response = await $fetch<{ success: boolean }>(`/api/admin/social-queue/${row.id}`, { method: 'DELETE' })
     if (response.success) {
-      toast({ title: 'Removed', description: 'Queue row removed.', toast: 'soft-success' })
       await fetchQueue()
     }
   } catch (error) {

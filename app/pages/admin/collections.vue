@@ -282,7 +282,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
         if (idx !== -1 && collections.value[idx]) collections.value[idx].is_public = true
       } catch {}
     }
-    toast({ title: 'Updated', description: `Made ${success} collection(s) public.`, toast: 'soft-success' })
     return
   }
 
@@ -296,7 +295,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
         if (idx !== -1 && collections.value[idx]) collections.value[idx].is_public = false
       } catch {}
     }
-    toast({ title: 'Updated', description: `Made ${success} collection(s) private.`, toast: 'soft-success' })
     return
   }
 
@@ -315,7 +313,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
     }
     if (success > 0) {
       pagination.value.total = Math.max(0, pagination.value.total - success)
-      toast({ title: 'Deleted', description: `Deleted ${success} collection(s).`, toast: 'soft-success' })
     } else {
       toast({ title: 'Failed', description: 'No collections deleted.', toast: 'soft-error' })
     }
@@ -345,7 +342,6 @@ const deleteCollection = async () => {
       collections.value = collections.value.filter(col => col.id !== selectedCollection.value!.id)
       isDeleteDialogOpen.value = false
       pagination.value.total--
-      toast({ title: 'Deleted', description: 'Collection deleted successfully', toast: 'soft-success', duration: 3000 })
     }
   } catch (error) {
     console.error('Error deleting collection:', error)

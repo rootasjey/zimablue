@@ -269,7 +269,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
     for (const r of rows) {
       try { await $fetch(`/api/admin/users/${r.id}`, { method: 'PATCH', body: { role: 'admin' } }) } catch {}
     }
-    toast({ title: 'Updated', description: `Promoted ${rows.length} user(s) to admin.`, toast: 'soft-success' })
     fetchUsers()
     return
   }
@@ -278,7 +277,6 @@ const handleBulkAction = async (actionId: string, selectedRows: any[]) => {
     for (const r of rows) {
       try { await $fetch(`/api/admin/users/${r.id}`, { method: 'PATCH', body: { role: 'user' } }) } catch {}
     }
-    toast({ title: 'Updated', description: `Demoted ${rows.length} user(s) to user.`, toast: 'soft-success' })
     fetchUsers()
     return
   }
@@ -319,7 +317,6 @@ const saveUser = async () => {
         users.value[userIndex] = (response as any).data as unknown as User
       }
       isEditDialogOpen.value = false
-      toast({ title: 'Saved', description: 'User updated successfully', toast: 'soft-success', duration: 3000 })
     }
   } catch (error) {
     console.error('Error updating user:', error)
@@ -343,7 +340,6 @@ const deleteUser = async () => {
       users.value = users.value.filter(u => u.id !== selectedUser.value!.id)
       isDeleteDialogOpen.value = false
       pagination.value.total--
-      toast({ title: 'Deleted', description: 'User deleted successfully', toast: 'soft-success', duration: 3000 })
     }
   } catch (error) {
     console.error('Error deleting user:', error)

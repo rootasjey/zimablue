@@ -495,12 +495,6 @@ const handleBulkAddToCollection = async (imageIds: number[], targetSlug: string)
   const result = await actions.addImagesToAnotherCollection(imageIds, targetSlug)
   if (result?.success) {
     store.exitSelectionMode()
-    toast({
-      title: 'Success',
-      description: result.message,
-      toast: 'soft-success',
-      duration: 3000,
-    })
   }
 }
 
