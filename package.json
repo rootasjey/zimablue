@@ -1,12 +1,12 @@
 {
   "name": "zimablue",
-  "version": "0.62.0",
+  "version": "0.62.1",
   "description": "Handmade illustrations",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "NODE_OPTIONS='--max-old-space-size=4096' nuxt build",
-    "dev": "nuxt dev",
+    "dev": "TMPDIR=/tmp nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -54,6 +54,9 @@
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "jszip": "^3.10.1"
+  },
+  "overrides": {
+    "vue": "3.5.35"
   },
   "trustedDependencies": [
     "@verbatims/social-autopost-core"
