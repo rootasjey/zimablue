@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config'
 import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vitest/config'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 
 export default defineConfig(async () => {
@@ -8,6 +8,15 @@ export default defineConfig(async () => {
       name: 'nuxt',
       include: ['test/nuxt/**/*.{test,spec}.ts'],
       hookTimeout: 30000,
+      setupFiles: ['./test/setup/nuxt-env.ts'],
+      environmentOptions: {
+        nuxt: {
+          overrides: {
+            ogImage: false,
+            site: { url: 'http://test.example.com' },
+          },
+        },
+      },
     },
   })
 

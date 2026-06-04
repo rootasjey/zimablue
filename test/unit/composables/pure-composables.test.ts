@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 describe('useNavigation', () => {
   it('returns default navigation items', async () => {
@@ -78,12 +78,16 @@ describe('useParseVariants', () => {
   })
 
   it('handles corrupt JSON gracefully', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
     const { default: useParseVariants } = await import(
       '../../../app/composables/image/useParseVariants'
     )
     const { parse } = useParseVariants()
     const result = parse('not valid json')
     expect(result).toEqual([])
+
+    vi.restoreAllMocks()
   })
 })
 
