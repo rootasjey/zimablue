@@ -1,7 +1,7 @@
 <template>
   <div class="relative group">
     <!-- Main Hero Header -->
-    <header ref="heroRef" class="pt-20 pb-16 px-4">
+    <header ref="heroRef" class="hidden sm:block pt-20 pb-16 px-4">
       <div class="max-w-4xl mx-auto text-center space-y-8">
         <!-- Collection Metadata -->
         <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200/60 dark:border-gray-800/60 text-[11px] font-700 uppercase tracking-widest text-gray-500 animate-in zoom-in-95 duration-700">
@@ -81,8 +81,12 @@
             >
               {{ collection?.name }}
             </h2>
-            <div v-if="!isCompact" class="text-[10px] font-700 uppercase tracking-widest text-gray-400">Collection</div>
-          </div>
+              <div v-if="!isCompact" class="hidden sm:block text-[10px] font-700 uppercase tracking-widest text-gray-400">Collection</div>
+              <!-- Mobile subtitle -->
+              <div class="flex sm:hidden items-center gap-2 text-[10px] font-500 text-gray-400 truncate">
+                {{ collection?.description || `${imageCount} image${imageCount !== 1 ? 's' : ''}` }}
+              </div>
+            </div>
         </div>
 
         <!-- Center: Stats (shown only when compact) -->
