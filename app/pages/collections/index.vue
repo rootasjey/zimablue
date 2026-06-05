@@ -50,10 +50,12 @@
 
     <section v-if="isLoading" class="relative animate-fade-in-up animation-delay-200">
       <div class="flex flex-col gap-6 sm:grid sm:grid-flow-col sm:auto-cols-[minmax(240px,380px)] sm:gap-[28px] p-3 sm:mx-6">
-        <article v-for="n in 4" :key="`skeleton-${n}`" class="hcard sm:snap-start w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]">
-          <div class="rounded-[4px] overflow-hidden shadow-lg hcover bg-gradient-to-tr from-gray-200/50 to-gray-200/30 dark:from-black/5 dark:to-black/2 w-full aspect-[16/9] sm:aspect-[3/4] animate-pulse"></div>
-          <div class="mt-3 h-4 bg-gray-200/60 dark:bg-white/5 rounded w-3/4 animate-pulse"></div>
-          <div class="mt-2 h-3 bg-gray-200/40 dark:bg-white/3 rounded w-1/2 animate-pulse"></div>
+        <article v-for="n in 4" :key="`skeleton-${n}`" class="flex flex-row items-start gap-5 sm:block sm:snap-start w-full sm:w-auto sm:min-w-[240px] sm:max-w-[380px]">
+          <div class="rounded-[4px] overflow-hidden shadow-lg bg-gradient-to-tr from-gray-200/50 to-gray-200/30 dark:from-black/5 dark:to-black/2 w-24 h-24 sm:w-full sm:aspect-[3/4] animate-pulse shrink-0"></div>
+          <div class="flex-1 min-w-0 mt-0 sm:mt-3">
+            <div class="h-4 bg-gray-200/60 dark:bg-white/5 rounded w-3/4 animate-pulse"></div>
+            <div class="mt-2 h-3 bg-gray-200/40 dark:bg-white/3 rounded w-1/2 animate-pulse"></div>
+          </div>
         </article>
       </div>
     </section>
@@ -73,9 +75,9 @@
           @dragleave.prevent.stop="handleCardDragLeave($event)"
           @drop.prevent.stop="(e: DragEvent) => handleDropOnCollection(e, collection)"
         >
-          <NuxtLink :to="`/collections/${collection.slug}`" class="block w-full" :class="{ 'pointer-events-none': isDraggingOnCard === collection.id }">
+          <NuxtLink :to="`/collections/${collection.slug}`" class="flex flex-row items-start gap-5 sm:block sm:w-full" :class="{ 'pointer-events-none': isDraggingOnCard === collection.id }">
             <!-- Image Container with Artistic Aspect Ratio -->
-            <div class="relative overflow-hidden aspect-[4/5] rounded-[2px] transition-all duration-700 bg-gray-50 dark:bg-gray-900/50 shadow-sm group-hover:shadow-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50">
+            <div class="relative overflow-hidden sm:aspect-[4/5] w-24 h-24 sm:w-auto sm:h-auto aspect-square shrink-0 rounded-[2px] transition-all duration-700 bg-gray-50 dark:bg-gray-900/50 shadow-sm group-hover:shadow-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50">
               <NuxtImg
                 v-if="getCoverSrc(collection)"
                 provider="hubblob"
@@ -108,7 +110,7 @@
             </div>
 
             <!-- Content Area - Minimalist & Elegant -->
-            <div class="mt-6 space-y-2">
+            <div class="mt-0 sm:mt-6 space-y-2 flex-1 min-w-0">
               <div class="flex items-center justify-between gap-4">
                 <h2 class="font-title text-size-5 sm:text-size-6 font-500 tracking-wide text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors duration-500">
                   {{ collection.name }}
