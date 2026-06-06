@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Column headers -->
     <div
       class="gap-4"
       :class="isMobile
@@ -35,13 +34,28 @@
           </button>
         </div>
 
-        <!-- Cards -->
-        <div class="flex flex-col gap-2 min-h-[120px]">
+        <!-- Drop zone -->
+        <div
+          class="flex flex-col gap-2 min-h-[120px] rounded-xl transition-colors duration-150"
+          :class="[
+            dragOverColumnId === col.id ? 'bg-indigo-50 dark:bg-indigo-900/15 ring-2 ring-indigo-400/40' : '',
+          ]"
+          @dragover.prevent="onDragOver(col.id)"
+          @dragenter.prevent="onDragEnter(col.id)"
+          @dragleave="onDragLeave(col.id)"
+          @drop.prevent="onDrop(col.id)"
+        >
           <div
             v-for="item in col.items"
             :key="item.id"
-            class="admin-card p-3.5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group"
+            :draggable="!isMobile"
+            class="admin-card p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group"
+            :class="[
+              draggedItem?.id === item.id ? 'opacity-40' : '',
+            ]"
             @click="$emit('item-click', item)"
+            @dragstart="onDragStart(item, col.id)"
+            @dragend="onDragEnd"
           >
             <!-- Priority badge -->
             <div class="flex items-start justify-between gap-2 mb-2">
@@ -90,10 +104,13 @@
             </div>
           </div>
 
-          <!-- Empty column placeholder -->
+          <!-- Empty column placeholder (also acts as drop target) -->
           <div
             v-if="col.items.length === 0"
-            class="flex items-center justify-center h-20 rounded-xl border-2 border-dashed border-stone-200 dark:border-zinc-800 text-stone-300 dark:text-zinc-600"
+            class="flex items-center justify-center h-20 rounded-xl border-2 border-dashed transition-colors duration-150"
+            :class="dragOverColumnId === col.id
+              ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/15 text-indigo-400 dark:text-indigo-300'
+              : 'border-stone-200 dark:border-zinc-800 text-stone-300 dark:text-zinc-600'"
           >
             <span class="text-xs">Empty</span>
           </div>
@@ -128,10 +145,11 @@ interface Props {
 
 defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'item-click', item: KanbanItem): void
   (e: 'edit', item: KanbanItem): void
   (e: 'delete', item: KanbanItem): void
+  (e: 'status-change', payload: { item: KanbanItem; newStatus: string }): void
 }>()
 
 const breakpoints = useBreakpoints({ mobile: 0, desktop: 768 })
@@ -140,6 +158,41 @@ const isMobile = breakpoints.smaller('desktop')
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(3, minmax(0, 1fr))`,
 }))
+
+// Drag and drop state
+const draggedItem = ref<KanbanItem | null>(null)
+const dragOverColumnId = ref<string | null>(null)
+
+const onDragStart = (item: KanbanItem, columnId: string) => {
+  draggedItem.value = item
+}
+
+const onDragEnd = () => {
+  draggedItem.value = null
+  dragOverColumnId.value = null
+}
+
+const onDragOver = (_columnId: string) => {
+  // Needed to allow drop
+}
+
+const onDragEnter = (columnId: string) => {
+  dragOverColumnId.value = columnId
+}
+
+const onDragLeave = (columnId: string) => {
+  if (dragOverColumnId.value === columnId) {
+    dragOverColumnId.value = null
+  }
+}
+
+const onDrop = (columnId: string) => {
+  const item = draggedItem.value
+  if (item && item.status !== columnId) {
+    emit('status-change', { item, newStatus: columnId })
+  }
+  onDragEnd()
+}
 
 const priorityClass = (priority?: string) => {
   if (!priority) return 'admin-badge-stone'

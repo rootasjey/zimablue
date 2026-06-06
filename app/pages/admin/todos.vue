@@ -80,6 +80,7 @@
       @item-click="openEditDialog"
       @edit="openEditDialog"
       @delete="openDeleteDialog"
+      @status-change="handleStatusChange"
     />
 
     <!-- List view empty -->
@@ -480,6 +481,20 @@ const confirmDelete = async () => {
     toast({ title: 'Error', description: 'Failed to delete task.', toast: 'soft-error', duration: 5000 })
   } finally {
     isDeleting.value = false
+  }
+}
+
+const handleStatusChange = async ({ item, newStatus }: { item: KanbanItem; newStatus: string }) => {
+  const todo = '_raw' in item ? item._raw as Todo : null
+  if (!todo || todo.status === newStatus) return
+  const previousStatus = todo.status
+  todo.status = newStatus as Todo['status']
+  try {
+    await $fetch(`/api/admin/todos/${todo.id}`, { method: 'PATCH', body: { status: newStatus } })
+  } catch (error) {
+    todo.status = previousStatus
+    console.error('Error updating todo status:', error)
+    toast({ title: 'Error', description: 'Failed to update todo status.', toast: 'soft-error', duration: 5000 })
   }
 }
 
