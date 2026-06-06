@@ -2,7 +2,10 @@
   <div class="min-h-screen w-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       <div class="sm:py-6 sm:pb-28 mb-24">
         <PageHeader v-if="showHomeHeader" />
-        <TopBar v-else-if="showTopBar" />
+        <template v-else-if="showTopBar">
+          <MobileHeader />
+          <TopBar />
+        </template>
         <slot />
       </div>
 
