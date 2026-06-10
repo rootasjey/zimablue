@@ -1,4 +1,4 @@
-![zima blue screenshot](./screenshots/zimablue-home-desktop-light.jpeg)
+![zima blue screenshot](./screenshots/zimablue-home-desktop.dark.jpeg)
 
 [Go to website ↗ 🌓](https://zimablue.cc/)
 
