@@ -1,11 +1,10 @@
 <template>
-  <div :class="['container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
+  <div :class="['mx-auto max-w-7xl px-4 sm:px-6 lg:px-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
     @dragenter.prevent="!store.isReordering && imageUpload.handleDragEnter($event)"
     @dragover.prevent="!store.isReordering && imageUpload.handleDragOver($event)"
     @dragleave.prevent="!store.isReordering && imageUpload.handleDragLeave($event)"
     @drop.prevent="!store.isReordering && handleDrop($event)"
   >
-    <!-- Header (non-sticky). Only the internal action bar stays sticky. -->
     <!-- Header skeleton while loading -->
     <div v-if="store.isLoading" class="space-y-2">
       <div class="h-6 w-52 rounded-md bg-gray-200/60 dark:bg-gray-800/60 animate-pulse"></div>
@@ -31,6 +30,8 @@
       :collection="store.collection"
       :image-count="store.images.length"
       :can-edit="isOwner"
+      :cover-image-pathname="coverImagePathname"
+      :sticky-top-offset="stickyTopOffset"
       class="animate-fade-in-down"
       @edit="store.openEditDialog"
       @add-images="store.startAddingImages"
@@ -41,7 +42,7 @@
     />
 
     <!-- Content -->
-    <div class="w-full mx-auto space-y-8">
+    <div class="w-full px-4 mx-auto space-y-8">
       <!-- Loading State: grid skeletons -->
       <section v-if="store.isLoading" class="space-y-6">
         <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 [content-visibility:auto]">
@@ -76,6 +77,7 @@
         v-else-if="store.images.length > 0"
         :images="store.images"
         :can-edit="isOwner"
+        :collection-stats="{ views: store.collection?.stats_views ?? 0, likes: store.collection?.stats_likes ?? 0 }"
         :cover-image-id="store.collection?.cover_image_id ?? null"
         :selected-images-map="store.selectedImagesMap"
         :has-selected-images="store.hasSelectedImages && !store.isAddImagesDialogOpen"
@@ -427,8 +429,20 @@ const imageUpload = useImageUpload()
 const replacementFileInput = imageUpload.replacementFileInput
 const collectionFileInput = ref<HTMLInputElement>()
 const pageHeader = usePageHeader()
+
 const imageModalRef = ref<{ focusModal?: () => void } | null>(null)
 const gridStore = useGridStore()
+
+const coverImagePathname = computed(() => {
+  if (!store.collection?.cover_image_id) return undefined
+  const cover = store.images.find(img => img.id === store.collection?.cover_image_id)
+  return cover?.pathname
+})
+
+const stickyTopOffset = computed(() => {
+  if (typeof window === 'undefined') return 56
+  return window.innerWidth >= 640 ? 56 : 0
+})
 
 // Per-image dropdown menu items for the collection grid (normal mode)
 const collectionImageMenuItems = (image: Image) => {
@@ -524,14 +538,9 @@ const selectedImageIds = computed(() =>
     .map(([id]) => parseInt(id))
 )
 
-// Load collection data on mount
-onBeforeMount(() => {
-  pageHeader.setPageHeader({
-    topBarMode: 'minimal'
-  })
-})
-
 onMounted(async () => {
+  pageHeader.setPageHeader({ disableMobileHeader: true })
+
   try {
     await store.fetchCollection(slug)
   } catch (err) {

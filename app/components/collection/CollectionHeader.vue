@@ -1,8 +1,44 @@
 <template>
   <div class="relative group">
-    <!-- Main Hero Header -->
-    <header ref="heroRef" class="hidden sm:block pt-20 pb-16 px-4">
-      <div class="max-w-4xl mx-auto text-center space-y-8">
+    <!-- Cover Image Hero (full-bleed, shown on all screens) -->
+    <header
+      v-if="coverImagePathname"
+      ref="heroRef"
+      class="relative overflow-hidden min-h-[50vh] sm:min-h-[70vh] sm:w-screen sm:-ml-[50vw] sm:left-1/2"
+    >
+      <!-- Background image -->
+      <NuxtImg
+        :src="`/${coverImagePathname}`"
+        provider="hubblob"
+        class="absolute inset-0 w-full h-full object-cover"
+        sizes="100vw,1600px"
+        width="1600"
+        height="900"
+        loading="eager"
+      />
+      <!-- Gradient overlays -->
+      <div class="absolute inset-0 bg-gradient-to-t from-gray-950/85 via-gray-950/30 to-transparent" />
+      <div class="absolute inset-0 bg-gradient-to-r from-gray-950/20 to-transparent" />
+
+      <!-- Content -->
+      <div class="absolute bottom-0 z-10 h-full w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-8 sm:pb-14">
+        <div class="max-w-3xl space-y-0">
+          <!-- Title -->
+          <h1 class="font-body text-3xl sm:text-5xl md:text-6xl font-900 leading-[1.1] tracking-tight text-center text-white">
+            {{ collection?.name || 'Untitled' }}
+          </h1>
+
+          <!-- Description -->
+          <p v-if="collection?.description" class="text-sm sm:text-base text-white/60 max-w-xl text-center leading-relaxed line-clamp-2">
+            {{ collection.description }}
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Text-only Hero (fallback when no cover image) -->
+    <header v-else ref="heroRef" class="hidden sm:block pt-20 pb-16">
+      <div class="mx-auto text-center space-y-8">
         <!-- Collection Metadata -->
         <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200/60 dark:border-gray-800/60 text-[11px] font-700 uppercase tracking-widest text-gray-500 animate-in zoom-in-95 duration-700">
           <span class="i-ph-folder-simple-user text-blue-500"></span>
@@ -23,7 +59,7 @@
         <!-- Creator & Stats -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4 animate-in fade-in duration-700 delay-200">
           <div v-if="collection?.owner" class="flex items-center gap-3">
-             <div class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 shadow-sm overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+            <div class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 shadow-sm overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800">
               <NuxtImg
                 v-if="ownerAvatar"
                 :src="ownerAvatar"
@@ -58,39 +94,62 @@
     </header>
 
     <!-- Sticky Action Navigator -->
-    <div 
-      class="sticky top-0 z-40 transition-all duration-500 border-y border-dashed border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl"
+    <div
+      class="sticky z-40 transition-all duration-500 border-y border-dashed border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl"
       :class="[
         isCompact ? 'py-2 translate-y-0 opacity-100 shadow-sm' : 'py-3',
       ]"
+      :style="{ top: stickyTopOffset + 'px' }"
     >
       <div class="w-full max-w-[1600px] mx-auto px-4 flex items-center justify-between gap-4">
         <!-- Left: Back & Title -->
         <div class="flex items-center gap-3 min-w-0">
-          <NLink 
-            to="/collections" 
+          <NLink
+            to="/collections"
             class="group/back w-10 h-10 inline-flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
           >
             <span class="i-ph-arrow-left text-lg group-hover/back:-translate-x-1 transition-transform"></span>
           </NLink>
 
-          <div class="flex flex-col min-w-0">
-             <h2 
+          <div class="hidden md:flex flex-col min-w-0">
+            <h2
               class="font-800 text-gray-900 dark:text-gray-100 truncate transition-all duration-300"
               :class="isCompact ? 'text-lg opacity-100' : 'text-sm opacity-50'"
             >
               {{ collection?.name }}
             </h2>
-              <div v-if="!isCompact" class="hidden sm:block text-[10px] font-700 uppercase tracking-widest text-gray-400">Collection</div>
-              <!-- Mobile subtitle -->
-              <div class="flex sm:hidden items-center gap-2 text-[10px] font-500 text-gray-400 truncate">
-                {{ collection?.description || `${imageCount} image${imageCount !== 1 ? 's' : ''}` }}
+            <div v-if="!isCompact" class="hidden sm:block text-[10px] font-700 uppercase tracking-widest text-gray-400">Collection</div>
+            <!-- Mobile subtitle -->
+            <div class="flex sm:hidden items-center gap-2 text-[10px] font-500 text-gray-400 truncate">
+              {{ collection?.description || `${imageCount} image${imageCount !== 1 ? 's' : ''}` }}
+            </div>
+          </div>
+
+          <!-- Creator & Stats -->
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div v-if="collection?.owner" class="flex items-center gap-2.5">
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white/20 overflow-hidden flex items-center justify-center bg-white/10 shrink-0">
+                <NuxtImg
+                  v-if="ownerAvatar"
+                  :src="ownerAvatar"
+                  provider="hubblob"
+                  :alt="collection.owner.name || 'Owner'"
+                  class="w-full h-full object-cover"
+                  width="32"
+                  height="32"
+                />
+                <span v-else class="text-[9px] font-800 text-white/50">{{ ownerInitials }}</span>
+              </div>
+              <div class="text-left">
+                <div class="text-xs sm:text-sm font-700 text-white/80">{{ collection.owner.name }}</div>
+                <div class="text-[9px] font-700 uppercase tracking-wider text-white/40">Curated by</div>
               </div>
             </div>
+          </div>
         </div>
 
         <!-- Center: Stats (shown only when compact) -->
-        <div 
+        <div
           v-if="isCompact"
           class="hidden md:flex items-center gap-8 animate-in fade-in slide-in-from-top-2 duration-300"
         >
@@ -107,20 +166,20 @@
         <!-- Right: Actions -->
         <div class="flex items-center gap-2">
           <template v-if="canEdit">
-            <NButton 
-              btn="soft-gray" 
-              size="sm" 
-              class="hidden sm:inline-flex font-700 rounded-xl px-4" 
+            <NButton
+              btn="soft-gray"
+              size="sm"
+              class="hidden sm:inline-flex font-700 rounded-xl px-4"
               @click="$emit('addImages')"
             >
               <span class="i-ph-plus mr-2"></span>
               Add
             </NButton>
 
-            <NButton 
-              btn="ghost-gray" 
-              size="sm" 
-              un-icon 
+            <NButton
+              btn="ghost-gray"
+              size="sm"
+              un-icon
               class="p-2.5 rounded-xl"
               @click="$emit('edit')"
             >
@@ -132,17 +191,16 @@
                 :items="menuItems"
                 size="xs"
                 :_dropdown-menu-content="{ class: 'w-48 rounded-2xl p-2 shadow-xl', align: 'end', side: 'bottom' }"
-                :_dropdown-menu-trigger="{ 
-                  icon: true, 
-                  square: true, 
-                  label: 'i-ph-dots-three-bold', 
-                  class: 'rounded-xl w-10 h-10 bg-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800' 
+                :_dropdown-menu-trigger="{
+                  icon: true,
+                  label: 'i-ph-dots-three-bold',
+                  class: 'rounded-xl w-10 h-10 bg-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                 }"
               />
             </ClientOnly>
           </template>
-          
-          <NButton 
+
+          <NButton
             v-else
             btn="soft-gray"
             size="sm"
@@ -164,6 +222,8 @@ interface Props {
   collection: Collection | null
   imageCount: number
   canEdit: boolean
+  coverImagePathname?: string
+  stickyTopOffset?: number
 }
 
 interface Emits {
@@ -175,13 +235,15 @@ interface Emits {
   enterSelectionMode: []
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  stickyTopOffset: 0,
+})
 const emit = defineEmits<Emits>()
 
 // Computed properties for date formatting
 const formattedDateLong = computed(() => {
   if (!props.collection?.created_at) return ''
-  
+
   return new Date(props.collection.created_at).toLocaleDateString('FR-fr', {
     weekday: 'long',
     month: 'long',
@@ -195,7 +257,7 @@ const formattedDateLong = computed(() => {
 
 const formattedDateShort = computed(() => {
   if (!props.collection?.created_at) return ''
-  
+
   return new Date(props.collection.created_at).toLocaleDateString('FR-fr', {
     weekday: 'long',
     month: 'long',
@@ -230,7 +292,6 @@ onMounted(() => {
   io = new IntersectionObserver(
     (entries) => {
       const entry = entries[0]
-      // When header is not intersecting (scrolled past), enable compact mode
       isCompact.value = !(entry?.isIntersecting ?? true)
     },
     { threshold: 0.01 }
