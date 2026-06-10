@@ -8,6 +8,7 @@ export interface SiteNavigationAction {
 }
 
 import { useImageUpload } from '~/composables/image/useImageUpload'
+import { useCollectionStore } from '~/stores/useCollectionStore'
 
 export const useSiteNavigation = () => {
   const route = useRoute()
@@ -44,6 +45,69 @@ export const useSiteNavigation = () => {
       match: (path) => path.startsWith('/search'),
     },
   ])
+
+  const mobileNavItems = computed<SiteNavigationAction[]>(() => {
+    if (isAdmin.value) {
+      const isCollectionsPage = route.path.startsWith('/collections')
+
+      return [
+        {
+          key: 'home',
+          label: 'Home',
+          icon: 'i-tabler-smart-home',
+          to: '/',
+          match: (path: string) => path === '/',
+        },
+        isCollectionsPage
+          ? {
+              key: 'create',
+              label: 'Create',
+              icon: 'i-ph-plus',
+              action: () => {
+                const collectionStore = useCollectionStore()
+                collectionStore.openCreateDialog()
+              },
+            }
+          : {
+              key: 'upload',
+              label: 'Upload',
+              icon: 'i-tabler-upload',
+              action: triggerUpload,
+            },
+        {
+          key: 'admin',
+          label: 'Atelier',
+          icon: 'i-ph-paint-roller-duotone',
+          to: '/admin',
+          match: (path: string) => path.startsWith('/admin'),
+        },
+      ]
+    }
+
+    return [
+      {
+        key: 'home',
+        label: 'Home',
+        icon: 'i-tabler-smart-home',
+        to: '/',
+        match: (path: string) => path === '/',
+      },
+      {
+        key: 'search',
+        label: 'Search',
+        icon: 'i-ph-magnifying-glass-duotone',
+        to: '/search',
+        match: (path) => path.startsWith('/search'),
+      },
+      {
+        key: 'collections',
+        label: 'Collections',
+        icon: 'i-ph-squares-four-duotone',
+        to: '/collections',
+        match: (path: string) => path.startsWith('/collections'),
+      },
+    ]
+  })
 
   const mobileOverflowItems = computed<SiteNavigationAction[]>(() => {
     const items: SiteNavigationAction[] = []
@@ -151,6 +215,7 @@ export const useSiteNavigation = () => {
     handleActionClick,
     mobileOverflowItems,
     primaryMobileItems,
+    mobileNavItems,
     triggerUpload,
   }
 }

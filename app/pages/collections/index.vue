@@ -1,6 +1,15 @@
 <template>
+  <!-- Mobile Collections Page -->
+  <MobileCollectionsPage
+    :collections="collectionStore.collections"
+    :is-loading="isLoading"
+    :is-admin="isAdmin"
+    @open-create-dialog="collectionStore.openCreateDialog()"
+  />
+
+  <!-- Desktop Collections Page -->
   <div
-    class="page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24"
+    class="hidden sm:block page max-w-[1500px] mx-auto px-6 sm:px-12 pt-8 pb-24"
     @dragenter.prevent="handlePageDragEnter"
     @dragover.prevent="handlePageDragOver"
     @dragleave.prevent="handlePageDragLeave"
@@ -256,7 +265,7 @@ const isLoading = ref(import.meta.client
   : true)
 
 onBeforeMount(() => {
-  pageHeader.setPageHeader({ topBarMode: 'minimal' })
+  pageHeader.setPageHeader({ topBarMode: 'minimal', mobileSubtitle: 'Explore curated series' })
 })
 
 onBeforeUnmount(() => {
