@@ -4,12 +4,19 @@
       <div class="flex items-center justify-between">
         <!-- Minimal Logo -->
         <div class="flex items-center gap-4">
-          <NuxtLink 
-            :to="linkTo" 
+          <NuxtLink
+            :to="linkTo"
             class="group flex items-center gap-3 font-title text-size-5 font-900 tracking-tighter text-gray-900 dark:text-gray-100 transition-transform active:scale-95"
             :aria-label="linkAriaLabel"
           >
-            <div class="w-2.5 h-2.5 rounded-full bg-primary transition-all duration-500 group-hover:scale-150 group-hover:shadow-[0_0_15px_rgba(var(--una-primary),0.5)]" />
+            <NuxtImg
+              src="/images/zimablue-c.md.512px.png"
+              alt="zimablue"
+              class="hover:scale-110 active:scale-99 transition-transform"
+              height="24"
+              width="24"
+            />
+
             <span>zimablue</span>
           </NuxtLink>
         </div>
@@ -26,10 +33,10 @@
               <!-- Artistic underline indicator -->
               <span class="absolute bottom-0 left-4 right-4 h-[1px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
             </button>
-            
+
             <!-- Minimal separator except final item -->
-            <span 
-              v-if="index < desktopHeaderActions.length - 1" 
+            <span
+              v-if="index < desktopHeaderActions.length - 1"
               class="text-[8px] text-gray-200 dark:text-gray-800 font-200 select-none"
             >
               /

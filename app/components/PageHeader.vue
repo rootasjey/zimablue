@@ -1,6 +1,4 @@
 <template>
-  <MobileHeader />
-
   <header
     class="hidden sm:block sticky top-0 z-20 w-full transition-all duration-500"
     :class="isHeaderRaised ? 'backdrop-blur-xl border-b border-gray-100/50 dark:border-gray-800/50 shadow-sm' : 'bg-transparent border-b border-transparent'"
@@ -51,7 +49,7 @@
                   </span>
                 </div>
               </div>
-              
+
               <template #fallback>
                 <div class="h-16 w-full max-w-md bg-gray-50 dark:bg-gray-900/50 rounded-xl animate-pulse" />
               </template>
@@ -69,10 +67,10 @@
                   <!-- Artistic underline indicator -->
                   <span class="absolute bottom-0 left-4 right-4 h-[1px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                 </button>
-                
+
                 <!-- Minimal separator except final item -->
-                <span 
-                  v-if="index < desktopHeaderActions.length - 1" 
+                <span
+                  v-if="index < desktopHeaderActions.length - 1"
                   class="text-[8px] text-gray-200 dark:text-gray-800 font-200 select-none pb-0.5"
                 >
                   /
@@ -109,8 +107,8 @@ const isHeaderRaised = computed(() => collapseProgress.value > 0.02)
 const dynamicHeaderStyle = computed(() => {
   if (collapseProgress.value < 0.05) return {}
   return {
-    backgroundColor: isHeaderRaised.value 
-      ? `rgba(var(--una-background), ${0.7 + collapseProgress.value * 0.15})` 
+    backgroundColor: isHeaderRaised.value
+      ? `rgba(var(--una-background), ${0.7 + collapseProgress.value * 0.15})`
       : 'transparent'
   }
 })

@@ -1,10 +1,22 @@
 <template>
   <section>
     <!-- Image count header + selection controls -->
-    <div class="flex items-center mb-4">
-      <h3 class="text-3 font-600 text-gray-800 dark:text-gray-200">
-        {{ images.length }} Images
-      </h3>
+    <div class="flex justify-center md:justify-start items-center mt-4 mb-4 md:ml-2">
+      <div class="ml-0 flex gap-2 items-center">
+        <h3 class="text-3 font-600 text-gray-800 dark:text-gray-200">
+          {{ images.length }} Images
+        </h3>
+
+        <span class="text-gray-600 dark:text-gray-400">•</span>
+
+        <h3 class="text-3 font-600 text-gray-600 dark:text-gray-500">
+          {{ collectionStats.views }} views
+        </h3>
+        <span class="text-gray-600 dark:text-gray-400">•</span>
+        <h3 class="text-3 font-600 text-gray-600 dark:text-gray-500">
+          {{ collectionStats.likes }} likes
+        </h3>
+      </div>
 
       <div
         v-if="canEdit && isSelectionMode"
@@ -26,12 +38,12 @@
       </div>
     </div>
 
-    <div data-collection-grid class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-8">
+    <div data-collection-grid class="grid grid-cols-3 gap-3 sm:gap-4 md:grid-cols-5 md:gap-8">
       <div
         v-for="(image, index) in images"
         :key="image.id"
         :class="[
-          'group relative overflow-hidden rounded-sm ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-150 cursor-pointer animate-fade-in-up',
+          'group relative overflow-hidden rounded-xl ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-200 cursor-pointer animate-fade-in-up active:scale-[0.97]',
           highlightedImageIndex === index && isSelectionMode
             ? 'ring-2 ring-blue-500'
             : highlightedImageIndex === index
@@ -117,6 +129,7 @@ interface Props {
   selectionCount: number
   imageMenuItems: (image: Image) => Array<Record<string, any>>
   highlightedImageIndex: number
+  collectionStats: { views: number; likes: number }
 }
 
 const props = defineProps<Props>()
@@ -206,5 +219,11 @@ const handlePointerUp = () => {
 
 .group:active {
   transform: translateY(0);
+}
+
+@media (hover: none) {
+  .group:hover {
+    transform: none;
+  }
 }
 </style>

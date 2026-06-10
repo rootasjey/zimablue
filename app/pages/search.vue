@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile Search Page -->
-  <div class="min-h-screen bg-white dark:bg-gray-900 pb-20 sm:pb-0">
+  <div class="min-h-screen bg-white dark:bg-gray-900">
     <!-- Mobile Header -->
     <header class="sm:hidden sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center gap-3 px-4 py-3 safe-area-pt">

@@ -1,36 +1,87 @@
 <template>
-  <!-- Mobile Header - Only visible on mobile devices -->
-  <header :class="[isScrolled ? 'scrolled' : 'pt-4', 'sm:hidden w-full bg-white/90 dark:bg-gray-950/90 backdrop-blur-md sticky top-0 z-12']">
-    <div class="flex items-center justify-center px-4 py-3 safe-area-pt">
-      <!-- Site Title + Short Description -->
-      <div class="flex flex-col items-center">
-        <h1 class="font-title leading-tight font-800 text-gray-800 dark:text-gray-100 mobile-title">
-          <NuxtLink
-            to="/about"
-            class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            aria-label="zimablue - Go to about page"
+  <header
+    ref="headerRef"
+    :class="[
+      isScrolled ? 'scrolled' : '',
+      'sm:hidden fixed top-0 left-0 right-0 z-12 transition-all duration-500'
+    ]"
+  >
+    <div
+      class="relative transition-all duration-500 ease-out"
+      :class="isScrolled ? 'mx-3 mt-2 rounded-2xl shadow-lg shadow-black/5 dark:shadow-black/20' : 'mx-0 mt-0 rounded-none'"
+    >
+      <!-- Gradient accent bar -->
+      <div
+        class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-400/40 via-30% via-pink-400/40 via-60% to-transparent transition-opacity duration-700"
+        :class="isScrolled ? 'opacity-100' : 'opacity-0'"
+      />
+
+      <div
+        class="flex flex-col items-center transition-all duration-500 ease-out"
+        :class="isScrolled
+          ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-gray-800/50 px-4 py-2.5'
+          : 'bg-transparent pt-6 pb-2'"
+      >
+        <h1
+          class="font-title leading-tight font-800 text-gray-800 dark:text-gray-100 mobile-title"
+        >
+          <button
+            type="button"
+            class="transition-colors duration-300 bg-transparent border-none p-0 cursor-pointer font-inherit text-inherit"
+            :class="isScrolled ? 'text-gray-600 dark:text-gray-300' : ''"
+            :aria-label="isScrolled ? 'Scroll to top' : 'Go to home'"
+            @click="handleTitleClick"
           >
             zimablue
-          </NuxtLink>
+          </button>
         </h1>
 
-        <p class="mt-0.5 text-size-4 font-500 text-center text-gray-500 dark:text-gray-400 mobile-desc">
-          Your daily hand-made illustration
+        <p
+          class="mt-0.5 text-size-4 font-500 text-center text-gray-500 dark:text-gray-400 transition-all duration-300"
+          :class="isScrolled ? 'opacity-0 max-h-0 mt-0 pointer-events-none' : 'opacity-100 max-h-8'"
+        >
+          {{ subtitle }}
         </p>
       </div>
     </div>
+
+    <!-- Safe area spacer -->
+    <div v-if="!isScrolled" class="h-0" style="padding-top: env(safe-area-inset-top);" />
   </header>
+
+  <!-- Spacer -->
+  <div
+    class="sm:hidden transition-all duration-500"
+    :class="isScrolled ? 'h-14' : 'h-36'"
+  />
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// when the page is scrolled away from the top we shrink the title and hide the description
+withDefaults(defineProps<{
+  subtitle?: string
+}>(), {
+  subtitle: 'Your daily hand-made illustration',
+})
+
 const isScrolled = ref(false)
+let scrollFrame: number | null = null
 
 function handleScroll() {
-  // exactly as requested — initial state only when at y === 0
-  isScrolled.value = (typeof window !== 'undefined') && window.scrollY > 0
+  if (scrollFrame !== null) return
+  scrollFrame = window.requestAnimationFrame(() => {
+    scrollFrame = null
+    isScrolled.value = window.scrollY > 20
+  })
+}
+
+const handleTitleClick = () => {
+  if (window.scrollY > 16) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    navigateTo('/')
+  }
 }
 
 onMounted(() => {
@@ -40,13 +91,16 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (scrollFrame !== null) {
+    window.cancelAnimationFrame(scrollFrame)
+  }
 })
 </script>
 
 <style scoped>
-header h1 {
+.mobile-title {
   font-size: 2rem;
-  transition: transform 0.18s ease-in-out, font-size 0.18s ease-in-out;
+  transition: font-size 0.35s cubic-bezier(0.4, 0, 0.2, 1), line-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media screen and (min-width: 375px) {
     font-size: 3rem;
@@ -65,44 +119,22 @@ header h1 {
   }
 }
 
-/* small / scrolled state: apply a scale down and slightly lift the header text; hide the small description */
+/* Scrolled: compact font-size */
 header.scrolled .mobile-title {
-  transform: scale(0.46);
-}
-
-header .mobile-desc {
-  transition: opacity 0.18s ease-in-out, transform 0.18s ease-in-out, max-height 0.18s ease-in-out;
-  opacity: 1;
-  transform: translateY(0);
-  overflow: hidden;
-}
-
-header.scrolled .mobile-desc {
-  opacity: 0;
-  transform: translateY(-6px);
-  max-height: 0;
-  pointer-events: none;
+  font-size: 1.25rem;
+  line-height: 1.3;
 }
 
 /* Safe area for devices with notch */
-.safe-area-pt {
+header {
   padding-top: env(safe-area-inset-top);
 }
 
-/* Icon animations */
-.i-ph-sun-horizon,
-.i-line-md\:moon-to-sunny-outline-loop-transition {
-  animation: fadeScale 0.3s ease-in-out;
-}
-
-@keyframes fadeScale {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+@media (prefers-reduced-motion: reduce) {
+  header *,
+  .mobile-title {
+    animation: none !important;
+    transition: none !important;
   }
 }
 </style>

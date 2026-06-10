@@ -11,32 +11,45 @@
         :style="`view-transition-name: shared-image-${image?.id}`"
       />
       
-      <!-- Controls overlay -->
-      <div class="absolute bottom-4 flex flex-row gap-4 justify-center items-center">
-        <button 
-          @click="downloadImage"
-          class="text-gray-200 hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
-          title="Download image"
-        >
-          <div class="i-ph-download text-2xl" />
-        </button>
-        
-        <button 
-          v-if="loggedIn"
-          @click="showEditDrawer = true"
-          class="text-gray-200 hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
-          title="Edit image"
-        >
-          <div class="i-ph-pencil-simple text-2xl" />
-        </button>
-        
-        <button 
-          @click="navigateBackOrHome()"
-          class="text-gray-200 hover:scale-110 active:scale-90 transition bg-black p-2 rounded-full"
-          title="Close"
-        >
-          <div class="i-ph-x text-2xl" />
-        </button>
+      <!-- Close button (top) -->
+      <button 
+        @click="navigateBackOrHome()"
+        class="absolute top-4 right-4 z-30 text-gray-200 hover:scale-110 active:scale-90 transition bg-black/40 backdrop-blur-md p-2.5 rounded-full"
+        title="Close"
+        aria-label="Close"
+        style="margin-top: env(safe-area-inset-top);"
+      >
+        <div class="i-ph-x text-xl" />
+      </button>
+
+      <!-- Controls overlay (bottom center) -->
+      <div class="absolute bottom-0 left-0 right-0 z-20 pb-6 pt-12 bg-gradient-to-t from-black/60 to-transparent" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
+        <div class="flex flex-row gap-4 justify-center items-center">
+          <button 
+            @click="downloadImage"
+            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+            title="Download image"
+          >
+            <div class="i-ph-download text-xl" />
+          </button>
+          
+          <button 
+            v-if="loggedIn"
+            @click="showEditDrawer = true"
+            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+            title="Edit image"
+          >
+            <div class="i-ph-pencil-simple text-xl" />
+          </button>
+          
+          <button 
+            @click="navigateBackOrHome()"
+            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+            title="Close"
+          >
+            <div class="i-ph-x text-xl" />
+          </button>
+        </div>
       </div>
     </div>
 

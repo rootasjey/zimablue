@@ -3,38 +3,38 @@
     <!-- Skeleton mobile — visible pendant le chargement si layout vide -->
     <div
       v-if="showInitialSkeleton && isLoading && !layout.length"
-      class="mobile-masonry-grid mx-4 mt-12"
+      class="mobile-masonry-grid mt-12"
       aria-hidden="true"
     >
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-tall skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-wide skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-large skeleton-cell" />
-      <div class="mobile-grid-cell mobile-cell-square skeleton-cell" />
+      <div class="mobile-grid-cell skeleton-cell">
+        <div class="aspect-square" />
+      </div>
+      <div class="mobile-grid-cell skeleton-cell">
+        <div class="aspect-square" />
+      </div>
+      <div class="mobile-grid-cell skeleton-cell">
+        <div class="aspect-square" />
+      </div>
+      <div class="mobile-grid-cell skeleton-cell">
+        <div class="aspect-square" />
+      </div>
     </div>
 
-    <!-- Mobile Grid - Dynamic Masonry Layout -->
+    <!-- Mobile Grid - 2 Column Cards -->
     <div
       v-if="layout.length"
-      class="mobile-masonry-grid mx-4 mt-12"
+      class="mobile-masonry-grid mt-12"
       role="grid"
       :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
     >
       <div v-for="(item, index) in layout" :key="item.i"
-        class="mobile-grid-item relative overflow-hidden cursor-pointer transition-all duration-300"
+        class="mobile-grid-item cursor-pointer"
         :data-home-grid-index="index"
-        :class="[
-          getMobileGridItemClass(index),
-          {
-            'ring-2 ring-blue-500 ring-offset-2': isSelectionMode && (highlightedImageIndex === index || selectedImagesMap?.[item.id]),
-            'ring-2 ring-pink-500 ring-offset-2': highlightedImageIndex === index && !isSelectionMode,
-            'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
-          }
-        ]"
+        :class="{
+          'ring-2 ring-blue-500': isSelectionMode && (highlightedImageIndex === index || selectedImagesMap?.[item.id]),
+          'ring-2 ring-pink-500': highlightedImageIndex === index && !isSelectionMode,
+          'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
+        }"
         :style="{
           '--index': Math.min(index, 11),
           'opacity': index >= 12 ? 1 : undefined,
@@ -45,51 +45,64 @@
         :aria-label="`Image ${item.name || 'untitled'}${isSelectionMode ? (selectedImagesMap?.[item.id] ? ', selected' : ', not selected') : ''}`"
         @mousedown="$emit('mouseDown', $event)"
       >
-        <!-- Selection checkbox for mobile -->
-        <div
-          v-if="loggedIn && isSelectionMode"
-          class="absolute top-2 right-2 z-20"
-          @click.stop="$emit('imageToggle', item.id, index, $event)"
-        >
-          <NCheckbox
-            :model-value="selectedImagesMap?.[item.id] || false"
-            checkbox="success"
-          />
-        </div>
-
-        <NuxtImg
-          @click="(event: MouseEvent) => handleImageClick(item, index, event)"
-          @load="() => markLoaded(keyFor(item, index))"
-          @error="() => markError(keyFor(item, index))"
-          @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
-          @pointermove="handleImagePointerMove"
-          @pointerup="handleImagePointerUp"
-          @pointercancel="handleImagePointerCancel"
-          loading="lazy"
-          :src="getImageSrc(item, 'mobile-grid').src"
-          :provider="getImageSrc(item, 'mobile-grid').provider"
-          :modifiers="getImageSrc(item, 'mobile-grid').modifiers"
-          :alt="''"
-          :aria-label="item.name || item.pathname || 'Image'"
-          class="nuxt-img-mobile"
-          :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
-          :style="`view-transition-name: shared-image-${item.id}`"
-        />
-          <!-- Loading / fallback placeholder (visible until image has loaded) -->
+        <!-- Card container -->
+        <div class="mobile-grid-cell">
+          <!-- Selection checkbox for mobile -->
           <div
-            v-if="!loadedMap[keyFor(item, index)]"
-            class="absolute inset-0 flex items-center justify-center"
-            :aria-hidden="true"
+            v-if="loggedIn && isSelectionMode"
+            class="absolute top-2 right-2 z-20"
+            @click.stop="$emit('imageToggle', item.id, index, $event)"
           >
-            <div class="w-2/3 text-center">
-              <template v-if="errorMap[keyFor(item, index)]">
-                <svg class="mx-auto mb-2 w-8 h-8 text-red-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636L5.636 18.364M5.636 5.636L18.364 18.364" />
-                </svg>
-                <div class="text-xs opacity-80">Couldn't load</div>
-              </template>
+            <NCheckbox
+              :model-value="selectedImagesMap?.[item.id] || false"
+              checkbox="success"
+            />
+          </div>
+
+          <div class="relative w-full" :class="item.w > item.h ? 'aspect-[4/3]' : 'aspect-[3/4]'">
+            <NuxtImg
+              @click="(event: MouseEvent) => handleImageClick(item, index, event)"
+              @load="() => markLoaded(keyFor(item, index))"
+              @error="() => markError(keyFor(item, index))"
+              @pointerdown="(event: PointerEvent) => handleImagePointerDown(item, index, event)"
+              @pointermove="handleImagePointerMove"
+              @pointerup="handleImagePointerUp"
+              @pointercancel="handleImagePointerCancel"
+              loading="lazy"
+              :src="getImageSrc(item, 'mobile-grid').src"
+              :provider="getImageSrc(item, 'mobile-grid').provider"
+              :modifiers="getImageSrc(item, 'mobile-grid').modifiers"
+              :alt="''"
+              :aria-label="item.name || item.pathname || 'Image'"
+              class="nuxt-img-mobile"
+              :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
+              :style="`view-transition-name: shared-image-${item.id}`"
+            />
+
+            <!-- Loading / fallback placeholder -->
+            <div
+              v-if="!loadedMap[keyFor(item, index)]"
+              class="absolute inset-0 flex items-center justify-center"
+              :aria-hidden="true"
+            >
+              <div class="w-2/3 text-center">
+                <template v-if="errorMap[keyFor(item, index)]">
+                  <svg class="mx-auto mb-2 w-8 h-8 text-red-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636L5.636 18.364M5.636 5.636L18.364 18.364" />
+                  </svg>
+                  <div class="text-xs opacity-80">Couldn't load</div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Name overlay at bottom -->
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
+              <p class="text-[11px] font-500 text-white/90 truncate">
+                {{ item.name || 'Untitled' }}
+              </p>
             </div>
           </div>
+        </div>
       </div>
     </div>
 
@@ -500,38 +513,31 @@ const markError = (itemKey: string | number) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease-in-out;
 }
 
-/* Mobile Masonry Grid Styles */
+/* Mobile Grid Styles - 2 Column Compact Cards */
 .mobile-masonry-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: minmax(90px, 110px);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  grid-auto-flow: dense;
-  padding-bottom: 80px; /* Space for bottom nav */
+  padding-bottom: 80px;
+  padding-left: 16px;
+  padding-right: 16px;
 
-  /* Tablet range (400px - 639px): Simple 2-column uniform grid */
-  @media (min-width: 400px) and (max-width: 639px) {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 1fr;
-    gap: 14px;
-  }
-
-  /* Hide on tablet and desktop (sm breakpoint = 640px) */
   @media (min-width: 640px) {
     display: none;
   }
 }
 
 .mobile-grid-cell {
-  border-radius: 20px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: rgba(0, 0, 0, 0.06) 0px 2px 12px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fff;
+  -webkit-tap-highlight-color: transparent;
 
   .dark & {
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 16px;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background: #1a1a1a;
   }
 
   &:active {
@@ -543,89 +549,14 @@ const markError = (itemKey: string | number) => {
   grid-column: span 1;
   grid-row: span 1;
   aspect-ratio: 1/1;
-  
-  /* In tablet range, all squares are uniform */
-  @media (min-width: 400px) and (max-width: 639px) {
-    aspect-ratio: 1/1;
-  }
 }
 
-.mobile-cell-wide {
-  grid-column: span 2;
-  grid-row: span 1;
-  min-height: 90px;
-  
-  /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 400px) and (max-width: 639px) {
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: auto;
-    aspect-ratio: 1/1;
-  }
-}
-
-.mobile-cell-tall {
-  grid-column: span 1;
-  grid-row: span 2;
-  min-height: 180px;
-  
-  /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 400px) and (max-width: 639px) {
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: auto;
-    aspect-ratio: 1/1;
-  }
-}
-
+.mobile-cell-wide,
+.mobile-cell-tall,
 .mobile-cell-large {
-  grid-column: span 2;
-  grid-row: span 2;
-  min-height: 180px;
-  
-  /* In tablet range, no spanning - simple uniform grid */
-  @media (min-width: 400px) and (max-width: 639px) {
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: auto;
-    aspect-ratio: 1/1;
-  }
-}
-
-/* Hover states for colorful shadows */
-.mobile-grid-cell:nth-child(7n):hover {
-  box-shadow: rgba(244, 114, 182, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+1):hover {
-  box-shadow: rgba(134, 239, 172, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+2):hover {
-  box-shadow: rgba(129, 140, 248, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+3):hover {
-  box-shadow: rgba(251, 191, 36, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+4):hover {
-  box-shadow: rgba(167, 139, 250, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+5):hover {
-  box-shadow: rgba(56, 189, 248, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
-}
-
-.mobile-grid-cell:nth-child(7n+6):hover {
-  box-shadow: rgba(251, 113, 133, 0.5) 0px 12px 32px;
-  transform: translateY(-2px);
+  grid-column: span 1;
+  grid-row: span 1;
+  aspect-ratio: 3/4;
 }
 
 /* Mobile grid item animation */
@@ -707,11 +638,11 @@ const markError = (itemKey: string | number) => {
 }
 
 .nuxt-img-mobile {
-  object-fit: cover;
   width: 100%;
   height: 100%;
-  border-radius: 20px;
-  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  object-fit: cover;
+  border-radius: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     transform: scale(1.02);

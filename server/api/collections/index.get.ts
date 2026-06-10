@@ -59,9 +59,27 @@ export default defineEventHandler(async (event) => {
       .offset(offset)
       .all()
     
-    // For each collection, fetch the cover image if it exists
+    // For each collection, fetch the cover image and preview images
     const collectionsData = await Promise.all(collectionsResult.map(async (collection) => {
       let coverImage = null
+      let previewImages = []
+      
+      // Fetch first 4 images from this collection
+      const collectionImagesResult = await db.select({
+        id: images.id,
+        name: images.name,
+        pathname: images.pathname,
+        w: images.w,
+        h: images.h
+      })
+        .from(images)
+        .innerJoin(collectionImages, eq(images.id, collectionImages.imageId))
+        .where(eq(collectionImages.collectionId, collection.id))
+        .orderBy(collectionImages.position)
+        .limit(4)
+        .all()
+      
+      previewImages = collectionImagesResult.map(img => keysToSnake(img))
       
       if (collection.coverImageId) {
         const coverImageResult = await db.select({
@@ -81,30 +99,14 @@ export default defineEventHandler(async (event) => {
       }
       
       const imageCount = collection.imageCount
-      // If no cover image is set but collection has images, try to get the first image
-      if (!coverImage && imageCount > 0) {
-        const firstImageResult = await db.select({
-          id: images.id,
-          name: images.name,
-          pathname: images.pathname,
-          w: images.w,
-          h: images.h
-        })
-          .from(images)
-          .innerJoin(collectionImages, eq(images.id, collectionImages.imageId))
-          .where(eq(collectionImages.collectionId, collection.id))
-          .orderBy(collectionImages.position)
-          .limit(1)
-          .get()
+      // If no cover image is set but collection has images, use the first image
+      if (!coverImage && imageCount > 0 && previewImages.length > 0) {
+        coverImage = previewImages[0]
         
-        if (firstImageResult) {
-          coverImage = firstImageResult
-          
-          // Update the collection's cover_image_id if we found an image
-          await db.update(collections)
-            .set({ coverImageId: firstImageResult.id })
-            .where(eq(collections.id, collection.id))
-        }
+        // Update the collection's cover_image_id if we found an image
+        await db.update(collections)
+          .set({ coverImageId: coverImage.id })
+          .where(eq(collections.id, collection.id))
       }
       
       const collectionSnake = keysToSnake(collection)
@@ -113,6 +115,7 @@ export default defineEventHandler(async (event) => {
       return {
         ...collectionSnake,
         cover_image: coverImageSnake,
+        preview_images: previewImages,
         is_owner: userId === collection.ownerId,
         is_public: collection.isPublic === true,
       }

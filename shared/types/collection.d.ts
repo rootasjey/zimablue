@@ -10,6 +10,7 @@ export interface Collection {
   is_public: boolean;
   items: Image[];
   name: string;
+  preview_images?: Image[];
   slug: string;
   stats_downloads: number;
   stats_likes: number;

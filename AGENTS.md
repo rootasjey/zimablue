@@ -8,6 +8,16 @@ You are an experienced, pragmatic software engineering AI agent. Do not over-eng
 
 **Goals:** Personal portfolio + public gallery, deployed globally at the edge.
 
+### Brand Identity
+
+**Zimablue** evokes a blue expanse — a vast, calm, artistic space. The name itself suggests openness, depth, and tranquility. When designing visual elements (logos, accents, gradients), favor:
+- **Blue tones** as the primary accent (blues, cyan, soft gradients)
+- **Horizontal expansiveness** — subtle lines, gradients, or accents that suggest width and openness
+- **Minimal, organic shapes** — avoid generic AI-looking badges, rotated squares, or templated icon containers
+- **The text "zimablue" is the brand** — let typography carry the identity, with subtle blue accents reinforcing the "expanse" concept
+
+Avoid logo marks that feel corporate, templated, or overly geometric. The brand should feel handmade, calm, and expansive — like looking at a wide blue sky or ocean.
+
 ### Technology Stack
 
 | Layer | Choice |

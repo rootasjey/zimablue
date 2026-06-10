@@ -1,27 +1,26 @@
 <template>
   <div class="frame mt-2 md:mt-0">
-    <!-- Mobile Home Layout -->
-    <MobileHomeLayout
-      v-if="!isInitialGridLoading && layout.length > 0"
-      :layout="layout"
-      @open-image="imageModal.openImageModal"
-    />
-
-    <!-- Desktop gallery -->
-    <div class="hidden sm:block">
-      <GalleryView />
+    <div class="px-4 mx-auto">
+      <h1 class="font-body font-500 tracking-[0.3em] text-lg text-gray-900 dark:text-gray-100">Browse all illustrations</h1>
     </div>
+    <GalleryView />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useGridStore } from '@/stores/useGridStore'
-import { useImageModal } from '~/composables/image/useImageModal'
+
+definePageMeta({
+  title: 'Browse — All Illustrations',
+})
 
 const gridStore = useGridStore()
 const layout = computed(() => gridStore.layout)
-const isInitialGridLoading = computed(() => !gridStore.initialized)
-const imageModal = useImageModal()
+
+useSeoMeta({
+  title: 'Browse Illustrations',
+  description: 'Browse the complete collection of digital illustrations',
+})
 
 onMounted(() => {
   if (!gridStore.initialized) {
@@ -38,7 +37,7 @@ onMounted(() => {
   width: 100%;
   border-radius: 0.75rem;
   transition: all 500ms;
-  
+
   @media (min-width: 768px) {
     justify-content: center;
   }
