@@ -1,16 +1,10 @@
 <template>
-  <div :class="['mx-auto max-w-7xl px-4 sm:px-6 lg:px-8', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
+  <div :class="['mx-auto max-w-7xl', store.hasSelectedImages ? 'pb-28 sm:pb-36' : '']"
     @dragenter.prevent="!store.isReordering && imageUpload.handleDragEnter($event)"
     @dragover.prevent="!store.isReordering && imageUpload.handleDragOver($event)"
     @dragleave.prevent="!store.isReordering && imageUpload.handleDragLeave($event)"
     @drop.prevent="!store.isReordering && handleDrop($event)"
   >
-    <!-- Header skeleton while loading -->
-    <div v-if="store.isLoading" class="space-y-2">
-      <div class="h-6 w-52 rounded-md bg-gray-200/60 dark:bg-gray-800/60 animate-pulse"></div>
-      <div class="h-4 w-80 rounded-md bg-gray-200/50 dark:bg-gray-800/50 animate-pulse"></div>
-    </div>
-
     <ImageUploadProgress
       :session="imageUpload.currentUploadSession.value"
       @close="imageUpload.clearUploadSession"
