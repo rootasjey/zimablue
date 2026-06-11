@@ -94,6 +94,14 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     }, 'Failed to update cover image.')
   }
 
+  const removeCover = async () => {
+    return executeAction(async () => {
+      const result = await store.setAsCover(collectionSlug, null)
+      if (!result.success) handleError(result.message)
+      return result
+    }, 'Failed to remove cover image.')
+  }
+
   const addImagesToAnotherCollection = async (imageIds: number[], targetSlug: string) => {
     return executeAction(async () => {
       await $fetch(`/api/collections/${targetSlug}`, {
@@ -166,6 +174,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     addImagesToAnotherCollection,
     saveOrder,
     setAsCover,
+    removeCover,
     updateCollection,
     deleteCollection,
     

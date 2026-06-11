@@ -298,12 +298,12 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
     }
   }
 
-  async function setAsCover(slug: string, imageId: number) {
+  async function setAsCover(slug: string, imageId: number | null) {
     const previousCoverId = collection.value?.cover_image_id
 
     // Optimistic update — set locally immediately
     if (collection.value) {
-      collection.value.cover_image_id = imageId
+      collection.value.cover_image_id = imageId ?? null
     }
 
     try {
@@ -316,12 +316,12 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
 
       return { 
         success: true, 
-        message: 'Cover image updated successfully.' 
+        message: imageId === null ? 'Cover image removed successfully.' : 'Cover image updated successfully.' 
       }
     } catch (err) {
       // Rollback on failure
       if (collection.value) {
-        collection.value.cover_image_id = previousCoverId as number
+        collection.value.cover_image_id = previousCoverId ?? null
       }
 
       const message = err instanceof Error ? err.message : 'Failed to update cover image.'

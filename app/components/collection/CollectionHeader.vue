@@ -233,6 +233,7 @@ interface Emits {
   reorder: []
   deleteCollection: []
   enterSelectionMode: []
+  removeCover: []
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -322,6 +323,13 @@ const menuItems = computed(() => {
       onClick: () => emit('edit'),
     },
   ]
+
+  if (props.coverImagePathname) {
+    items.push({
+      label: 'Remove cover',
+      onClick: () => emit('removeCover'),
+    })
+  }
 
   if ((props.imageCount || 0) > 0) {
     items.push({

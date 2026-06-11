@@ -33,6 +33,7 @@
       @reorder="store.startReordering"
       @delete-collection="showCollectionDeleteDialog = true"
       @enter-selection-mode="store.enterSelectionMode"
+      @remove-cover="actions.removeCover"
     />
 
     <!-- Content -->
@@ -451,6 +452,12 @@ const collectionImageMenuItems = (image: Image) => {
         if (!isCover) actions.setAsCover(image.id)
       },
     },
+    ...(isCover
+      ? [{
+          label: 'Remove cover',
+          onClick: () => actions.removeCover(),
+        }]
+      : []),
     {
       label: 'Remove from collection',
       onClick: () => actions.removeSingleImage(image.id),

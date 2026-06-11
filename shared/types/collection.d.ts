@@ -1,6 +1,6 @@
 export interface Collection {
   owner: any;
-  cover_image_id: number;
+  cover_image_id: number | null;
   cover_image_pathname?: string;
   created_at: string;
   description: string;
