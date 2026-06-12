@@ -34,6 +34,7 @@
       @delete-collection="showCollectionDeleteDialog = true"
       @enter-selection-mode="store.enterSelectionMode"
       @remove-cover="actions.removeCover"
+      @set-cover-from-drag="setCoverFromDrag"
     />
 
     <!-- Content -->
@@ -1010,6 +1011,10 @@ const confirmImageDelete = async () => {
   }
 }
 
+const setCoverFromDrag = (imageId: number) => {
+  actions.setAsCover(imageId)
+}
+
 const triggerUploadToCollection = () => {
   if (!imageUpload.checkAuth()) return
   collectionFileInput.value?.click()
@@ -1071,6 +1076,7 @@ const handleDrop = async (e: DragEvent) => {
   imageUpload.handleDragLeave(e)
 
   if (!e.dataTransfer) return
+  if (!e.dataTransfer.types.includes('Files')) return
 
   if (!imageUpload.checkAuth()) return
 

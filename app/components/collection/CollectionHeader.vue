@@ -5,6 +5,10 @@
       v-if="coverImagePathname"
       ref="heroRef"
       class="relative overflow-hidden min-h-[50vh] sm:min-h-[70vh] sm:w-screen sm:-ml-[50vw] sm:left-1/2"
+      @dragover="handleCoverDragOver"
+      @dragenter="handleCoverDragEnter"
+      @dragleave="handleCoverDragLeave"
+      @drop="handleCoverDrop"
     >
       <!-- Background image -->
       <NuxtImg
@@ -32,6 +36,16 @@
           <p v-if="collection?.description" class="text-sm sm:text-base text-white/60 max-w-xl text-center leading-relaxed line-clamp-2">
             {{ collection.description }}
           </p>
+        </div>
+      </div>
+
+      <!-- Drop target overlay -->
+      <div
+        v-show="isCoverDragOver"
+        class="absolute inset-0 z-20 flex items-center justify-center bg-blue-600/20 backdrop-blur-sm transition-all duration-200"
+      >
+        <div class="bg-white/90 dark:bg-gray-900/90 rounded-xl px-6 py-3 shadow-xl">
+          <span class="text-sm font-700 text-blue-600 dark:text-blue-400">Set as cover</span>
         </div>
       </div>
     </header>
@@ -234,6 +248,7 @@ interface Emits {
   deleteCollection: []
   enterSelectionMode: []
   removeCover: []
+  setCoverFromDrag: [imageId: number]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -354,6 +369,51 @@ const menuItems = computed(() => {
 
   return items
 })
+
+// Cover drag-and-drop state (counter pattern avoids flicker from nested child elements)
+let coverDragCounter = 0
+const isCoverDragOver = ref(false)
+
+const handleCoverDragEnter = (e: DragEvent) => {
+  if (e.dataTransfer?.types.includes('application/x-zimablue-image')) {
+    coverDragCounter++
+    isCoverDragOver.value = true
+    e.stopPropagation()
+  }
+}
+
+const handleCoverDragOver = (e: DragEvent) => {
+  if (e.dataTransfer?.types.includes('application/x-zimablue-image')) {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    e.stopPropagation()
+  }
+}
+
+const handleCoverDragLeave = (e: DragEvent) => {
+  if (isCoverDragOver.value) {
+    coverDragCounter--
+    if (coverDragCounter <= 0) {
+      coverDragCounter = 0
+      isCoverDragOver.value = false
+    }
+    e.stopPropagation()
+  }
+}
+
+const handleCoverDrop = (e: DragEvent) => {
+  coverDragCounter = 0
+  isCoverDragOver.value = false
+  const raw = e.dataTransfer?.getData('application/x-zimablue-image')
+  if (!raw) return
+  e.stopPropagation()
+  try {
+    const { imageId } = JSON.parse(raw)
+    emit('setCoverFromDrag', imageId)
+  } catch {
+    // Invalid drag data, ignore
+  }
+}
 </script>
 
 <style scoped>

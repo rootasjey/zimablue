@@ -42,8 +42,10 @@
       <div
         v-for="(image, index) in images"
         :key="image.id"
+        :draggable="canEdit && !isSelectionMode"
         :class="[
-          'group relative overflow-hidden rounded-xl ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-200 cursor-pointer animate-fade-in-up active:scale-[0.97]',
+          'group relative overflow-hidden rounded-xl ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-200 animate-fade-in-up active:scale-[0.97]',
+          canEdit && !isSelectionMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
           highlightedImageIndex === index && isSelectionMode
             ? 'ring-2 ring-blue-500'
             : highlightedImageIndex === index
@@ -56,6 +58,7 @@
         @pointermove="handlePointerMove($event)"
         @pointerup="handlePointerUp"
         @pointercancel="handlePointerUp"
+        @dragstart="handleDragStart($event, image)"
       >
         <!-- Cover image badge -->
         <div
@@ -103,7 +106,7 @@
           :src="`/${image.pathname}`"
           :modifiers="{ v: image.updated_at }"
           :alt="image.name || 'Image'"
-          class="w-full aspect-[4/4] object-cover"
+          class="w-full aspect-[4/4] object-cover pointer-events-none"
           :style="{ viewTransitionName: `image-${image.id}` }"
           loading="lazy"
           decoding="async"
@@ -141,6 +144,7 @@ const emit = defineEmits<{
   enterSelectionMode: [imageId: number]
   toggleImage: [imageId: number]
   setHighlight: [index: number]
+  imageDragStart: [image: Image]
 }>()
 
 // --- Long press detection ---
@@ -196,6 +200,93 @@ const handlePointerUp = () => {
     clearTimeout(longPressTimer)
     longPressTimer = null
   }
+}
+
+const roundRectPath = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+  ctx.lineTo(x + r, y + h)
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+  ctx.lineTo(x, y + r)
+  ctx.quadraticCurveTo(x, y, x + r, y)
+  ctx.closePath()
+}
+
+const handleDragStart = (event: DragEvent, image: Image) => {
+  if (props.isSelectionMode || !event.dataTransfer) return
+
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('application/x-zimablue-image', JSON.stringify({ imageId: image.id }))
+
+  const gridItem = event.currentTarget as HTMLElement
+  const existingImg = gridItem.querySelector('img')
+
+  if (existingImg?.complete) {
+    const size = 160
+    const radius = 12
+    const canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')
+
+    if (ctx) {
+      // Dark background visible while the (already-decoded) image renders
+      ctx.fillStyle = '#18181b'
+      ctx.fillRect(0, 0, size, size)
+
+      // Rounded clip, then draw the image synchronously from the existing DOM node
+      roundRectPath(ctx, 0, 0, size, size, radius)
+      ctx.save()
+      ctx.clip()
+      ctx.drawImage(existingImg, 0, 0, size, size)
+
+      // Bottom gradient + image name
+      const grad = ctx.createLinearGradient(0, size - 32, 0, size)
+      grad.addColorStop(0, 'rgba(0,0,0,0)')
+      grad.addColorStop(1, 'rgba(0,0,0,0.65)')
+      ctx.fillStyle = grad
+      ctx.fillRect(0, size - 32, size, 32)
+
+      ctx.fillStyle = '#ffffff'
+      ctx.font = '600 11px system-ui, sans-serif'
+      let displayName = image.name || ''
+      if (ctx.measureText(displayName).width > size - 16) {
+        while (displayName.length > 0 && ctx.measureText(displayName + '…').width > size - 16) {
+          displayName = displayName.slice(0, -1)
+        }
+        displayName += '…'
+      }
+      ctx.fillText(displayName, 8, size - 9)
+
+      // Cover badge
+      const isCover = props.coverImageId != null && props.coverImageId === image.id
+      if (isCover) {
+        roundRectPath(ctx, 6, 6, 52, 18, 9)
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = '500 9px system-ui, sans-serif'
+        ctx.fillText('★ Cover', 12, 19)
+      }
+
+      ctx.restore()
+
+      event.dataTransfer.setDragImage(canvas, size / 2, size / 2)
+      emit('imageDragStart', image)
+      return
+    }
+  }
+
+  emit('imageDragStart', image)
 }
 </script>
 
