@@ -202,20 +202,6 @@ const handlePointerUp = () => {
   }
 }
 
-const roundRectPath = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.lineTo(x + w - r, y)
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r)
-  ctx.lineTo(x + w, y + h - r)
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-  ctx.lineTo(x + r, y + h)
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r)
-  ctx.lineTo(x, y + r)
-  ctx.quadraticCurveTo(x, y, x + r, y)
-  ctx.closePath()
-}
-
 const handleDragStart = (event: DragEvent, image: Image) => {
   if (props.isSelectionMode || !event.dataTransfer) return
 
@@ -227,64 +213,70 @@ const handleDragStart = (event: DragEvent, image: Image) => {
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('application/x-zimablue-image', JSON.stringify({ imageId: image.id }))
 
+  // Ghost container — all visual styling comes from CSS classes
+  const ghostSize = 176
+  const ghost = document.createElement('div')
+  ghost.className = 'rounded-xl overflow-hidden shadow-2xl shadow-blue-500/10 ring-1 ring-white/15 bg-zinc-900 relative'
+  ghost.style.cssText += `;width:${ghostSize}px;height:${ghostSize}px`
+
   const gridItem = event.currentTarget as HTMLElement
   const existingImg = gridItem.querySelector('img')
 
+  // Canvas is used ONLY to capture the existing image synchronously.
+  // drawImage works even if the image is cross‑origin (the canvas gets tainted
+  // but still renders visually — we never read pixels back).
   if (existingImg?.complete) {
-    const size = 160
-    const radius = 12
-    const canvas = document.createElement('canvas')
-    canvas.width = size
-    canvas.height = size
-    const ctx = canvas.getContext('2d')
-
+    const cvs = document.createElement('canvas')
+    cvs.width = ghostSize
+    cvs.height = ghostSize
+    const ctx = cvs.getContext('2d')
     if (ctx) {
-      // Dark background visible while the (already-decoded) image renders
       ctx.fillStyle = '#18181b'
-      ctx.fillRect(0, 0, size, size)
+      ctx.fillRect(0, 0, ghostSize, ghostSize)
 
-      // Rounded clip, then draw the image synchronously from the existing DOM node
-      roundRectPath(ctx, 0, 0, size, size, radius)
-      ctx.save()
-      ctx.clip()
-      ctx.drawImage(existingImg, 0, 0, size, size)
-
-      // Bottom gradient + image name
-      const grad = ctx.createLinearGradient(0, size - 32, 0, size)
-      grad.addColorStop(0, 'rgba(0,0,0,0)')
-      grad.addColorStop(1, 'rgba(0,0,0,0.65)')
-      ctx.fillStyle = grad
-      ctx.fillRect(0, size - 32, size, 32)
-
-      ctx.fillStyle = '#ffffff'
-      ctx.font = '600 11px system-ui, sans-serif'
-      let displayName = image.name || ''
-      if (ctx.measureText(displayName).width > size - 16) {
-        while (displayName.length > 0 && ctx.measureText(displayName + '…').width > size - 16) {
-          displayName = displayName.slice(0, -1)
+      // object-fit: cover — crop the source to match the square ghost
+      const nw = existingImg.naturalWidth
+      const nh = existingImg.naturalHeight
+      if (nw > 0 && nh > 0) {
+        const targetAR = 1 // ghost is square
+        const imageAR = nw / nh
+        let sx = 0, sy = 0, sw = nw, sh = nh
+        if (imageAR > targetAR) {
+          sw = nh * targetAR
+          sx = (nw - sw) / 2
+        } else if (imageAR < targetAR) {
+          sh = nw / targetAR
+          sy = (nh - sh) / 2
         }
-        displayName += '…'
+        ctx.drawImage(existingImg, sx, sy, sw, sh, 0, 0, ghostSize, ghostSize)
       }
-      ctx.fillText(displayName, 8, size - 9)
-
-      // Cover badge
-      const isCover = props.coverImageId != null && props.coverImageId === image.id
-      if (isCover) {
-        roundRectPath(ctx, 6, 6, 52, 18, 9)
-        ctx.fillStyle = 'rgba(0,0,0,0.5)'
-        ctx.fill()
-        ctx.fillStyle = '#ffffff'
-        ctx.font = '500 9px system-ui, sans-serif'
-        ctx.fillText('★ Cover', 12, 19)
-      }
-
-      ctx.restore()
-
-      event.dataTransfer.setDragImage(canvas, size / 2, size / 2)
-      emit('imageDragStart', image)
-      return
     }
+    cvs.style.cssText = 'width:100%;height:100%;display:block;filter:brightness(1.15)'
+    ghost.appendChild(cvs)
   }
+
+  // Bottom gradient + image name
+  const overlay = document.createElement('div')
+  overlay.className = 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/65 to-transparent pt-6 pb-1.5 px-2'
+  const nameEl = document.createElement('span')
+  nameEl.className = 'text-white text-[11px] font-600 truncate block'
+  nameEl.textContent = image.name || ''
+  overlay.appendChild(nameEl)
+  ghost.appendChild(overlay)
+
+  // Cover badge
+  const isCover = props.coverImageId != null && props.coverImageId === image.id
+  if (isCover) {
+    const badge = document.createElement('div')
+    badge.className = 'absolute top-1.5 left-1.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-600 text-white bg-black/50'
+    badge.textContent = '★ Cover'
+    ghost.appendChild(badge)
+  }
+
+  const center = ghostSize / 2
+  document.body.appendChild(ghost)
+  event.dataTransfer.setDragImage(ghost, center, center)
+  requestAnimationFrame(() => document.body.removeChild(ghost))
 
   emit('imageDragStart', image)
 }
