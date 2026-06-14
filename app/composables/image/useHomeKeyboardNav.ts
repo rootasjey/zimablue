@@ -7,7 +7,7 @@ interface UseHomeKeyboardNavOptions {
   hasOpenModal: ComputedRef<boolean>
   imageModal: {
     isImageModalOpen: Ref<boolean>
-    isImageDrawerOpen: Ref<boolean>
+    isImageFullscreenOpen: Ref<boolean>
     openImageModal: (image: Image) => void
     openImagePage: (image?: Image) => void
   }

@@ -76,7 +76,6 @@
               :aria-label="item.name || item.pathname || 'Image'"
               class="nuxt-img-mobile"
               :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
-              :style="`view-transition-name: shared-image-${item.id}`"
             />
 
             <!-- Loading / fallback placeholder -->
@@ -177,7 +176,6 @@
             :aria-label="item.name || item.pathname || 'Image'"
             class="nuxt-img"
             :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
-            :style="`view-transition-name: shared-image-${item.id}`"
           />
 
           <!-- Desktop loading / fallback placeholder -->

@@ -4,7 +4,7 @@
     <MobileHomeLayout
       v-if="!isInitialGridLoading && layout.length > 0"
       :layout="layout"
-      @open-image="imageModal.openImageModal"
+      @open-image="(image, event) => imageModal.openImageModal(image, event)"
     />
 
     <!-- Desktop gallery -->

@@ -1,26 +1,23 @@
 import type { Image } from '~~/shared/types/image'
 
+// Module-level singleton state — shared across all callers
+const isImageModalOpen = ref(false)
+const isImageFullscreenOpen = ref(false)
+const selectedModalImage = ref<Image | null>(null)
+const currentImageIndex = ref(0)
+const dragStartPos = ref<{ x: number; y: number } | null>(null)
+const sourceRect = ref<DOMRect | null>(null)
+
 export const useImageModal = () => {
   const router = useRouter()
   const route = useRoute()
   const gridStore = useGridStore()
-  
-  // Modal state (desktop)
-  const isImageModalOpen = ref(false)
-  // Drawer state (mobile)
-  const isImageDrawerOpen = ref(false)
-  const selectedModalImage = ref<Image | null>(null)
-  const currentImageIndex = ref(0)
-  
-  // Drag detection for preventing modal open during drag
-  const dragStartPos = ref({ x: 0, y: 0 })
+
   const DRAG_THRESHOLD = 5 // pixels
   const MOBILE_BREAKPOINT = 640 // sm breakpoint in pixels
 
-  // Computed properties for navigation (circular navigation enabled when more than 1 image)
   const canNavigatePrevious = computed(() => gridStore.layout.length > 1)
   const canNavigateNext = computed(() => gridStore.layout.length > 1)
-  
   const totalImages = computed(() => gridStore.layout.length)
   const currentPosition = computed(() => currentImageIndex.value + 1)
 
@@ -40,21 +37,18 @@ export const useImageModal = () => {
     window.history.replaceState(window.history.state, '', url.toString())
   }
 
-  // Remove query param when modal/drawer both close
-  watch([isImageModalOpen, isImageDrawerOpen], ([modal, drawer]) => {
-    if (!modal && !drawer) {
+  watch([isImageModalOpen, isImageFullscreenOpen], ([modal, fullscreen]) => {
+    if (!modal && !fullscreen) {
       syncImageQueryParam()
     }
   })
-  // --- End query param sync ---
 
-  // Track mouse down for drag detection
   const handleMouseDown = (e: MouseEvent | PointerEvent) => {
     dragStartPos.value = { x: e.clientX, y: e.clientY }
   }
 
   const openImageModal = (item: Image, event?: MouseEvent | PointerEvent) => {
-    if (event) {
+    if (event && dragStartPos.value) {
       const moveDistance = Math.sqrt(
         Math.pow(event.clientX - dragStartPos.value.x, 2) +
         Math.pow(event.clientY - dragStartPos.value.y, 2)
@@ -65,16 +59,21 @@ export const useImageModal = () => {
     selectedModalImage.value = item
     currentImageIndex.value = gridStore.layout.findIndex(img => img.id === item.id)
 
+    if (event?.target && 'getBoundingClientRect' in (event.target as Element)) {
+      sourceRect.value = (event.target as Element).getBoundingClientRect()
+    } else {
+      sourceRect.value = null
+    }
+
     const isMobile = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT
     if (isMobile) {
-      isImageDrawerOpen.value = true
+      isImageFullscreenOpen.value = true
     } else {
       isImageModalOpen.value = true
     }
 
     syncImageQueryParam(item.slug || String(item.id))
 
-    // Fire-and-forget : n'attend pas, met à jour les stats si la réponse arrive
     $fetch(`/api/images/slug/${item.slug}/views`, { method: 'PUT' })
       .then((updatedImage: any) => {
         if (selectedModalImage.value?.id === item.id) {
@@ -83,7 +82,7 @@ export const useImageModal = () => {
           selectedModalImage.value.stats_likes = updatedImage.stats_likes
         }
       })
-      .catch(() => { /* silencieux — stats non critiques */ })
+      .catch(() => {})
   }
 
   const navigateToPrevious = () => {
@@ -147,29 +146,26 @@ export const useImageModal = () => {
     return gridStore.layout[idx] ?? null
   })
 
-  // Open image in full page with view transition
   const openImagePage = (targetImage?: Image) => {
     if (targetImage) {
       selectedModalImage.value = targetImage
     }
 
     if (!selectedModalImage.value) return
-    
+
     const item = selectedModalImage.value
-    syncImageQueryParam() // clean up query param before navigating away
+    syncImageQueryParam()
     isImageModalOpen.value = false
-    
-    // Set selected image in store
+    isImageFullscreenOpen.value = false
+
     gridStore.selectedImage = item
 
-
-    // Update image view count
     $fetch(`/api/images/slug/${item.slug}/views`, {
       method: 'PUT',
     })
 
-    const urlPath = item.slug 
-      ? `/illustrations/${item.slug}` 
+    const urlPath = item.slug
+      ? `/illustrations/${item.slug}`
       : `/illustrations/${item.id}`
 
     const routePayload = {
@@ -180,40 +176,35 @@ export const useImageModal = () => {
       }
     }
 
-    // Use view transition if supported — but guard for SSR / non-DOM envs
     if (typeof document === 'undefined' || typeof document.startViewTransition !== 'function') {
       router.push(routePayload)
       return
     }
 
-    // Call startViewTransition on the document to preserve the correct receiver
     document.startViewTransition(async () => {
       await router.push(routePayload)
     })
   }
 
   const closeModal = () => {
+    syncImageQueryParam()
+    isImageFullscreenOpen.value = false
     isImageModalOpen.value = false
-    isImageDrawerOpen.value = false
     selectedModalImage.value = null
   }
 
   return {
-    // State
     isImageModalOpen,
-    isImageDrawerOpen,
+    isImageFullscreenOpen,
     selectedModalImage,
     currentImageIndex,
-    
-    // Computed
+    sourceRect,
     canNavigatePrevious,
     canNavigateNext,
     totalImages,
     currentPosition,
     prevImage,
     nextImage,
-    
-    // Methods
     openImageModal,
     closeModal,
     navigateToPrevious,

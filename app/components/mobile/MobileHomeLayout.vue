@@ -5,7 +5,7 @@
       <div
         class="relative w-full rounded-3xl overflow-hidden shadow-lg"
         style="aspect-ratio: 4/5;"
-        @click="currentHeroImage ? openHeroImage() : undefined"
+        @click="currentHeroImage ? openHeroImage($event) : undefined"
         @touchstart.passive="handleHeroTouchStart"
         @touchend.passive="handleHeroTouchEnd"
       >
@@ -160,7 +160,7 @@
           :key="image.id"
           class="relative rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-900 active:scale-[0.97] transition-transform cursor-pointer"
           :style="{ animationDelay: `${index * 30}ms` }"
-          @click="emit('openImage', image)"
+          @click="emit('openImage', image, $event)"
         >
           <div class="relative w-full aspect-[3/4]">
             <NuxtImg
@@ -190,7 +190,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  openImage: [image: Image]
+  openImage: [image: Image, event: MouseEvent]
 }>()
 
 const { openSearch } = useGlobalSearch()
@@ -293,9 +293,9 @@ onMounted(async () => {
   }
 })
 
-const openHeroImage = () => {
+const openHeroImage = (event: MouseEvent) => {
   if (currentHeroImage.value) {
-    emit('openImage', currentHeroImage.value)
+    emit('openImage', currentHeroImage.value, event)
   }
 }
 

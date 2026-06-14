@@ -74,25 +74,26 @@
       @update-image-modal-open="imageModal.isImageModalOpen.value = $event"
     />
 
-    <ImageMobileDrawer
-      :is-image-drawer-open="imageModal.isImageDrawerOpen.value"
-      :selected-modal-image="imageModal.selectedModalImage.value"
+    <ImageMobileFullscreen
+      :is-open="imageModal.isImageFullscreenOpen.value"
+      :image="imageModal.selectedModalImage.value"
       :prev-image="imageModal.prevImage.value"
       :next-image="imageModal.nextImage.value"
       :current-position="imageModal.currentPosition.value"
       :total-images="imageModal.totalImages.value"
-      :can-navigate-previous="imageModal.canNavigatePrevious.value"
-      :can-navigate-next="imageModal.canNavigateNext.value"
+      :can-go-prev="imageModal.canNavigatePrevious.value"
+      :can-go-next="imageModal.canNavigateNext.value"
+      :source-rect="imageModal.sourceRect.value"
       :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
         image: item,
         openImagePageFn: imageModal.openImagePage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
       })"
-      @open-full-page="imageModal.openImagePage"
-      @navigate-previous="imageModal.navigateToPrevious"
-      @navigate-next="imageModal.navigateToNext"
-      @update-image-drawer-open="imageModal.isImageDrawerOpen.value = $event"
+      @close="imageModal.closeModal"
+      @prev="imageModal.navigateToPrevious"
+      @next="imageModal.navigateToNext"
+      @full-page="imageModal.openImagePage"
       @open-edit-drawer="(img: Image) => imageActions.openEditDrawer(img)"
       @open-add-to-collection-drawer="(img: Image) => addToCollection.openDrawer(img)"
       @replace-image="(img: Image) => imageActions.triggerImageReplacement(img, replacementFileInput)"
@@ -389,7 +390,7 @@ const openImageDeleteDialog = (image: Image | null) => {
 
 const hasOpenModal = computed(() =>
   imageModal.isImageModalOpen.value ||
-  imageModal.isImageDrawerOpen.value ||
+  imageModal.isImageFullscreenOpen.value ||
   showImageDeleteDialog.value ||
   imageActions.showEditModal.value ||
   addToCollection.isOpen.value ||
@@ -405,7 +406,7 @@ const keyboardNav = useHomeKeyboardNav({
   hasOpenModal,
   imageModal: {
     isImageModalOpen: imageModal.isImageModalOpen,
-    isImageDrawerOpen: imageModal.isImageDrawerOpen,
+    isImageFullscreenOpen: imageModal.isImageFullscreenOpen,
     openImageModal: imageModal.openImageModal,
     openImagePage: imageModal.openImagePage,
   },
