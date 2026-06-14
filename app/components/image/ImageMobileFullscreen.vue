@@ -1,132 +1,104 @@
 <template>
   <Teleport to="body">
-    <div v-if="isOpen || isFlying" class="fixed inset-0 z-50 bg-black/95 sm:hidden" />
+    <div v-if="isOpen || isFlying" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm sm:hidden" />
 
     <div
-      v-if="(isFlying || isOpen) && image && flyRect"
-      class="fixed z-50 sm:hidden overflow-hidden"
+      v-if="(isFlying || isOpen) && image && cardRect"
+      class="fixed z-[51] sm:hidden rounded-3xl shadow-2xl bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
       :style="{
-        top: flyRect.top + 'px',
-        left: flyRect.left + 'px',
-        width: flyRect.width + 'px',
-        height: flyRect.height + 'px',
+        top: cardRect.top + 'px',
+        left: cardRect.left + 'px',
+        width: cardRect.width + 'px',
+        height: cardRect.height + 'px',
         transform: flyTransform,
-        transition: hasTransition ? 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+        transition: hasTransition ? 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0s, height 0s' : 'none',
         willChange: 'transform',
       }"
       @transitionend="onFlyEnd"
+      @click.stop
     >
-      <NuxtImg
-        :src="getImageSrc(image, 'fullscreen').src"
-        :provider="getImageSrc(image, 'fullscreen').provider"
-        :modifiers="getImageSrc(image, 'fullscreen').modifiers"
-        :alt="image.name || 'Image'"
-        class="w-full h-full object-cover select-none"
-        draggable="false"
-        loading="eager"
-      />
-    </div>
-
-    <Transition name="ui-fade">
-      <div
-        v-if="isOpen && !isFlying && !isClosing"
-        class="fixed inset-0 z-[51] sm:hidden"
-        @touchstart.passive="handleTouchStart"
-        @touchmove.passive="handleTouchMove"
-        @touchend="handleTouchEnd"
+      <!-- Close button -->
+      <button
+        v-if="!isFlying"
+        class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40 active:scale-90 transition-all duration-200"
+        aria-label="Close"
+        @click="handleClose"
       >
-        <button
-          class="absolute top-4 right-4 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 active:scale-90 transition-all duration-200"
-          aria-label="Close"
-          @click="handleClose"
-        >
-          <span class="i-ph-x text-xl" />
-        </button>
+        <span class="i-ph-x text-lg" />
+      </button>
 
-        <button
-          v-if="canGoPrev"
-          class="absolute left-0 top-0 bottom-40 w-1/3 z-20 flex items-center justify-start"
-          aria-label="Previous image"
-          @click="handlePrev"
-        >
-          <div class="ml-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white opacity-0 active:opacity-100 transition-opacity">
-            <span class="i-ph-caret-left text-xl" />
-          </div>
-        </button>
+      <!-- Image with padding -->
+      <div class="relative w-full flex-shrink-0 px-4 pt-4" :class="isFlying ? 'aspect-square' : 'aspect-[4/5]'">
+        <NuxtImg
+          v-if="image"
+          :src="getImageSrc(image, 'fullscreen').src"
+          :provider="getImageSrc(image, 'fullscreen').provider"
+          :modifiers="getImageSrc(image, 'fullscreen').modifiers"
+          :alt="image.name || 'Image'"
+          class="w-full h-full object-cover select-none rounded-2xl"
+          draggable="false"
+          loading="eager"
+        />
+      </div>
 
-        <button
-          v-if="canGoNext"
-          class="absolute right-0 top-0 bottom-40 w-1/3 z-20 flex items-center justify-end"
-          aria-label="Next image"
-          @click="handleNext"
-        >
-          <div class="mr-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white opacity-0 active:opacity-100 transition-opacity">
-            <span class="i-ph-caret-right text-xl" />
-          </div>
-        </button>
-
-        <div v-if="image" class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
-
-          <div class="relative px-4 pt-10 pb-6 pointer-events-auto">
-            <h2 class="font-title font-700 text-lg text-white truncate">{{ image.name || 'Untitled' }}</h2>
-
-            <p v-if="image.description" class="mt-1 text-sm text-white/70 line-clamp-2">{{ image.description }}</p>
-
-            <div v-if="displayTags.length" class="mt-2 flex flex-wrap gap-1.5">
-              <span
-                v-for="tag in displayTags"
-                :key="tag.name"
-                :style="getTagBadgeStyles(tag.color)"
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
-              >
-                {{ tag.name }}
-              </span>
-            </div>
-
-            <div class="flex items-center gap-4 mt-2 text-xs text-white/50">
-              <span class="flex items-center gap-1"><span class="i-ph-eye text-sm" />{{ image.stats_views ?? 0 }}</span>
-              <span class="flex items-center gap-1"><span class="i-ph-download-simple text-sm" />{{ image.stats_downloads ?? 0 }}</span>
-              <span class="flex-1" />
-              <span class="text-white/30">{{ currentPosition }} / {{ totalImages }}</span>
-            </div>
-
-            <div class="flex items-center gap-2 mt-3">
-              <button
-                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white text-sm font-500 active:scale-95 transition-all pointer-events-auto"
-                @click="handleDownload"
-              >
-                <span class="i-ph-download-simple text-base" />Download
-              </button>
-              <button
-                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white text-sm font-500 active:scale-95 transition-all pointer-events-auto"
-                @click="$emit('fullPage')"
-              >
-                <span class="i-ph-arrow-square-out text-base" />Full page
-              </button>
-              <ClientOnly>
-                <NDropdownMenu
-                  v-if="image && imageMenuItems"
-                  :items="wrappedMenuItems"
-                  size="sm"
-                  menu-label=""
-                  :_dropdown-menu-content="{ class: 'w-52', align: 'end', side: 'top' }"
-                >
-                  <button class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md text-white active:scale-95 transition-all pointer-events-auto">
-                    <span class="i-ph-dots-three-vertical text-lg" />
-                  </button>
-                </NDropdownMenu>
-                <template #fallback>
-                  <button class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md text-white active:scale-95 transition-all pointer-events-auto opacity-50">
-                    <span class="i-ph-dots-three-vertical text-lg" />
-                  </button>
-                </template>
-              </ClientOnly>
-            </div>
-          </div>
+      <!-- Info section -->
+      <div v-if="image && !isFlying" class="bg-white dark:bg-gray-900 flex-1 overflow-y-auto px-4 pt-3 pb-2">
+        <h2 class="font-title font-700 text-base text-gray-900 dark:text-gray-100 truncate">
+          {{ image.name || 'Untitled' }}
+        </h2>
+        <p v-if="image.description" class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+          {{ image.description }}
+        </p>
+        <div v-if="displayTags.length" class="mt-2 flex flex-wrap gap-1.5">
+          <span
+            v-for="tag in displayTags"
+            :key="tag.name"
+            :style="getTagBadgeStyles(tag.color)"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-[var(--tag-bg)] text-[var(--tag-text)] dark:bg-[var(--tag-bg-dark)] dark:text-[var(--tag-text-dark)]"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
+        <div class="flex items-center gap-4 mt-2 text-xs text-gray-400 dark:text-gray-500">
+          <span class="flex items-center gap-1"><span class="i-ph-eye text-sm" />{{ image.stats_views ?? 0 }}</span>
+          <span class="flex items-center gap-1"><span class="i-ph-download-simple text-sm" />{{ image.stats_downloads ?? 0 }}</span>
+          <span class="flex-1" />
+          <span class="text-gray-300 dark:text-gray-600">{{ currentPosition }} / {{ totalImages }}</span>
         </div>
       </div>
-    </Transition>
+
+      <!-- Actions bar -->
+      <div v-if="image && !isFlying" class="bg-white dark:bg-gray-900 flex items-center justify-around px-2 py-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+        <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="handleDownload">
+          <span class="i-ph-download-simple text-lg text-gray-700 dark:text-gray-300" />
+          <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Download</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="$emit('fullPage')">
+          <span class="i-ph-arrow-square-out text-lg text-gray-700 dark:text-gray-300" />
+          <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Full page</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="$emit('openEditDrawer', image)">
+          <span class="i-ph-pencil-simple text-lg text-gray-700 dark:text-gray-300" />
+          <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Edit</span>
+        </button>
+        <ClientOnly>
+          <NDropdownMenu v-if="imageMenuItems" :items="wrappedMenuItems" size="sm" menu-label="" :_dropdown-menu-content="{ class: 'w-52', align: 'center', side: 'top' }">
+            <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
+              <span class="i-ph-dots-three-vertical text-lg text-gray-700 dark:text-gray-300" />
+              <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">More</span>
+            </button>
+          </NDropdownMenu>
+          <template #fallback>
+            <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl opacity-50">
+              <span class="i-ph-dots-three-vertical text-lg text-gray-700 dark:text-gray-300" />
+              <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">More</span>
+            </button>
+          </template>
+        </ClientOnly>
+      </div>
+
+      <div v-if="!isFlying" class="bg-white dark:bg-gray-900 flex-shrink-0" style="padding-bottom: env(safe-area-inset-bottom);" />
+    </div>
   </Teleport>
 </template>
 
@@ -176,6 +148,22 @@ const hasTransition = ref(false)
 const flyRect = ref<DOMRect | null>(null)
 const flyTransform = ref('')
 
+// After fly ends, card uses targetRect (real card size) instead of flyRect (thumbnail size)
+const targetRect = ref<DOMRect | null>(null)
+const cardRect = computed(() => targetRect.value || flyRect.value)
+
+function getTargetDimensions(vw: number, vh: number) {
+  const w = Math.min(vw * 0.85, 384)
+  // Image: w - 32px padding (px-4 each side), aspect-[4/5]
+  const imageW = w - 32
+  const imageH = imageW * (5 / 4)
+  // Card: 16px top padding + image + 120px info + 56px actions + 20px safe
+  const h = 16 + imageH + 120 + 56 + 20
+  const x = (vw - w) / 2
+  const y = (vh - h) / 2
+  return new DOMRect(x, y, w, h)
+}
+
 const handleDownload = () => {
   if (!props.image) return
   downloadImage(props.image)
@@ -185,6 +173,7 @@ const handleDownload = () => {
 watch(() => props.isOpen, (open) => {
   if (!open) return
   isClosing.value = false
+  targetRect.value = null
   const rect = imageModal.sourceRect.value
   if (rect && props.image) {
     startEnterFly(rect)
@@ -194,13 +183,14 @@ watch(() => props.isOpen, (open) => {
 function startEnterFly(src: DOMRect) {
   const vw = window.innerWidth
   const vh = window.innerHeight
+  const target = getTargetDimensions(vw, vh)
 
   flyRect.value = new DOMRect(src.left, src.top, src.width, src.height)
   flyTransform.value = 'none'
   hasTransition.value = false
   isFlying.value = true
 
-  const s = Math.min(vw / src.width, vh / src.height)
+  const s = Math.min(target.width / src.width, target.height / src.height)
   const tx = (-src.left + (vw - src.width) / 2) / s
   const ty = (-src.top + (vh - src.height) / 2) / s
 
@@ -218,10 +208,16 @@ function onFlyEnd(e: TransitionEvent) {
     isClosing.value = false
     isFlying.value = false
     flyRect.value = null
+    targetRect.value = null
     flyTransform.value = ''
     hasTransition.value = false
     emit('close')
   } else {
+    // Fly finished: switch from thumbnail-sized card + scale to real-sized card + no scale
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    targetRect.value = getTargetDimensions(vw, vh)
+    flyTransform.value = 'none'
     isFlying.value = false
     hasTransition.value = false
   }
@@ -234,28 +230,33 @@ function handleClose() {
   const src = imageModal.sourceRect.value
   if (!src) { emit('close'); return }
 
-  isClosing.value = true
   const vw = window.innerWidth
   const vh = window.innerHeight
-  const s = Math.min(vw / src.width, vh / src.height)
-  const tx = (-src.left + (vw - src.width) / 2) / s
-  const ty = (-src.top + (vh - src.height) / 2) / s
+  const target = getTargetDimensions(vw, vh)
 
-  flyRect.value = new DOMRect(src.left, src.top, src.width, src.height)
-  flyTransform.value = `scale(${s}) translate3d(${tx}px, ${ty}px, 0)`
+  // Reverse: scale from target → thumbnail
+  const closeScale = Math.min(src.width / target.width, src.height / target.height)
+  const targetCenterX = target.x + target.width / 2
+  const targetCenterY = target.y + target.height / 2
+  const thumbCenterX = src.left + src.width / 2
+  const thumbCenterY = src.top + src.height / 2
+  const closeTx = (thumbCenterX - targetCenterX) / closeScale
+  const closeTy = (thumbCenterY - targetCenterY) / closeScale
+
+  flyRect.value = new DOMRect(target.x, target.y, target.width, target.height)
+  targetRect.value = null
+  flyTransform.value = 'none'
   hasTransition.value = false
+  isClosing.value = true
   isFlying.value = true
 
   nextTick(() => {
     requestAnimationFrame(() => {
       hasTransition.value = true
-      flyTransform.value = 'none'
+      flyTransform.value = `scale(${closeScale}) translate3d(${closeTx}px, ${closeTy}px, 0)`
     })
   })
 }
-
-const handlePrev = () => { if (props.canGoPrev) emit('prev') }
-const handleNext = () => { if (props.canGoNext) emit('next') }
 
 // Swipe
 const swipeStartX = ref(0)
