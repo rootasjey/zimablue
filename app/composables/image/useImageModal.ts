@@ -26,9 +26,9 @@ export const useImageModal = () => {
 
   const syncImageQueryParam = (slug?: string) => {
     if (typeof window === 'undefined') return
-    const currentImageParam = route.query[IMAGE_QUERY_KEY] as string | undefined
-    if ((slug || undefined) === currentImageParam) return
     const url = new URL(window.location.href)
+    const currentImageParam = url.searchParams.get(IMAGE_QUERY_KEY) || undefined
+    if ((slug || undefined) === currentImageParam) return
     if (slug) {
       url.searchParams.set(IMAGE_QUERY_KEY, slug)
     } else {
