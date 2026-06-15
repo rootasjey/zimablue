@@ -21,6 +21,8 @@
       @create-collection="openCollectionCreateDialog"
     />
 
+    <BottomNav />
+
     <CollectionCreateDialog
       v-model:open="collectionStore.isCreateDialogOpen"
       :form-data="collectionStore.newCollection"
