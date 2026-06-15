@@ -193,6 +193,15 @@ export const useImageModal = () => {
     selectedModalImage.value = null
   }
 
+  const resetState = () => {
+    isImageModalOpen.value = false
+    isImageFullscreenOpen.value = false
+    selectedModalImage.value = null
+    currentImageIndex.value = 0
+    dragStartPos.value = null
+    sourceRect.value = null
+  }
+
   return {
     isImageModalOpen,
     isImageFullscreenOpen,
@@ -214,5 +223,6 @@ export const useImageModal = () => {
     navigateToImage,
     openImagePage,
     handleMouseDown,
+    resetState,
   }
 }

@@ -250,6 +250,9 @@ const updateRowHeight = () => {
 }
 
 onMounted(() => {
+  // Reset all stale modal state that persists across navigations (module-level singleton)
+  imageModal.resetState()
+
   if (!gridStore.initialized) {
     const loadingStartedAt = Date.now()
     gridStore.fetchGrid().finally(() => {
