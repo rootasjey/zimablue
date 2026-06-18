@@ -147,7 +147,7 @@
     />
 
     <ImageSelectionToolbar
-      :is-visible="multiSelect.hasSelectedImages.value && loggedIn"
+      :is-visible="multiSelect.hasSelectedImages.value"
       :selection-count="multiSelect.selectionCount.value"
       :is-all-selected="multiSelect.isAllSelected(layout)"
       @toggle-select-all="multiSelect.toggleSelectAll(layout)"

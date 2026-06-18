@@ -49,7 +49,7 @@
         <div class="mobile-grid-cell">
           <!-- Selection checkbox for mobile -->
           <div
-            v-if="loggedIn && isSelectionMode"
+            v-if="isSelectionMode"
             class="absolute top-2 right-2 z-20"
             @click.stop="$emit('imageToggle', item.id, index, $event)"
           >
@@ -150,7 +150,7 @@
         >
           <!-- Selection checkbox for desktop -->
           <div
-            v-if="loggedIn && isSelectionMode"
+            v-if="isSelectionMode"
             class="absolute top-2 right-2 z-20"
             @click.stop="$emit('imageToggle', item.id, index, $event)"
           >

@@ -46,6 +46,7 @@
             
             <!-- Add to Collection -->
             <NButton 
+              v-if="loggedIn"
               btn="soft-blue"
               size="sm"
               @click="$emit('addToCollection')"
@@ -112,7 +113,7 @@ interface Emits {
   clearSelection: []
 }
 
-const { user } = useUserSession()
+const { user, loggedIn } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 
 defineProps<Props>()

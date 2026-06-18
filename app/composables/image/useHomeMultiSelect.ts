@@ -186,6 +186,8 @@ export const useHomeMultiSelect = () => {
         const blob = await response.blob()
         const filename = getDownloadFileName(image, pathname)
         zip.file(filename, blob)
+
+        $fetch(`/api/images/slug/${image.slug}/downloads`, { method: 'PUT' })
       }
 
       const zipBlob = await zip.generateAsync({ type: 'blob' })
