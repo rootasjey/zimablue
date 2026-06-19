@@ -25,13 +25,43 @@
       <!-- Controls overlay (bottom center) -->
       <div class="absolute bottom-0 left-0 right-0 z-20 pb-6 pt-12 bg-gradient-to-t from-black/60 to-transparent" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
         <div class="flex flex-row gap-4 justify-center items-center">
-          <button 
-            @click="downloadImage"
-            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
-            title="Download image"
-          >
-            <div class="i-ph-download text-xl" />
-          </button>
+          <ClientOnly>
+            <NDropdownMenu
+              v-if="downloadOptions.length > 1"
+              :items="downloadMenuItems"
+              size="xs"
+              menu-label=""
+              :_dropdown-menu-content="{
+                class: 'w-48',
+                align: 'center',
+                side: 'top',
+              }"
+            >
+              <button 
+                class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+                title="Download image"
+              >
+                <div class="i-ph-download text-xl" />
+              </button>
+            </NDropdownMenu>
+            <button 
+              v-else
+              @click="downloadImage"
+              class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+              title="Download image"
+            >
+              <div class="i-ph-download text-xl" />
+            </button>
+            <template #fallback>
+              <button 
+                @click="downloadImage"
+                class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+                title="Download image"
+              >
+                <div class="i-ph-download text-xl" />
+              </button>
+            </template>
+          </ClientOnly>
           
           <button 
             v-if="loggedIn"
@@ -446,16 +476,29 @@ const handleCreateTag = async () => {
 
 const { parse: parseVariants } = useParseVariants()
 
+const downloadOptions = computed(() => {
+  if (!image.value) return []
+  return imageActions.getDownloadOptions(image.value as Image)
+})
+
+const downloadMenuItems = computed(() => {
+  return downloadOptions.value.map((opt: { label: string; slug: string }) => ({
+    label: opt.label,
+    onClick: () => {
+      const aspectVariants = image.value?.aspect_variants
+      const variant = aspectVariants?.find((v: Image) => v.slug === opt.slug)
+      if (variant && image.value) {
+        imageActions.downloadAspectVariant(variant)
+      } else if (image.value) {
+        imageActions.downloadImage(image.value as Image)
+      }
+    },
+  }))
+})
+
 const downloadImage = () => {
   if (!image.value) return
-  const variants: Array<VariantType> = parseVariants(image.value.variants)
-  const originalVariant = variants.find(variant => variant.size === 'original')
-
-  const link = document.createElement('a')
-  const imagePathname = `/${originalVariant?.pathname ?? image.value.pathname}`
-  link.href = imagePathname
-  link.download = image.value.name || imagePathname.split('/').pop() || 'image'
-  link.click()
+  imageActions.downloadImage(image.value as Image)
 }
 
 const openAddToCollection = () => {

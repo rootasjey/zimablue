@@ -181,6 +181,8 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
       tags: raw.tags ?? [],
       tag_ids: raw.tag_ids ?? raw.tagIds ?? [],
       tag_names: raw.tag_names ?? raw.tagNames ?? [],
+      aspect_label: raw.aspect_label ?? raw.aspectLabel ?? '',
+      aspect_group_id: raw.aspect_group_id ?? raw.aspectGroupId ?? null,
     }
   }
 

@@ -178,15 +178,49 @@
 
           <!-- Actions -->
           <div class="flex items-center gap-2 mt-4 pb-4 border-b border-gray-100 dark:border-gray-800">
-            <NButton
-              btn="soft-gray"
-              size="sm"
-              class="flex-1 justify-center"
-              label="Download"
-              leading="i-ph-download-simple"
-              :disabled="!selectedModalImage"
-              @click="handleDownload"
-            />
+            <ClientOnly>
+              <NDropdownMenu
+                v-if="downloadMenuItems.length > 0"
+                :items="downloadMenuItems"
+                size="sm"
+                menu-label=""
+                :_dropdown-menu-content="{
+                  class: 'w-44',
+                  align: 'start',
+                  side: 'top',
+                }"
+              >
+                <NButton
+                  btn="soft-gray"
+                  size="sm"
+                  class="flex-1 justify-center"
+                  label="Download"
+                  leading="i-ph-download-simple"
+                  :disabled="!selectedModalImage"
+                />
+              </NDropdownMenu>
+              <NButton
+                v-else
+                btn="soft-gray"
+                size="sm"
+                class="flex-1 justify-center"
+                label="Download"
+                leading="i-ph-download-simple"
+                :disabled="!selectedModalImage"
+                @click="handleDownload"
+              />
+              <template #fallback>
+                <NButton
+                  btn="soft-gray"
+                  size="sm"
+                  class="flex-1 justify-center"
+                  label="Download"
+                  leading="i-ph-download-simple"
+                  :disabled="!selectedModalImage"
+                  @click="handleDownload"
+                />
+              </template>
+            </ClientOnly>
 
             <NButton
               btn="soft-gray"
@@ -273,9 +307,29 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { downloadImage, normalizeTags } = useImageActions()
+const { downloadImage, downloadAspectVariant, getDownloadOptions, getAspectVariantsFromLayout, normalizeTags } = useImageActions()
 const { getTagBadgeStyles } = useTagColor()
 const displayTags = computed(() => normalizeTags(props.selectedModalImage?.tags))
+
+const downloadMenuItems = computed(() => {
+  if (!props.selectedModalImage) return []
+  const variants = getAspectVariantsFromLayout(props.selectedModalImage)
+  const merged = variants.length ? { ...props.selectedModalImage, aspect_variants: variants } : props.selectedModalImage
+  const options = getDownloadOptions(merged)
+  if (options.length <= 1) return []
+  return options.map(opt => ({
+    label: opt.label,
+    onClick: () => {
+      const v = variants.find(v => v.slug === opt.slug)
+      if (v) {
+        downloadAspectVariant(v)
+      } else if (props.selectedModalImage) {
+        downloadImage(props.selectedModalImage)
+      }
+    },
+  }))
+})
+
 const handleDownload = () => {
   if (!props.selectedModalImage) return
   downloadImage(props.selectedModalImage)

@@ -28,6 +28,8 @@ export interface DbImage {
   y: number
   variants: string
   user_id: number
+  aspect_group_id: number | null
+  aspect_label: string
   created_at: string
   updated_at: string
 }

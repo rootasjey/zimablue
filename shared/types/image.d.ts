@@ -20,6 +20,9 @@ export interface Image {
   x: number;
   y: number;
   user_id: number;
+  aspect_label: string;
+  aspect_group_id: number | null;
+  aspect_variants?: Image[];
   tags?: Tag[];
   tag_ids?: number[];
   tag_names?: string[];

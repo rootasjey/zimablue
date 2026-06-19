@@ -29,6 +29,8 @@ export default eventHandler(async (event) => {
     statsDownloads: images.statsDownloads,
     statsLikes: images.statsLikes,
     userId: images.userId,
+    aspectGroupId: images.aspectGroupId,
+    aspectLabel: images.aspectLabel,
     createdAt: images.createdAt,
     updatedAt: images.updatedAt,
     // Tag fields (will be null for images without tags)
@@ -70,6 +72,8 @@ export default eventHandler(async (event) => {
         stats_downloads: row.statsDownloads,
         stats_likes: row.statsLikes,
         user_id: row.userId,
+        aspect_label: row.aspectLabel ?? '',
+        aspect_group_id: row.aspectGroupId ?? null,
         created_at: toISOString(row.createdAt),
         updated_at: toISOString(row.updatedAt),
         tags: [] as any[]

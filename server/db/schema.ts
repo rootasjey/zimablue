@@ -41,10 +41,13 @@ export const images = sqliteTable('images', {
   statsLikes: integer('stats_likes').notNull().default(0),
   variants: text('variants').default('[]'),
   userId: integer('user_id').notNull().references(() => users.id),
+  aspectGroupId: integer('aspect_group_id'),
+  aspectLabel: text('aspect_label').notNull().default(''),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   slugIdx: uniqueIndex('idx_images_slug').on(table.slug),
+  aspectGroupIdIdx: index('idx_images_aspect_group_id').on(table.aspectGroupId),
 }))
 
 // Tags table (normalized tags system)

@@ -1,6 +1,13 @@
 import type { Image, VariantType } from '~~/shared/types/image'
 import useParseVariants from './useParseVariants'
 
+export type DownloadOption = {
+  label: string
+  pathname: string
+  filename: string
+  slug: string
+}
+
 export const useImageActions = () => {
   const { loggedIn, user } = useUserSession()
   const { toast } = useToast()
@@ -162,16 +169,21 @@ export const useImageActions = () => {
 
   const { parse: parseVariants } = useParseVariants()
 
+  const downloadFile = (pathname: string, filename: string) => {
+    const link = document.createElement('a')
+    link.href = `/${pathname}`
+    link.download = filename
+    link.click()
+  }
+
   const downloadImage = (image: Image) => {
     try {
       const variants: Array<VariantType> = parseVariants(image.variants)
       const originalVariant = variants.find(variant => variant.size === 'original')
 
-      const link = document.createElement('a')
-      const imagePathname = `/${originalVariant?.pathname ?? image.pathname}`
-      link.href = imagePathname
-      link.download = image.name || imagePathname.split('/').pop() || 'image'
-      link.click()
+      const imagePathname = originalVariant?.pathname ?? image.pathname
+      const filename = image.name || imagePathname.split('/').pop() || 'image'
+      downloadFile(imagePathname, filename)
 
       // Update the image's download count
       $fetch(`/api/images/slug/${image.slug}/downloads`, {
@@ -181,6 +193,63 @@ export const useImageActions = () => {
       console.error('Download error:', error)
       showErrorToast(error, 'Download Failed', 'Failed to download image')
     }
+  }
+
+  const downloadAspectVariant = (variant: Image) => {
+    try {
+      const variants: Array<VariantType> = parseVariants(variant.variants)
+      const originalVariant = variants.find(v => v.size === 'original')
+      const imagePathname = originalVariant?.pathname ?? variant.pathname
+      const filename = variant.name || imagePathname.split('/').pop() || 'image'
+      downloadFile(imagePathname, filename)
+
+      $fetch(`/api/images/slug/${variant.slug}/downloads`, {
+        method: 'PUT',
+      })
+    } catch (error) {
+      console.error('Download error:', error)
+      showErrorToast(error, 'Download Failed', 'Failed to download image')
+    }
+  }
+
+  const getDownloadOptions = (image: Image): DownloadOption[] => {
+    const variants: Array<VariantType> = parseVariants(image.variants)
+    const originalVariant = variants.find(v => v.size === 'original')
+    const primaryPathname = originalVariant?.pathname ?? image.pathname
+    const primaryFilename = image.name || primaryPathname.split('/').pop() || 'image'
+
+    const options: DownloadOption[] = [{
+      label: image.aspect_label || 'Original',
+      pathname: primaryPathname,
+      filename: primaryFilename,
+      slug: image.slug,
+    }]
+
+    if (image.aspect_variants?.length) {
+      for (const variant of image.aspect_variants) {
+        const vVariants: Array<VariantType> = parseVariants(variant.variants)
+        const vOriginal = vVariants.find(v => v.size === 'original')
+        const vPathname = vOriginal?.pathname ?? variant.pathname
+        const vFilename = variant.name || vPathname.split('/').pop() || 'image'
+        options.push({
+          label: variant.aspect_label || 'Variant',
+          pathname: vPathname,
+          filename: vFilename,
+          slug: variant.slug,
+        })
+      }
+    }
+
+    return options
+  }
+
+  const getAspectVariantsFromLayout = (image: Image): Image[] => {
+    if (image.aspect_group_id) {
+      return gridStore.layout.filter(i =>
+        i.aspect_group_id === image.aspect_group_id || i.id === image.aspect_group_id
+      )
+    }
+    return gridStore.layout.filter(i => i.aspect_group_id === image.id)
   }
 
   const viewImageFullscreen = (image: Image, openImagePageFn: (image?: Image) => void) => {
@@ -198,22 +267,46 @@ export const useImageActions = () => {
     openImagePageFn,
     openAddToCollectionModalFn,
     replacementFileInput,
+    aspectVariants,
   }: {
     image: Image,
     openImagePageFn: () => void,
     openAddToCollectionModalFn: (image: Image) => void,
     replacementFileInput: HTMLInputElement | undefined
+    aspectVariants?: Image[]
   }) => {
     const items: Array<{ label: string, onClick?: () => void } | {}> = [
       {
         label: 'View in fullscreen',
         onClick: () => viewImageFullscreen(image, openImagePageFn),
       },
-      {
+    ]
+
+    const variants = aspectVariants?.length ? aspectVariants : getAspectVariantsFromLayout(image)
+    const hasVariants = variants.length > 0
+    const mergedImage = hasVariants ? { ...image, aspect_variants: variants } : image
+    const downloadOpts = getDownloadOptions(mergedImage)
+
+    if (downloadOpts.length === 1) {
+      items.push({
         label: 'Download',
         onClick: () => downloadImage(image),
-      },
-    ]
+      })
+    } else {
+      for (const opt of downloadOpts) {
+        items.push({
+          label: `Download ${opt.label}`,
+          onClick: () => {
+            const v = variants.find(v => v.slug === opt.slug)
+            if (v) {
+              downloadAspectVariant(v)
+            } else {
+              downloadImage(image)
+            }
+          },
+        })
+      }
+    }
 
     if (loggedIn.value && isAdmin.value) {
       items.splice(items.length, 0, 
@@ -314,6 +407,10 @@ export const useImageActions = () => {
     // Image actions
     deleteImage,
     downloadImage,
+    downloadAspectVariant,
+    downloadFile,
+    getDownloadOptions,
+    getAspectVariantsFromLayout,
     viewImageFullscreen,
     triggerImageReplacement,
     

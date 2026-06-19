@@ -211,7 +211,8 @@ export const useGridStore = defineStore('grid', () => {
     files: File[],
     onProgress?: (fileId: string, progress: number) => void,
     onFileComplete?: (fileId: string, result: any) => void,
-    onFileError?: (fileId: string, error: string) => void
+    onFileError?: (fileId: string, error: string) => void,
+    aspectOptions?: { aspectGroupId?: number; aspectLabel?: string }
   ) {
     // Find the maximum bottom edge (y + h) among existing grid items
     // so new images always appear below existing content.
@@ -260,6 +261,8 @@ export const useGridStore = defineStore('grid', () => {
           updated_at: new Date().toString(),
           variants: "",
           user_id: 1, // Temporary user ID for optimistic update
+          aspect_label: aspectOptions?.aspectLabel ?? '',
+          aspect_group_id: aspectOptions?.aspectGroupId ?? null,
         }
 
         // Add to layout immediately for optimistic update
@@ -274,6 +277,12 @@ export const useGridStore = defineStore('grid', () => {
         formData.append('y', newGridItem.y.toString())
         formData.append('w', newGridItem.w.toString())
         formData.append('h', newGridItem.h.toString())
+        if (aspectOptions?.aspectGroupId) {
+          formData.append('aspectGroupId', aspectOptions.aspectGroupId.toString())
+        }
+        if (aspectOptions?.aspectLabel) {
+          formData.append('aspectLabel', aspectOptions.aspectLabel)
+        }
 
         onProgress?.(fileId, 35)
 
@@ -302,6 +311,8 @@ export const useGridStore = defineStore('grid', () => {
           newGridItem.pathname = uploadedImage.pathname
           newGridItem.slug = uploadedImage.slug
           newGridItem.variants = uploadedImage.variants
+          newGridItem.aspect_label = uploadedImage.aspect_label ?? ''
+          newGridItem.aspect_group_id = uploadedImage.aspect_group_id ?? null
 
           saveLayout(layout.value)
           onProgress?.(fileId, 100)

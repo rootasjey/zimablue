@@ -69,10 +69,34 @@
 
       <!-- Actions bar -->
       <div v-if="image && !isFlying" class="bg-white dark:bg-gray-900 flex items-center justify-around px-2 py-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
-        <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="handleDownload">
-          <span class="i-ph-download-simple text-lg text-gray-700 dark:text-gray-300" />
-          <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Download</span>
-        </button>
+        <ClientOnly>
+          <NDropdownMenu
+            v-if="downloadMenuItems.length > 0"
+            :items="downloadMenuItems"
+            size="xs"
+            menu-label=""
+            :_dropdown-menu-content="{
+              class: 'w-44',
+              align: 'center',
+              side: 'top',
+            }"
+          >
+            <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
+              <span class="i-ph-download-simple text-lg text-gray-700 dark:text-gray-300" />
+              <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Download</span>
+            </button>
+          </NDropdownMenu>
+          <button v-else class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="handleDownload">
+            <span class="i-ph-download-simple text-lg text-gray-700 dark:text-gray-300" />
+            <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Download</span>
+          </button>
+          <template #fallback>
+            <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="handleDownload">
+              <span class="i-ph-download-simple text-lg text-gray-700 dark:text-gray-300" />
+              <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Download</span>
+            </button>
+          </template>
+        </ClientOnly>
         <button class="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl active:bg-gray-100 dark:active:bg-gray-800 transition-colors" @click="$emit('fullPage')">
           <span class="i-ph-arrow-square-out text-lg text-gray-700 dark:text-gray-300" />
           <span class="text-[10px] font-500 text-gray-500 dark:text-gray-400">Full page</span>
@@ -138,9 +162,28 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { downloadImage, normalizeTags } = useImageActions()
+const { downloadImage, downloadAspectVariant, getDownloadOptions, getAspectVariantsFromLayout, normalizeTags } = useImageActions()
 const { getTagBadgeStyles } = useTagColor()
 const displayTags = computed(() => normalizeTags(props.image?.tags))
+
+const downloadMenuItems = computed(() => {
+  if (!props.image) return []
+  const variants = getAspectVariantsFromLayout(props.image)
+  const merged = variants.length ? { ...props.image, aspect_variants: variants } : props.image
+  const options = getDownloadOptions(merged)
+  if (options.length <= 1) return []
+  return options.map(opt => ({
+    label: opt.label,
+    onClick: () => {
+      const v = variants.find(v => v.slug === opt.slug)
+      if (v) {
+        downloadAspectVariant(v)
+      } else if (props.image) {
+        downloadImage(props.image)
+      }
+    },
+  }))
+})
 
 const isFlying = ref(false)
 const isClosing = ref(false)

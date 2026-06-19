@@ -29,6 +29,8 @@ export default eventHandler(async (event) => {
   const w = formData?.find(item => item.name === 'w')?.data.toString()
   const h = formData?.find(item => item.name === 'h')?.data.toString()
   const id = formData?.find(item => item.name === 'id')?.data.toString()
+  const aspectGroupId = formData?.find(item => item.name === 'aspectGroupId')?.data.toString()
+  const aspectLabel = formData?.find(item => item.name === 'aspectLabel')?.data.toString()
 
   if (!file || !fileName || !type) {
     throw createError({
@@ -101,7 +103,9 @@ export default eventHandler(async (event) => {
     h: Number(h),
     slug: slug,
     userId: userId,
-    variants: JSON.stringify(generatedVariants)
+    variants: JSON.stringify(generatedVariants),
+    aspectGroupId: aspectGroupId ? Number(aspectGroupId) : undefined,
+    aspectLabel: aspectLabel ?? '',
   }).returning({ id: images.id })
 
   if (!insertResponse || insertResponse.length === 0 || !insertResponse[0]?.id) {

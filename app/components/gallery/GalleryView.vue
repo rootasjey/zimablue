@@ -16,7 +16,7 @@
     />
 
     <ImageGrid
-      :layout="layout"
+      :layout="displayLayout"
       :col-num="colNum"
       :row-height="rowHeight"
       :is-loading="gridStore.isLoading"
@@ -62,6 +62,7 @@
         openImagePageFn: imageModal.openImagePage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
+        aspectVariants: imageActions.getAspectVariantsFromLayout(item),
       })"
       @open-full-page="imageModal.openImagePage"
       @open-edit-modal="(img: Image) => imageActions.openEditModal(img)"
@@ -91,6 +92,7 @@
         openImagePageFn: imageModal.openImagePage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
+        aspectVariants: imageActions.getAspectVariantsFromLayout(item),
       })"
       @close="imageModal.closeModal"
       @prev="imageModal.navigateToPrevious"
@@ -201,6 +203,9 @@ const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const gridStore = useGridStore()
 const layout = computed(() => gridStore.layout)
+const displayLayout = computed(() =>
+  gridStore.layout.filter(img => !img.aspect_group_id)
+)
 const imageActions = useImageActions()
 const imageModal = useImageModal()
 const imageUpload = useImageUpload()
