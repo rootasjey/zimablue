@@ -217,9 +217,10 @@ Standard events emitted by image grid components:
 - `@enter-selection-mode` — activate multi-select
 
 ### Nested component auto-imports
-- Components inside any nested folder under `app/components/` should be referenced with the folder name in PascalCase as a prefix in templates, for example `app/components/image/HomeGridLoadingState.vue` is used as `ImageHomeGridLoadingState`.
+- Nuxt auto-imports components with the folder path as a PascalCase prefix. For example, `app/components/image/HomeGridLoadingState.vue` becomes `ImageHomeGridLoadingState` in templates.
 - If the component is imported explicitly in the script section, use the local import name instead of the auto-import prefix.
 - Keep the generated auto-import tag aligned with the folder name so Nuxt resolves the component consistently.
+- **Avoid deep nesting** (more than one subfolder) unless the component genuinely needs it. Deeply nested paths like `admin/image/AspectVariantDialog.vue` produce unwieldy auto-import names (`AdminImageAspectVariantDialog`). Prefer placing such components at `app/components/` root with a short, descriptive name, or import them explicitly with a custom alias.
 
 ### UnoCSS shortcuts
 Custom UnoCSS shortcuts are defined in `unocss.config.ts`:
