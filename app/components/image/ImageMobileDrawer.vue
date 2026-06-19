@@ -326,13 +326,13 @@ const downloadMenuItems = computed(() => {
     },
   ]
   items.push({})
-  items.push({ label: 'Download variants', disabled: true })
-  for (const v of variants) {
-    items.push({
+  items.push({
+    label: 'Download variants',
+    items: variants.map(v => ({
       label: v.aspect_label || 'Variant',
       onClick: () => downloadAspectVariant(v),
-    })
-  }
+    })),
+  })
   return items
 })
 

@@ -309,14 +309,11 @@ export const useImageActions = () => {
       items.push({}) // separator
       items.push({
         label: 'Download variants',
-        disabled: true,
-      })
-      for (const v of variants) {
-        items.push({
+        items: variants.map(v => ({
           label: v.aspect_label || 'Variant',
           onClick: () => downloadAspectVariant(v),
-        })
-      }
+        })),
+      })
     }
 
     if (loggedIn.value && isAdmin.value) {
