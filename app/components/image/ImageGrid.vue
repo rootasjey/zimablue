@@ -113,7 +113,7 @@
       :row-height="rowHeight"
       :is-draggable="isDraggable"
       :is-resizable="isResizable"
-      vertical-compact
+      :vertical-compact="verticalCompact"
       use-css-transforms
       v-show="showGrid"
       class="transition-opacity duration-100 hidden sm:block w-100% sm:w-auto md:w-auto"
@@ -122,7 +122,7 @@
       role="grid"
       :aria-label="`Image grid with ${layout.length} images${isSelectionMode ? ', selection mode active' : ''}`"
       @layout-ready="handleLayoutReady"
-      @layout-updated="$emit('layoutUpdated', $event)"
+      @layout-updated="emitLayoutUpdated"
     >
       <GridItem
         v-for="(item, index) in layout"
@@ -134,6 +134,7 @@
         :i="item.i"
         :is-draggable="isDraggable && (!item.pathname.includes('blob') || isAdmin)"
         :is-resizable="isResizable && (!item.pathname.includes('blob') || isAdmin)"
+        @move="(i: any) => handleGridItemMove(i)"
         class="rounded-lg grid-item"
         role="gridcell"
         :aria-selected="isSelectionMode ? (selectedImagesMap?.[item.id] || false) : undefined"
@@ -252,6 +253,8 @@ interface Props {
   // Loading state for skeleton
   isLoading?: boolean
   showInitialSkeleton?: boolean
+  // Multi-drag
+  verticalCompact?: boolean
 }
 
 interface Emits {
@@ -265,11 +268,14 @@ interface Emits {
   enterSelectionMode: []
   // Highlight emit
   setHighlight: [index: number]
+  // Multi-drag
+  gridDragStart: [itemId: number]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showInitialSkeleton: true,
   highlightedImageIndex: -1,
+  verticalCompact: true,
 })
 const emit = defineEmits<Emits>()
 
@@ -280,6 +286,22 @@ const handleLayoutReady = (layout: Image[]) => {
   setTimeout(() => {
     isGridReady.value = true
   }, 1200)
+}
+
+// Multi-drag tracking: detect when a GridItem starts being dragged
+const movedItems = ref(new Set<string | number>())
+
+function handleGridItemMove(i: any) {
+  const numId = typeof i === 'string' ? parseInt(i) : i
+  if (!movedItems.value.has(numId)) {
+    movedItems.value.add(numId)
+    emit('gridDragStart', numId)
+  }
+}
+
+function emitLayoutUpdated(layout: Image[]) {
+  emit('layoutUpdated', layout)
+  movedItems.value.clear()
 }
 
 // Mobile grid layout patterns - creates visual variety similar to Pinterest/Google Photos

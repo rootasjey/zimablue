@@ -20,8 +20,9 @@
       :col-num="colNum"
       :row-height="rowHeight"
       :is-loading="gridStore.isLoading"
-      :is-draggable="isDraggable && !multiSelect.isSelectionMode.value"
+      :is-draggable="isDraggable"
       :is-resizable="isResizable && !multiSelect.isSelectionMode.value"
+      :vertical-compact="!multiSelect.isSelectionMode.value"
       :is-admin="isAdmin"
       :show-grid="showGrid"
       :show-grid-opacity="showGridOpacity"
@@ -38,6 +39,7 @@
       @layout-update="gridStore.applyIncomingLayout"
       @layout-ready="layoutReady"
       @layout-updated="layoutUpdated"
+      @grid-drag-start="handleGridDragStart"
       @set-highlight="keyboardNav.setHighlightedImage"
       :image-menu-items="(item: Image) => imageActions.generateImageMenuItems({
         image: item,
@@ -237,6 +239,9 @@ const bulkCollections = ref<any[]>([])
 const isLoadingBulkCollections = ref(false)
 const bulkCollectionsError = ref<string | null>(null)
 
+// Multi-drag: snapshot of selected items' positions before a drag starts
+const preDragSnapshot = ref<Record<number, { x: number; y: number }>>({})
+
 const updateRowHeight = () => {
   const windowWidth = window.innerWidth
   if (windowWidth < 640) { rowHeight.value = 8; return; }
@@ -338,8 +343,60 @@ watch(() => addToCollection.isOpen.value, (isOpen, wasOpen) => {
   }
 })
 
+function handleGridDragStart(itemId: number) {
+  if (!multiSelect.isSelectionMode.value || multiSelect.selectionCount.value === 0) return
+  if (!multiSelect.selectedImagesMap.value[itemId]) return
+
+  const selectedIds = new Set(multiSelect.selectedImageIds.value)
+  preDragSnapshot.value = {}
+  for (const item of layout.value) {
+    if (selectedIds.has(item.id)) {
+      preDragSnapshot.value[item.id] = { x: item.x, y: item.y }
+    }
+  }
+}
+
 function layoutUpdated(newLayout: Image[]) {
   if (!loggedIn.value) return
+
+  if (multiSelect.isSelectionMode.value && multiSelect.hasSelectedImages.value) {
+    const snapshotKeys = Object.keys(preDragSnapshot.value)
+    if (snapshotKeys.length > 0) {
+      const selectedIds = new Set(multiSelect.selectedImageIds.value)
+      let draggedId: number | null = null
+      let dx = 0
+      let dy = 0
+
+      for (const item of newLayout) {
+        if (!selectedIds.has(item.id)) continue
+        const snap = preDragSnapshot.value[item.id]
+        if (!snap) continue
+        const deltaX = item.x - snap.x
+        const deltaY = item.y - snap.y
+        if (deltaX !== 0 || deltaY !== 0) {
+          draggedId = item.id
+          dx = deltaX
+          dy = deltaY
+          break
+        }
+      }
+
+      if (draggedId !== null && (dx !== 0 || dy !== 0)) {
+        const modifiedLayout = newLayout.map(item => {
+          if (selectedIds.has(item.id) && item.id !== draggedId) {
+            return { ...item, x: item.x + dx, y: item.y + dy }
+          }
+          return item
+        })
+        preDragSnapshot.value = {}
+        gridStore.applyIncomingLayout(modifiedLayout)
+        gridStore.saveLayout(modifiedLayout)
+        return
+      }
+    }
+  }
+
+  preDragSnapshot.value = {}
   gridStore.saveLayout(newLayout)
 }
 
