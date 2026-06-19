@@ -192,7 +192,13 @@
         v-model:is-open="imageActions.showAspectVariantDialog.value"
         :image="imageActions.aspectVariantDialogImage.value"
         :variants="imageActions.getAspectVariantsFromLayout(imageActions.aspectVariantDialogImage.value)"
-        @update:variants="imageActions.aspectVariantDialogImage.value ? (imageActions.aspectVariantDialogImage.value.aspect_variants = $event) : null"
+        @update:variants="handleAspectVariantsUpdate"
+      />
+      <AspectUploadDialog
+        v-if="imageActions.aspectUploadParentImage.value"
+        v-model:is-open="imageActions.showAspectUploadDialog.value"
+        :parent-image="imageActions.aspectUploadParentImage.value"
+        @complete="handleAspectUploadComplete"
       />
     </ClientOnly>
   </div>
@@ -589,6 +595,16 @@ const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: str
 
 const navigateToCreateCollection = () => {
   navigateTo('/collections/create')
+}
+
+const handleAspectVariantsUpdate = (variants: Image[]) => {
+  if (imageActions.aspectVariantDialogImage.value) {
+    imageActions.aspectVariantDialogImage.value.aspect_variants = variants
+  }
+}
+
+const handleAspectUploadComplete = async () => {
+  await gridStore.fetchGrid()
 }
 </script>
 

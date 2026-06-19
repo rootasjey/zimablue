@@ -264,10 +264,17 @@ export const useImageActions = () => {
 
   const showAspectVariantDialog = ref(false)
   const aspectVariantDialogImage = ref<Image | null>(null)
+  const showAspectUploadDialog = ref(false)
+  const aspectUploadParentImage = ref<Image | null>(null)
 
   const openAspectVariantDialog = (image: Image) => {
     aspectVariantDialogImage.value = image
     showAspectVariantDialog.value = true
+  }
+
+  const openAspectUploadDialog = (image: Image) => {
+    aspectUploadParentImage.value = image
+    showAspectUploadDialog.value = true
   }
 
   const generateImageMenuItems = ({
@@ -345,6 +352,10 @@ export const useImageActions = () => {
 
         },
         {
+          label: 'Upload as variant',
+          onClick: () => openAspectUploadDialog(image),
+        },
+        {
           label: 'Manage aspect variants',
           onClick: () => openAspectVariantDialog(image),
         },
@@ -402,6 +413,8 @@ export const useImageActions = () => {
     showEditDrawer,
     showAspectVariantDialog,
     aspectVariantDialogImage,
+    showAspectUploadDialog,
+    aspectUploadParentImage,
     editForm,
     isDeleting: readonly(isDeleting),
     isUpdating: readonly(isUpdating),

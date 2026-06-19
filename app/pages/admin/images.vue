@@ -88,6 +88,14 @@
           <button
             type="button"
             class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Upload variant"
+            @click.stop="openAspectUpload(row)"
+          >
+            <span class="text-sm i-ph-upload-simple"></span>
+          </button>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
             title="Aspect Variants"
             @click.stop="openAspectVariants(row)"
           >
@@ -280,6 +288,13 @@
       :variants="aspectVariantList"
       @update:variants="aspectVariantList = $event"
     />
+
+    <!-- Aspect Upload Dialog -->
+    <AspectUploadDialog
+      v-model:is-open="isAspectUploadDialogOpen"
+      :parent-image="aspectUploadParent"
+      @complete="fetchImages"
+    />
   </div>
 </template>
 
@@ -332,6 +347,8 @@ const addToCollection = useAddToCollectionModal()
 const isAspectVariantDialogOpen = ref(false)
 const aspectVariantImage = ref<Image | null>(null)
 const aspectVariantList = ref<Image[]>([])
+const isAspectUploadDialogOpen = ref(false)
+const aspectUploadParent = ref<Image | null>(null)
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -666,6 +683,11 @@ const openAspectVariants = async (image: Image) => {
     aspectVariantList.value = []
   }
   isAspectVariantDialogOpen.value = true
+}
+
+const openAspectUpload = (image: Image) => {
+  aspectUploadParent.value = image
+  isAspectUploadDialogOpen.value = true
 }
 
 // Helpers
