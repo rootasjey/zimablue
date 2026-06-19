@@ -16,6 +16,7 @@ interface CollectionActionResult {
 export const useCollectionActions = (options: UseCollectionActionsOptions) => {
   const { store, slug: initialSlug, onSuccess, onError } = options
   const { toast } = useToast()
+  const { showErrorToast } = useErrorToast()
   const router = useRouter()
   let collectionSlug = initialSlug
 
@@ -29,13 +30,19 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
     })
   }
 
-  const handleError = (message: string) => {
-    onError?.(message) ?? toast({
-      title: 'Error',
-      description: message,
-      toast: 'soft-error',
-      duration: 3000,
-    })
+  const handleError = (message: string, error?: unknown) => {
+    if (onError) {
+      onError(message)
+    } else if (error) {
+      showErrorToast(error, 'Error', message)
+    } else {
+      toast({
+        title: 'Error',
+        description: message,
+        toast: 'soft-error',
+        duration: 3000,
+      })
+    }
   }
 
   // Wrapper for async actions with consistent error handling
@@ -47,7 +54,7 @@ export const useCollectionActions = (options: UseCollectionActionsOptions) => {
       return await action()
     } catch (error) {
       console.error(errorMessage, error)
-      handleError(errorMessage)
+      handleError(errorMessage, error)
       return null
     }
   }

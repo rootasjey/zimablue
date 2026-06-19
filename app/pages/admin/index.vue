@@ -262,6 +262,7 @@ import type { Todo } from '~~/shared/types/todo'
 
 const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -530,12 +531,7 @@ const reloadDashboard = async () => {
     ])
   } catch (error) {
     console.error('Error fetching admin dashboard data:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to refresh the dashboard.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to refresh the dashboard.')
   } finally {
     isRefreshing.value = false
   }

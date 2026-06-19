@@ -241,6 +241,9 @@ interface DropState {
   candidateId?: number
 }
 
+const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
+
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -332,7 +335,7 @@ const loadCandidateRows = async (options: { search?: string, limit?: number, upd
   } catch (error) {
     console.error('Failed to fetch social queue candidates:', error)
     if (updateVisible) {
-      toast({ title: 'Error', description: 'Failed to load illustrations for the queue picker.', toast: 'soft-error' })
+      showErrorToast(error, 'Error', 'Failed to load illustrations for the queue picker.')
     }
   } finally {
     if (updateVisible) {
@@ -547,7 +550,7 @@ const submitEnqueue = async () => {
     }
   } catch (error) {
     console.error('Failed to enqueue items:', error)
-    toast({ title: 'Error', description: 'Failed to add illustrations to the queue.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to add illustrations to the queue.')
   } finally {
     isSubmitting.value = false
   }

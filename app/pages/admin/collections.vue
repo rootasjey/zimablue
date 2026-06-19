@@ -188,6 +188,7 @@ import type { Pagination } from '~~/shared/types/pagination'
 import type { AdminBulkAction } from '~~/shared/types/admin'
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -251,7 +252,7 @@ const fetchCollections = async () => {
     }
   } catch (error) {
     console.error('Error fetching collections:', error)
-    toast({ title: 'Error', description: 'Failed to fetch collections.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to fetch collections.')
   } finally {
     isLoading.value = false
   }
@@ -345,7 +346,7 @@ const deleteCollection = async () => {
     }
   } catch (error) {
     console.error('Error deleting collection:', error)
-    toast({ title: 'Error', description: 'Failed to delete collection.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to delete collection.')
   } finally {
     isDeleting.value = false
   }

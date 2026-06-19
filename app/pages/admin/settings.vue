@@ -161,6 +161,7 @@ definePageMeta({
 
 const { user } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 // Theme options
 const themeOptions = [
@@ -271,12 +272,7 @@ const saveSettings = async () => {
     formData.value.confirmPassword = ''
   } catch (error) {
     console.error('Error saving settings:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to save settings. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to save settings. Please try again.')
   } finally {
     isSaving.value = false
   }

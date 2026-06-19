@@ -174,6 +174,7 @@ type UserFormData = {
 
 const { user } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -244,7 +245,7 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error('Error fetching users:', error)
-    toast({ title: 'Error', description: 'Failed to fetch users.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to fetch users.')
   } finally {
     isLoading.value = false
   }
@@ -320,7 +321,7 @@ const saveUser = async () => {
     }
   } catch (error) {
     console.error('Error updating user:', error)
-    toast({ title: 'Error', description: 'Failed to update user.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to update user.')
   } finally {
     isSaving.value = false
   }
@@ -343,7 +344,7 @@ const deleteUser = async () => {
     }
   } catch (error) {
     console.error('Error deleting user:', error)
-    toast({ title: 'Error', description: 'Failed to delete user.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to delete user.')
   } finally {
     isDeleting.value = false
   }

@@ -8,7 +8,7 @@ export const useTagSearch = () => {
   const tags = ref<Tag[]>([])
   const isLoading = ref(false)
   const searchQuery = ref('')
-  const { toast } = useToast()
+  const { showErrorToast } = useErrorToast()
 
   // Debounce timer
   let searchTimer: NodeJS.Timeout | null = null
@@ -74,16 +74,7 @@ export const useTagSearch = () => {
       return newTag
     } catch (error: any) {
       console.error('Failed to create tag:', error)
-      
-      const errorMessage = error?.data?.statusMessage || 'Failed to create tag'
-      toast({
-        title: 'Creation Failed',
-        description: errorMessage,
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning',
-      })
-      
+      showErrorToast(error, 'Creation Failed', 'Failed to create tag')
       return null
     }
   }

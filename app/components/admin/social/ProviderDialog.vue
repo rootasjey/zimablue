@@ -221,6 +221,9 @@ interface Props {
   platformOptions: Array<{ value: Platform, label: string, icon: string }>
 }
 
+const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
+
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -317,7 +320,7 @@ const openProviderConfig = async (platform: Platform) => {
     }
   } catch (error) {
     console.error('Failed to load provider config:', error)
-    toast({ title: 'Error', description: 'Failed to load provider configuration.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to load provider configuration.')
   } finally {
     isLoading.value = false
   }
@@ -340,7 +343,7 @@ const saveProviderConfig = async () => {
     }
   } catch (error) {
     console.error('Failed to save provider config:', error)
-    toast({ title: 'Error', description: 'Failed to save provider configuration.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to save provider configuration.')
   } finally {
     isSaving.value = false
   }

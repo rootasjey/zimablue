@@ -285,6 +285,7 @@ import type { Todo, TodoFormData } from '~~/shared/types/todo'
 import type { Pagination } from '~~/shared/types/pagination'
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -394,7 +395,7 @@ const fetchTodos = async () => {
     }
   } catch (error) {
     console.error('Error fetching todos:', error)
-    toast({ title: 'Error', description: 'Failed to fetch todos', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to fetch todos')
   } finally {
     isLoading.value = false
   }
@@ -463,7 +464,7 @@ const saveTodo = async () => {
     fetchTodos()
   } catch (error) {
     console.error('Error saving todo:', error)
-    toast({ title: 'Error', description: 'Failed to save task.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to save task.')
   } finally {
     isSaving.value = false
   }
@@ -478,7 +479,7 @@ const confirmDelete = async () => {
     fetchTodos()
   } catch (error) {
     console.error('Error deleting todo:', error)
-    toast({ title: 'Error', description: 'Failed to delete task.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to delete task.')
   } finally {
     isDeleting.value = false
   }
@@ -494,7 +495,7 @@ const handleStatusChange = async ({ item, newStatus }: { item: KanbanItem; newSt
   } catch (error) {
     todo.status = previousStatus
     console.error('Error updating todo status:', error)
-    toast({ title: 'Error', description: 'Failed to update todo status.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to update todo status.')
   }
 }
 
@@ -505,7 +506,7 @@ const toggleTodoStatus = async (todo: Todo) => {
     fetchTodos()
   } catch (error) {
     console.error('Error updating todo status:', error)
-    toast({ title: 'Error', description: 'Failed to update status.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to update status.')
   }
 }
 

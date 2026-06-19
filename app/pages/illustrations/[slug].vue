@@ -219,6 +219,7 @@ const gridStore = useGridStore()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const imageActions = useImageActions()
 const { normalizeTags } = imageActions
 const { getTagBadgeStyles } = useTagColor()
@@ -518,13 +519,7 @@ async function handleEditSubmit() {
       toast: 'soft-success'
     })
   } catch (error) {
-    toast({
-      title: 'Update Failed',
-      description: 'Failed to update image details',
-      duration: 5000,
-      showProgress: true,
-      toast: 'soft-warning'
-    })
+    showErrorToast(error, 'Update Failed', 'Failed to update image details')
   }
 }
 

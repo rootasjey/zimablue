@@ -243,6 +243,7 @@ defineOgImageComponent('Default.takumi', {
 })
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 const collectionStore = useCollectionStore()
@@ -314,12 +315,7 @@ onMounted(async () => {
 
     // Client-only error handling
     if (collectionStore.error) {
-      toast({
-        title: 'Error',
-        description: collectionStore.error,
-        toast: 'soft-error',
-        duration: 5000
-      })
+      showErrorToast(collectionStore.error, 'Error')
     }
 
     isLoading.value = false
@@ -505,12 +501,7 @@ const handleCreateCollection = async () => {
   const result = await collectionStore.createCollection()
 
   if (!result.success) {
-    toast({
-      title: 'Error',
-      description: result.message,
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(result.message, 'Error')
   }
 }
 
@@ -520,12 +511,7 @@ const handleUpdateCollection = async (data: CollectionFormData) => {
   const result = await collectionStore.updateCollection(data)
 
   if (!result.success) {
-    toast({
-      title: 'Error',
-      description: result.message,
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(result.message, 'Error')
   }
 }
 
@@ -653,12 +639,7 @@ const handleDropOnCollection = async (e: DragEvent, collection: Collection) => {
     }
   } catch (error) {
     console.error('Collection drop upload error:', error)
-    toast({
-      title: 'Upload Failed',
-      description: 'Failed to upload and add images to collection.',
-      toast: 'soft-warning',
-      showProgress: true,
-    })
+    showErrorToast(error, 'Upload Failed', 'Failed to upload and add images to collection.')
   }
 }
 
@@ -699,12 +680,7 @@ const handleDropOnEmptySpace = async (e: DragEvent) => {
     }
   } catch (error) {
     console.error('Empty space drop upload error:', error)
-    toast({
-      title: 'Upload Failed',
-      description: 'Failed to upload images.',
-      toast: 'soft-warning',
-      showProgress: true,
-    })
+    showErrorToast(error, 'Upload Failed', 'Failed to upload images.')
   }
 }
 </script>

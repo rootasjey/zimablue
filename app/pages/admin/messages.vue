@@ -101,6 +101,7 @@ import type { Pagination } from '~~/shared/types/pagination'
 import AdminMessageDetail from '~/components/adminMessage/AdminMessageDetail.vue'
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const fetchAdmin = $fetch as (url: string, options?: Record<string, any>) => Promise<any>
 
 definePageMeta({
@@ -175,12 +176,7 @@ const fetchMessages = async () => {
     }
   } catch (error) {
     console.error('Error fetching messages:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to fetch messages. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to fetch messages. Please try again.')
   } finally {
     isLoading.value = false
   }
@@ -232,12 +228,7 @@ const markAsRead = async (messageId: number, read: boolean = true) => {
     }
   } catch (error) {
     console.error('Error updating message:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to update message. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to update message. Please try again.')
   }
 }
 
@@ -264,12 +255,7 @@ const deleteMessage = async (messageId: number) => {
     }
   } catch (error) {
     console.error('Error deleting message:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to delete message. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to delete message. Please try again.')
   }
 }
 
@@ -307,12 +293,7 @@ const handleBulkAction = async (action: 'mark_read' | 'mark_unread' | 'confirm_d
     }
   } catch (error) {
     console.error('Error processing bulk action:', error)
-    toast({
-      title: 'Error',
-      description: 'Failed to process bulk action. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to process bulk action. Please try again.')
   }
 }
 

@@ -298,6 +298,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -546,12 +547,7 @@ onMounted(async () => {
   try {
     await store.fetchCollection(slug)
   } catch (err) {
-    toast({
-      title: 'Error',
-      description: 'Failed to load collection. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(err, 'Error', 'Failed to load collection. Please try again.')
   }
   window.addEventListener('keydown', escapeKeyHandler, true)
   window.addEventListener('keydown', collectionKeyboardHandler, true)
@@ -1060,12 +1056,7 @@ const handleCollectionFileSelect = async (event: Event) => {
     }
   } catch (error) {
     console.error('Upload to collection error:', error)
-    toast({
-      title: 'Upload Failed',
-      description: 'Failed to upload and add images to collection.',
-      toast: 'soft-warning',
-      showProgress: true,
-    })
+    showErrorToast(error, 'Upload Failed', 'Failed to upload and add images to collection.')
   }
 
   input.value = ''
@@ -1117,12 +1108,7 @@ const handleDrop = async (e: DragEvent) => {
     }
   } catch (error) {
     console.error('Collection drop upload error:', error)
-    toast({
-      title: 'Upload Failed',
-      description: 'Failed to upload and add images to collection.',
-      toast: 'soft-warning',
-      showProgress: true,
-    })
+    showErrorToast(error, 'Upload Failed', 'Failed to upload and add images to collection.')
   }
 }
 </script>

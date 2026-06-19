@@ -4,6 +4,7 @@ import useParseVariants from './useParseVariants'
 export const useImageActions = () => {
   const { loggedIn, user } = useUserSession()
   const { toast } = useToast()
+  const { showErrorToast } = useErrorToast()
   const gridStore = useGridStore()
   const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -136,13 +137,7 @@ export const useImageActions = () => {
       closeEditDrawer()
     } catch (error) {
       console.error('Update error:', error)
-      toast({
-        title: 'Update Failed',
-        description: 'Failed to update image details',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      showErrorToast(error, 'Update Failed', 'Failed to update image details')
     } finally {
       isUpdating.value = false
     }
@@ -159,13 +154,7 @@ export const useImageActions = () => {
       if (!success) throw new Error(errorDescription)
     } catch (error) {
       console.error('Delete error:', error)
-      toast({
-        title: 'Delete Failed',
-        description: 'Failed to delete image',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      showErrorToast(error, 'Delete Failed', 'Failed to delete image')
     } finally {
       isDeleting.value = false
     }
@@ -190,13 +179,7 @@ export const useImageActions = () => {
       })
     } catch (error) {
       console.error('Download error:', error)
-      toast({
-        title: 'Download Failed',
-        description: 'Failed to download image',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      showErrorToast(error, 'Download Failed', 'Failed to download image')
     }
   }
 
@@ -251,13 +234,7 @@ export const useImageActions = () => {
               await gridStore.fetchGrid()
             } catch (error) {
               console.error('Duplicate error:', error)
-              toast({
-                title: 'Duplicate Failed',
-                description: 'Failed to duplicate image',
-                duration: 5000,
-                showProgress: true,
-                toast: 'soft-warning'
-              })
+              showErrorToast(error, 'Duplicate Failed', 'Failed to duplicate image')
             }
           },
         },

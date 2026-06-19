@@ -39,6 +39,7 @@ const router = useRouter()
 const route = useRoute()
 const fetchAdmin = $fetch as (url: string) => Promise<any>
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const imageUpload = useImageUpload()
 const collectionStore = useCollectionStore()
 
@@ -100,12 +101,7 @@ const handleCreateCollection = async () => {
   const result = await collectionStore.createCollection()
 
   if (!result.success) {
-    toast({
-      title: 'Error',
-      description: result.message,
-      toast: 'soft-error',
-      duration: 5000,
-    })
+    showErrorToast(result.message, 'Error')
   }
 }
 

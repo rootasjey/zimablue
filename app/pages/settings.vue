@@ -104,6 +104,7 @@ import UserInfo from '~/components/user/UserInfo.vue'
 
 const { loggedIn, user, fetch: refreshSession } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 const themeOptions = [
   { label: 'System', value: 'system' },
@@ -207,7 +208,7 @@ const saveProfile = async () => {
     isEditing.value = false
   } catch (err) {
     console.error('Failed to save profile', err)
-    toast({ title: 'Error', description: 'Failed to update profile. Please try again.', toast: 'soft-error', duration: 4000 })
+    showErrorToast(err, 'Error', 'Failed to update profile. Please try again.')
   } finally {
     isSaving.value = false
   }

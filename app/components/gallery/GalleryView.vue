@@ -209,6 +209,7 @@ const multiSelect = useHomeMultiSelect()
 
 const route = useRoute()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 import { watch, nextTick } from 'vue'
 
@@ -427,11 +428,7 @@ const openBulkAddToCollectionDialog = async () => {
 const handleBulkDownload = async () => {
   const result = await multiSelect.bulkDownloadImages(layout.value)
   if (!result.success) {
-    toast({
-      title: 'Download Failed',
-      description: result.message,
-      toast: 'soft-warning'
-    })
+    showErrorToast(result.message, 'Download Failed')
     return
   }
 
@@ -545,22 +542,10 @@ const handleBulkDelete = async (imageIds: number[]) => {
       return
     }
 
-    toast({
-      title: 'Delete Failed',
-      description: result.message,
-      duration: 5000,
-      showProgress: true,
-      toast: 'soft-warning'
-    })
+    showErrorToast(result.message, 'Delete Failed', result.message)
   } catch (error) {
     console.error('Bulk delete error:', error)
-    toast({
-      title: 'Delete Failed',
-      description: 'An unexpected error occurred',
-      duration: 5000,
-      showProgress: true,
-      toast: 'soft-warning'
-    })
+    showErrorToast(error, 'Delete Failed', 'An unexpected error occurred')
   }
 }
 
@@ -580,22 +565,10 @@ const handleBulkAddToCollection = async (imageIds: number[], collectionSlug: str
       return
     }
 
-    toast({
-      title: 'Add Failed',
-      description: result.message,
-      duration: 5000,
-      showProgress: true,
-      toast: 'soft-warning'
-    })
+    showErrorToast(result.message, 'Add Failed', result.message)
   } catch (error) {
     console.error('Bulk add to collection error:', error)
-    toast({
-      title: 'Add Failed',
-      description: 'An unexpected error occurred',
-      duration: 5000,
-      showProgress: true,
-      toast: 'soft-warning'
-    })
+    showErrorToast(error, 'Add Failed', 'An unexpected error occurred')
   }
 }
 

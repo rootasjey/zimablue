@@ -3,6 +3,7 @@ import { useUploadProgress } from './useUploadProgress'
 export const useImageUpload = () => {
   const { loggedIn } = useUserSession()
   const { toast } = useToast()
+  const { showErrorToast } = useErrorToast()
   const gridStore = useGridStore()
   const uploadProgressTracker = useUploadProgress()
 
@@ -298,12 +299,7 @@ export const useImageUpload = () => {
       return { successful, failed: totalFailed }
     } catch (error) {
       console.error('Upload error:', error)
-      toast({
-        title: 'Upload Failed',
-        description: 'An unexpected error occurred during upload.',
-        toast: 'soft-warning',
-        showProgress: true,
-      })
+      showErrorToast(error, 'Upload Failed', 'An unexpected error occurred during upload.')
 
       // Clear session on error
       uploadProgressTracker.clearSession()
@@ -330,13 +326,7 @@ export const useImageUpload = () => {
       console.error('Replace error:', error)
       uploadProgressTracker.failFile(`${sessionId}_file_0`, 'Failed to replace image')
 
-      toast({
-        title: 'Replace Failed',
-        description: 'Failed to replace image',
-        duration: 5000,
-        showProgress: true,
-        toast: 'soft-warning'
-      })
+      showErrorToast(error, 'Replace Failed', 'Failed to replace image')
 
       // Clear session on error
       uploadProgressTracker.clearSession()

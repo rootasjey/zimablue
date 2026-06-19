@@ -147,6 +147,7 @@ import type { Pagination } from '~~/shared/types/pagination'
 import type { AdminBulkAction } from '~~/shared/types/admin'
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -212,7 +213,7 @@ const fetchTags = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch tags:', error)
-    toast({ title: 'Error', description: 'Failed to fetch tags.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to fetch tags.')
   } finally {
     isLoading.value = false
   }
@@ -269,7 +270,7 @@ const submitTag = async () => {
     await fetchTags()
   } catch (error) {
     console.error('Failed to save tag:', error)
-    toast({ title: 'Error', description: 'Failed to save tag.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to save tag.')
   } finally {
     isSubmitting.value = false
   }
@@ -292,7 +293,7 @@ const confirmDelete = async () => {
     await fetchTags()
   } catch (error) {
     console.error('Failed to delete tag:', error)
-    toast({ title: 'Error', description: 'Failed to delete tag.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to delete tag.')
   } finally {
     isDeleting.value = false
   }

@@ -312,6 +312,7 @@ interface QueueRow {
 type QueueView = 'queue' | 'history'
 
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 function toastWithCopy(title: string, description: string, toastType: string) {
   toast({
@@ -503,7 +504,7 @@ const fetchQueue = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch social queue:', error)
-    toast({ title: 'Error', description: 'Failed to fetch social queue.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to fetch social queue.')
   } finally {
     isLoading.value = false
   }
@@ -592,7 +593,7 @@ const runNow = async () => {
     }
   } catch (error) {
     console.error('Failed to run social autopost:', error)
-    toast({ title: 'Error', description: 'Failed to run the social autopost task.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to run the social autopost task.')
   } finally {
     isRunningNow.value = false
   }
@@ -613,7 +614,7 @@ const retryFailed = async (queueIds?: number[]) => {
     }
   } catch (error) {
     console.error('Failed to retry queue items:', error)
-    toast({ title: 'Error', description: 'Failed to reset failed queue items.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to reset failed queue items.')
   } finally {
     isRetrying.value = false
   }
@@ -637,7 +638,7 @@ const clearFinished = async () => {
     }
   } catch (error) {
     console.error('Failed to clear finished rows:', error)
-    toast({ title: 'Error', description: 'Failed to clear finished rows.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to clear finished rows.')
   } finally {
     isClearing.value = false
   }
@@ -654,7 +655,7 @@ const deleteQueueRow = async (row: QueueRow) => {
     }
   } catch (error) {
     console.error('Failed to delete queue row:', error)
-    toast({ title: 'Error', description: 'Failed to delete queue row.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to delete queue row.')
   }
 }
 
@@ -721,7 +722,7 @@ const moveRow = async (row: QueueRow, direction: -1 | 1) => {
     rows.value = [...reorderedQueued, ...nonQueuedItems]
   } catch (error) {
     console.error('Failed to reorder queue:', error)
-    toast({ title: 'Error', description: 'Failed to reorder the social queue.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to reorder the social queue.')
   }
 }
 
@@ -748,7 +749,7 @@ const handleTableReorder = async (dragIndex: number, dropIndex: number) => {
     rows.value = fullItems
   } catch (error) {
     console.error('Failed to reorder queue:', error)
-    toast({ title: 'Error', description: 'Failed to reorder the social queue.', toast: 'soft-error' })
+    showErrorToast(error, 'Error', 'Failed to reorder the social queue.')
   }
 }
 

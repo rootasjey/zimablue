@@ -275,6 +275,7 @@ import { useAddToCollectionModal } from '~/composables/collection/useAddToCollec
 
 const { user } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -357,7 +358,7 @@ const fetchImages = async () => {
     }
   } catch (error) {
     console.error('Error fetching images:', error)
-    toast({ title: 'Error', description: 'Failed to fetch images.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to fetch images.')
   } finally {
     isLoading.value = false
   }
@@ -492,7 +493,7 @@ const deleteImage = async () => {
     }
   } catch (error) {
     console.error('Error deleting image:', error)
-    toast({ title: 'Error', description: 'Failed to delete image.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to delete image.')
   } finally {
     isDeleting.value = false
   }
@@ -518,7 +519,7 @@ const handleDuplicate = async (payload: { highlighted: any; selected: any[] }) =
     }
   } catch (error) {
     console.error('Error duplicating image:', error)
-    toast({ title: 'Error', description: 'Failed to duplicate image.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to duplicate image.')
   }
 }
 
@@ -566,8 +567,7 @@ const saveEditedImage = async () => {
       isEditDialogOpen.value = false
     }
   } catch (e: any) {
-    const msg = e?.data?.message || e?.message || 'Failed to update image.'
-    toast({ title: 'Error', description: msg, toast: 'soft-error' })
+    showErrorToast(e, 'Error', 'Failed to update image.')
   } finally {
     isSavingEdit.value = false
   }
@@ -619,11 +619,11 @@ const handleReplaceFileSelect = async (event: Event) => {
         }
       }
     } else {
-      toast({ title: 'Error', description: 'Failed to replace image.', toast: 'soft-error', duration: 5000 })
+      showErrorToast('Failed to replace image.', 'Error')
     }
   } catch (error) {
     console.error('Error replacing image:', error)
-    toast({ title: 'Error', description: 'Failed to replace image.', toast: 'soft-error', duration: 5000 })
+    showErrorToast(error, 'Error', 'Failed to replace image.')
   } finally {
     isReplacing.value = false
     input.value = ''

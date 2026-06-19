@@ -161,6 +161,7 @@
 import AboutContactForm from '~/components/about/AboutContactForm.vue'
 const config = useRuntimeConfig()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 const randomColors = useRandomColors()
 
 const version = config.public.appVersion
@@ -242,12 +243,7 @@ async function submitForm() {
     console.error('Error submitting form:', error)
     hasError.value = true
 
-    toast({
-      title: 'Error',
-      description: 'Failed to send your message. Please try again.',
-      toast: 'soft-error',
-      duration: 5000
-    })
+    showErrorToast(error, 'Error', 'Failed to send your message. Please try again.')
   } finally {
     isSubmitting.value = false
   }

@@ -39,6 +39,7 @@
 <script setup lang="ts">
 const { } = useUserSession()
 const { toast } = useToast()
+const { showErrorToast } = useErrorToast()
 
 definePageMeta({
   middleware: 'admin',
@@ -62,7 +63,7 @@ async function regenerate() {
     }
     toast({ title: 'Thumbnails', description: regenResult.value, toast: 'soft-success' })
   } catch (e) {
-    toast({ title: 'Thumbnails', description: 'Operation failed', toast: 'soft-error' })
+    showErrorToast(e, 'Thumbnails', 'Operation failed')
   } finally {
     regenLoading.value = false
   }
@@ -99,7 +100,7 @@ async function importJson(e: Event) {
     toast({ title: 'Import completed', description: importResult.value, toast: 'soft-success' })
     if (fileInput.value) fileInput.value.value = ''
   } catch (e) {
-    toast({ title: 'Import failed', description: 'Please check your JSON file.', toast: 'soft-error' })
+    showErrorToast(e, 'Import failed', 'Please check your JSON file.')
   }
 }
 </script>
