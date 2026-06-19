@@ -162,27 +162,33 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { downloadImage, downloadAspectVariant, getDownloadOptions, getAspectVariantsFromLayout, normalizeTags } = useImageActions()
+const { downloadImage, downloadAspectVariant, getAspectVariantsFromLayout, normalizeTags } = useImageActions()
 const { getTagBadgeStyles } = useTagColor()
 const displayTags = computed(() => normalizeTags(props.image?.tags))
 
-const downloadMenuItems = computed(() => {
+const aspectVariants = computed(() => {
   if (!props.image) return []
-  const variants = getAspectVariantsFromLayout(props.image)
-  const merged = variants.length ? { ...props.image, aspect_variants: variants } : props.image
-  const options = getDownloadOptions(merged)
-  if (options.length <= 1) return []
-  return options.map(opt => ({
-    label: opt.label,
-    onClick: () => {
-      const v = variants.find(v => v.slug === opt.slug)
-      if (v) {
-        downloadAspectVariant(v)
-      } else if (props.image) {
-        downloadImage(props.image)
-      }
+  return getAspectVariantsFromLayout(props.image)
+})
+
+const downloadMenuItems = computed(() => {
+  const variants = aspectVariants.value
+  if (variants.length === 0) return []
+  const items: Array<{ label: string; onClick?: () => void; disabled?: boolean } | {}> = [
+    {
+      label: 'Download',
+      onClick: () => { if (props.image) downloadImage(props.image) },
     },
-  }))
+  ]
+  items.push({})
+  items.push({ label: 'Download variants', disabled: true })
+  for (const v of variants) {
+    items.push({
+      label: v.aspect_label || 'Variant',
+      onClick: () => downloadAspectVariant(v),
+    })
+  }
+  return items
 })
 
 const isFlying = ref(false)

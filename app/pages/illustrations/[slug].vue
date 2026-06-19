@@ -27,7 +27,7 @@
         <div class="flex flex-row gap-4 justify-center items-center">
           <ClientOnly>
             <NDropdownMenu
-              v-if="downloadOptions.length > 1"
+              v-if="hasAspectVariants"
               :items="downloadMenuItems"
               size="xs"
               menu-label=""
@@ -492,24 +492,27 @@ const handleCreateTag = async () => {
 
 const { parse: parseVariants } = useParseVariants()
 
-const downloadOptions = computed(() => {
-  if (!image.value) return []
-  return imageActions.getDownloadOptions(image.value as Image)
-})
+const aspectVariantList = computed(() => image.value?.aspect_variants || [])
+const hasAspectVariants = computed(() => aspectVariantList.value.length > 0)
 
 const downloadMenuItems = computed(() => {
-  return downloadOptions.value.map((opt: { label: string; slug: string }) => ({
-    label: opt.label,
-    onClick: () => {
-      const aspectVariants = image.value?.aspect_variants
-      const variant = aspectVariants?.find((v: Image) => v.slug === opt.slug)
-      if (variant && image.value) {
-        imageActions.downloadAspectVariant(variant)
-      } else if (image.value) {
-        imageActions.downloadImage(image.value as Image)
-      }
+  const items: Array<{ label: string; onClick?: () => void; disabled?: boolean } | {}> = [
+    {
+      label: 'Download',
+      onClick: () => imageActions.downloadImage(image.value as Image),
     },
-  }))
+  ]
+  if (hasAspectVariants.value) {
+    items.push({})
+    items.push({ label: 'Download variants', disabled: true })
+    for (const v of aspectVariantList.value) {
+      items.push({
+        label: v.aspect_label || 'Variant',
+        onClick: () => imageActions.downloadAspectVariant(v),
+      })
+    }
+  }
+  return items
 })
 
 const downloadImage = () => {

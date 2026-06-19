@@ -299,26 +299,22 @@ export const useImageActions = () => {
 
     const variants = aspectVariants?.length ? aspectVariants : getAspectVariantsFromLayout(image)
     const hasVariants = variants.length > 0
-    const mergedImage = hasVariants ? { ...image, aspect_variants: variants } : image
-    const downloadOpts = getDownloadOptions(mergedImage)
 
-    if (downloadOpts.length === 1) {
+    items.push({
+      label: 'Download',
+      onClick: () => downloadImage(image),
+    })
+
+    if (hasVariants) {
+      items.push({}) // separator
       items.push({
-        label: 'Download',
-        onClick: () => downloadImage(image),
+        label: 'Download variants',
+        disabled: true,
       })
-    } else {
-      for (const opt of downloadOpts) {
+      for (const v of variants) {
         items.push({
-          label: `Download ${opt.label}`,
-          onClick: () => {
-            const v = variants.find(v => v.slug === opt.slug)
-            if (v) {
-              downloadAspectVariant(v)
-            } else {
-              downloadImage(image)
-            }
-          },
+          label: v.aspect_label || 'Variant',
+          onClick: () => downloadAspectVariant(v),
         })
       }
     }
