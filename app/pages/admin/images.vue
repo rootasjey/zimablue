@@ -82,9 +82,17 @@
         </ClientOnly>
       </template>
 
-      <!-- Actions override: Duplicate, Replace, Add to Collection, Edit, Delete -->
+      <!-- Actions override: Variants, Duplicate, Replace, Add to Collection, Edit, Delete -->
       <template #actions="{ row }">
         <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            title="Aspect Variants"
+            @click.stop="openAspectVariants(row)"
+          >
+            <span class="text-sm i-ph-crop"></span>
+          </button>
           <button
             type="button"
             class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-zinc-700 sm:h-7 sm:w-7 dark:text-zinc-500 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
@@ -264,6 +272,14 @@
       @add-to-collection="addToCollection.addImageToCollection"
       @select-collection="addToCollection.selectCollection"
     />
+
+    <!-- Aspect Variants Dialog -->
+    <AspectVariantDialog
+      v-model:is-open="isAspectVariantDialogOpen"
+      :image="aspectVariantImage"
+      :variants="aspectVariantList"
+      @update:variants="aspectVariantList = $event"
+    />
   </div>
 </template>
 
@@ -311,6 +327,11 @@ const autoSlug = computed({
 })
 
 const addToCollection = useAddToCollectionModal()
+
+// Aspect variant management
+const isAspectVariantDialogOpen = ref(false)
+const aspectVariantImage = ref<Image | null>(null)
+const aspectVariantList = ref<Image[]>([])
 
 const pagination = ref<Pagination>({
   page: 1,
@@ -634,6 +655,17 @@ const handleReplaceFileSelect = async (event: Event) => {
 const handleAddToCollection = (image: Image) => {
   selectedImage.value = image
   addToCollection.openModal(image)
+}
+
+const openAspectVariants = async (image: Image) => {
+  aspectVariantImage.value = image
+  try {
+    const resp: any = await $fetch(`/api/images/slug/${image.slug}`)
+    aspectVariantList.value = resp?.aspect_variants || []
+  } catch {
+    aspectVariantList.value = []
+  }
+  isAspectVariantDialogOpen.value = true
 }
 
 // Helpers

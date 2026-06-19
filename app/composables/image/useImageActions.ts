@@ -262,6 +262,14 @@ export const useImageActions = () => {
     replacementFileInput?.click()
   }
 
+  const showAspectVariantDialog = ref(false)
+  const aspectVariantDialogImage = ref<Image | null>(null)
+
+  const openAspectVariantDialog = (image: Image) => {
+    aspectVariantDialogImage.value = image
+    showAspectVariantDialog.value = true
+  }
+
   const generateImageMenuItems = ({
     image, 
     openImagePageFn,
@@ -337,6 +345,10 @@ export const useImageActions = () => {
 
         },
         {
+          label: 'Manage aspect variants',
+          onClick: () => openAspectVariantDialog(image),
+        },
+        {
           label: 'Delete',
           onClick: () => deleteImage(image.id),
         },
@@ -388,6 +400,8 @@ export const useImageActions = () => {
     // State
     showEditModal,
     showEditDrawer,
+    showAspectVariantDialog,
+    aspectVariantDialogImage,
     editForm,
     isDeleting: readonly(isDeleting),
     isUpdating: readonly(isUpdating),

@@ -221,6 +221,16 @@
       :is-deleting="isDeletingImage"
       @confirm="confirmImageDelete"
     />
+
+    <ClientOnly>
+      <AspectVariantDialog
+        v-if="imageActions.aspectVariantDialogImage.value"
+        v-model:is-open="imageActions.showAspectVariantDialog.value"
+        :image="imageActions.aspectVariantDialogImage.value"
+        :variants="imageActions.getAspectVariantsFromLayout(imageActions.aspectVariantDialogImage.value)"
+        @update:variants="imageActions.aspectVariantDialogImage.value ? (imageActions.aspectVariantDialogImage.value.aspect_variants = $event) : null"
+      />
+    </ClientOnly>
   </div>
 </template>
 
