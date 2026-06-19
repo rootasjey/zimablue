@@ -180,6 +180,7 @@ const fetchMessages = async () => {
   } finally {
     isLoading.value = false
   }
+  openMessageFromRoute()
 }
 
 const toggleMessageSelection = (messageId: number) => {
@@ -357,6 +358,27 @@ const showDeleteDialog = (message: Message) => {
 const closeDeleteDialog = () => {
   isDeleteDialogOpen.value = false
 }
+
+// --- URL-driven message selection ---
+const route = useRoute()
+const router = useRouter()
+
+const openMessageFromRoute = () => {
+  const id = route.query.messageId
+  if (!id || !messages.value.length) return
+  const found = messages.value.find(m => m.id === Number(id))
+  if (found) viewMessage(found)
+}
+
+watch(() => route.query.messageId, () => openMessageFromRoute())
+
+watch(selectedMessage, (msg) => {
+  if (!msg && route.query.messageId) {
+    const q = { ...route.query }
+    delete q.messageId
+    router.replace({ query: q })
+  }
+})
 
 onMounted(() => fetchMessages())
 </script>

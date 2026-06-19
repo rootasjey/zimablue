@@ -249,6 +249,7 @@ const fetchUsers = async () => {
   } finally {
     isLoading.value = false
   }
+  openUserFromRoute()
 }
 
 const handleSearch = (searchTerm: string) => {
@@ -353,6 +354,27 @@ const deleteUser = async () => {
 const handleDuplicate = () => {
   toast({ title: 'Coming Soon', description: 'Duplicate user is not yet implemented.', toast: 'soft-info', duration: 3000 })
 }
+
+// --- URL-driven dialog ---
+const route = useRoute()
+const router = useRouter()
+
+const openUserFromRoute = () => {
+  const id = route.query.userId
+  if (!id || !users.value.length) return
+  const found = users.value.find(u => u.id === Number(id))
+  if (found) editUser(found)
+}
+
+watch(() => route.query.userId, () => openUserFromRoute())
+
+watch(isEditDialogOpen, (open) => {
+  if (!open && route.query.userId) {
+    const q = { ...route.query }
+    delete q.userId
+    router.replace({ query: q })
+  }
+})
 
 onMounted(() => fetchUsers())
 </script>

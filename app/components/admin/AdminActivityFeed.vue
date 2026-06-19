@@ -41,16 +41,37 @@
         class="flex items-start gap-3 px-2 py-2 rounded-xl hover:bg-stone-50 dark:hover:bg-zinc-800/60 transition-colors group"
       >
         <!-- Icon badge -->
-        <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', iconBg(item.type)]">
+        <NuxtLink
+          v-if="item.targetId"
+          :to="entityRoute(item.type, item.targetId)"
+          :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-99 transition-[transform]', iconBg(item.type)]"
+        >
+          <span :class="[activityIcon(item.type), 'text-xs', iconColor(item.type)]"></span>
+        </NuxtLink>
+        <div v-else :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', iconBg(item.type)]">
           <span :class="[activityIcon(item.type), 'text-xs', iconColor(item.type)]"></span>
         </div>
 
         <!-- Content -->
         <div class="flex-1 min-w-0">
           <p class="text-xs text-zinc-800 dark:text-zinc-200 leading-snug flex flex-wrap items-baseline">
-            <span class="font-medium mr-1">{{ item.actor }}</span>
+            <NuxtLink
+              v-if="item.actorId"
+              :to="`/admin/users?userId=${item.actorId}`"
+              class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline mr-1"
+            >
+              {{ item.actor }}
+            </NuxtLink>
+            <span v-else class="font-medium mr-1">{{ item.actor }}</span>
             <span class="text-stone-500 dark:text-zinc-400 mr-1">{{ item.action }}</span>
-            <span class="font-medium truncate">{{ item.target }}</span>
+            <NuxtLink
+              v-if="item.targetId"
+              :to="entityRoute(item.type, item.targetId)"
+              class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate"
+            >
+              {{ item.target }}
+            </NuxtLink>
+            <span v-else class="font-medium truncate">{{ item.target }}</span>
           </p>
           <p class="text-[10px] text-stone-400 dark:text-zinc-500 mt-0.5">
             {{ formatRelativeTime(item.createdAt) }} · {{ formatAbsoluteDate(item.createdAt) }}
@@ -76,8 +97,10 @@
 interface ActivityItem {
   type: 'image' | 'collection' | 'message' | 'user' | 'tag'
   actor: string
+  actorId: number | null
   action: string
   target: string
+  targetId: number | null
   createdAt: string
 }
 
@@ -132,6 +155,17 @@ const refresh = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const entityRoute = (type: string, id: number) => {
+  const map: Record<string, string> = {
+    image: `/admin/images?imageId=${id}`,
+    collection: `/admin/collections?collectionId=${id}`,
+    message: `/admin/messages?messageId=${id}`,
+    user: `/admin/users?userId=${id}`,
+    tag: '/admin/tags',
+  }
+  return map[type] ?? '#'
 }
 
 onMounted(refresh)

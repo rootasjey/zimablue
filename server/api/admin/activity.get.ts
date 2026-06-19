@@ -52,6 +52,7 @@ export default eventHandler(async (event) => {
     db.select({
       id: images.id,
       name: images.name,
+      userId: images.userId,
       createdAt: sql<unknown>`${images.createdAt}`,
       userName: users.name,
     })
@@ -82,6 +83,7 @@ export default eventHandler(async (event) => {
     db.select({
       id: collections.id,
       name: collections.name,
+      userId: collections.userId,
       createdAt: sql<unknown>`${collections.createdAt}`,
       userName: users.name,
     })
@@ -95,8 +97,10 @@ export default eventHandler(async (event) => {
   type ActivityItem = {
     type: 'image' | 'collection' | 'message' | 'user'
     actor: string
+    actorId: number | null
     action: string
     target: string
+    targetId: number | null
     createdAt: string
   }
 
@@ -104,29 +108,37 @@ export default eventHandler(async (event) => {
     ...recentImages.map((img: typeof recentImages[number]) => ({
       type: 'image' as const,
       actor: img.userName ?? 'Artist',
+      actorId: img.userId,
       action: 'uploaded',
       target: img.name,
+      targetId: img.id,
       createdAt: toIsoDate(img.createdAt),
     })),
     ...recentMessages.map((msg: typeof recentMessages[number]) => ({
       type: 'message' as const,
       actor: msg.senderEmail,
+      actorId: null,
       action: 'sent a message',
       target: msg.subject,
+      targetId: msg.id,
       createdAt: toIsoDate(msg.createdAt),
     })),
     ...recentUsers.map((u: typeof recentUsers[number]) => ({
       type: 'user' as const,
       actor: u.name,
+      actorId: u.id,
       action: 'registered',
       target: 'account',
+      targetId: u.id,
       createdAt: toIsoDate(u.createdAt),
     })),
     ...recentCollections.map((col: typeof recentCollections[number]) => ({
       type: 'collection' as const,
       actor: col.userName ?? 'Artist',
+      actorId: col.userId,
       action: 'created collection',
       target: col.name,
+      targetId: col.id,
       createdAt: toIsoDate(col.createdAt),
     })),
   ]

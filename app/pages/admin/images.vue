@@ -362,6 +362,7 @@ const fetchImages = async () => {
   } finally {
     isLoading.value = false
   }
+  openImageFromRoute()
 }
 
 const handleSearch = (searchTerm: string) => {
@@ -659,6 +660,27 @@ const getVariantSrc = (row: { variants?: string | VariantType[]; pathname?: stri
   const path = found?.pathname || row?.pathname || ''
   return path.startsWith('/') ? path : `/${path}`
 }
+
+// --- URL-driven dialog ---
+const route = useRoute()
+const router = useRouter()
+
+const openImageFromRoute = () => {
+  const id = route.query.imageId
+  if (!id || !images.value.length) return
+  const found = images.value.find(img => img.id === Number(id))
+  if (found) viewImage(found)
+}
+
+watch(() => route.query.imageId, () => openImageFromRoute())
+
+watch(isViewDialogOpen, (open) => {
+  if (!open && route.query.imageId) {
+    const q = { ...route.query }
+    delete q.imageId
+    router.replace({ query: q })
+  }
+})
 
 onMounted(() => fetchImages())
 </script>

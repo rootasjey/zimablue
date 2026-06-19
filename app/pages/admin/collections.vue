@@ -256,6 +256,7 @@ const fetchCollections = async () => {
   } finally {
     isLoading.value = false
   }
+  openCollectionFromRoute()
 }
 
 const handleSearch = (searchTerm: string) => {
@@ -355,6 +356,27 @@ const deleteCollection = async () => {
 const handleDuplicate = () => {
   toast({ title: 'Coming Soon', description: 'Duplicate collection is not yet implemented.', toast: 'soft-info', duration: 3000 })
 }
+
+// --- URL-driven dialog ---
+const route = useRoute()
+const router = useRouter()
+
+const openCollectionFromRoute = () => {
+  const id = route.query.collectionId
+  if (!id || !collections.value.length) return
+  const found = collections.value.find(col => col.id === Number(id))
+  if (found) viewCollection(found)
+}
+
+watch(() => route.query.collectionId, () => openCollectionFromRoute())
+
+watch(isViewDialogOpen, (open) => {
+  if (!open && route.query.collectionId) {
+    const q = { ...route.query }
+    delete q.collectionId
+    router.replace({ query: q })
+  }
+})
 
 onMounted(() => fetchCollections())
 </script>
