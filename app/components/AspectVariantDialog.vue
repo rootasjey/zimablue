@@ -1,7 +1,12 @@
 <template>
-  <NDialog :open="isOpen" @update:open="$emit('update:isOpen', $event)" :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-xl' }">
+  <NDialog
+    :open="isOpen"
+    @update:open="$emit('update:isOpen', $event)"
+    :show-close="false"
+    :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-xl' }"
+  >
     <template #content>
-      <div class="p-6 space-y-5">
+      <div class="p-3 space-y-5">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Manage Aspect Variants</h2>
           <button
@@ -30,7 +35,13 @@
             <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{{ image?.name }}</p>
             <div class="flex items-center gap-2 mt-0.5">
               <span class="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium">Primary</span>
-              <span class="text-xs text-stone-500 dark:text-zinc-400">{{ primaryLabel }}</span>
+              <select
+                :value="primaryLabel"
+                @change="updatePrimaryLabel(($event.target as HTMLSelectElement).value)"
+                class="text-xs px-2 py-0.5 rounded border border-stone-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 outline-none focus:ring-1 focus:ring-indigo-500/40"
+              >
+                <option v-for="l in aspectLabels" :key="l" :value="l">{{ l }}</option>
+              </select>
             </div>
           </div>
         </div>
@@ -186,6 +197,21 @@ const { showErrorToast } = useErrorToast()
 const aspectLabels = ASPECT_LABELS
 
 const primaryLabel = computed(() => props.image?.aspect_label || 'Portrait')
+
+async function updatePrimaryLabel(label: string) {
+  if (!props.image) return
+  try {
+    await $fetch(`/api/images/${props.image.id}`, {
+      method: 'PATCH',
+      body: { aspectLabel: label },
+    })
+    if (props.image) {
+      props.image.aspect_label = label
+    }
+  } catch (error) {
+    showErrorToast(error, 'Error', 'Failed to update primary label.')
+  }
+}
 
 const showAddForm = ref(false)
 const searchQuery = ref('')

@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
-  const { name, description, slug, tags: tagsInput } = body
+  const { name, description, slug, tags: tagsInput, aspectLabel } = body
 
   try {
     let normalizedSlug: string | undefined
@@ -37,6 +37,9 @@ export default defineEventHandler(async (event) => {
     }
 
     const updates = buildImageUpdates(name, description, normalizedSlug)
+    if (aspectLabel !== undefined) {
+      updates.aspectLabel = aspectLabel
+    }
     await db.update(images).set(updates).where(eq(images.id, Number(id)))
 
     const validTags = filterValidTags(tagsInput)
