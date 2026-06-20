@@ -29,7 +29,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_id": "97b74403-e97a-47e9-b32a-83d705bc1b21"
+      "database_name": "zimablue",
+      "database_id": "97b74403-e97a-47e9-b32a-83d705bc1b21",
+      "migrations_dir": "server/db/migrations"
     }
   ],
   "vars": {
