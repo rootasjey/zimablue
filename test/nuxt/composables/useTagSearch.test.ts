@@ -164,7 +164,7 @@ describe('useTagSearch', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Creation Failed',
-          toast: 'soft-warning',
+          toast: 'soft-error',
         })
       )
     })
