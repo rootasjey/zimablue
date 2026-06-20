@@ -295,6 +295,7 @@ export const useImageActions = () => {
         label: 'View in fullscreen',
         onClick: () => viewImageFullscreen(image, openImagePageFn),
       },
+      {}, // separator
     ]
 
     const variants = aspectVariants?.length ? aspectVariants : getAspectVariantsFromLayout(image)
