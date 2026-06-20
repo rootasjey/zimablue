@@ -1,7 +1,12 @@
 <template>
-  <NDialog :open="isOpen" @update:open="$emit('update:isOpen', $event)" :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-lg' }">
+  <NDialog
+    :open="isOpen"
+    @update:open="$emit('update:isOpen', $event)"
+    :show-close="false"
+    :_dialog="{ class: 'w-[calc(100vw-1rem)] sm:max-w-lg' }"
+  >
     <template #content>
-      <div class="p-6 space-y-5">
+      <div class="p-3 space-y-5">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Upload as Aspect Variant</h2>
           <button
@@ -41,7 +46,7 @@
         <div class="space-y-1">
           <label class="text-xs font-medium text-stone-500 dark:text-zinc-400">Fichier image</label>
           <div
-            class="relative border-2 border-dashed border-stone-300 dark:border-zinc-600 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
+            class="relative border-2 border-dashed border-stone-300 dark:border-zinc-600 rounded-lg p-8 text-center cursor-pointer hover:border-solid hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
             :class="{ 'opacity-50': selectedFile }"
             @click="triggerFilePick"
           >
@@ -52,8 +57,8 @@
               class="hidden"
               @change="onFileSelected"
             />
-            <div v-if="!selectedFile">
-              <span class="i-ph-upload-simple text-3xl text-stone-400 dark:text-zinc-500 mb-2 block" />
+            <div v-if="!selectedFile" class="flex flex-col items-center justify-center">
+              <span class="i-ph-upload-simple text-3xl text-stone-400 dark:text-zinc-500" />
               <p class="text-sm text-stone-500 dark:text-zinc-400">Cliquez pour choisir un fichier</p>
               <p class="text-xs text-stone-400 dark:text-zinc-500 mt-1">PNG, JPG, WebP (max 30MB)</p>
             </div>

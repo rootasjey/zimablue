@@ -180,7 +180,6 @@ const downloadMenuItems = computed(() => {
       onClick: () => { if (props.image) downloadImage(props.image) },
     },
   ]
-  items.push({})
   items.push({
     label: 'Download variants',
     items: variants.map(v => ({

@@ -306,7 +306,6 @@ export const useImageActions = () => {
     })
 
     if (hasVariants) {
-      items.push({}) // separator
       items.push({
         label: 'Download variants',
         items: variants.map(v => ({

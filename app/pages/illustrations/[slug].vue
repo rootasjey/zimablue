@@ -503,7 +503,6 @@ const downloadMenuItems = computed(() => {
     },
   ]
   if (hasAspectVariants.value) {
-    items.push({})
     items.push({
       label: 'Download variants',
       items: aspectVariantList.value.map((v: Image) => ({

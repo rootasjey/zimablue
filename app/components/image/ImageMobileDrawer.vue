@@ -325,7 +325,6 @@ const downloadMenuItems = computed(() => {
       onClick: () => { if (props.selectedModalImage) downloadImage(props.selectedModalImage) },
     },
   ]
-  items.push({})
   items.push({
     label: 'Download variants',
     items: variants.map(v => ({
