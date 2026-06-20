@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
-    <div v-if="isOpen || isFlying" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm sm:hidden" />
+    <div v-if="isOpen || isFlying" class="fixed inset-0 z-15 bg-black/40 backdrop-blur-sm sm:hidden" />
 
     <div
       v-if="(isFlying || isOpen) && image && cardRect"
-      class="fixed z-[51] sm:hidden rounded-3xl shadow-2xl bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
+      class="fixed z-[16] sm:hidden rounded-3xl shadow-2xl bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
       :style="{
         top: cardRect.top + 'px',
         left: cardRect.left + 'px',
