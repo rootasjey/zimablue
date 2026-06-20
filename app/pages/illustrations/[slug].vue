@@ -195,24 +195,31 @@
       v-model:is-open="addToCollection.isOpen.value"
       :selected-image="addToCollection.selectedImage.value"
       :collections="addToCollection.collections.value"
-      :selected-collection="addToCollection.selectedCollection.value"
+      :filtered-collections="addToCollection.filteredCollections.value"
+      :selected-collections="addToCollection.selectedCollections.value"
+      :search-query="addToCollection.searchQuery.value"
       :is-loading="addToCollection.isLoading.value"
       :is-adding="addToCollection.isAdding.value"
       :error="addToCollection.error.value"
       @add-to-collection="addToCollection.addImageToCollection"
-      @select-collection="addToCollection.selectCollection"
+      @toggle-collection="addToCollection.toggleCollection"
+      @toggle-select-all="addToCollection.toggleSelectAll"
+      @update:search-query="addToCollection.searchQuery.value = $event"
     />
 
     <AddToCollectionDrawer
       v-model:is-open="addToCollection.isDrawerOpen.value"
       :selected-image="addToCollection.selectedImage.value"
       :collections="addToCollection.collections.value"
-      :selected-collection="addToCollection.selectedCollection.value"
+      :filtered-collections="addToCollection.filteredCollections.value"
+      :selected-collections="addToCollection.selectedCollections.value"
+      :search-query="addToCollection.searchQuery.value"
       :is-loading="addToCollection.isLoading.value"
       :is-adding="addToCollection.isAdding.value"
       :error="addToCollection.error.value"
       @add-to-collection="addToCollection.addImageToCollection"
-      @select-collection="addToCollection.selectCollection"
+      @toggle-collection="addToCollection.toggleCollection"
+      @update:search-query="addToCollection.searchQuery.value = $event"
     />
 
     <ImageDeleteDialog

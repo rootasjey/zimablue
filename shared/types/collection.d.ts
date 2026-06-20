@@ -2,6 +2,13 @@ export interface Collection {
   owner: any;
   cover_image_id: number | null;
   cover_image_pathname?: string;
+  cover_image?: {
+    id: number
+    name: string
+    pathname: string
+    w: number
+    h: number
+  } | null
   created_at: string;
   description: string;
   id: number;

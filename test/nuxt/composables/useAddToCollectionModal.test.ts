@@ -65,6 +65,7 @@ describe('useAddToCollectionModal', () => {
       expect(composable.isOpen.value).toBe(true)
       expect(composable.selectedImage.value?.id).toBe(42)
       expect(composable.error.value).toBeNull()
+      expect(composable.searchQuery.value).toBe('')
     })
 
     it('fetches private collections when logged in', async () => {
@@ -99,7 +100,6 @@ describe('useAddToCollectionModal', () => {
 
       const composable = useAddToCollectionModal()
       composable.openModal(mockImage())
-      // openModal starts fetchCollections() asynchronously — wait for it
       await new Promise(resolve => setTimeout(resolve, 10))
 
       expect(fetchCount).toBe(1)
@@ -108,6 +108,18 @@ describe('useAddToCollectionModal', () => {
       composable.openModal(mockImage({ id: 99 }))
 
       expect(fetchCount).toBe(1)
+    })
+
+    it('resets searchQuery and selectedCollections on open', () => {
+      const composable = useAddToCollectionModal()
+      composable.collections.value = [mockCollection()]
+      composable.selectedCollections.value = [mockCollection()]
+      composable.searchQuery.value = 'hello'
+
+      composable.openModal(mockImage())
+
+      expect(composable.selectedCollections.value).toEqual([])
+      expect(composable.searchQuery.value).toBe('')
     })
   })
 
@@ -132,65 +144,127 @@ describe('useAddToCollectionModal', () => {
       const composable = useAddToCollectionModal()
       composable.isOpen.value = true
       composable.selectedImage.value = mockImage()
-      composable.selectedCollection.value = mockCollection()
+      composable.selectedCollections.value = [mockCollection()]
       composable.error.value = 'some error'
+      composable.searchQuery.value = 'test'
 
       composable.closeModal()
 
       expect(composable.isOpen.value).toBe(false)
       expect(composable.selectedImage.value).toBeNull()
-      expect(composable.selectedCollection.value).toBeNull()
+      expect(composable.selectedCollections.value).toEqual([])
       expect(composable.error.value).toBeNull()
+      expect(composable.searchQuery.value).toBe('')
     })
   })
 
-  describe('selectCollection', () => {
-    it('selects a collection', () => {
+  describe('toggleCollection', () => {
+    it('adds collection to selection', () => {
       const composable = useAddToCollectionModal()
       const coll = mockCollection()
-      composable.selectCollection(coll)
+      composable.toggleCollection(coll)
 
-      expect(composable.selectedCollection.value?.id).toBe(1)
-      expect(composable.hasSelectedCollection.value).toBe(true)
+      expect(composable.selectedCollections.value).toHaveLength(1)
+      expect(composable.selectedCollections.value[0]!.id).toBe(1)
+      expect(composable.hasSelectedCollections.value).toBe(true)
     })
 
-    it('deselects if same collection selected again', () => {
+    it('removes collection if already selected', () => {
       const composable = useAddToCollectionModal()
       const coll = mockCollection()
-      composable.selectCollection(coll)
-      composable.selectCollection(coll)
+      composable.toggleCollection(coll)
+      composable.toggleCollection(coll)
 
-      expect(composable.selectedCollection.value).toBeNull()
-      expect(composable.hasSelectedCollection.value).toBe(false)
+      expect(composable.selectedCollections.value).toEqual([])
+      expect(composable.hasSelectedCollections.value).toBe(false)
+    })
+
+    it('supports multiple collections', () => {
+      const composable = useAddToCollectionModal()
+      const coll1 = mockCollection({ id: 1, name: 'One' })
+      const coll2 = mockCollection({ id: 2, name: 'Two' })
+
+      composable.toggleCollection(coll1)
+      composable.toggleCollection(coll2)
+
+      expect(composable.selectedCollections.value).toHaveLength(2)
+      expect(composable.selectedCollections.value[0]!.id).toBe(1)
+      expect(composable.selectedCollections.value[1]!.id).toBe(2)
+    })
+  })
+
+  describe('filteredCollections', () => {
+    it('returns all collections when no search query', () => {
+      const composable = useAddToCollectionModal()
+      const coll1 = mockCollection({ id: 1, name: 'Alpha' })
+      const coll2 = mockCollection({ id: 2, name: 'Beta' })
+      composable.collections.value = [coll1, coll2]
+
+      expect(composable.filteredCollections.value).toHaveLength(2)
+    })
+
+    it('filters by name', () => {
+      const composable = useAddToCollectionModal()
+      composable.collections.value = [
+        mockCollection({ id: 1, name: 'Nature' }),
+        mockCollection({ id: 2, name: 'Animals' }),
+      ]
+      composable.searchQuery.value = 'nature'
+
+      expect(composable.filteredCollections.value).toHaveLength(1)
+      expect(composable.filteredCollections.value[0]!.id).toBe(1)
+    })
+
+    it('filters by description', () => {
+      const composable = useAddToCollectionModal()
+      composable.collections.value = [
+        mockCollection({ id: 1, name: 'Nature', description: 'Landscapes' }),
+        mockCollection({ id: 2, name: 'Animals', description: 'Wildlife' }),
+      ]
+      composable.searchQuery.value = 'wildlife'
+
+      expect(composable.filteredCollections.value).toHaveLength(1)
+      expect(composable.filteredCollections.value[0]!.id).toBe(2)
     })
   })
 
   describe('addImageToCollection', () => {
-    it('sends PUT request and closes modal on success', async () => {
-      let requestBody: any = null
+    it('sends PUT to each selected collection and closes modal on success', async () => {
+      const putCalls: any[] = []
       registerEndpoint('/api/collections/test-collection', {
         method: 'PUT',
         handler: async (event: any) => {
           const { readBody } = await import('h3')
-          requestBody = await readBody(event)
+          putCalls.push({ slug: 'test-collection', body: await readBody(event) })
+          return { success: true }
+        },
+      })
+      registerEndpoint('/api/collections/another-collection', {
+        method: 'PUT',
+        handler: async (event: any) => {
+          const { readBody } = await import('h3')
+          putCalls.push({ slug: 'another-collection', body: await readBody(event) })
           return { success: true }
         },
       })
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection()],
-        pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
+        collections: [mockCollection(), mockCollection({ id: 2, slug: 'another-collection' })],
+        pagination: { total: 2, limit: 50, offset: 0, hasMore: false },
       }))
 
       const composable = useAddToCollectionModal()
       composable.openModal(mockImage())
-      composable.selectCollection(mockCollection())
+      composable.toggleCollection(mockCollection())
+      composable.toggleCollection(mockCollection({ id: 2, slug: 'another-collection' }))
 
       const result = await composable.addImageToCollection()
 
       expect(result).toBe(true)
-      expect(requestBody).toEqual({ images: { add: [42] } })
+      expect(putCalls).toHaveLength(2)
+      expect(putCalls[0]).toEqual({ slug: 'test-collection', body: { images: { add: [42] } } })
+      expect(putCalls[1]).toEqual({ slug: 'another-collection', body: { images: { add: [42] } } })
       expect(composable.isOpen.value).toBe(false)
     })
 
@@ -201,11 +275,15 @@ describe('useAddToCollectionModal', () => {
       const result = await composable.addImageToCollection()
 
       expect(result).toBe(false)
-      expect(composable.error.value).toBe('Please select a collection and image')
+      expect(composable.error.value).toBe('Please select at least one collection')
     })
 
-    it('handles 409 conflict error', async () => {
-      registerEndpoint('/api/collections/test-collection', {
+    it('reports partial failures', async () => {
+      registerEndpoint('/api/collections/good-collection', {
+        method: 'PUT',
+        handler: () => ({ success: true }),
+      })
+      registerEndpoint('/api/collections/bad-collection', {
         method: 'PUT',
         handler: () => {
           throw createError({ statusCode: 409, statusMessage: 'Conflict' })
@@ -214,24 +292,32 @@ describe('useAddToCollectionModal', () => {
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection()],
-        pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
+        collections: [
+          mockCollection({ slug: 'good-collection', name: 'Good' }),
+          mockCollection({ slug: 'bad-collection', name: 'Bad' }),
+        ],
+        pagination: { total: 2, limit: 50, offset: 0, hasMore: false },
       }))
 
       const composable = useAddToCollectionModal()
       composable.openModal(mockImage())
-      composable.selectCollection(mockCollection())
+      composable.toggleCollection(mockCollection({ slug: 'good-collection', name: 'Good' }))
+      composable.toggleCollection(mockCollection({ slug: 'bad-collection', name: 'Bad', id: 2 }))
 
       const result = await composable.addImageToCollection()
 
       expect(result).toBe(false)
-      expect(composable.error.value).toBe(
-        'This image is already in the selected collection'
-      )
+      expect(composable.error.value).toContain('Failed for: Bad')
     })
 
-    it('handles 404 error', async () => {
-      registerEndpoint('/api/collections/test-collection', {
+    it('handles all failures', async () => {
+      registerEndpoint('/api/collections/fail-one', {
+        method: 'PUT',
+        handler: () => {
+          throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+        },
+      })
+      registerEndpoint('/api/collections/fail-two', {
         method: 'PUT',
         handler: () => {
           throw createError({ statusCode: 404, statusMessage: 'Not Found' })
@@ -240,44 +326,22 @@ describe('useAddToCollectionModal', () => {
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection()],
-        pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
+        collections: [
+          mockCollection({ slug: 'fail-one', name: 'Fail One' }),
+          mockCollection({ slug: 'fail-two', name: 'Fail Two', id: 2 }),
+        ],
+        pagination: { total: 2, limit: 50, offset: 0, hasMore: false },
       }))
 
       const composable = useAddToCollectionModal()
       composable.openModal(mockImage())
-      composable.selectCollection(mockCollection())
+      composable.toggleCollection(mockCollection({ slug: 'fail-one', name: 'Fail One' }))
+      composable.toggleCollection(mockCollection({ slug: 'fail-two', name: 'Fail Two', id: 2 }))
 
       const result = await composable.addImageToCollection()
 
       expect(result).toBe(false)
-      expect(composable.error.value).toBe('Collection not found')
-    })
-
-    it('handles 403 error', async () => {
-      registerEndpoint('/api/collections/test-collection', {
-        method: 'PUT',
-        handler: () => {
-          throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
-        },
-      })
-
-      registerEndpoint('/api/collections', () => ({
-        success: true,
-        collections: [mockCollection()],
-        pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
-      }))
-
-      const composable = useAddToCollectionModal()
-      composable.openModal(mockImage())
-      composable.selectCollection(mockCollection())
-
-      const result = await composable.addImageToCollection()
-
-      expect(result).toBe(false)
-      expect(composable.error.value).toBe(
-        'You do not have permission to modify this collection'
-      )
+      expect(composable.error.value).toBe('Failed to add image to the selected collections. Please try again.')
     })
   })
 
@@ -298,7 +362,7 @@ describe('useAddToCollectionModal', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       expect(fetchCount).toBe(1)
-      expect(composable.collections.value[0].name).toBe('Fetch 1')
+      expect(composable.collections.value[0]!.name).toBe('Fetch 1')
 
       composable.refreshCollections()
       await new Promise(resolve => setTimeout(resolve, 10))
