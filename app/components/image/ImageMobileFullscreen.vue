@@ -176,7 +176,7 @@ const downloadMenuItems = computed(() => {
   if (variants.length === 0) return []
   const items: Array<{ label: string; onClick?: () => void; disabled?: boolean } | {}> = [
     {
-      label: 'Download',
+      label: props.image?.aspect_label ? `Download (${props.image.aspect_label})` : 'Download',
       onClick: () => { if (props.image) downloadImage(props.image) },
     },
   ]

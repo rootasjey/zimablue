@@ -302,7 +302,7 @@ export const useImageActions = () => {
     const hasVariants = variants.length > 0
 
     items.push({
-      label: 'Download',
+      label: hasVariants && image.aspect_label ? `Download (${image.aspect_label})` : 'Download',
       onClick: () => downloadImage(image),
     })
 
