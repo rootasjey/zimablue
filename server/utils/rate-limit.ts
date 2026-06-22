@@ -4,15 +4,8 @@ interface RateLimitEntry {
 }
 
 // In-memory fallback when KV is unavailable (edge cases)
+// Cleanup is lazy (expired entries are skipped on access)
 const memBuckets = new Map<string, RateLimitEntry>()
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [key, entry] of memBuckets) {
-      if (entry.resetAt < now) memBuckets.delete(key)
-    }
-  }, 5 * 60 * 1000)
-}
 
 export interface RateLimitConfig {
   maxRequests: number
