@@ -49,5 +49,5 @@ export default defineEventHandler(async (event) => {
   }
 
   await setUserSession(event, { user })
-  return { user }
+  return { success: true, data: { user } }
 })

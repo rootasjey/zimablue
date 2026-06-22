@@ -87,13 +87,16 @@ export default defineEventHandler(async (event) => {
     })
 
     return {
+      success: true,
       message: 'Account created successfully',
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        createdAt: toISOString(newUser.createdAt)
+      data: {
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          createdAt: toISOString(newUser.createdAt)
+        }
       }
     }
 
