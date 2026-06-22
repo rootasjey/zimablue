@@ -167,7 +167,7 @@ async function uploadAndLink() {
       body: formData,
     })
 
-    if (!response?.ok) {
+    if (!response?.success) {
       throw new Error("L'upload a échoué")
     }
 

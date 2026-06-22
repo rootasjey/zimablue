@@ -120,7 +120,7 @@ export default eventHandler(async (event) => {
     .get()
 
   return {
-    ...(selectResponse as any),
-    ok: true,
+    success: true,
+    data: selectResponse as any,
   }
 })

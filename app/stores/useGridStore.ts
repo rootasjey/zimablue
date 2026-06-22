@@ -299,9 +299,9 @@ export const useGridStore = defineStore('grid', () => {
 
         onProgress?.(fileId, 95)
 
-        if (response.ok) {
-          const uploadedImage = response
-          // Update the optimistic grid item with the uploaded image data
+        const res = response as { success: boolean; data: any }
+        if (res.success) {
+          const uploadedImage = res.data
           newGridItem.id = uploadedImage.id
           newGridItem.i = uploadedImage.id
           newGridItem.created_at = uploadedImage.created_at
@@ -316,8 +316,8 @@ export const useGridStore = defineStore('grid', () => {
 
           saveLayout(layout.value)
           onProgress?.(fileId, 100)
-          onFileComplete?.(fileId, response)
-          return { fileId, response, success: true }
+          onFileComplete?.(fileId, res)
+          return { fileId, response: res, success: true }
         } else {
           console.error('Upload failed response:', response)
           throw new Error('Upload failed')
