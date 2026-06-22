@@ -95,8 +95,7 @@ export default eventHandler(async (event) => {
     }
   }
 
-  // Convert map to array and sort by sum_abs to match original order (though already ordered by query)
   const imagesWithTags = Array.from(imageMap.values()).sort((a, b) => a.sum_abs - b.sum_abs)
 
-  return imagesWithTags as Image[]
+  return { success: true, data: imagesWithTags as Image[] }
 })

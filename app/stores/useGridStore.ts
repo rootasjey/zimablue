@@ -31,7 +31,7 @@ export const useGridStore = defineStore('grid', () => {
     isLoading.value = true
 
     try {
-      const data = await $fetch<Image[]>('/api/grid', {
+      const res = await $fetch<{ success: true; data: Image[] }>('/api/grid', {
         method: 'GET',
         headers: {
           'cache-control': 'no-cache',
@@ -39,7 +39,7 @@ export const useGridStore = defineStore('grid', () => {
         },
       })
 
-      layout.value = Array.isArray(data) ? data : []
+      layout.value = Array.isArray(res.data) ? res.data : []
     } catch (error) {
       console.error('Failed to fetch grid:', error)
       layout.value = []

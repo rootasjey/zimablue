@@ -92,7 +92,7 @@ describe('useGridStore', () => {
         { id: 1, name: 'img1', pathname: '/path/1' },
         { id: 2, name: 'img2', pathname: '/path/2' },
       ]
-      registerEndpoint('/api/grid', () => mockData)
+      registerEndpoint('/api/grid', () => ({ success: true, data: mockData }))
 
       const store = useGridStore()
       await store.fetchGrid()
