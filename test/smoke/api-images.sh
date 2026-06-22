@@ -71,7 +71,19 @@ assert "pagination limit matches request" \
 
 echo
 
-# ── Test 3: Pagination boundary (?limit=5&offset=100000) ──
+# ── Test 3: Fields filtering (?limit=2&fields=id,name,slug) ──
+echo "═══ Fields filtering: ?limit=2&fields=id,name,slug ␛"
+FIELDS=$(curl -s "$BASE_URL/api/images?limit=2&fields=id,name,slug")
+assert "only returns requested fields" \
+  '(.data[0] | length) == 3 and (.data[0] | has("id")) and (.data[0] | has("name")) and (.data[0] | has("slug"))' \
+  "$FIELDS"
+assert "excludes non-requested fields" \
+  '.data[0] | has("variants") | not' \
+  "$FIELDS"
+
+echo
+
+# ── Test 4: Pagination boundary (?limit=5&offset=100000) ──
 echo "═══ Paginated mode: ?limit=5&offset=100000 (beyond total) ═══"
 EMPTY=$(curl -s "$BASE_URL/api/images?limit=5&offset=100000")
 assert "returns success" \
@@ -88,7 +100,7 @@ assert "hasMore is false" \
 
 echo
 
-# ── Test 4: Second page (?limit=2&offset=2) ──
+# ── Test 5: Second page (?limit=2&offset=2) ──
 echo "═══ Paginated mode: ?limit=2&offset=2 (second page) ═══"
 PAGE2=$(curl -s "$BASE_URL/api/images?limit=2&offset=2")
 assert "returns success" \

@@ -4,9 +4,11 @@ import { inArray, eq, asc, count } from 'drizzle-orm'
 import { images, tags, imageTags } from '../../db/schema'
 import { keysToSnake } from '../../utils/case'
 import { computePagination } from '../../utils/api-response'
+import { pickFields } from '../../utils/pick-fields'
 
 export default eventHandler(async (event) => {
   const query = getQuery(event)
+  const fields = query.fields as string | undefined
   const limit = query.limit ? Number(query.limit) : undefined
   const offset = query.offset ? Number(query.offset) : 0
   const hasPagination = limit !== undefined
@@ -53,7 +55,7 @@ export default eventHandler(async (event) => {
 
     return {
       success: true,
-      data: imagesWithTags.map(keysToSnake),
+      data: pickFields(imagesWithTags.map(keysToSnake), fields),
       pagination: computePagination(total, limit!, offset)
     }
   }
