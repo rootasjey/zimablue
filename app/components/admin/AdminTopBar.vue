@@ -165,7 +165,7 @@ const navigationItems = computed<any[]>(() => {
     {
       label: 'Workspace',
       value: 'workspace',
-      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools') || isCurrentRoute('/admin/social'),
+      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools') || isCurrentRoute('/admin/social') || isCurrentRoute('/admin/api-tokens'),
       items: [
         {
           label: 'Users',
@@ -196,6 +196,12 @@ const navigationItems = computed<any[]>(() => {
           description: 'Run maintenance and import or export utilities.',
           to: '/admin/tools',
           active: isCurrentRoute('/admin/tools'),
+        },
+        {
+          label: 'API Tokens',
+          description: 'Manage tokens for mobile and desktop apps.',
+          to: '/admin/api-tokens',
+          active: isCurrentRoute('/admin/api-tokens'),
         },
       ],
     },

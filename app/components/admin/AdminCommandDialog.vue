@@ -338,6 +338,20 @@ const commands = computed<Command[]>(() => {
       hint: isCurrentRoute('/admin/tools') ? 'Current page' : 'Page'
     },
     {
+      id: 'nav-api-tokens',
+      label: 'API Tokens',
+      description: 'Manage tokens for mobile and desktop apps.',
+      group: 'navigation',
+      kind: 'route',
+      to: '/admin/api-tokens',
+      icon: 'i-ph-key',
+      iconClass: isCurrentRoute('/admin/api-tokens')
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+        : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300',
+      keywords: ['api', 'tokens', 'auth', 'mobile', 'apps'],
+      hint: isCurrentRoute('/admin/api-tokens') ? 'Current page' : 'Page'
+    },
+    {
       id: 'nav-settings',
       label: 'Settings',
       description: 'Adjust preferences and account settings.',
