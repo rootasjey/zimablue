@@ -50,8 +50,9 @@ export default defineEventHandler(async (event) => {
   if (returnToken) {
     const rawToken = generateToken()
     const tokenHash = await hashToken(rawToken)
+    const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
     await db.insert(apiTokens)
-      .values({ userId: user.id, name: 'Login token', tokenHash })
+      .values({ userId: user.id, name: 'Login token', tokenHash, expiresAt })
       .returning()
     token = rawToken
   }

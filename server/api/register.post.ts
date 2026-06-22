@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
       const rawToken = generateToken()
       const tokenHash = await hashToken(rawToken)
       await db.insert(apiTokens)
-        .values({ userId: newUser.id, name: 'Registration token', tokenHash })
+        .values({ userId: newUser.id, name: 'Registration token', tokenHash, expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) })
         .returning()
       token = rawToken
     }
