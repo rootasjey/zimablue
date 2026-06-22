@@ -8,7 +8,7 @@ interface NavPath {
   description: string
 }
 
-interface SearchResults {
+interface SearchData {
   images: ImageWithTags[]
   collections: Collection[]
   total: {
@@ -19,7 +19,7 @@ interface SearchResults {
 
 interface SearchState {
   query: string
-  results: SearchResults
+  results: SearchData
   isLoading: boolean
   error: string | null
   isDialogOpen: boolean
@@ -194,16 +194,16 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     state.value.error = null
 
     try {
-      const response = await $fetch<SearchResults>('/api/search', {
+      const response = await $fetch<{ success: true; data: SearchData }>('/api/search', {
         query: {
           q: query,
           limit: 10
         },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000
       })
 
-      state.value.results = response
-      state.value.selectedIndex = response.images.length > 0 || response.collections.length > 0 ? 0 : -1
+      state.value.results = response.data
+      state.value.selectedIndex = response.data.images.length > 0 || response.data.collections.length > 0 ? 0 : -1
       state.value.retryCount = 0 // Reset retry count on success
     } catch (error: any) {
       console.error('Search failed:', error)
