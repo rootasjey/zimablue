@@ -8,6 +8,7 @@ export interface ApiPagination {
 export interface ApiSuccessResponse<T = unknown> {
   success: true
   data: T
+  message?: string
   pagination?: ApiPagination
 }
 
@@ -22,9 +23,10 @@ export interface ApiErrorResponse {
 
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse
 
-export function apiSuccess<T>(data: T, pagination?: ApiPagination): ApiSuccessResponse<T> {
+export function apiSuccess<T>(data: T, pagination?: ApiPagination, message?: string): ApiSuccessResponse<T> {
   const res: ApiSuccessResponse<T> = { success: true, data }
   if (pagination) res.pagination = pagination
+  if (message) res.message = message
   return res
 }
 

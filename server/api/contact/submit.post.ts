@@ -1,37 +1,25 @@
 import { db } from 'hub:db'
+import { z } from 'zod'
 import { messages } from '../../db/schema'
-import { validateContactInput } from '../../utils/contact'
+import { apiSuccess } from '../../utils/api-response'
+
+const bodySchema = z.object({
+  email: z.string().email('Invalid email format'),
+  subject: z.string().min(1, 'Subject is required'),
+  message: z.string().min(1, 'Message is required'),
+})
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const validation = validateContactInput(body)
-  if (!validation.valid) {
-    throw createError({ statusCode: 400, message: validation.error! })
+  const { email, subject, message } = await readValidatedBody(event, bodySchema.parse)
+
+  const results = await db.insert(messages)
+    .values({ senderEmail: email, subject, message })
+    .returning()
+
+  const result = results[0]
+  if (!result) {
+    throw createError({ statusCode: 500, message: 'Failed to save message' })
   }
 
-  try {
-    const result = await db.insert(messages)
-      .values({
-        senderEmail: body.email,
-        subject: body.subject,
-        message: body.message
-      })
-      .returning()
-      .get()
-    
-    if (!result) {
-      throw new Error('Failed to save message')
-    }
-    
-    return {
-      success: true,
-      message: 'Your message has been sent successfully!'
-    }
-  } catch (error) {
-    console.error('Error saving message:', error)
-    throw createError({
-      statusCode: 500,
-      message: 'Failed to save your message. Please try again later.'
-    })
-  }
+  return apiSuccess({ id: result.id }, undefined, 'Your message has been sent successfully!')
 })
