@@ -2,7 +2,9 @@ import { db } from 'hub:db'
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import type { DbUser } from '#shared/types/database'
-import { users } from '../db/schema'
+import { users, apiTokens } from '../db/schema'
+import { generateToken, hashToken } from '../utils/api-auth'
+import { apiSuccess } from '../utils/api-response'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -11,6 +13,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
+  const returnToken = getQuery(event).returnToken === 'true'
 
   const userData = await db.select()
     .from(users)
@@ -19,19 +22,12 @@ export default defineEventHandler(async (event) => {
     .get() as DbUser | undefined
 
   if (!userData) {
-    throw createError({
-      statusCode: 401,
-      message: 'Bad credentials'
-    })
+    throw createError({ statusCode: 401, message: 'Bad credentials' })
   }
 
   const isValidPassword = await verifyPassword(userData.password as string, password)
-  
   if (!isValidPassword) {
-    throw createError({
-      statusCode: 401,
-      message: 'Bad credentials'
-    })
+    throw createError({ statusCode: 401, message: 'Bad credentials' })
   }
 
   const user = {
@@ -49,5 +45,16 @@ export default defineEventHandler(async (event) => {
   }
 
   await setUserSession(event, { user })
-  return { success: true, data: { user } }
+
+  let token: string | undefined
+  if (returnToken) {
+    const rawToken = generateToken()
+    const tokenHash = await hashToken(rawToken)
+    await db.insert(apiTokens)
+      .values({ userId: user.id, name: 'Login token', tokenHash })
+      .returning()
+    token = rawToken
+  }
+
+  return apiSuccess(token ? { user, token } : { user })
 })

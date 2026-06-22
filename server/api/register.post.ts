@@ -1,8 +1,10 @@
 import { db } from 'hub:db'
 import { z } from 'zod'
 import { sql, eq, or } from 'drizzle-orm'
-import { users } from '../db/schema'
+import { users, apiTokens } from '../db/schema'
 import type { DbUser } from '#shared/types/database'
+import { generateToken, hashToken } from '../utils/api-auth'
+import { apiSuccess } from '../utils/api-response'
 
 const bodySchema = z.object({
   name: z.string().min(2).max(50),
@@ -86,19 +88,23 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    return {
-      success: true,
-      message: 'Account created successfully',
-      data: {
-        user: {
-          id: newUser.id,
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-          createdAt: toISOString(newUser.createdAt)
-        }
-      }
+    const returnToken = getQuery(event).returnToken === 'true'
+
+    let token: string | undefined
+    if (returnToken) {
+      const rawToken = generateToken()
+      const tokenHash = await hashToken(rawToken)
+      await db.insert(apiTokens)
+        .values({ userId: newUser.id, name: 'Registration token', tokenHash })
+        .returning()
+      token = rawToken
     }
+
+    return apiSuccess(
+      token ? { user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, createdAt: toISOString(newUser.createdAt) }, token } : { user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, createdAt: toISOString(newUser.createdAt) } },
+      undefined,
+      'Account created successfully'
+    )
 
   } catch (error: any) {
     if (error.statusCode) {
