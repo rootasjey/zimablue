@@ -54,7 +54,7 @@ describe('useAddToCollectionModal', () => {
     it('opens modal and fetches collections if not cached', async () => {
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection()],
+        data: [mockCollection()],
         pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
       }))
 
@@ -74,7 +74,7 @@ describe('useAddToCollectionModal', () => {
         requestUrl = event.path
         return {
           success: true,
-          collections: [mockCollection()],
+          data: [mockCollection()],
           pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
         }
       })
@@ -93,7 +93,7 @@ describe('useAddToCollectionModal', () => {
         fetchCount++
         return {
           success: true,
-          collections: [mockCollection()],
+          data: [mockCollection()],
           pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
         }
       })
@@ -127,7 +127,7 @@ describe('useAddToCollectionModal', () => {
     it('opens drawer and fetches collections', async () => {
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection()],
+        data: [mockCollection()],
         pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
       }))
 
@@ -250,7 +250,7 @@ describe('useAddToCollectionModal', () => {
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [mockCollection(), mockCollection({ id: 2, slug: 'another-collection' })],
+        data: [mockCollection(), mockCollection({ id: 2, slug: 'another-collection' })],
         pagination: { total: 2, limit: 50, offset: 0, hasMore: false },
       }))
 
@@ -292,7 +292,7 @@ describe('useAddToCollectionModal', () => {
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [
+        data: [
           mockCollection({ slug: 'good-collection', name: 'Good' }),
           mockCollection({ slug: 'bad-collection', name: 'Bad' }),
         ],
@@ -326,7 +326,7 @@ describe('useAddToCollectionModal', () => {
 
       registerEndpoint('/api/collections', () => ({
         success: true,
-        collections: [
+        data: [
           mockCollection({ slug: 'fail-one', name: 'Fail One' }),
           mockCollection({ slug: 'fail-two', name: 'Fail Two', id: 2 }),
         ],
@@ -352,7 +352,7 @@ describe('useAddToCollectionModal', () => {
         fetchCount++
         return {
           success: true,
-          collections: [mockCollection({ name: `Fetch ${fetchCount}` })],
+          data: [mockCollection({ name: `Fetch ${fetchCount}` })],
           pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
         }
       })

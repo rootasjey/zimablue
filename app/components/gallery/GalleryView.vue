@@ -551,8 +551,8 @@ const fetchBulkCollections = async () => {
     isLoadingBulkCollections.value = true
     bulkCollectionsError.value = null
 
-    const data = await $fetch('/api/collections')
-    bulkCollections.value = (data.collections || [])
+    const res: any = await $fetch('/api/collections')
+    bulkCollections.value = (res.data || [])
   } catch (err) {
     console.error('Error fetching collections:', err)
     bulkCollectionsError.value = 'Failed to load collections. Please try again.'

@@ -25,13 +25,13 @@ export const useCollectionStore = defineStore('collection', () => {
       isLoading.value = true
       error.value = null
       
-      const data = await $fetch('/api/collections', {
+      const res: any = await $fetch('/api/collections', {
         query: {
           includePrivate
         }
       })
       
-      collections.value = (data?.collections || []) as unknown as Collection[]
+      collections.value = (res?.data || []) as unknown as Collection[]
     } catch (err) {
       error.value = 'Failed to load collections. Please try again.'
       console.error('Error fetching collections:', err)

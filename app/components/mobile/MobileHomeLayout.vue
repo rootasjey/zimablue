@@ -272,8 +272,8 @@ const isLoadingCollections = ref(false)
 onMounted(async () => {
   try {
     isLoadingCollections.value = true
-    const data = await $fetch('/api/collections')
-    collections.value = (data.collections || []).slice(0, 6)
+    const res: any = await $fetch('/api/collections')
+    collections.value = (res.data || []).slice(0, 6)
   } catch (err) {
     console.error('Failed to fetch collections:', err)
   } finally {

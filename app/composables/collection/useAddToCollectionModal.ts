@@ -82,8 +82,8 @@ export const useAddToCollectionModal = () => {
       error.value = null
 
       const includePrivateQuery = loggedIn?.value ? '?includePrivate=1' : ''
-      const data = await $fetch(`/api/collections${includePrivateQuery}`)
-      collections.value = (data.collections || []) as unknown as Collection[]
+      const res: any = await $fetch(`/api/collections${includePrivateQuery}`)
+      collections.value = (res.data || []) as unknown as Collection[]
     } catch (err) {
       console.error('Error fetching collections:', err)
       error.value = 'Failed to load collections. Please try again.'
