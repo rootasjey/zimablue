@@ -65,7 +65,7 @@ export const useCollectionDetailStore = defineStore('collectionDetail', () => {
   // Fetch available images for adding to collection
   async function fetchAvailableImages() {
     try {
-      const allImagesData = await $fetch('/api/images')
+      const allImagesData = await $fetch<any[]>('/api/images')
       const allImages: Image[] = allImagesData || []
 
       // Filter out images already in the collection

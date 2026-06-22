@@ -32,7 +32,8 @@ export const useTagSearch = () => {
             sort_order: 'desc',
           },
         })
-        tags.value = response.tags
+        const res = response as { data: any[] }
+        tags.value = res.data || []
       } catch (error) {
         console.error('Failed to fetch tags:', error)
         tags.value = []

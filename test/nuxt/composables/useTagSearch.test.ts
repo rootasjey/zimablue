@@ -39,9 +39,9 @@ describe('useTagSearch', () => {
   describe('searchTags', () => {
     it('fetches tags with debounce and updates state', async () => {
       registerEndpoint('/api/tags', () => ({
-        tags: [mockTag({ id: 1, name: 'vue' }), mockTag({ id: 2, name: 'nuxt' })],
-        total: 2,
-        pagination: { page: 1, limit: 50, total_pages: 1 },
+        data: [mockTag({ id: 1, name: 'vue' }), mockTag({ id: 2, name: 'nuxt' })],
+        success: true,
+        pagination: { total: 2, limit: 50, offset: 0, hasMore: false },
       }))
 
       const composable = useTagSearch()
@@ -73,7 +73,7 @@ describe('useTagSearch', () => {
       let callCount = 0
       registerEndpoint('/api/tags', () => {
         callCount++
-        return { tags: [], total: 0, pagination: { page: 1, limit: 50, total_pages: 0 } }
+        return { data: [], success: true, pagination: { total: 0, limit: 50, offset: 0, hasMore: false } }
       })
 
       const composable = useTagSearch()
@@ -173,9 +173,9 @@ describe('useTagSearch', () => {
   describe('initializeTags', () => {
     it('fetches tags on init', async () => {
       registerEndpoint('/api/tags', () => ({
-        tags: [mockTag({ name: 'art' })],
-        total: 1,
-        pagination: { page: 1, limit: 50, total_pages: 1 },
+        data: [mockTag({ name: 'art' })],
+        success: true,
+        pagination: { total: 1, limit: 50, offset: 0, hasMore: false },
       }))
 
       const composable = useTagSearch()

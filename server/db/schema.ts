@@ -185,6 +185,22 @@ export const todos = sqliteTable('todos', {
   createdAtIdx: index('idx_todos_created_at').on(table.createdAt),
 }))
 
+// API tokens for external app authentication (mobile/desktop)
+export const apiTokens = sqliteTable('api_tokens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  tokenHash: text('token_hash').notNull().unique(),
+  lastUsedAt: integer('last_used_at', { mode: 'timestamp' }),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }),
+  revoked: integer('revoked', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  tokenHashIdx: uniqueIndex('idx_api_tokens_token_hash').on(table.tokenHash),
+  userIdIdx: index('idx_api_tokens_user_id').on(table.userId),
+}))
+
 // Export schema for Drizzle
 export const schema = {
   users,
@@ -197,4 +213,5 @@ export const schema = {
   socialPosts,
   messages,
   todos,
+  apiTokens,
 }

@@ -37,12 +37,13 @@ export interface TagSearchParams {
 }
 
 export interface TagSearchResponse {
-  tags: Tag[];
-  total: number;
+  success: true;
+  data: Tag[];
   pagination: {
-    page: number;
+    total: number;
     limit: number;
-    total_pages: number;
+    offset: number;
+    hasMore: boolean;
   };
 }
 

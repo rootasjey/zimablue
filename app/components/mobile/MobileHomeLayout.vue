@@ -286,8 +286,8 @@ const tags = ref<Array<{ id: number; name: string }>>([])
 
 onMounted(async () => {
   try {
-    const data = await $fetch('/api/tags')
-    tags.value = (data.tags || []).slice(0, 12)
+    const res: any = await $fetch('/api/tags')
+    tags.value = (res.data || []).slice(0, 12)
   } catch (err) {
     console.error('Failed to fetch tags:', err)
   }

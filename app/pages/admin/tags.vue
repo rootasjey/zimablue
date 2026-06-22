@@ -201,15 +201,18 @@ const fetchTags = async () => {
         offset: (pagination.value.page - 1) * pagination.value.limit
       }
     })
-    tags.value = response.tags
-    const { total, pagination: pag } = response
+    const res = response as { data: any[]; pagination: any }
+    tags.value = res.data
+    const pag = res.pagination
+    const page = Math.floor(pag.offset / pag.limit) + 1
+    const totalPages = Math.ceil(pag.total / pag.limit)
     pagination.value = {
-      page: pag.page,
+      page,
       limit: pag.limit,
-      total,
-      totalPages: pag.total_pages,
-      hasNext: pag.page * pag.limit < total,
-      hasPrev: pag.page > 1
+      total: pag.total,
+      totalPages,
+      hasNext: pag.hasMore,
+      hasPrev: page > 1
     }
   } catch (error) {
     console.error('Failed to fetch tags:', error)
