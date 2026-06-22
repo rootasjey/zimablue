@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     config = PUBLIC_LIMIT
   }
 
-  const result = checkRateLimit(key, config)
+  const result = await checkRateLimit(key, config)
   applyRateLimitHeaders(event, result)
 
   if (!result.allowed) {
