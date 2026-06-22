@@ -207,76 +207,66 @@ export const useGridStore = defineStore('grid', () => {
   //   }
   // }
 
-  async function uploadImages(
-    files: File[],
+  async function uploadOne(
+    file: File,
+    index: number,
+    gridBottom: number,
+    aspectOptions?: { aspectGroupId?: number; aspectLabel?: string },
     onProgress?: (fileId: string, progress: number) => void,
     onFileComplete?: (fileId: string, result: any) => void,
     onFileError?: (fileId: string, error: string) => void,
-    aspectOptions?: { aspectGroupId?: number; aspectLabel?: string }
-  ) {
-    // Find the maximum bottom edge (y + h) among existing grid items
-    // so new images always appear below existing content.
-    const gridBottom = layout.value.reduce((maxY, item) => {
-      const itemBottom = (item.y || 0) + (item.h || 0)
-      return itemBottom > maxY ? itemBottom : maxY
-    }, 0)
+  ): Promise<{ fileId: string; success: boolean; response?: any; error?: string }> {
+    const fileId = `file_${index}_${Date.now()}`
+    let newGridItem: Image | null = null
+    let lastError = ''
 
-    const uploads = files.map(async (file, index) => {
-      const fileId = `file_${index}_${Date.now()}`
-      let newGridItem: Image | null = null
+    onProgress?.(fileId, 0)
 
+    const tempPreviewUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.readAsDataURL(file)
+    })
+    onProgress?.(fileId, 15)
+
+    newGridItem = {
+      created_at: new Date().toString(),
+      x: (layout.value.length * 2) % 14,
+      y: gridBottom + (index * 6),
+      w: 2,
+      h: 6,
+      i: layout.value.length + 1,
+      name: file.name,
+      description: "",
+      sum: 0,
+      sum_abs: 0,
+      id: layout.value.length + 1,
+      slug: "",
+      stats_downloads: 0,
+      stats_likes: 0,
+      stats_views: 0,
+      tags: [],
+      pathname: tempPreviewUrl,
+      updated_at: new Date().toString(),
+      variants: "",
+      user_id: 1,
+      aspect_label: aspectOptions?.aspectLabel ?? '',
+      aspect_group_id: aspectOptions?.aspectGroupId ?? null,
+    }
+    layout.value.push(newGridItem)
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        // Report initial progress
-        onProgress?.(fileId, 0)
-
-        // Create base64 preview
-        const tempPreviewUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onloadend = () => resolve(reader.result as string)
-          reader.readAsDataURL(file)
-        })
-
-        onProgress?.(fileId, 15)
-
-        // Create optimistic grid item with base64 preview
-        // y is placed at gridBottom with stacking offset for multiple uploads
-        newGridItem = {
-          created_at: new Date().toString(),
-          x: (layout.value.length * 2) % 14,
-          y: gridBottom + (index * 6),
-          w: 2,
-          h: 6,
-          i: layout.value.length + 1,
-          name: file.name,
-          description: "",
-          sum: 0,
-          sum_abs: 0,
-          id: layout.value.length + 1,
-          slug: "",
-          stats_downloads: 0,
-          stats_likes: 0,
-          stats_views: 0,
-          tags: [],
-          pathname: tempPreviewUrl,
-          updated_at: new Date().toString(),
-          variants: "",
-          user_id: 1, // Temporary user ID for optimistic update
-          aspect_label: aspectOptions?.aspectLabel ?? '',
-          aspect_group_id: aspectOptions?.aspectGroupId ?? null,
-        }
-
-        // Add to layout immediately for optimistic update
-        layout.value.push(newGridItem)
-        onProgress?.(fileId, 25)
+        onProgress?.(fileId, 25 + (attempt - 1) * 3)
 
         const formData = new FormData()
         formData.append('file', file)
         formData.append('fileName', file.name)
         formData.append('type', file.type)
-        formData.append('x', newGridItem.x.toString())
-        formData.append('y', newGridItem.y.toString())
-        formData.append('w', newGridItem.w.toString())
-        formData.append('h', newGridItem.h.toString())
+        formData.append('x', (newGridItem?.x ?? 0).toString())
+        formData.append('y', (newGridItem?.y ?? 0).toString())
+        formData.append('w', (newGridItem?.w ?? 2).toString())
+        formData.append('h', (newGridItem?.h ?? 6).toString())
         if (aspectOptions?.aspectGroupId) {
           formData.append('aspectGroupId', aspectOptions.aspectGroupId.toString())
         }
@@ -284,24 +274,24 @@ export const useGridStore = defineStore('grid', () => {
           formData.append('aspectLabel', aspectOptions.aspectLabel)
         }
 
-        onProgress?.(fileId, 35)
-
         const response = await $fetch('/api/images/upload', {
           method: 'POST',
           body: formData,
           onUploadProgress: (progress: any) => {
-            // Map upload progress from 35% to 90%
             const uploadPercent = progress.percent || 0
             const mappedProgress = 35 + (uploadPercent * 0.55)
             onProgress?.(fileId, Math.round(mappedProgress))
           }
         })
-
         onProgress?.(fileId, 95)
 
         const res = response as { success: boolean; data: any }
-        if (res.success) {
-          const uploadedImage = res.data
+        if (!res.success) {
+          throw new Error('Upload failed')
+        }
+
+        const uploadedImage = res.data
+        if (newGridItem) {
           newGridItem.id = uploadedImage.id
           newGridItem.i = uploadedImage.id
           newGridItem.created_at = uploadedImage.created_at
@@ -313,28 +303,67 @@ export const useGridStore = defineStore('grid', () => {
           newGridItem.variants = uploadedImage.variants
           newGridItem.aspect_label = uploadedImage.aspect_label ?? ''
           newGridItem.aspect_group_id = uploadedImage.aspect_group_id ?? null
-
-          saveLayout(layout.value)
-          onProgress?.(fileId, 100)
-          onFileComplete?.(fileId, res)
-          return { fileId, response: res, success: true }
-        } else {
-          console.error('Upload failed response:', response)
-          throw new Error('Upload failed')
         }
+        saveLayout(layout.value)
+        onProgress?.(fileId, 100)
+        onFileComplete?.(fileId, res)
+        return { fileId, response: res, success: true }
       } catch (error) {
-        console.error('Upload error:', error)
-        // Remove the optimistic item on error
-        if (newGridItem) {
-          layout.value = layout.value.filter(item => item.id !== newGridItem!.id)
+        lastError = error instanceof Error ? error.message : 'Upload failed'
+        console.error(`Upload attempt ${attempt}/3: ${lastError}`)
+        if (attempt < 3) {
+          const delayMs = 1000 * Math.pow(2, attempt - 1)
+          onProgress?.(fileId, 20 + attempt * 5)
+          await new Promise(resolve => setTimeout(resolve, delayMs))
         }
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed'
-        onFileError?.(fileId, errorMessage)
-        return { fileId, error: errorMessage, success: false }
       }
-    })
+    }
 
-    return await Promise.allSettled(uploads)
+    if (newGridItem) {
+      layout.value = layout.value.filter(item => item.id !== newGridItem!.id)
+    }
+    onFileError?.(fileId, lastError)
+    return { fileId, error: lastError, success: false }
+  }
+
+  async function uploadImages(
+    files: File[],
+    onProgress?: (fileId: string, progress: number) => void,
+    onFileComplete?: (fileId: string, result: any) => void,
+    onFileError?: (fileId: string, error: string) => void,
+    aspectOptions?: { aspectGroupId?: number; aspectLabel?: string }
+  ) {
+    const gridBottom = layout.value.reduce((maxY, item) => {
+      const itemBottom = (item.y || 0) + (item.h || 0)
+      return itemBottom > maxY ? itemBottom : maxY
+    }, 0)
+
+    const results: PromiseSettledResult<any>[] = []
+    const running = new Set<Promise<void>>()
+    const CONCURRENCY = 3
+
+    for (let i = 0; i < files.length; i++) {
+      const index = i
+      while (running.size >= CONCURRENCY) {
+        await Promise.race(running)
+      }
+
+      const promise = uploadOne(
+        files[index]!, index, gridBottom,
+        aspectOptions, onProgress, onFileComplete, onFileError,
+      ).then(r => {
+        results.push({ status: 'fulfilled' as const, value: r })
+      }).catch(e => {
+        results.push({ status: 'rejected' as const, reason: e })
+      }).finally(() => {
+        running.delete(promise)
+      })
+
+      running.add(promise)
+    }
+
+    await Promise.allSettled(running)
+    return results
   }
 
   async function updateImage(imageData: { id: number, name?: string, description?: string, slug?: string, tags?: string[] }) {
