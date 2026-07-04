@@ -1,7 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 
 function computeVersion(): string {
   // Prefer latest git tag like v1.2.3; fallback to package.json version
@@ -91,14 +90,6 @@ export default defineNuxtConfig({
     sources: [
       '/api/sitemap-urls',
     ],
-  },
-
-  vite: {
-    resolve: {
-      alias: {
-        '@vercel/blob/client': fileURLToPath(new URL('providers/vercel-blob-mock.ts', import.meta.url)),
-      },
-    },
   },
 
   nitro: {

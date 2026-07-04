@@ -1,6 +1,6 @@
 {
   "name": "zimablue",
-  "version": "0.93.1",
+  "version": "0.93.2",
   "description": "Handmade illustrations",
   "private": true,
   "type": "module",
@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
-    "@scalar/nuxt": "^0.6.53",
     "@takumi-rs/core": "^1.0.12",
     "@takumi-rs/wasm": "^1.1.2",
     "@verbatims/social-autopost-core": "github:rootasjey/social-autopost-core#v0.1.0",
