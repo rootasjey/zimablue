@@ -12,23 +12,30 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
       <!-- Section Navigation -->
       <aside class="lg:col-span-3 space-y-1 sticky top-32 lg:block hidden">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
-          :class="activeTab === tab.key
+        <NuxtLink
+          to="/developers"
+          class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
+          :class="$route.path === '/developers'
             ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
             : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-          @click="activeTab = tab.key"
         >
-          <span :class="tab.icon" class="mr-2"></span>
-          {{ tab.label }}
-        </button>
+          <span class="i-ph-key"></span>
+          API Keys
+        </NuxtLink>
+        <NuxtLink
+          to="/developers/api-reference"
+          class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
+          :class="$route.path.startsWith('/developers/api-reference')
+            ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
+            : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+        >
+          <span class="i-ph-flask"></span>
+          Playground
+        </NuxtLink>
       </aside>
 
       <section class="lg:col-span-9 space-y-16 sm:space-y-24">
-        <!-- API Keys Tab -->
-        <div v-if="activeTab === 'keys'" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <div class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
           <div v-if="!loggedIn" class="text-center py-16">
             <span class="i-ph-key-duotone text-5xl text-gray-300 dark:text-gray-600 mb-4 block"></span>
             <h2 class="text-xl font-700 text-gray-500 dark:text-gray-400 mb-2">Sign in to manage API keys</h2>
@@ -95,38 +102,6 @@
           </div>
         </div>
 
-        <!-- API Reference Tab -->
-        <div v-if="activeTab === 'reference'" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
-          <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight mb-2">API Reference</h2>
-          <p class="text-gray-400 dark:text-gray-500 font-body mb-10 max-w-2xl">
-            The Zima Blue API is organized around REST. All requests should be made to the base URL below.
-          </p>
-
-          <div class="mb-8 p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 font-mono text-sm">
-            <span class="text-gray-400">Base URL:</span>
-            <span class="text-gray-900 dark:text-gray-100 ml-2">https://zimablue.com/api</span>
-          </div>
-
-          <div class="space-y-8">
-            <div v-for="group in apiGroups" :key="group.label" class="rounded-[2rem] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
-              <h3 class="text-lg font-800 text-gray-900 dark:text-gray-100 mb-1">{{ group.label }}</h3>
-              <p class="text-sm text-gray-400 dark:text-gray-500 font-body mb-5">{{ group.description }}</p>
-
-              <div v-for="endpoint in group.endpoints" :key="endpoint.method + endpoint.path" class="flex items-start gap-4 py-3 border-t border-gray-50 dark:border-gray-800/50 first:border-t-0 first:pt-0">
-                <span
-                  class="shrink-0 mt-0.5 px-2 py-0.5 rounded text-[11px] font-800 uppercase tracking-wider"
-                  :class="methodClass(endpoint.method)"
-                >
-                  {{ endpoint.method }}
-                </span>
-                <div class="min-w-0 flex-1">
-                  <code class="text-sm text-gray-800 dark:text-gray-200 font-mono">{{ endpoint.path }}</code>
-                  <p class="text-xs text-gray-400 dark:text-gray-500 font-body mt-0.5">{{ endpoint.description }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
 
@@ -230,17 +205,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const { loggedIn } = useUserSession()
 const { toast } = useToast()
 const { showErrorToast } = useErrorToast()
-
-const tabs = [
-  { key: 'keys', label: 'API Keys', icon: 'i-ph-key' },
-  { key: 'reference', label: 'API Reference', icon: 'i-ph-book-open-text' },
-]
-const activeTab = ref('keys')
 
 // ─── Token Management ─────────────────────────────────
 
@@ -337,79 +306,7 @@ async function handleRevoke() {
   }
 }
 
-// ─── API Reference ────────────────────────────────────
 
-const methodClass = (method: string) => {
-  const classes: Record<string, string> = {
-    GET: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-    POST: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-    PUT: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400',
-    PATCH: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-    DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-  }
-  return classes[method] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-}
-
-const apiGroups = [
-  {
-    label: 'Images',
-    description: 'Browse, retrieve, and interact with illustrations.',
-    endpoints: [
-      { method: 'GET', path: '/images', description: 'List all images with optional pagination and field selection.' },
-      { method: 'GET', path: '/images/slug/{slug}', description: 'Get a single image by its slug, including aspect variants.' },
-      { method: 'PUT', path: '/images/slug/{slug}/views', description: 'Increment an image\'s view count.' },
-      { method: 'PUT', path: '/images/slug/{slug}/downloads', description: 'Increment an image\'s download count.' },
-    ],
-  },
-  {
-    label: 'Collections',
-    description: 'Organize images into curated groups.',
-    endpoints: [
-      { method: 'GET', path: '/collections', description: 'List collections with pagination. Use ?includePrivate=true to include private collections (requires auth).' },
-      { method: 'GET', path: '/collections/{slug}', description: 'Get a single collection with its images.' },
-    ],
-  },
-  {
-    label: 'Tags',
-    description: 'Classify and discover images by topic.',
-    endpoints: [
-      { method: 'GET', path: '/tags', description: 'List tags with search, pagination, and sorting options.' },
-    ],
-  },
-  {
-    label: 'Search',
-    description: 'Full-text search across images and collections.',
-    endpoints: [
-      { method: 'GET', path: '/search', description: 'Search images and collections by query string (?q=).' },
-    ],
-  },
-  {
-    label: 'Grid',
-    description: 'Home page grid layout data.',
-    endpoints: [
-      { method: 'GET', path: '/grid', description: 'Get all images with their grid positions for the draggable layout.' },
-    ],
-  },
-  {
-    label: 'Authentication',
-    description: 'Sign in, register, and manage API tokens.',
-    endpoints: [
-      { method: 'POST', path: '/login', description: 'Sign in with email and password. A session cookie is set on success.' },
-      { method: 'POST', path: '/register', description: 'Create a new account.' },
-      { method: 'POST', path: '/logout', description: 'Sign out and clear the session.' },
-      { method: 'GET', path: '/api-tokens', description: 'List your API tokens.' },
-      { method: 'POST', path: '/api-tokens', description: 'Create a new API token. The full token is returned only once.' },
-      { method: 'DELETE', path: '/api-tokens/{id}', description: 'Revoke an API token.' },
-    ],
-  },
-  {
-    label: 'Contact',
-    description: 'Send messages to the artist.',
-    endpoints: [
-      { method: 'POST', path: '/messages', description: 'Send a contact message.' },
-    ],
-  },
-]
 
 onMounted(() => {
   if (loggedIn.value) {

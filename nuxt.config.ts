@@ -68,7 +68,23 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
     "@nuxtjs/seo",
+    "@scalar/nuxt",
   ],
+
+  scalar: {
+    darkMode: true,
+    showSidebar: true,
+    hideModels: false,
+    theme: 'default',
+    searchHotKey: 'k',
+    pathRouting: {
+      basePath: '/developers/api-reference',
+    },
+    metaData: {
+      title: 'API Reference — Zima Blue',
+    },
+    url: '/api-docs/openapi.yaml',
+  },
 
   // Site identity (used by all SEO sub-modules)
   site: {
