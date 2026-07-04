@@ -83,6 +83,7 @@
           @dragover.prevent.stop
           @dragleave.prevent.stop="handleCardDragLeave($event)"
           @drop.prevent.stop="(e: DragEvent) => handleDropOnCollection(e, collection)"
+          @contextmenu="(e) => handleCollectionContextMenu(e, collection)"
         >
           <NuxtLink :to="`/collections/${collection.slug}`" class="flex flex-row items-start gap-5 sm:block sm:w-full" :class="{ 'pointer-events-none': isDraggingOnCard === collection.id }">
             <!-- Image Container with Artistic Aspect Ratio -->
@@ -217,6 +218,15 @@
       @cancel="collectionStore.closeDeleteDialog"
       @delete="collectionStore.deleteCollection"
     />
+
+    <ImageContextMenu
+      :is-open="showCollectionContextMenu"
+      :x="collectionContextMenuPos.x"
+      :y="collectionContextMenuPos.y"
+      :items="collectionContextMenuItems"
+      @close="showCollectionContextMenu = false"
+      @show-native="handleCollectionContextMenuShowNative"
+    />
   </div>
 </template>
 
@@ -251,6 +261,40 @@ const { lightModeColors } = useRandomColors()
 const pageHeader = usePageHeader()
 const imageUpload = useImageUpload()
 const router = useRouter()
+
+// Right-click context menu on collection cards
+const showCollectionContextMenu = ref(false)
+const collectionContextMenuPos = ref({ x: 0, y: 0 })
+const collectionContextMenuCollection = ref<Collection | null>(null)
+const collectionBypassNativeMenu = ref(false)
+
+const collectionContextMenuItems = computed(() => {
+  if (!collectionContextMenuCollection.value) return []
+  const items = collectionStore.getCollectionMenuItems(collectionContextMenuCollection.value)
+  if (items.length === 0) {
+    return [{
+      label: 'Open collection',
+      onClick: () => router.push(`/collections/${collectionContextMenuCollection.value!.slug}`),
+    }]
+  }
+  return items
+})
+
+function handleCollectionContextMenu(event: MouseEvent, collection: Collection) {
+  if (collectionBypassNativeMenu.value) {
+    collectionBypassNativeMenu.value = false
+    return
+  }
+  event.preventDefault()
+  collectionContextMenuCollection.value = collection
+  collectionContextMenuPos.value = { x: event.clientX, y: event.clientY }
+  showCollectionContextMenu.value = true
+}
+
+function handleCollectionContextMenuShowNative() {
+  showCollectionContextMenu.value = false
+  collectionBypassNativeMenu.value = true
+}
 
 // Drag state
 const isDraggingOnPage = ref(false)
