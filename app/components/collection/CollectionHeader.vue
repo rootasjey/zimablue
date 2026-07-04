@@ -9,6 +9,7 @@
       @dragenter="handleCoverDragEnter"
       @dragleave="handleCoverDragLeave"
       @drop="handleCoverDrop"
+      @contextmenu="handleCoverContextMenu"
     >
       <!-- Background image -->
       <NuxtImg
@@ -23,6 +24,15 @@
       <!-- Gradient overlays -->
       <div class="absolute inset-0 bg-gradient-to-t from-gray-950/85 via-gray-950/30 to-transparent" />
       <div class="absolute inset-0 bg-gradient-to-r from-gray-950/20 to-transparent" />
+
+      <ImageContextMenu
+        :is-open="showCoverContextMenu"
+        :x="coverContextMenuPos.x"
+        :y="coverContextMenuPos.y"
+        :items="menuItems"
+        @close="showCoverContextMenu = false"
+        @show-native="handleCoverContextMenuShowNative"
+      />
 
       <!-- Content -->
       <div class="absolute bottom-0 z-10 h-full w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-8 sm:pb-14">
@@ -324,28 +334,32 @@ onBeforeUnmount(() => {
 
 // Dropdown items for actions (includes add/edit + reorder if there are images)
 const menuItems = computed(() => {
-  const items: Array<any> = [
-    {
-      label: 'Add images',
-      onClick: () => emit('addImages'),
-    },
-    {
-      label: 'Upload to collection',
-      onClick: () => emit('uploadToCollection'),
-    },
-    {
-      label: 'Edit collection',
-      onClick: () => emit('edit'),
-    },
-  ]
+  const items: Array<any> = []
 
+  // Cover actions (shown only when there is a cover)
   if (props.coverImagePathname) {
     items.push({
       label: 'Remove cover',
       onClick: () => emit('removeCover'),
     })
+    items.push({ type: 'separator' })
   }
 
+  // Collection actions
+  items.push({
+    label: 'Add images',
+    onClick: () => emit('addImages'),
+  })
+  items.push({
+    label: 'Upload to collection',
+    onClick: () => emit('uploadToCollection'),
+  })
+  items.push({
+    label: 'Edit collection',
+    onClick: () => emit('edit'),
+  })
+
+  // Image management (shown only when there are images)
   if ((props.imageCount || 0) > 0) {
     items.push({
       label: 'Reorder images',
@@ -357,10 +371,8 @@ const menuItems = computed(() => {
     })
   }
 
-  items.push({
-    type: 'separator',
-  })
-
+  // Danger zone
+  items.push({ type: 'separator' })
   items.push({
     label: 'Delete collection',
     class: 'text-red-600 dark:text-red-400',
@@ -369,6 +381,26 @@ const menuItems = computed(() => {
 
   return items
 })
+
+// Right-click context menu on cover
+const showCoverContextMenu = ref(false)
+const coverContextMenuPos = ref({ x: 0, y: 0 })
+const coverBypassNativeMenu = ref(false)
+
+function handleCoverContextMenu(event: MouseEvent) {
+  if (coverBypassNativeMenu.value) {
+    coverBypassNativeMenu.value = false
+    return
+  }
+  event.preventDefault()
+  coverContextMenuPos.value = { x: event.clientX, y: event.clientY }
+  showCoverContextMenu.value = true
+}
+
+function handleCoverContextMenuShowNative() {
+  showCoverContextMenu.value = false
+  coverBypassNativeMenu.value = true
+}
 
 // Cover drag-and-drop state (counter pattern avoids flicker from nested child elements)
 let coverDragCounter = 0

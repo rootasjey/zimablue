@@ -85,7 +85,7 @@ function handleKeydown(e: KeyboardEvent) {
 const displayItems = computed<FlattenedItem[]>(() => {
   const result: FlattenedItem[] = []
   for (const item of props.items) {
-    if (!item || (typeof item === 'object' && Object.keys(item).length === 0)) {
+    if (!item || (typeof item === 'object' && (Object.keys(item).length === 0 || item.type === 'separator'))) {
       result.push({ type: 'separator' })
     } else if ('items' in item && Array.isArray(item.items) && item.items.length) {
       result.push({ label: item.label, disabled: true })
