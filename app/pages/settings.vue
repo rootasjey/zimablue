@@ -52,6 +52,20 @@
           </div>
         </div>
 
+        <!-- Account Section -->
+        <div v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/5 flex items-center justify-center">
+              <span class="i-ph-user-gear-duotone text-2xl text-amber-500/50"></span>
+            </div>
+            <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">Account</h2>
+          </div>
+
+          <div class="rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-10 sm:p-14 bg-white dark:bg-gray-950">
+            <UserAccountSettings @sign-out="handleSignOut" />
+          </div>
+        </div>
+
         <!-- Appearance Section -->
         <div class="animate-in slide-in-from-bottom-8 duration-1000 delay-400">
           <div class="flex items-center gap-4 mb-8">
@@ -211,6 +225,16 @@ const saveProfile = async () => {
     showErrorToast(err, 'Error', 'Failed to update profile. Please try again.')
   } finally {
     isSaving.value = false
+  }
+}
+
+const handleSignOut = async () => {
+  try {
+    await $fetch('/api/logout', { method: 'POST' })
+    await refreshSession()
+    await navigateTo('/')
+  } catch (e) {
+    console.error('Failed to sign out:', e)
   }
 }
 </script>

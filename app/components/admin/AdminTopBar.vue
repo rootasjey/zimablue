@@ -72,6 +72,15 @@
               {{ userName }}
             </span>
           </NuxtLink>
+
+          <button
+            class="flex h-9 w-9 items-center justify-center rounded-xl text-stone-500 transition-all hover:bg-stone-100 hover:text-red-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-red-400"
+            @click="handleSignOut"
+            aria-label="Sign out"
+            :title="`Sign out — ${userName}`"
+          >
+            <span class="i-ph-sign-out text-lg"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -121,6 +130,15 @@ const userInitials = computed(() => {
 
 const isCurrentRoute = (path: string) => {
   return route.path === path || route.path.startsWith(`${path}/`)
+}
+
+const handleSignOut = async () => {
+  try {
+    await $fetch('/api/logout', { method: 'POST' })
+    await navigateTo('/')
+  } catch (e) {
+    console.error('Failed to sign out:', e)
+  }
 }
 
 const navigationItems = computed<any[]>(() => {

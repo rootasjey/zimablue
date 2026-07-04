@@ -65,9 +65,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       { label: 'Settings', path: '/settings', icon: 'i-ph-gear', description: 'Manage your account settings' },
       { label: 'Time', path: '/time', icon: 'i-lucide-clock-2', description: 'Time-based gallery view' },
     ]
-    if (loggedIn.value) {
-      paths.push({ label: 'Logout', path: '/logout', icon: 'i-lucide-log-in', description: 'Sign out of your account' })
-    } else {
+    if (!loggedIn.value) {
       paths.push({ label: 'Login', path: '/login', icon: 'i-lucide-log-in', description: 'Sign in to your account' })
     }
 
