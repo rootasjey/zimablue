@@ -112,6 +112,14 @@ export const useSiteNavigation = () => {
   const mobileOverflowItems = computed<SiteNavigationAction[]>(() => {
     const items: SiteNavigationAction[] = []
 
+    items.push({
+      key: 'developers',
+      label: 'Developers',
+      icon: 'i-ph-code-duotone',
+      to: '/developers',
+      match: (path: string) => path.startsWith('/developers'),
+    })
+
     if (isAdmin.value) {
       items.push(
         {
@@ -171,6 +179,13 @@ export const useSiteNavigation = () => {
         icon: 'i-ph-info-duotone',
         to: '/about',
         match: (currentPath: string) => currentPath.startsWith('/about'),
+      },
+      {
+        key: 'developers',
+        label: 'Developers',
+        icon: 'i-ph-code-duotone',
+        to: '/developers',
+        match: (currentPath: string) => currentPath.startsWith('/developers'),
       },
       {
         key: 'upload',
