@@ -92,14 +92,6 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    const imageCount = collection.imageCount
-    if (!coverImage && imageCount > 0 && previewImages.length > 0) {
-      coverImage = previewImages[0]
-      await db.update(collections)
-        .set({ coverImageId: coverImage.id })
-        .where(eq(collections.id, collection.id))
-    }
-
     const collectionSnake = keysToSnake(collection)
     const coverImageSnake = coverImage ? keysToSnake(coverImage) : null
 
