@@ -29,7 +29,7 @@
       <template #actions-cell="{ row }">
         <NButton
           v-if="!row.revoked"
-          color="soft-red"
+          btn="soft-red"
           size="sm"
           @click="revokeToken(row)"
         >
@@ -132,8 +132,8 @@
           </NDialogDescription>
         </NDialogHeader>
         <NDialogFooter>
-          <NButton color="soft-gray" @click="showRevokeDialog = false">Cancel</NButton>
-          <NButton color="red" @click="confirmRevoke">Revoke</NButton>
+          <NButton btn="soft-gray" @click="showRevokeDialog = false">Cancel</NButton>
+          <NButton btn="soft-red" @click="confirmRevoke">Revoke</NButton>
         </NDialogFooter>
       </NDialogContent>
     </NDialog>

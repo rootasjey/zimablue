@@ -33,7 +33,7 @@
             <span class="i-ph-key-duotone text-5xl text-gray-300 dark:text-gray-600 mb-4 block"></span>
             <h2 class="text-xl font-700 text-gray-500 dark:text-gray-400 mb-2">Sign in to manage API keys</h2>
             <p class="text-gray-400 dark:text-gray-500 mb-6 font-body">You need to be logged in to create and manage API tokens.</p>
-            <NButton color="blue" to="/login">Sign in</NButton>
+            <NButton btn="solid-blue" to="/login">Sign in</NButton>
           </div>
 
           <div v-else>
@@ -42,7 +42,7 @@
                 <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">API Keys</h2>
                 <p class="text-gray-400 dark:text-gray-500 font-body mt-1">Tokens used to authenticate requests to the Zima Blue API.</p>
               </div>
-              <NButton color="blue" @click="showCreateDialog = true">
+              <NButton btn="solid-blue" @click="showCreateDialog = true">
                 <span class="i-ph-plus mr-1"></span>
                 Create key
               </NButton>
@@ -84,7 +84,7 @@
                   </div>
                 </div>
                 <NButton
-                  color="soft-red"
+                  btn="soft-red"
                   size="sm"
                   @click="confirmRevoke(token)"
                 >
@@ -170,8 +170,8 @@
           </div>
 
           <NDialogFooter>
-            <NButton color="soft-gray" @click="showCreateDialog = false">Cancel</NButton>
-            <NButton color="blue" type="submit" :loading="isCreating">
+            <NButton btn="soft-gray" @click="showCreateDialog = false">Cancel</NButton>
+            <NButton btn="solid-blue" type="submit" :loading="isCreating">
               Create key
             </NButton>
           </NDialogFooter>
@@ -203,7 +203,7 @@
         </div>
 
         <NDialogFooter>
-          <NButton color="blue" @click="showTokenDialog = false; copied = false">Done</NButton>
+          <NButton btn="solid-blue" @click="showTokenDialog = false; copied = false">Done</NButton>
         </NDialogFooter>
       </NDialogContent>
     </NDialog>
@@ -219,8 +219,8 @@
           </NDialogDescription>
         </NDialogHeader>
         <NDialogFooter>
-          <NButton color="soft-gray" @click="showRevokeDialog = false">Cancel</NButton>
-          <NButton color="red" @click="handleRevoke">Revoke</NButton>
+          <NButton btn="soft-gray" @click="showRevokeDialog = false">Cancel</NButton>
+          <NButton btn="soft-red" @click="handleRevoke">Revoke</NButton>
         </NDialogFooter>
       </NDialogContent>
     </NDialog>

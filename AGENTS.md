@@ -128,6 +128,7 @@ CLAUDE.md                  # Design context, brand personality, and design princ
 - **Image variants**: Upload creates 6 sizes — `xxs`, `xs`, `sm`, `md`, `lg`, `original` — stored as a JSON array in `images.variants`.
 - **Grid positioning**: `images.x`, `images.y`, `images.w`, `images.h` columns. Saved via `useGridStore.saveLayout()` → `POST /api/grid/save`.
 - **UnaUI prefix**: All UnaUI components use the `N` prefix (`NButton`, `NInput`, `NDialog`, etc.). Do **not** use `UButton` or other prefixes.
+- **NButton variants**: Do **not** use `color="blue"` on `NButton` — it only sets text color, not a button style. Use `btn="solid-blue"` for filled primary buttons, `btn="soft-blue"` for soft secondary buttons, `btn="soft-red"` for destructive actions, `btn="soft-gray"` for cancel/secondary actions. See [UnaUI Button docs](https://unaui.com/components/button) for valid variant combinations.
 
 ---
 
