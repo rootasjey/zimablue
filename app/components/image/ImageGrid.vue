@@ -148,6 +148,7 @@
             'ring-2 ring-pink-500 ring-offset-2': highlightedImageIndex === index && !isSelectionMode,
             'opacity-75': isSelectionMode && !selectedImagesMap?.[item.id] && hasSelectedImages
           }"
+          @contextmenu="(e) => handleContextMenu(e, item)"
         >
           <!-- Selection checkbox for desktop -->
           <div
@@ -220,6 +221,15 @@
         </div>
       </GridItem>
     </GridLayout>
+
+    <ImageContextMenu
+      :is-open="showContextMenu"
+      :x="contextMenuPos.x"
+      :y="contextMenuPos.y"
+      :items="contextMenuItems"
+      @close="showContextMenu = false"
+      @show-native="handleContextMenuShowNative"
+    />
   </div>
 </template>
 
@@ -480,6 +490,34 @@ const clearLongPressTimer = () => {
     clearTimeout(longPressTimer.value)
     longPressTimer.value = null
   }
+}
+
+// --- Right-click context menu ---
+const showContextMenu = ref(false)
+const contextMenuPos = ref({ x: 0, y: 0 })
+const contextMenuImage = ref<Image | null>(null)
+const bypassNativeMenu = ref(false)
+
+const contextMenuItems = computed(() => {
+  if (!contextMenuImage.value) return []
+  return props.imageMenuItems(contextMenuImage.value)
+})
+
+function handleContextMenu(event: MouseEvent, item: Image) {
+  if (props.isSelectionMode) return
+  if (bypassNativeMenu.value) {
+    bypassNativeMenu.value = false
+    return
+  }
+  event.preventDefault()
+  contextMenuImage.value = item
+  contextMenuPos.value = { x: event.clientX, y: event.clientY }
+  showContextMenu.value = true
+}
+
+function handleContextMenuShowNative() {
+  showContextMenu.value = false
+  bypassNativeMenu.value = true
 }
 
 useDragScroll()
