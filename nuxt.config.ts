@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 function computeVersion(): string {
   // Prefer latest git tag like v1.2.3; fallback to package.json version
@@ -68,23 +69,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
     "@nuxtjs/seo",
-    "@scalar/nuxt",
   ],
-
-  scalar: {
-    darkMode: true,
-    showSidebar: true,
-    hideModels: false,
-    theme: 'default',
-    searchHotKey: 'k',
-    pathRouting: {
-      basePath: '/developers/api-reference',
-    },
-    metaData: {
-      title: 'API Reference — Zima Blue',
-    },
-    url: '/api-docs/openapi.yaml',
-  },
 
   // Site identity (used by all SEO sub-modules)
   site: {
@@ -106,6 +91,14 @@ export default defineNuxtConfig({
     sources: [
       '/api/sitemap-urls',
     ],
+  },
+
+  vite: {
+    resolve: {
+      alias: {
+        '@vercel/blob/client': fileURLToPath(new URL('providers/vercel-blob-mock.ts', import.meta.url)),
+      },
+    },
   },
 
   nitro: {
