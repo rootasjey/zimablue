@@ -454,6 +454,15 @@ const collectionImageMenuItems = (image: Image) => {
   const isCover = coverId != null && coverId === image.id
 
   const items: Array<Record<string, any>> = [
+    ...(!store.isSelectionMode
+      ? [{
+          label: 'Select',
+          onClick: () => {
+            store.enterSelectionMode()
+            nextTick(() => store.toggleImageSelection(image.id))
+          },
+        }]
+      : []),
     {
       label: isCover ? 'Cover image' : 'Set as cover',
       disabled: isCover,

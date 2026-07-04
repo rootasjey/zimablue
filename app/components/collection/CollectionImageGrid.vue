@@ -42,7 +42,7 @@
       <div
         v-for="(image, index) in images"
         :key="image.id"
-        :draggable="canEdit && !isSelectionMode"
+        :draggable="canEdit && !isSelectionMode && !showContextMenu"
         :class="[
           'group relative overflow-hidden rounded-xl ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-200 animate-fade-in-up active:scale-[0.97]',
           canEdit && !isSelectionMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
@@ -54,11 +54,8 @@
         ]"
         :style="{ animationDelay: `${index * 50}ms` }"
         @click="handleImageClick(image, index, $event)"
-        @pointerdown="handlePointerDown(image, index, $event)"
-        @pointermove="handlePointerMove($event)"
-        @pointerup="handlePointerUp"
-        @pointercancel="handlePointerUp"
         @dragstart="handleDragStart($event, image)"
+        @contextmenu="(e) => handleContextMenu(e, image)"
       >
         <!-- Cover image badge -->
         <div
@@ -116,6 +113,15 @@
         </div>
       </div>
     </div>
+
+    <ImageContextMenu
+      :is-open="showContextMenu"
+      :x="contextMenuPos.x"
+      :y="contextMenuPos.y"
+      :items="contextMenuItems"
+      @close="showContextMenu = false"
+      @show-native="handleContextMenuShowNative"
+    />
   </section>
 </template>
 
@@ -147,20 +153,8 @@ const emit = defineEmits<{
   imageDragStart: [image: Image]
 }>()
 
-// --- Long press detection ---
-const longPressDelay = 600
-const longPressThreshold = 10
-let longPressTimer: ReturnType<typeof setTimeout> | null = null
-let longPressStartPos = { x: 0, y: 0 }
-let longPressTriggered = false
-let longPressImageId: number | null = null
-
 const handleImageClick = (image: Image, index: number, _event: MouseEvent) => {
   emit('setHighlight', index)
-  if (longPressTriggered) {
-    longPressTriggered = false
-    return
-  }
   if (props.isSelectionMode && props.canEdit) {
     emit('toggleImage', image.id)
     return
@@ -168,47 +162,36 @@ const handleImageClick = (image: Image, index: number, _event: MouseEvent) => {
   emit('imageClick', image)
 }
 
-const handlePointerDown = (image: Image, _index: number, event: PointerEvent) => {
+// --- Right-click context menu ---
+const showContextMenu = ref(false)
+const contextMenuPos = ref({ x: 0, y: 0 })
+const contextMenuImage = ref<Image | null>(null)
+const bypassNativeMenu = ref(false)
+
+const contextMenuItems = computed(() => {
+  if (!contextMenuImage.value) return []
+  return props.imageMenuItems(contextMenuImage.value)
+})
+
+function handleContextMenu(event: MouseEvent, image: Image) {
   if (props.isSelectionMode) return
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
+  if (bypassNativeMenu.value) {
+    bypassNativeMenu.value = false
+    return
   }
-  longPressTriggered = false
-  longPressStartPos = { x: event.clientX, y: event.clientY }
-  longPressImageId = image.id
-
-  longPressTimer = setTimeout(() => {
-    longPressTriggered = true
-    if (longPressImageId != null) {
-      emit('enterSelectionMode', longPressImageId)
-    }
-  }, longPressDelay)
+  event.preventDefault()
+  contextMenuImage.value = image
+  contextMenuPos.value = { x: event.clientX, y: event.clientY }
+  showContextMenu.value = true
 }
 
-const handlePointerMove = (event: PointerEvent) => {
-  if (!longPressTimer) return
-  const dx = event.clientX - longPressStartPos.x
-  const dy = event.clientY - longPressStartPos.y
-  if (Math.abs(dx) > longPressThreshold || Math.abs(dy) > longPressThreshold) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
-}
-
-const handlePointerUp = () => {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
+function handleContextMenuShowNative() {
+  showContextMenu.value = false
+  bypassNativeMenu.value = true
 }
 
 const handleDragStart = (event: DragEvent, image: Image) => {
   if (props.isSelectionMode || !event.dataTransfer) return
-
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
 
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('application/x-zimablue-image', JSON.stringify({ imageId: image.id }))
