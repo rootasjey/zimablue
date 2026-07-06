@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
+import type { VariantType } from '~~/shared/types/image'
 
 export default eventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({
@@ -21,6 +22,15 @@ export default eventHandler(async (event) => {
     })
   }
 
-  const imagePathname = `images/${(imageData as any).pathname}`
-  return blob.serve(event, imagePathname)
+  const variants: VariantType[] = JSON.parse((imageData as any).variants)
+  const original = variants.find(v => v.size === 'original') || variants.find(v => v.size === 'lg')
+
+  if (!original) {
+    throw createError({
+      statusCode: 404,
+      message: 'Image variant not found',
+    })
+  }
+
+  return blob.serve(event, original.pathname)
 })

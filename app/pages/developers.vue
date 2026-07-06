@@ -32,6 +32,16 @@
           <span class="i-ph-key"></span>
           API Keys
         </button>
+        <button
+          class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
+          :class="activeTab === 'playground'
+            ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
+            : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+          @click="navigateTo({ query: { tab: 'playground' } })"
+        >
+          <span class="i-ph-terminal-window"></span>
+          Playground
+        </button>
       </aside>
 
       <section class="lg:col-span-9 space-y-16 sm:space-y-24">
@@ -60,7 +70,7 @@
               <span class="i-ph-spinner animate-spin text-2xl text-gray-400"></span>
             </div>
 
-            <div v-else-if="tokens.length === 0" class="rounded-[2.5rem] border border-dashed border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div v-else-if="tokens.length === 0" class="rounded-6 border border-dashed border-gray-200 dark:border-gray-700 p-12 text-center">
               <span class="i-ph-key-duotone text-4xl text-gray-300 dark:text-gray-600 mb-4 block"></span>
               <p class="text-gray-500 dark:text-gray-400 font-body mb-2">No API keys yet.</p>
               <p class="text-sm text-gray-400 dark:text-gray-500 font-body">Create your first key to start building with the API.</p>
@@ -112,13 +122,13 @@
             <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">API Reference</h2>
           </div>
 
-          <div class="rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-10 sm:p-14 bg-white dark:bg-gray-950 mb-8">
+          <div class="rounded-6 border border-gray-100 dark:border-gray-800 p-10 sm:p-14 bg-white dark:bg-gray-950 mb-8">
             <p class="text-sm text-gray-400 dark:text-gray-500 font-body mb-4">Base URL</p>
             <code class="text-sm text-gray-900 dark:text-gray-100 font-mono">https://zimablue.com/api</code>
           </div>
 
           <div class="space-y-6">
-            <div v-for="group in apiGroups" :key="group.label" class="rounded-[2.5rem] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
+            <div v-for="group in apiGroups" :key="group.label" class="rounded-6 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
               <h3 class="text-lg font-800 text-gray-900 dark:text-gray-100 mb-1">{{ group.label }}</h3>
               <p class="text-sm text-gray-400 dark:text-gray-500 font-body mb-5">{{ group.description }}</p>
 
@@ -134,6 +144,179 @@
                   <p class="text-xs text-gray-400 dark:text-gray-500 font-body mt-0.5">{{ endpoint.description }}</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Playground -->
+        <div v-if="activeTab === 'playground'" class="animate-in slide-in-from-bottom-8 duration-1000 delay-400">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-violet-500/5 flex items-center justify-center">
+              <span class="i-ph-terminal-window text-2xl text-violet-500/50"></span>
+            </div>
+            <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">API Playground</h2>
+          </div>
+
+          <div class="rounded-6 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
+            <!-- Endpoint selector -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Endpoint</label>
+              <NCombobox
+                v-model="playground.selectedEndpoint"
+                :items="playground.getEndpoints"
+                by="path"
+                label-key="path"
+                value-key="path"
+                :_combobox-input="{
+                  placeholder: 'Search endpoints…',
+                  autocomplete: 'off',
+                }"
+                :_combobox-list="{
+                  class: 'w-full',
+                  align: 'start',
+                }"
+                class="w-full"
+              >
+                <template #trigger="{ modelValue }">
+                  <template v-if="modelValue">
+                    <span
+                      class="shrink-0 px-2 py-0.5 rounded text-[11px] font-800 uppercase tracking-wider"
+                      :class="methodClass(modelValue.method)"
+                    >
+                      {{ modelValue.method }}
+                    </span>
+                    <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ modelValue.path }}</span>
+                  </template>
+                  <span v-else class="text-gray-400">Select an endpoint…</span>
+                </template>
+                <template #item="{ item }">
+                  <span
+                    class="shrink-0 px-2 py-0.5 rounded text-[11px] font-800 uppercase tracking-wider"
+                    :class="methodClass(item.method)"
+                  >
+                    {{ item.method }}
+                  </span>
+                  <span class="font-mono text-sm">{{ item.path }}</span>
+                </template>
+              </NCombobox>
+              <p v-if="playground.selectedEndpoint" class="text-xs text-gray-400 dark:text-gray-500 font-body mt-1.5">
+                {{ playground.selectedEndpoint.description }}
+              </p>
+            </div>
+
+            <!-- Slug parameter -->
+            <div v-if="playground.needsSlug" class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Slug</label>
+              <NInput
+                v-model="playground.slugParam"
+                placeholder="Enter the slug…"
+              />
+            </div>
+
+            <!-- ID parameter -->
+            <div v-if="playground.needsId" class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Image ID</label>
+              <NInput
+                v-model="playground.idParam"
+                type="number"
+                placeholder="Enter the image ID…"
+              />
+            </div>
+
+            <!-- Query parameters -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Query parameters <span class="text-gray-400 font-normal">(optional)</span></label>
+              <NInput
+                v-model="playground.queryString"
+                placeholder="limit=10&offset=0"
+              />
+              <p class="text-xs text-gray-400 dark:text-gray-500 font-body mt-1">Enter raw query string without the leading <code class="text-xs">?</code>.</p>
+            </div>
+
+            <!-- API Key -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">API Key <span class="text-gray-400 font-normal">(optional)</span></label>
+              <NInput
+                v-model="playground.apiKey"
+                placeholder="Paste your API key…"
+                type="password"
+              >
+                <template #trailing>
+                  <NButton
+                    v-if="!playground.apiKey"
+                    btn="light:soft-primary dark:soft-gray"
+                    size="xs"
+                    trailing="i-ph-plus-bold"
+                    class="pointer-events-auto cursor-pointer shrink-0 text-xs font-600 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                    @click="handleCreateKeyFromPlayground"
+                  >
+                    Create
+                  </NButton>
+                </template>
+              </NInput>
+              <p v-if="playground.apiKey" class="text-xs text-green-600 dark:text-green-400 font-body mt-1">
+                <span class="i-ph-check-circle mr-1 inline-block align-text-bottom"></span>
+                Key provided — requests will be authenticated.
+              </p>
+              <p v-else class="text-xs text-gray-400 dark:text-gray-500 font-body mt-1">
+                No API key yet —
+                <button
+                  class="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 underline underline-offset-2 transition-colors"
+                  @click="handleCreateKeyFromPlayground"
+                >create one</button>
+                to authenticate requests.
+              </p>
+            </div>
+
+            <!-- Request URL preview -->
+            <div v-if="playground.fullUrl" class="mb-6 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+              <p class="text-[11px] font-600 uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">Request URL</p>
+              <code class="text-sm text-emerald-600 dark:text-emerald-400 font-mono break-all">{{ playground.fullUrl }}</code>
+            </div>
+
+            <!-- Send button -->
+            <NButton
+              btn="solid-blue"
+              :disabled="!playground.selectedEndpoint"
+              :loading="playground.isSending"
+              @click="playground.send()"
+            >
+              <span class="i-ph-play-fill mr-1"></span>
+              Send Request
+            </NButton>
+
+            <!-- Error -->
+            <div v-if="playground.sendError" class="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-sm text-red-600 dark:text-red-400 font-mono">
+              {{ playground.sendError }}
+            </div>
+
+            <!-- Response: image -->
+            <div v-if="playground.responseImageUrl" class="mt-6">
+              <p class="text-[11px] font-600 uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Response (image)</p>
+              <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                <img
+                  :src="playground.responseImageUrl"
+                  alt="API response image"
+                  class="max-w-full h-auto mx-auto"
+                />
+              </div>
+            </div>
+
+            <!-- Response: JSON / text -->
+            <div v-if="playground.responseData" class="mt-6">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-[11px] font-600 uppercase tracking-wider text-gray-400 dark:text-gray-500">Response</p>
+                <button
+                  class="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+                  @click="copyResponse"
+                >
+                  <span :class="responseCopied ? 'i-ph-check-circle text-green-500' : 'i-ph-copy-simple'"></span>
+                  {{ responseCopied ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+              <pre
+                class="p-4 rounded-xl bg-gray-900 text-xs leading-relaxed font-mono overflow-x-auto whitespace-pre-wrap max-h-96 overflow-y-auto"
+              ><code v-html="highlightJson(playground.responseData)"></code></pre>
             </div>
           </div>
         </div>
@@ -249,6 +432,15 @@ const activeTab = computed(() => (route.query.tab as string) || 'keys')
 const { loggedIn } = useUserSession()
 const { toast } = useToast()
 const { showErrorToast } = useErrorToast()
+const playground = reactive(useApiPlayground())
+
+function handleCreateKeyFromPlayground() {
+  if (!loggedIn.value) {
+    navigateTo('/login')
+    return
+  }
+  showCreateDialog.value = true
+}
 
 // ─── Token Management ─────────────────────────────────
 
@@ -300,6 +492,7 @@ async function handleCreate() {
     newTokenName.value = ''
     newTokenExpiry.value = 0
     createdToken.value = res.data.token
+    playground.apiKey = res.data.token
     showTokenDialog.value = true
     fetchTokens()
   } catch (e: any) {
@@ -319,6 +512,19 @@ async function copyToken() {
     await navigator.clipboard.writeText(createdToken.value)
     copied.value = true
     setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback
+  }
+}
+
+// Playground response copy
+const responseCopied = ref(false)
+
+async function copyResponse() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(playground.responseData, null, 2))
+    responseCopied.value = true
+    setTimeout(() => { responseCopied.value = false }, 2000)
   } catch {
     // fallback
   }
@@ -345,6 +551,22 @@ async function handleRevoke() {
   }
 }
 
+// ─── JSON syntax highlighting ─────────────────────────
+
+function highlightJson(data: any): string {
+  const json = JSON.stringify(data, null, 2)
+  return json.replace(
+    /("(?:[^"\\]|\\.)*")\s*:|("(?:[^"\\]|\\.)*")|(-?\d+\.?\d*(?:[eE][+-]?\d+)?)|(true|false|null)/g,
+    (match, key, str, num, bool) => {
+      if (key) return `<span class="text-sky-300">${key}</span>:`
+      if (str) return `<span class="text-green-300">${str}</span>`
+      if (num) return `<span class="text-orange-300">${num}</span>`
+      if (bool) return `<span class="text-purple-300">${bool}</span>`
+      return match
+    }
+  )
+}
+
 // ─── API Reference ────────────────────────────────────
 
 const methodClass = (method: string) => {
@@ -364,6 +586,7 @@ const apiGroups = [
     description: 'Browse, retrieve, and interact with illustrations.',
     endpoints: [
       { method: 'GET', path: '/images', description: 'List all images with optional pagination and field selection.' },
+      { method: 'GET', path: '/images/{id}', description: 'Get a single image binary by its numeric ID.' },
       { method: 'GET', path: '/images/slug/{slug}', description: 'Get a single image by its slug, including aspect variants.' },
       { method: 'PUT', path: '/images/slug/{slug}/views', description: 'Increment an image\'s view count.' },
       { method: 'PUT', path: '/images/slug/{slug}/downloads', description: 'Increment an image\'s download count.' },
