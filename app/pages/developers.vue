@@ -12,31 +12,31 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
       <!-- Section Navigation -->
       <aside class="lg:col-span-3 space-y-1 sticky top-32 lg:block hidden">
-        <NuxtLink
-          to="/developers"
-          class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
-          :class="$route.path === '/developers'
-            ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
-            : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-        >
-          <span class="i-ph-key"></span>
-          API Keys
-        </NuxtLink>
         <button
           class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
-          :class="showApiRef
+          :class="activeTab === 'reference'
             ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
             : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-          @click="showApiRef = !showApiRef"
+          @click="navigateTo({ query: { tab: 'reference' } })"
         >
           <span class="i-ph-book-open-text"></span>
           API Reference
+        </button>
+        <button
+          class="flex items-center gap-2 w-full text-left px-4 py-3 rounded-2xl transition-all text-sm font-600"
+          :class="activeTab === 'keys'
+            ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 shadow-sm'
+            : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+          @click="navigateTo({ query: { tab: 'keys' } })"
+        >
+          <span class="i-ph-key"></span>
+          API Keys
         </button>
       </aside>
 
       <section class="lg:col-span-9 space-y-16 sm:space-y-24">
         <!-- API Keys -->
-        <div v-if="!showApiRef" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <div v-if="activeTab === 'keys'" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
           <div v-if="!loggedIn" class="text-center py-16">
             <span class="i-ph-key-duotone text-5xl text-gray-300 dark:text-gray-600 mb-4 block"></span>
             <h2 class="text-xl font-700 text-gray-500 dark:text-gray-400 mb-2">Sign in to manage API keys</h2>
@@ -104,7 +104,7 @@
         </div>
 
         <!-- API Reference -->
-        <div v-if="showApiRef" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
+        <div v-if="activeTab === 'reference'" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
           <div class="flex items-center gap-4 mb-8">
             <div class="w-10 h-10 rounded-xl bg-emerald-500/5 flex items-center justify-center">
               <span class="i-ph-book-open-text text-2xl text-emerald-500/50"></span>
@@ -241,9 +241,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-const showApiRef = ref(false)
+const route = useRoute()
+const activeTab = computed(() => (route.query.tab as string) || 'keys')
 
 const { loggedIn } = useUserSession()
 const { toast } = useToast()
