@@ -4,12 +4,38 @@ interface PlaygroundEndpoint {
   description: string
 }
 
+interface ParamDefinition {
+  key: string
+  defaultValue: string
+}
+
+const paramDefinitions: Record<string, ParamDefinition[]> = {
+  '/api/images': [
+    { key: 'limit', defaultValue: '10' },
+    { key: 'offset', defaultValue: '0' },
+    { key: 'fields', defaultValue: 'id,name,slug' },
+  ],
+  '/api/search': [
+    { key: 'q', defaultValue: '' },
+  ],
+  '/api/tags': [
+    { key: 'q', defaultValue: '' },
+    { key: 'limit', defaultValue: '10' },
+    { key: 'offset', defaultValue: '0' },
+  ],
+  '/api/collections': [
+    { key: 'limit', defaultValue: '10' },
+    { key: 'offset', defaultValue: '0' },
+    { key: 'includePrivate', defaultValue: 'false' },
+  ],
+}
+
 export function useApiPlayground() {
   const selectedEndpoint = ref<PlaygroundEndpoint | null>(null)
   const apiKey = ref('')
   const slugParam = ref('')
   const idParam = ref('')
-  const queryString = ref('')
+  const queryParams = ref<Record<string, string>>({})
   const responseData = ref<any>(null)
   const responseImageUrl = ref<string | null>(null)
   const isSending = ref(false)
@@ -29,6 +55,42 @@ export function useApiPlayground() {
 
   const needsSlug = computed(() => selectedEndpoint.value?.path.includes('{slug}') ?? false)
   const needsId = computed(() => selectedEndpoint.value?.path.includes('{id}') ?? false)
+
+  const availableParams = computed(() => {
+    const path = selectedEndpoint.value?.path
+    return path ? (paramDefinitions[path] || []) : []
+  })
+
+  const queryString = computed(() => {
+    const entries = Object.entries(queryParams.value).filter(([_, v]) => v !== '')
+    return entries.length ? entries.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&') : ''
+  })
+
+  function toggleParam(key: string, defaultValue: string) {
+    if (key in queryParams.value) {
+      const { [key]: _, ...rest } = queryParams.value
+      queryParams.value = rest
+    } else {
+      queryParams.value = { ...queryParams.value, [key]: defaultValue }
+    }
+  }
+
+  function setParamValue(key: string, value: string) {
+    queryParams.value = { ...queryParams.value, [key]: value }
+  }
+
+  function removeParam(key: string) {
+    const { [key]: _, ...rest } = queryParams.value
+    queryParams.value = rest
+  }
+
+  function isParamActive(key: string): boolean {
+    return key in queryParams.value
+  }
+
+  function getParamValue(key: string): string {
+    return queryParams.value[key] ?? ''
+  }
 
   const fullUrl = computed(() => {
     if (!selectedEndpoint.value) return ''
@@ -103,7 +165,9 @@ export function useApiPlayground() {
     apiKey,
     slugParam,
     idParam,
+    queryParams,
     queryString,
+    availableParams,
     responseData,
     responseImageUrl,
     isSending,
@@ -112,6 +176,11 @@ export function useApiPlayground() {
     needsSlug,
     needsId,
     fullUrl,
+    toggleParam,
+    setParamValue,
+    removeParam,
+    isParamActive,
+    getParamValue,
     send,
   }
 }

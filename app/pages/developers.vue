@@ -60,7 +60,7 @@
                 <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">API Keys</h2>
                 <p class="text-gray-400 dark:text-gray-500 font-body mt-1">Tokens used to authenticate requests to the Zima Blue API.</p>
               </div>
-              <NButton btn="solid-blue" @click="showCreateDialog = true">
+              <NButton class="btn-glowing" @click="showCreateDialog = true">
                 <span class="i-ph-plus mr-1"></span>
                 Create key
               </NButton>
@@ -226,11 +226,42 @@
             <!-- Query parameters -->
             <div class="mb-6">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Query parameters <span class="text-gray-400 font-normal">(optional)</span></label>
-              <NInput
-                v-model="playground.queryString"
-                placeholder="limit=10&offset=0"
-              />
-              <p class="text-xs text-gray-400 dark:text-gray-500 font-body mt-1">Enter raw query string without the leading <code class="text-xs">?</code>.</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="param in playground.availableParams"
+                  :key="param.key"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-600 border transition-colors"
+                  :class="playground.isParamActive(param.key)
+                    ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
+                    : 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                  :title="playground.isParamActive(param.key) ? `Click to edit ${param.key}` : `Click to add ${param.key}`"
+                  @click="playground.toggleParam(param.key, param.defaultValue)"
+                >
+                  <template v-if="playground.isParamActive(param.key)">
+                    <span>{{ param.key }} </span>
+                    <span
+                      class="font-700 underline underline-offset-2 decoration-dotted cursor-pointer hover:text-indigo-500"
+                      @click.stop="openParamEdit(param.key)"
+                    >
+                      {{ playground.getParamValue(param.key) || '…' }}
+                    </span>
+                    <span class="i-ph-x text-xs ml-0.5 opacity-50 hover:opacity-100" @click.stop="playground.removeParam(param.key)"></span>
+                  </template>
+                  <template v-else>
+                    {{ param.key }}
+                  </template>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-600 border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 transition-colors"
+                  @click="showCustomParamDialog = true"
+                >
+                  <span class="i-ph-plus text-xs"></span>
+                  Custom
+                </button>
+              </div>
+              <p v-if="playground.queryString" class="text-xs text-gray-400 dark:text-gray-500 font-body mt-2">
+                Query: <code class="text-xs text-emerald-600 dark:text-emerald-400">{{ playground.queryString }}</code>
+              </p>
             </div>
 
             <!-- API Key -->
@@ -419,6 +450,60 @@
       </NDialogContent>
     </NDialog>
 
+    <!-- Param Edit Dialog -->
+    <NDialog v-model:open="showParamEditDialog">
+      <NDialogContent class="sm:max-w-sm">
+        <NDialogHeader>
+          <NDialogTitle>Edit parameter</NDialogTitle>
+        </NDialogHeader>
+        <div class="space-y-4 py-4" @keydown="handleParamEditKeydown">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Key</label>
+            <NInput :model-value="editingParamKey" disabled />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Value</label>
+            <NNumberField
+              v-if="isEditingNumeric"
+              :model-value="Number(editingParamValue)"
+              @update:model-value="v => editingParamValue = String(v ?? 0)"
+              :min="0"
+              :step="1"
+              class="w-full"
+            />
+            <NInput v-else v-model="editingParamValue" placeholder="Enter value…" />
+          </div>
+        </div>
+        <NDialogFooter>
+          <NButton btn="soft-gray" @click="showParamEditDialog = false">Cancel</NButton>
+          <NButton btn="solid-blue" @click="saveParamEdit">Save</NButton>
+        </NDialogFooter>
+      </NDialogContent>
+    </NDialog>
+
+    <!-- Custom Param Dialog -->
+    <NDialog v-model:open="showCustomParamDialog">
+      <NDialogContent class="sm:max-w-sm">
+        <NDialogHeader>
+          <NDialogTitle>Add custom parameter</NDialogTitle>
+        </NDialogHeader>
+        <div class="space-y-4 py-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Key</label>
+            <NInput v-model="customParamKey" placeholder="e.g. sort" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Value</label>
+            <NInput v-model="customParamValue" placeholder="e.g. desc" />
+          </div>
+        </div>
+        <NDialogFooter>
+          <NButton btn="soft-gray" @click="showCustomParamDialog = false; customParamKey = ''; customParamValue = ''">Cancel</NButton>
+          <NButton btn="solid-blue" @click="saveCustomParam">Add</NButton>
+        </NDialogFooter>
+      </NDialogContent>
+    </NDialog>
+
     <Footer class="mt-32 grayscale opacity-10" />
   </main>
 </template>
@@ -440,6 +525,48 @@ function handleCreateKeyFromPlayground() {
     return
   }
   showCreateDialog.value = true
+}
+
+// ─── Param edit dialogs ───────────────────────────────
+
+const showParamEditDialog = ref(false)
+const editingParamKey = ref('')
+const editingParamValue = ref('')
+const isEditingNumeric = computed(() => /^-?\d+$/.test(editingParamValue.value))
+
+function openParamEdit(key: string) {
+  editingParamKey.value = key
+  editingParamValue.value = playground.getParamValue(key)
+  showParamEditDialog.value = true
+}
+
+function handleParamEditKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault()
+    saveParamEdit()
+    return
+  }
+  if (e.key === 'Enter' && !e.shiftKey && e.target instanceof HTMLInputElement && !(e.target as HTMLInputElement).disabled) {
+    e.preventDefault()
+    saveParamEdit()
+  }
+}
+
+function saveParamEdit() {
+  playground.setParamValue(editingParamKey.value, editingParamValue.value)
+  showParamEditDialog.value = false
+}
+
+const showCustomParamDialog = ref(false)
+const customParamKey = ref('')
+const customParamValue = ref('')
+
+function saveCustomParam() {
+  if (!customParamKey.value.trim()) return
+  playground.setParamValue(customParamKey.value.trim(), customParamValue.value)
+  showCustomParamDialog.value = false
+  customParamKey.value = ''
+  customParamValue.value = ''
 }
 
 // ─── Token Management ─────────────────────────────────
