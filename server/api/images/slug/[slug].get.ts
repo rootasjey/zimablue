@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { eq, sql, ne, or, isNull, and } from 'drizzle-orm'
 import type { Image } from '~~/shared/types/image'
 import { images } from '../../../db/schema'
+import { keysToSnake } from '../../../utils/case'
 
 export default eventHandler(async (event) => {
   const { slug } = await getValidatedRouterParams(event, z.object({
@@ -51,7 +52,7 @@ export default eventHandler(async (event) => {
   }
 
   return {
-    ...image,
-    aspect_variants: aspectVariants.length > 0 ? aspectVariants : undefined,
+    ...keysToSnake(image),
+    aspect_variants: aspectVariants.length > 0 ? aspectVariants.map(keysToSnake) : undefined,
   } as unknown as Image
 })
