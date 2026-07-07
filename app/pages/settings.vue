@@ -12,21 +12,18 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
       <!-- Section Navigation -->
       <aside class="lg:col-span-3 space-y-1 sticky top-32 lg:block hidden">
-        <div class="text-[10px] font-900 uppercase tracking-[.25em] text-gray-300 dark:text-gray-700 mb-6 pl-4">Registry</div>
-        <button class="w-full text-left px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 text-sm transition-all shadow-sm">
+        <div class="text-[10px] font-900 uppercase tracking-[.25em] text-gray-300 dark:text-gray-700 mb-6 pl-4">Sections</div>
+        <a href="#general" class="block w-full text-left px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-800 text-sm transition-all shadow-sm">
           General
-        </button>
-        <button class="w-full text-left px-4 py-3 rounded-2xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all text-sm font-600">
+        </a>
+        <a href="#account" class="block w-full text-left px-4 py-3 rounded-2xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all text-sm font-600">
           Account
-        </button>
-        <button class="w-full text-left px-4 py-3 rounded-2xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all text-sm font-600">
-          Security
-        </button>
+        </a>
       </aside>
 
       <section class="lg:col-span-9 space-y-16 sm:space-y-24">
         <!-- Profile Section -->
-        <div v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <div id="general" v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-200">
           <div class="flex items-center gap-4 mb-8">
              <div class="w-10 h-10 rounded-xl bg-blue-500/5 flex items-center justify-center">
               <span class="i-ph-user-focus-duotone text-2xl text-blue-500/50"></span>
@@ -53,7 +50,7 @@
         </div>
 
         <!-- Account Section -->
-        <div v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
+        <div id="account" v-if="loggedIn" class="animate-in slide-in-from-bottom-8 duration-1000 delay-300">
           <div class="flex items-center gap-4 mb-8">
             <div class="w-10 h-10 rounded-xl bg-amber-500/5 flex items-center justify-center">
               <span class="i-ph-user-gear-duotone text-2xl text-amber-500/50"></span>
