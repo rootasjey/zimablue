@@ -12,11 +12,12 @@ async function hashToken(token: string): Promise<string> {
 }
 
 function generateToken(): string {
-  const bytes = new Uint8Array(32)
+  const bytes = new Uint8Array(24)
   crypto.getRandomValues(bytes)
-  return Array.from(bytes)
+  const encoded = Array.from(bytes)
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')
+  return `zb_${encoded}`
 }
 
 async function getUserFromApiToken(event: any): Promise<{ id: number; name: string; email: string; role: string } | null> {
