@@ -1,6 +1,6 @@
 import { db } from 'hub:db'
 import type { ImageWithTags } from "~~/shared/types/image"
-import { inArray, eq, asc, count } from 'drizzle-orm'
+import { inArray, eq, asc, count, isNull } from 'drizzle-orm'
 import { images, tags, imageTags } from '../../db/schema'
 import { keysToSnake } from '../../utils/case'
 import { computePagination } from '../../utils/api-response'
@@ -18,6 +18,7 @@ export default eventHandler(async (event) => {
     // Get total count
     const countResult = await db.select({ total: count() })
       .from(images)
+      .where(isNull(images.aspectGroupId))
       .get() as { total: number } | undefined
     const total = countResult?.total || 0
 
@@ -41,6 +42,7 @@ export default eventHandler(async (event) => {
         userId: images.userId
       })
       .from(images)
+      .where(isNull(images.aspectGroupId))
       .orderBy(asc(images.sumAbs))
       .limit(limit!)
       .offset(offset)
@@ -80,6 +82,7 @@ export default eventHandler(async (event) => {
       userId: images.userId
     })
     .from(images)
+    .where(isNull(images.aspectGroupId))
     .orderBy(asc(images.sumAbs))
     .all()
 

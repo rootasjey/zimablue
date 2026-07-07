@@ -604,10 +604,11 @@ const navigateToCreateCollection = () => {
   navigateTo('/collections/create')
 }
 
-const handleAspectVariantsUpdate = (variants: Image[]) => {
+const handleAspectVariantsUpdate = async (variants: Image[]) => {
   if (imageActions.aspectVariantDialogImage.value) {
     imageActions.aspectVariantDialogImage.value.aspect_variants = variants
   }
+  await gridStore.fetchGrid()
 }
 
 const handleAspectUploadComplete = async () => {

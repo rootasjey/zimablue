@@ -277,8 +277,7 @@ async function addVariant() {
         label: newLabel.value,
       },
     })
-    // Refresh
-    const updated = await fetchVariants(props.image.id)
+    const updated = [...props.variants, { ...selectedResult.value, aspect_group_id: props.image.id, aspect_label: newLabel.value }]
     emit('update:variants', updated)
     closeAddForm()
   } catch (error) {
@@ -294,7 +293,7 @@ async function updateLabel(variant: Image, label: string) {
       method: 'PATCH',
       body: { label },
     })
-    const updated = await fetchVariants(props.image!.id)
+    const updated = props.variants.map(v => v.id === variant.id ? { ...v, aspect_label: label } : v)
     emit('update:variants', updated)
   } catch (error) {
     showErrorToast(error, 'Error', 'Failed to update label.')
@@ -307,19 +306,10 @@ async function removeVariant(variant: Image) {
     await $fetch(`/api/admin/images/${props.image.id}/aspect-variants/${variant.id}`, {
       method: 'DELETE',
     })
-    const updated = await fetchVariants(props.image.id)
+    const updated = props.variants.filter(v => v.id !== variant.id)
     emit('update:variants', updated)
   } catch (error) {
     showErrorToast(error, 'Error', 'Failed to unlink variant.')
-  }
-}
-
-async function fetchVariants(imageId: number): Promise<Image[]> {
-  try {
-    const resp: any = await $fetch(`/api/images/slug/${props.image?.slug}`)
-    return resp?.aspect_variants || []
-  } catch {
-    return []
   }
 }
 

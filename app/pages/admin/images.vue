@@ -293,7 +293,7 @@
       v-model:is-open="isAspectVariantDialogOpen"
       :image="aspectVariantImage"
       :variants="aspectVariantList"
-      @update:variants="aspectVariantList = $event"
+      @update:variants="handleVariantsUpdate"
     />
 
     <!-- Aspect Upload Dialog -->
@@ -309,6 +309,7 @@
 import type { Image, VariantType } from '~~/shared/types/image'
 import type { Pagination } from '~~/shared/types/pagination'
 import type { AdminBulkAction } from '~~/shared/types/admin'
+import { useGridStore } from '@/stores/useGridStore'
 import { useAddToCollectionModal } from '~/composables/collection/useAddToCollectionModal'
 
 const { user } = useUserSession()
@@ -679,6 +680,16 @@ const handleReplaceFileSelect = async (event: Event) => {
 const handleAddToCollection = (image: Image) => {
   selectedImage.value = image
   addToCollection.openModal(image)
+}
+
+const handleVariantsUpdate = (variants: Image[]) => {
+  aspectVariantList.value = variants
+  try {
+    const gridS = useGridStore()
+    if (gridS.initialized) {
+      gridS.fetchGrid()
+    }
+  } catch {}
 }
 
 const openAspectVariants = async (image: Image) => {
