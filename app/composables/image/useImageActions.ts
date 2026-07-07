@@ -268,7 +268,12 @@ export const useImageActions = () => {
   const aspectUploadParentImage = ref<Image | null>(null)
 
   const openAspectVariantDialog = (image: Image) => {
-    aspectVariantDialogImage.value = image
+    if (image.aspect_group_id) {
+      const primary = gridStore.layout.find(i => i.id === image.aspect_group_id)
+      aspectVariantDialogImage.value = primary || image
+    } else {
+      aspectVariantDialogImage.value = image
+    }
     showAspectVariantDialog.value = true
   }
 
