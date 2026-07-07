@@ -76,6 +76,8 @@ export default eventHandler(async (event) => {
         i.stats_views,
         i.stats_downloads,
         i.stats_likes,
+        i.aspect_group_id,
+        i.aspect_label,
         i.created_at,
         i.updated_at,
         i.user_id,
