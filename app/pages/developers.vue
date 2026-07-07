@@ -60,10 +60,10 @@
                 <h2 class="text-2xl font-900 text-gray-900 dark:text-gray-100 tracking-tight">API Keys</h2>
                 <p class="text-gray-400 dark:text-gray-500 font-body mt-1">Tokens used to authenticate requests to the Zima Blue API.</p>
               </div>
-              <NButton class="btn-glowing" @click="showCreateDialog = true">
-                <span class="i-ph-plus mr-1"></span>
+              <WarmZebraButton @click="showCreateDialog = true">
+                <span class="i-ph-plus"></span>
                 Create key
-              </NButton>
+              </WarmZebraButton>
             </div>
 
             <div v-if="isLoadingTokens" class="flex items-center justify-center py-12">
@@ -395,10 +395,13 @@
           </div>
 
           <NDialogFooter>
-            <NButton btn="soft-gray" @click="showCreateDialog = false">Cancel</NButton>
-            <NButton btn="solid-blue" type="submit" :loading="isCreating">
-              Create key
-            </NButton>
+            <div class="flex gap-2">
+              <NButton btn="link-gray" @click="showCreateDialog = false">Cancel</NButton>
+              <WarmZebraButton type="submit" size="sm" :loading="isCreating">
+                <span v-if="isCreating" class="i-ph-spinner animate-spin"></span>
+                Create key
+              </WarmZebraButton>
+            </div>
           </NDialogFooter>
         </form>
       </NDialogContent>
