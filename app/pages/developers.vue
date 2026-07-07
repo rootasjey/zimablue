@@ -87,11 +87,13 @@
                     <span class="font-700 text-gray-900 dark:text-gray-100">{{ token.name }}</span>
                     <span
                       class="px-2 py-0.5 rounded-full text-[10px] font-700 uppercase tracking-wider"
-                      :class="isExpired(token.expires_at)
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'"
+                      :class="token.revoked
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        : isExpired(token.expires_at)
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                          : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'"
                     >
-                      {{ isExpired(token.expires_at) ? 'Expired' : 'Active' }}
+                      {{ token.revoked ? 'Revoked' : isExpired(token.expires_at) ? 'Expired' : 'Active' }}
                     </span>
                   </div>
                   <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 dark:text-gray-500 font-body">
@@ -101,13 +103,40 @@
                     <span v-else>Never used</span>
                   </div>
                 </div>
-                <NButton
-                  btn="soft-red"
-                  size="sm"
-                  @click="confirmRevoke(token)"
-                >
-                  Revoke
-                </NButton>
+                <div class="flex items-center gap-2">
+                  <NButton
+                    v-if="!token.revoked"
+                    btn="soft-gray"
+                    size="sm"
+                    @click="confirmEdit(token)"
+                  >
+                    Edit
+                  </NButton>
+                  <NButton
+                    v-if="!token.revoked"
+                    btn="soft-red"
+                    size="sm"
+                    @click="confirmRevoke(token)"
+                  >
+                    Revoke
+                  </NButton>
+                  <NButton
+                    v-if="token.revoked"
+                    btn="soft-blue"
+                    size="sm"
+                    @click="handleActivate(token)"
+                  >
+                    Activate
+                  </NButton>
+                  <NButton
+                    v-if="token.revoked"
+                    btn="soft-red"
+                    size="sm"
+                    @click="confirmDelete(token)"
+                  >
+                    Delete
+                  </NButton>
+                </div>
               </div>
             </div>
           </div>
@@ -444,12 +473,67 @@
           <NDialogDescription>
             Are you sure you want to revoke <strong>{{ tokenToRevoke?.name }}</strong>?
             Any application using this key will immediately lose access.
+            You can activate it again later.
           </NDialogDescription>
         </NDialogHeader>
         <NDialogFooter>
           <NButton btn="soft-gray" @click="showRevokeDialog = false">Cancel</NButton>
           <NButton btn="soft-red" @click="handleRevoke">Revoke</NButton>
         </NDialogFooter>
+      </NDialogContent>
+    </NDialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <NDialog v-model:open="showDeleteDialog">
+      <NDialogContent>
+        <NDialogHeader>
+          <NDialogTitle>Delete API key</NDialogTitle>
+          <NDialogDescription>
+            Are you sure you want to permanently delete <strong>{{ tokenToDelete?.name }}</strong>?
+            This action cannot be undone.
+          </NDialogDescription>
+        </NDialogHeader>
+        <NDialogFooter>
+          <NButton btn="soft-gray" @click="showDeleteDialog = false">Cancel</NButton>
+          <NButton btn="soft-red" @click="handleDelete">Delete</NButton>
+        </NDialogFooter>
+      </NDialogContent>
+    </NDialog>
+
+    <!-- Edit Token Dialog -->
+    <NDialog v-model:open="showEditDialog">
+      <NDialogContent class="sm:max-w-md">
+        <NDialogHeader>
+          <NDialogTitle>Edit API key</NDialogTitle>
+          <NDialogDescription>
+            Rename <strong>{{ editToken?.name }}</strong>.
+          </NDialogDescription>
+        </NDialogHeader>
+
+        <form @submit.prevent="handleEdit" class="space-y-4 py-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+            <NInput
+              v-model="editTokenName"
+              placeholder="My app"
+              required
+              maxlength="100"
+            />
+          </div>
+
+          <div v-if="editError" class="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-sm text-red-600 dark:text-red-400">
+            {{ editError }}
+          </div>
+
+          <NDialogFooter>
+            <div class="flex gap-2">
+              <NButton btn="link-gray" @click="showEditDialog = false">Cancel</NButton>
+              <WarmZebraButton type="submit" size="sm" :loading="isEditing">
+                Save
+              </WarmZebraButton>
+            </div>
+          </NDialogFooter>
+        </form>
       </NDialogContent>
     </NDialog>
 
@@ -672,12 +756,77 @@ function confirmRevoke(token: any) {
 async function handleRevoke() {
   if (!tokenToRevoke.value) return
   try {
-    await $fetch(`/api/api-tokens/${tokenToRevoke.value.id}`, { method: 'DELETE' })
+    await $fetch(`/api/api-tokens/${tokenToRevoke.value.id}/revoke`, { method: 'POST' })
     showRevokeDialog.value = false
     tokenToRevoke.value = null
     fetchTokens()
   } catch (e: any) {
     showErrorToast(e, 'Error', 'Failed to revoke token.')
+  }
+}
+
+// Activate
+async function handleActivate(token: any) {
+  try {
+    await $fetch(`/api/api-tokens/${token.id}/activate`, { method: 'POST' })
+    fetchTokens()
+  } catch (e: any) {
+    showErrorToast(e, 'Error', 'Failed to activate token.')
+  }
+}
+
+// Delete
+const showDeleteDialog = ref(false)
+const tokenToDelete = ref<any>(null)
+
+function confirmDelete(token: any) {
+  tokenToDelete.value = token
+  showDeleteDialog.value = true
+}
+
+async function handleDelete() {
+  if (!tokenToDelete.value) return
+  try {
+    await $fetch(`/api/api-tokens/${tokenToDelete.value.id}`, { method: 'DELETE' })
+    showDeleteDialog.value = false
+    tokenToDelete.value = null
+    fetchTokens()
+  } catch (e: any) {
+    showErrorToast(e, 'Error', 'Failed to delete token.')
+  }
+}
+
+// Edit
+const showEditDialog = ref(false)
+const editToken = ref<any>(null)
+const editTokenName = ref('')
+const editError = ref('')
+const isEditing = ref(false)
+
+function confirmEdit(token: any) {
+  editToken.value = token
+  editTokenName.value = token.name
+  editError.value = ''
+  showEditDialog.value = true
+}
+
+async function handleEdit() {
+  if (!editToken.value || !editTokenName.value.trim()) return
+  isEditing.value = true
+  editError.value = ''
+  try {
+    await $fetch(`/api/api-tokens/${editToken.value.id}`, {
+      method: 'PATCH',
+      body: { name: editTokenName.value.trim() },
+    })
+    showEditDialog.value = false
+    editToken.value = null
+    editTokenName.value = ''
+    fetchTokens()
+  } catch (e: any) {
+    editError.value = e?.data?.message || 'Failed to update token. Please try again.'
+  } finally {
+    isEditing.value = false
   }
 }
 
@@ -760,7 +909,10 @@ const apiGroups = [
       { method: 'POST', path: '/logout', description: 'Sign out and clear the session.' },
       { method: 'GET', path: '/api-tokens', description: 'List your API tokens.' },
       { method: 'POST', path: '/api-tokens', description: 'Create a new API token. The full token is returned only once.' },
-      { method: 'DELETE', path: '/api-tokens/{id}', description: 'Revoke an API token.' },
+      { method: 'PATCH', path: '/api-tokens/{id}', description: 'Update an API token name.' },
+      { method: 'POST', path: '/api-tokens/{id}/revoke', description: 'Revoke an API token (reversible).' },
+      { method: 'POST', path: '/api-tokens/{id}/activate', description: 'Reactivate a revoked API token.' },
+      { method: 'DELETE', path: '/api-tokens/{id}', description: 'Permanently delete an API token.' },
     ],
   },
   {

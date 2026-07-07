@@ -1,5 +1,5 @@
 import { db } from 'hub:db'
-import { eq, and } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { apiTokens } from '../../db/schema'
 import { requireApiAuth } from '../../utils/api-auth'
 import { apiSuccess } from '../../utils/api-response'
@@ -19,11 +19,8 @@ export default defineEventHandler(async (event) => {
     updatedAt: apiTokens.updatedAt,
   })
     .from(apiTokens)
-    .where(and(
-      eq(apiTokens.userId, user.id),
-      eq(apiTokens.revoked, false),
-    ))
-    .orderBy(apiTokens.createdAt)
+    .where(eq(apiTokens.userId, user.id))
+    .orderBy(sql`${apiTokens.revoked} ASC, ${apiTokens.createdAt} DESC`)
     .all()
 
   return apiSuccess(tokens.map(keysToSnake))

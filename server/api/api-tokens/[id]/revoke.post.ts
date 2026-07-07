@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { db } from 'hub:db'
 import { eq, and } from 'drizzle-orm'
-import { apiTokens } from '../../db/schema'
-import { requireApiAuth } from '../../utils/api-auth'
-import { apiSuccess } from '../../utils/api-response'
+import { apiTokens } from '../../../db/schema'
+import { requireApiAuth } from '../../../utils/api-auth'
+import { apiSuccess } from '../../../utils/api-response'
 
 export default defineEventHandler(async (event) => {
   const user = await requireApiAuth(event)
@@ -23,8 +23,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Token not found' })
   }
 
-  await db.delete(apiTokens)
+  if (token.revoked) {
+    throw createError({ statusCode: 400, message: 'Token is already revoked' })
+  }
+
+  await db.update(apiTokens)
+    .set({ revoked: true, updatedAt: new Date() })
     .where(eq(apiTokens.id, id))
 
-  return apiSuccess({ id, deleted: true })
+  return apiSuccess({ id, revoked: true })
 })
