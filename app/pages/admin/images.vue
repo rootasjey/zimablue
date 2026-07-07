@@ -694,17 +694,20 @@ const handleVariantsUpdate = (variants: Image[]) => {
 
 const openAspectVariants = async (image: Image) => {
   try {
-    const resp: any = await $fetch(`/api/images/slug/${image.slug}`)
+    let targetSlug = image.slug
     if (image.aspect_group_id) {
+      const resp: any = await $fetch(`/api/images/slug/${image.slug}`)
       const primary = resp?.aspect_variants?.find((v: Image) => v.id === image.aspect_group_id)
       if (primary) {
-        aspectVariantImage.value = primary
-        aspectVariantList.value = resp?.aspect_variants?.filter((v: Image) => v.id !== primary.id) || []
-        isAspectVariantDialogOpen.value = true
-        return
+        targetSlug = primary.slug
       }
     }
-    aspectVariantImage.value = image
+    const resp: any = await $fetch(`/api/images/slug/${targetSlug}`)
+    if (image.aspect_group_id) {
+      aspectVariantImage.value = resp
+    } else {
+      aspectVariantImage.value = image
+    }
     aspectVariantList.value = resp?.aspect_variants || []
   } catch {
     aspectVariantList.value = []
