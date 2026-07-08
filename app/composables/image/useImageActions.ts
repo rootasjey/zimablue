@@ -267,6 +267,45 @@ export const useImageActions = () => {
   const showAspectUploadDialog = ref(false)
   const aspectUploadParentImage = ref<Image | null>(null)
 
+  // Resize dialog state
+  const showResizeDialog = ref(false)
+  const resizeDialogImage = ref<Image | null>(null)
+  const resizeWidth = ref(2)
+  const resizeHeight = ref(2)
+
+  function resetImageSize(image: Image) {
+    const target = gridStore.layout.find(item => item.id === image.id)
+    if (!target) return
+    target.w = 2
+    target.h = 4
+    gridStore.saveLayout(gridStore.layout)
+  }
+
+  function openResizeDialog(image: Image) {
+    resizeDialogImage.value = image
+    resizeWidth.value = image.w || 2
+    resizeHeight.value = image.h || 2
+    showResizeDialog.value = true
+  }
+
+  function closeResizeDialog() {
+    showResizeDialog.value = false
+    resizeDialogImage.value = null
+    resizeWidth.value = 2
+    resizeHeight.value = 2
+  }
+
+  async function applyCustomSize() {
+    const image = resizeDialogImage.value
+    if (!image) return
+    const target = gridStore.layout.find(item => item.id === image.id)
+    if (!target) return
+    target.w = resizeWidth.value
+    target.h = resizeHeight.value
+    await gridStore.saveLayout(gridStore.layout)
+    closeResizeDialog()
+  }
+
   const openAspectVariantDialog = (image: Image) => {
     if (image.aspect_group_id) {
       const primary = gridStore.layout.find(i => i.id === image.aspect_group_id)
@@ -288,12 +327,14 @@ export const useImageActions = () => {
     openAddToCollectionModalFn,
     replacementFileInput,
     aspectVariants,
+    showGridResizeOptions = true,
   }: {
     image: Image,
     openImagePageFn: () => void,
     openAddToCollectionModalFn: (image: Image) => void,
     replacementFileInput: HTMLInputElement | undefined
     aspectVariants?: Image[]
+    showGridResizeOptions?: boolean
   }) => {
     const items: Array<{ label: string, onClick?: () => void } | {}> = [
       {
@@ -349,6 +390,15 @@ export const useImageActions = () => {
           onClick: () => openAddToCollectionModalFn(image),
 
         },
+        ...(showGridResizeOptions ? [
+          {
+            label: 'Resize',
+            items: [
+              { label: 'Reset to 2×4', onClick: () => resetImageSize(image) },
+              { label: 'Custom size...', onClick: () => openResizeDialog(image) },
+            ],
+          },
+        ] : []),
         {
           label: 'Upload as variant',
           onClick: () => openAspectUploadDialog(image),
@@ -428,6 +478,16 @@ export const useImageActions = () => {
     closeEditDrawer,
     resetEditForm,
     handleEditSubmit,
+
+    // Resize
+    showResizeDialog: readonly(showResizeDialog),
+    resizeDialogImage: readonly(resizeDialogImage),
+    resizeWidth,
+    resizeHeight,
+    resetImageSize,
+    openResizeDialog,
+    closeResizeDialog,
+    applyCustomSize,
     
     // Image actions
     deleteImage,

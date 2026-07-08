@@ -193,6 +193,16 @@
       @confirm="confirmImageDelete"
     />
 
+    <ImageResizeDialog
+      :is-open="imageActions.showResizeDialog.value"
+      :width="imageActions.resizeWidth.value"
+      :height="imageActions.resizeHeight.value"
+      @update:is-open="imageActions.closeResizeDialog"
+      @update:width="imageActions.resizeWidth.value = $event"
+      @update:height="imageActions.resizeHeight.value = $event"
+      @confirm="imageActions.applyCustomSize"
+    />
+
     <ClientOnly>
       <AspectVariantDialog
         v-if="imageActions.aspectVariantDialogImage.value"

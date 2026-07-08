@@ -170,6 +170,7 @@
         openImagePageFn: openFullPage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
+        showGridResizeOptions: false,
       })"
       @open-full-page="openFullPage"
       @open-edit-modal="(img: Image) => imageActions.openEditModal(img)"
@@ -247,6 +248,7 @@
         openImagePageFn: openFullPage,
         openAddToCollectionModalFn: addToCollection.openModal,
         replacementFileInput,
+        showGridResizeOptions: false,
       })"
       @open-full-page="openFullPage"
       @navigate-previous="navigateToPrevious"
@@ -488,6 +490,7 @@ const collectionImageMenuItems = (image: Image) => {
     openImagePageFn: openFullPage,
     openAddToCollectionModalFn: (img: Image) => addToCollection.openModal(img),
     replacementFileInput: replacementFileInput.value,
+    showGridResizeOptions: false,
   }).map((item: any) => {
     if (item.label === 'Delete') {
       return {
