@@ -9,7 +9,7 @@
       >
         <div
           ref="menuRef"
-          :style="{ left: `${x}px`, top: `${y}px` }"
+          :style="menuStyle"
           class="absolute w-52 overflow-visible rounded-md border border-base bg-popover p-1 text-popover shadow-md"
           @click.stop
         >
@@ -94,7 +94,29 @@ const props = defineProps<Props>()
 const menuRef = ref<HTMLElement | null>(null)
 const activeSubMenu = ref<number | null>(null)
 const subMenuEls = ref<Map<number, HTMLElement>>(new Map())
+const flipped = reactive({ top: false, right: false })
 let closeTimer: ReturnType<typeof setTimeout> | null = null
+
+const menuStyle = computed(() => ({
+  left: flipped.right ? 'auto' : `${props.x}px`,
+  right: flipped.right ? `${window.innerWidth - props.x}px` : 'auto',
+  top: flipped.top ? 'auto' : `${props.y}px`,
+  bottom: flipped.top ? `${window.innerHeight - props.y}px` : 'auto',
+}))
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    flipped.top = false
+    flipped.right = false
+    nextTick(() => {
+      const el = menuRef.value
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      flipped.top = rect.bottom > window.innerHeight
+      flipped.right = rect.right > window.innerWidth
+    })
+  }
+})
 
 function isSeparator(item: ContextMenuItem | undefined | null): boolean {
   if (!item) return true
