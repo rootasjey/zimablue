@@ -156,8 +156,26 @@
             <code class="text-sm text-gray-900 dark:text-gray-100 font-mono">https://zimablue.com/api</code>
           </div>
 
-          <div class="space-y-6">
-            <div v-for="group in apiGroups" :key="group.label" class="rounded-6 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
+          <div class="mb-6">
+            <NInput
+              v-model="referenceSearch"
+              placeholder="Search endpoints…"
+            >
+              <template #leading>
+                <span class="i-ph-magnifying-glass text-gray-400"></span>
+              </template>
+            </NInput>
+          </div>
+
+          <div v-if="filteredApiGroups.length === 0" class="rounded-6 border border-dashed border-gray-200 dark:border-gray-700 p-12 text-center">
+            <span class="i-ph-magnifying-glass-duotone text-4xl text-gray-300 dark:text-gray-600 mb-4 block"></span>
+            <p class="text-gray-500 dark:text-gray-400 font-body">
+              No endpoints match <strong class="text-gray-700 dark:text-gray-300">"{{ referenceSearch }}"</strong>.
+            </p>
+          </div>
+
+          <div v-else class="space-y-6">
+            <div v-for="group in filteredApiGroups" :key="group.label" class="rounded-6 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-8 shadow-sm">
               <h3 class="text-lg font-800 text-gray-900 dark:text-gray-100 mb-1">{{ group.label }}</h3>
               <p class="text-sm text-gray-400 dark:text-gray-500 font-body mb-5">{{ group.description }}</p>
 
@@ -335,15 +353,13 @@
             </div>
 
             <!-- Send button -->
-            <NButton
-              btn="solid-blue"
+            <WarmZebraButton
               :disabled="!playground.selectedEndpoint"
-              :loading="playground.isSending"
               @click="playground.send()"
             >
               <span class="i-ph-play-fill mr-1"></span>
               Send Request
-            </NButton>
+            </WarmZebraButton>
 
             <!-- Error -->
             <div v-if="playground.sendError" class="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-sm text-red-600 dark:text-red-400 font-mono">
@@ -591,7 +607,6 @@
       </NDialogContent>
     </NDialog>
 
-    <Footer class="mt-32 grayscale opacity-10" />
   </main>
 </template>
 
@@ -847,6 +862,23 @@ function highlightJson(data: any): string {
 }
 
 // ─── API Reference ────────────────────────────────────
+
+const referenceSearch = ref('')
+
+const filteredApiGroups = computed(() => {
+  const q = referenceSearch.value.toLowerCase().trim()
+  if (!q) return apiGroups
+  return apiGroups
+    .map(group => ({
+      ...group,
+      endpoints: group.endpoints.filter(e =>
+        e.method.toLowerCase().includes(q) ||
+        e.path.toLowerCase().includes(q) ||
+        e.description.toLowerCase().includes(q)
+      ),
+    }))
+    .filter(group => group.endpoints.length > 0)
+})
 
 const methodClass = (method: string) => {
   const classes: Record<string, string> = {
