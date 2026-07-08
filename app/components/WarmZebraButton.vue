@@ -11,7 +11,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <button class="btn" :class="[variant, size, { 'icon-only': iconOnly }]">
+  <button type="button" class="btn" :class="[variant, size, { 'icon-only': iconOnly }]">
     <slot />
   </button>
 </template>

@@ -122,12 +122,6 @@ export function useApiPlayground() {
     isSending.value = true
     sendError.value = ''
 
-    if (responseImageUrl.value) {
-      URL.revokeObjectURL(responseImageUrl.value)
-      responseImageUrl.value = null
-    }
-    responseData.value = null
-
     try {
       const headers: Record<string, string> = {}
       if (apiKey.value) {
@@ -135,6 +129,12 @@ export function useApiPlayground() {
       }
       const res = await fetch(fullUrl.value, { headers })
       const contentType = res.headers.get('content-type') || ''
+
+      if (responseImageUrl.value) {
+        URL.revokeObjectURL(responseImageUrl.value)
+        responseImageUrl.value = null
+      }
+      responseData.value = null
 
       if (contentType.startsWith('image/')) {
         const blob = await res.blob()
