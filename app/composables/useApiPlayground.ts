@@ -15,6 +15,9 @@ const paramDefinitions: Record<string, ParamDefinition[]> = {
     { key: 'offset', defaultValue: '0' },
     { key: 'fields', defaultValue: 'id,name,slug' },
   ],
+  '/api/images/random': [
+    { key: 'limit', defaultValue: '5' },
+  ],
   '/api/search': [
     { key: 'q', defaultValue: '' },
   ],
@@ -45,6 +48,7 @@ export function useApiPlayground() {
     { method: 'GET', path: '/api/images', description: 'List all images with optional pagination and field selection.' },
     { method: 'GET', path: '/api/images/{id}', description: 'Get a single image binary by its numeric ID.' },
     { method: 'GET', path: '/api/images/slug/{slug}', description: 'Get a single image by its slug, including aspect variants.' },
+    { method: 'GET', path: '/api/images/random', description: 'Get random images with their tags. Add ?limit=N (max 50) to get multiple.' },
     { method: 'GET', path: '/api/collections', description: 'List collections with pagination.' },
     { method: 'GET', path: '/api/collections/{slug}', description: 'Get a single collection with its images.' },
     { method: 'GET', path: '/api/tags', description: 'List tags with search, pagination, and sorting options.' },

@@ -899,6 +899,7 @@ const apiGroups = [
       { method: 'GET', path: '/images', description: 'List all images with optional pagination and field selection.' },
       { method: 'GET', path: '/images/{id}', description: 'Get a single image binary by its numeric ID.' },
       { method: 'GET', path: '/images/slug/{slug}', description: 'Get a single image by its slug, including aspect variants.' },
+      { method: 'GET', path: '/images/random', description: 'Get random images with their tags. Add ?limit=N (max 50) to get multiple; returns a single object by default.' },
       { method: 'PUT', path: '/images/slug/{slug}/views', description: 'Increment an image\'s view count.' },
       { method: 'PUT', path: '/images/slug/{slug}/downloads', description: 'Increment an image\'s download count.' },
     ],
