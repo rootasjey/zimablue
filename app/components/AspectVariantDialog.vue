@@ -71,13 +71,24 @@
                 <option v-for="l in aspectLabels" :key="l" :value="l">{{ l }}</option>
               </select>
             </div>
-            <button
-              class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20 dark:hover:text-rose-400 transition-colors"
-              :title="'Unlink ' + variant.name"
-              @click="removeVariant(variant)"
-            >
-              <span class="i-ph-link-break text-base" />
-            </button>
+            <div class="flex items-center gap-1">
+              <button
+                class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                :title="'Promote ' + variant.name + ' to primary'"
+                :disabled="isPromoting"
+                @click="promoteToPrimary(variant)"
+              >
+                <span v-if="isPromoting" class="i-ph-spinner-gap animate-spin text-base" />
+                <span v-else class="i-ph-crown text-base" />
+              </button>
+              <button
+                class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20 dark:hover:text-rose-400 transition-colors"
+                :title="'Unlink ' + variant.name"
+                @click="removeVariant(variant)"
+              >
+                <span class="i-ph-link-break text-base" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -220,6 +231,7 @@ const selectedResult = ref<Image | null>(null)
 const newLabel = ref('Paysage')
 const isSearching = ref(false)
 const isAdding = ref(false)
+const isPromoting = ref(false)
 const searchTimeout = ref<ReturnType<typeof setTimeout>>()
 
 function openAddForm() {
@@ -310,6 +322,24 @@ async function removeVariant(variant: Image) {
     emit('update:variants', updated)
   } catch (error) {
     showErrorToast(error, 'Error', 'Failed to unlink variant.')
+  }
+}
+
+async function promoteToPrimary(variant: Image) {
+  if (!props.image) return
+  isPromoting.value = true
+  try {
+    await $fetch(`/api/admin/images/${props.image.id}/aspect-variants/promote`, {
+      method: 'POST',
+      body: { newPrimaryId: variant.id },
+    })
+    const updated = props.variants.filter(v => v.id !== variant.id)
+    emit('update:variants', updated)
+    emit('update:isOpen', false)
+  } catch (error) {
+    showErrorToast(error, 'Error', 'Failed to promote variant to primary.')
+  } finally {
+    isPromoting.value = false
   }
 }
 
