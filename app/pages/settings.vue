@@ -98,7 +98,6 @@
       </section>
     </div>
 
-    <Footer class="mt-32 grayscale opacity-10" />
   </main>
 </template>
 

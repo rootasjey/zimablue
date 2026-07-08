@@ -7,7 +7,7 @@
     >
       <div 
         ref="modalContent"
-        class="relative modal-content"
+        class="relative modal-content max-h-[85vh] overflow-y-auto"
         tabindex="0"
         @keydown="handleKeydown"
       >

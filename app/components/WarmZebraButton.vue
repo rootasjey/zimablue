@@ -2,14 +2,16 @@
 withDefaults(defineProps<{
   variant?: 'primary' | 'secondary'
   size?: 'md' | 'sm'
+  iconOnly?: boolean
 }>(), {
   variant: 'primary',
   size: 'md',
+  iconOnly: false,
 })
 </script>
 
 <template>
-  <button class="btn" :class="[variant, size]">
+  <button class="btn" :class="[variant, size, { 'icon-only': iconOnly }]">
     <slot />
   </button>
 </template>
@@ -96,6 +98,18 @@ withDefaults(defineProps<{
 .btn.sm {
   font-size: 0.75rem;
   border-radius: 10px;
+}
+
+.btn.icon-only {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  justify-content: center;
+}
+
+.btn.sm.icon-only {
+  width: 2rem;
+  height: 2rem;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -131,7 +131,6 @@
       </div>
     </section>
 
-    <Footer />
   </div>
 </template>
 

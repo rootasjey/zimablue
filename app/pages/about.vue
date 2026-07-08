@@ -153,7 +153,6 @@
       </NDrawerContent>
     </NDrawer>
 
-    <Footer class="mt-48 grayscale opacity-20 hover:opacity-100 hover:grayscale-0 transition-all duration-1000" />
   </div>
 </template>
 
