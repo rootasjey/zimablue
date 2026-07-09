@@ -170,6 +170,13 @@ bun run version       # create git tag for current version
 
 > There is no dedicated `lint` or `format` script in `package.json`. Run `nuxt typecheck` for type safety checks. Add a linter (e.g., ESLint + `@nuxt/eslint`) before shipping if needed.
 
+### Dev server management
+- **Check first**: Before starting the dev server, verify if one is already running on `http://localhost:3001` (e.g., via `curl -s -o /dev/null -w "%{http_code}" http://localhost:3001` or `lsof -i :3001`). If it is, reuse it — do not start a second instance.
+- **Don't kill for cleanup**: Never kill a running dev server just to "clean up" or restart unnecessarily. Only kill it when:
+  1. The user explicitly asks you to.
+  2. It is strictly required to pick up changes (e.g., after modifying `nuxt.config.ts`, `unocss.config.ts`, or server-side config that doesn't hot-reload).
+- **Targeted kill**: When you do need to kill the dev server, target the specific process by PID (found via `lsof -ti :3001`) rather than broad `killall` or `pkill` commands.
+
 ---
 
 ## Patterns
