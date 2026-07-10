@@ -177,8 +177,6 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'About Zima Blue',
   description: 'Illustrator & software engineer based in France',
-  bgFrom: '#2F2FE4',
-  bgTo: '#5478FF',
 })
 
 const formData = reactive({

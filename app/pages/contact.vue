@@ -147,8 +147,6 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'Get in Touch',
   description: 'Collaborations, enquiries, or just a hello',
-  bgFrom: '#44ACFF',
-  bgTo: '#89D4FF',
 })
 
 const form = ref({

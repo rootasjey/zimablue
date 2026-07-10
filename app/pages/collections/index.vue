@@ -248,8 +248,6 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'Collections',
   description: 'Curated series of digital illustrations',
-  bgFrom: '#2F2FE4',
-  bgTo: '#89D4FF',
 })
 
 const { toast } = useToast()

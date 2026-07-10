@@ -105,9 +105,31 @@ if (collectionSlug.value) {
 }
 
 if (!imageSlug.value && !collectionSlug.value) {
+  const { data: latestImages } = await useAsyncData<Record<string, any>[] | null>(
+    'og-latest-images',
+    async () => {
+      try {
+        return await $fetch<Record<string, any>[]>('/api/images/latest')
+      } catch { return null }
+    },
+    { server: true }
+  )
+
+  const ogThumbnailUrls = computed(() => {
+    const images = latestImages.value
+    if (!images || images.length === 0) return []
+    const origin = useRequestURL().origin
+    return images.slice(0, 6).map((img: any) => {
+      const p = img.pathname as string
+      const cleanPath = p.startsWith('/') ? p.slice(1) : p
+      return `${origin}/${cleanPath}`
+    })
+  })
+
   defineOgImageComponent('Default.takumi', {
-    title: 'Zima Blue',
-    description: 'A curated gallery of digital illustrations',
+    title: 'ZIMABLUE',
+    description: 'Borderless artistic space — A curated gallery of digital illustrations',
+    thumbnails: () => ogThumbnailUrls.value,
   })
 }
 
