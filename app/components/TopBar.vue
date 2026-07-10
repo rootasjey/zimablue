@@ -10,7 +10,7 @@
             :aria-label="linkAriaLabel"
           >
             <NuxtImg
-              src="/images/zimablue-c.md.512px.png"
+              src="/images/favicon-192.round.png"
               alt="zimablue"
               class="hover:scale-110 active:scale-99 transition-transform"
               height="24"

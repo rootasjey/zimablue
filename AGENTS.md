@@ -175,7 +175,7 @@ bun run version       # create git tag for current version
 - **Don't kill for cleanup**: Never kill a running dev server just to "clean up" or restart unnecessarily. Only kill it when:
   1. The user explicitly asks you to.
   2. It is strictly required to pick up changes (e.g., after modifying `nuxt.config.ts`, `unocss.config.ts`, or server-side config that doesn't hot-reload).
-- **Targeted kill**: When you do need to kill the dev server, target the specific process by PID (found via `lsof -ti :3001`) rather than broad `killall` or `pkill` commands.
+- **Targeted kill**: When you do need to kill the dev server, `lsof -ti :3001` may return multiple PIDs (including other apps like OpenCode's `zen` process). Never blindly pipe to `xargs kill`. Instead, identify the specific PID (the `node` process) and kill only that one, or ask the user to restart the server.
 
 ---
 
