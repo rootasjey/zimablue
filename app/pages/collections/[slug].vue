@@ -356,6 +356,10 @@ defineOgImageComponent('Collection.takumi', {
   description: () => collectionDesc.value,
   coverUrl: () => collectionCoverUrl.value || '',
   imageCount: () => store.images?.length || 0,
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
 })
 
 // Ensure we render a loading state on first render when the store

@@ -335,6 +335,10 @@ useSeoMeta({
 defineOgImageComponent('Illustration.takumi', {
   title: () => imageTitle.value,
   description: () => imageDesc.value,
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
 })
 
 useHead({

@@ -111,6 +111,7 @@ const contentStyle: CSSProperties = {
 const titleStyle: CSSProperties = {
   fontSize: '72px',
   fontWeight: '900',
+  fontFamily: 'Caprasimo, serif',
   color: '#fff',
   margin: '0',
   lineHeight: '1.1',
