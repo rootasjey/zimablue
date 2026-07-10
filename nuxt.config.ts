@@ -40,7 +40,7 @@ export default defineNuxtConfig({
         { name: "description", content: "Borderless artistic space — A curated gallery of digital illustrations" },
       ],
       link: [
-        { rel: "icon", type: "image/png", href: "/favicon.ico" },
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
       ],
     },
   },

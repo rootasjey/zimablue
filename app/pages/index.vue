@@ -15,13 +15,101 @@
 </template>
 
 <script lang="ts" setup>
+import type { Image } from '~~/shared/types/image'
 import { useGridStore } from '@/stores/useGridStore'
 import { useImageModal } from '~/composables/image/useImageModal'
+import { useParseVariants } from '~/composables/image/useParseVariants'
 
 const gridStore = useGridStore()
 const layout = computed(() => gridStore.layout)
 const isInitialGridLoading = computed(() => !gridStore.initialized)
 const imageModal = useImageModal()
+
+// Handle ?image=<slug> for social media preview
+const route = useRoute()
+const config = useRuntimeConfig()
+const imageSlug = computed(() => route.query.image as string | undefined)
+
+const { data: previewImage } = await useAsyncData<Image | null>(
+  'image-preview',
+  async () => {
+    const slug = useRoute().query.image as string | undefined
+    if (!slug) return null
+    return await $fetch<Image>(`/api/images/slug/${slug}`)
+  },
+  { server: true }
+)
+
+const { parse: parsePreviewVariants } = useParseVariants()
+
+const ogImageUrl = computed(() => {
+  if (!previewImage.value) return undefined
+  const variants = parsePreviewVariants(previewImage.value.variants)
+  const variant = variants.find(v => v.size === 'md') || variants.find(v => v.size === 'lg') || variants.find(v => v.size === 'original')
+  const pathname = variant?.pathname || previewImage.value.pathname
+  const cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname
+  return `${config.public.siteUrl}/images/${cleanPath}`
+})
+
+if (imageSlug.value) {
+  useSeoMeta({
+    title: () => previewImage.value?.name || 'Illustration',
+    description: () => previewImage.value?.description || 'View this digital illustration',
+    ogTitle: () => `${previewImage.value?.name || 'Illustration'} — Zima Blue`,
+    ogDescription: () => previewImage.value?.description || 'View this digital illustration',
+    ogImage: () => ogImageUrl.value,
+    ogImageWidth: () => previewImage.value?.w ? String(previewImage.value.w) : undefined,
+    ogImageHeight: () => previewImage.value?.h ? String(previewImage.value.h) : undefined,
+    twitterTitle: () => `${previewImage.value?.name || 'Illustration'} — Zima Blue`,
+    twitterDescription: () => previewImage.value?.description || 'View this digital illustration',
+    twitterImage: () => ogImageUrl.value,
+  })
+}
+
+// Handle ?collection=<slug> for social media preview
+const collectionSlug = computed(() => route.query.collection as string | undefined)
+
+const { data: collectionData } = await useAsyncData<Record<string, any> | null>(
+  'collection-preview',
+  async () => {
+    const slug = useRoute().query.collection as string | undefined
+    if (!slug) return null
+    return await $fetch<Record<string, any>>(`/api/collections/${slug}`)
+  },
+  { server: true }
+)
+
+const collectionPreview = computed(() => collectionData.value?.collection ?? null)
+const collectionPreviewImages = computed(() => collectionData.value?.images ?? [])
+
+const collectionOgImageUrl = computed(() => {
+  const images = collectionPreviewImages.value
+  if (!images || images.length === 0) return undefined
+  const pathname = images[0]?.pathname
+  if (!pathname) return undefined
+  const cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname
+  return `${config.public.siteUrl}/images/${cleanPath}`
+})
+
+if (collectionSlug.value) {
+  useSeoMeta({
+    title: () => collectionPreview.value?.name || 'Collection',
+    description: () => collectionPreview.value?.description || 'Explore this curated collection',
+    ogTitle: () => `${collectionPreview.value?.name || 'Collection'} — Zima Blue`,
+    ogDescription: () => collectionPreview.value?.description || 'Explore this curated collection',
+    ogImage: () => collectionOgImageUrl.value,
+    twitterTitle: () => `${collectionPreview.value?.name || 'Collection'} — Zima Blue`,
+    twitterDescription: () => collectionPreview.value?.description || 'Explore this curated collection',
+    twitterImage: () => collectionOgImageUrl.value,
+  })
+}
+
+if (!imageSlug.value && !collectionSlug.value) {
+  defineOgImageComponent('Default.takumi', {
+    title: 'Zima Blue',
+    description: 'A curated gallery of digital illustrations',
+  })
+}
 
 onMounted(() => {
   if (!gridStore.initialized) {

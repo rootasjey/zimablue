@@ -1,0 +1,20 @@
+diff --git a/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js b/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js
+index 68ea4d0..1fec0b6 100644
+--- a/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js
++++ b/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js
+@@ -1,11 +1,11 @@
+ import { defu } from "defu";
+ import { useRuntimeConfig } from "nitropack/runtime";
+ import { hash } from "ohash";
+ import { createRouter as createRadixRouter, toRouteMatcher } from "radix3";
+ import { withoutBase, withoutTrailingSlash } from "ufo";
+ export { withoutQuery } from "nuxtseo-shared/utils";
+ export function fetchIsland(e, component, props) {
+-  const hashId = hash([component, props]).replaceAll("_", "-");
++  const hashId = hash([component, props, {}, undefined]).replace(/[-_]/g, "");
+   return e.$fetch(`/__nuxt_island/${component}_${hashId}.json`, {
+     params: {
+       props: JSON.stringify(props)
+     }
+   });
+ }

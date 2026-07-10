@@ -224,6 +224,16 @@ Standard events emitted by image grid components:
 - `@image-toggle` — toggle selection
 - `@enter-selection-mode` — activate multi-select
 
+### Patched dependency: `nuxt-og-image` island hash bug
+`nuxt-og-image` v6.4.3 has a bug in `fetchIsland()` (`dist/runtime/server/util/kit.js:8`) where the island hash is computed with only `[component, props]` instead of `[component, props, {}, undefined]`. This breaks all OG images rendered via Takumi components (400 "Invalid island request hash"). The patch is saved in `patches/nuxt-og-image+6.4.3.patch` and applied automatically via `patch` in the `postinstall` script.
+
+If the package is updated, regenerate the patch:
+```bash
+cd node_modules/nuxt-og-image
+git diff dist/runtime/server/util/kit.js > ../../patches/nuxt-og-image+<version>.patch
+```
+Or manually ensure the hash computation in `fetchIsland()` matches the server-side `computeIslandHash` from `nuxt/dist/app/island-hash.js`.
+
 ### Nested component auto-imports
 - Nuxt auto-imports components with the folder path as a PascalCase prefix. For example, `app/components/image/HomeGridLoadingState.vue` becomes `ImageHomeGridLoadingState` in templates.
 - If the component is imported explicitly in the script section, use the local import name instead of the auto-import prefix.
