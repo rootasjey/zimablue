@@ -4,7 +4,7 @@
     <div :style="circle2Style" />
 
     <div :style="brandRowStyle">
-      <div :style="logoStyle">Z</div>
+      <img src="/images/favicon-192.png" alt="" :style="logoStyle" />
       <span :style="brandTextStyle">Zima Blue</span>
     </div>
 
@@ -75,13 +75,7 @@ const logoStyle: CSSProperties = {
   width: '48px',
   height: '48px',
   borderRadius: '12px',
-  background: 'rgba(255,255,255,0.15)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '24px',
-  color: '#fff',
-  fontWeight: '900',
+  objectFit: 'cover',
 }
 
 const brandTextStyle: CSSProperties = {

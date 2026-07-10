@@ -26,7 +26,7 @@
     </div>
 
     <div :style="brandStyle">
-      <div :style="brandLogoStyle">Z</div>
+      <img src="/images/favicon-192.png" alt="" :style="brandLogoStyle" />
       <span :style="brandTextStyle">Zima Blue</span>
     </div>
 
@@ -164,13 +164,7 @@ const brandLogoStyle: CSSProperties = {
   width: '36px',
   height: '36px',
   borderRadius: '8px',
-  background: 'rgba(255,255,255,0.15)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '18px',
-  color: '#fff',
-  fontWeight: '900',
+  objectFit: 'cover',
 }
 
 const brandTextStyle: CSSProperties = {
