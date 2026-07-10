@@ -148,9 +148,9 @@ defineOgImageComponent('Default.takumi', {
   title: 'Get in Touch',
   description: 'Collaborations, enquiries, or just a hello',
 }, {
-  fonts: {
-    Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
-  },
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
 })
 
 const form = ref({

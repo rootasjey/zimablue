@@ -131,9 +131,9 @@ if (!imageSlug.value && !collectionSlug.value) {
     description: 'Borderless artistic space — A curated gallery of digital illustrations',
     thumbnails: () => ogThumbnailUrls.value,
   }, {
-    fonts: {
-      Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
-    },
+    fonts: [
+      { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+    ],
   })
 }
 
