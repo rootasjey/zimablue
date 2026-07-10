@@ -335,9 +335,25 @@ useSeoMeta({
   twitterImage: () => firstImagePath.value ? `${config.public.siteUrl}/images${firstImagePath.value}` : undefined,
 })
 
+const collectionCoverUrl = computed(() => {
+  const firstImage = store.images?.[0]
+  if (!firstImage) return undefined
+  const p = firstImage.pathname
+  const cleanPath = p.startsWith('/') ? p.slice(1) : p
+  return `${config.public.siteUrl}/images/${cleanPath}`
+})
+
+const slug = route.params.slug as string
+
+// Fetch collection server-side for OG image generation
+if (import.meta.server) {
+  await store.fetchCollection(slug)
+}
+
 defineOgImageComponent('Collection.takumi', {
   title: () => collectionTitle.value,
   description: () => collectionDesc.value,
+  coverUrl: () => collectionCoverUrl.value || '',
   imageCount: () => store.images?.length || 0,
 })
 
@@ -347,7 +363,6 @@ defineOgImageComponent('Collection.takumi', {
 if (!store.collection && store.images.length === 0) {
   store.isLoading = true
 }
-const slug = route.params.slug as string
 
 // Initialize actions composable
 const actions = useCollectionActions({

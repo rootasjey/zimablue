@@ -184,6 +184,16 @@ const hasChanges = computed(() => {
   )
 })
 
+const resetForm = () => {
+  if (props.collection) {
+    formData.name = props.collection.name
+    formData.description = props.collection.description || ''
+    formData.isPublic = props.collection.is_public || false
+    formData.slug = props.collection.slug
+  }
+  Object.keys(errors).forEach(key => delete errors[key as keyof FormErrors])
+}
+
 // Watchers
 watch(() => props.open, (newValue) => {
   isOpen.value = newValue
@@ -192,11 +202,15 @@ watch(() => props.open, (newValue) => {
   }
 })
 
+if (props.collection) {
+  resetForm()
+}
+
 watch(() => props.collection, (newCollection) => {
   if (newCollection) {
     resetForm()
   }
-}, { immediate: true })
+})
 
 // Form validation
 const validateForm = (): boolean => {
@@ -230,23 +244,6 @@ const validateForm = (): boolean => {
 // Event handlers
 const handleOpenChange = (value: boolean) => {
   emit('update:open', value)
-}
-
-const resetForm = () => {
-  if (props.collection) {
-    formData.name = props.collection.name
-    formData.description = props.collection.description || ''
-    formData.isPublic = props.collection.is_public || false
-    formData.slug = props.collection.slug
-  }
-  
-  // Clear errors
-  Object.keys(errors).forEach(key => delete errors[key as keyof FormErrors])
-  
-  // Reset loading states
-  isLoading.value = false
-  isDeleting.value = false
-  showDeleteConfirmation.value = false
 }
 
 const handleSubmit = async () => {
