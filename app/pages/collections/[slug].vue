@@ -335,12 +335,13 @@ useSeoMeta({
   twitterImage: () => firstImagePath.value ? `${config.public.siteUrl}/images${firstImagePath.value}` : undefined,
 })
 
+const requestOrigin = computed(() => useRequestURL().origin)
 const collectionCoverUrl = computed(() => {
   const firstImage = store.images?.[0]
   if (!firstImage) return undefined
   const p = firstImage.pathname
   const cleanPath = p.startsWith('/') ? p.slice(1) : p
-  return `${config.public.siteUrl}/images/${cleanPath}`
+  return `${requestOrigin.value}/${cleanPath}`
 })
 
 const slug = route.params.slug as string
