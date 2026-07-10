@@ -234,6 +234,9 @@ git diff dist/runtime/server/util/kit.js > ../../patches/nuxt-og-image+<version>
 ```
 Or manually ensure the hash computation in `fetchIsland()` matches the server-side `computeIslandHash` from `nuxt/dist/app/island-hash.js`.
 
+### Patched dependency: `nuxt-og-image` takumi fonts
+`nuxt-og-image` v6.4.3 also omits `fontDefs: options.fonts` when calling `loadFontsForRenderer()` in the Takumi renderer (`dist/runtime/server/og-image/takumi/renderer.js:85`). This prevents custom fonts (e.g. Google Fonts) from being loaded for `.takumi.vue` components. The patch is saved in `patches/nuxt-og-image+6.4.3-takumi-fonts.patch`.
+
 ### Nested component auto-imports
 - Nuxt auto-imports components with the folder path as a PascalCase prefix. For example, `app/components/image/HomeGridLoadingState.vue` becomes `ImageHomeGridLoadingState` in templates.
 - If the component is imported explicitly in the script section, use the local import name instead of the auto-import prefix.

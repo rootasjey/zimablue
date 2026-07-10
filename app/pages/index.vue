@@ -127,7 +127,7 @@ if (!imageSlug.value && !collectionSlug.value) {
   })
 
   defineOgImageComponent('Default.takumi', {
-    title: 'ZIMABLUE',
+    title: 'ZIMA BLUE',
     description: 'Borderless artistic space — A curated gallery of digital illustrations',
     thumbnails: () => ogThumbnailUrls.value,
   }, {

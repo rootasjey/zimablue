@@ -29,7 +29,7 @@ const props = withDefaults(defineProps<{
   description?: string
   thumbnails?: string[]
 }>(), {
-  title: 'ZIMABLUE',
+  title: 'ZIMA BLUE',
   description: 'Borderless artistic space. A curated gallery of illustrations',
   thumbnails: () => [],
 })

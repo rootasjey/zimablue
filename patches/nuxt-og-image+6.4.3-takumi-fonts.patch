@@ -1,0 +1,10 @@
+diff --git a/dist/runtime/server/og-image/takumi/renderer.js b/dist/runtime/server/og-image/takumi/renderer.js
+index f2e2c6a..b57bb02 100644
+--- a/dist/runtime/server/og-image/takumi/renderer.js
++++ b/dist/runtime/server/og-image/takumi/renderer.js
+@@ -82,7 +82,7 @@ async function createImage(event, format) {
+   const nodes = await createTakumiNodes(event);
+   const codepoints = extractCodepoints(nodes);
+-  const fonts = await timings.measure("font-load", () => loadFontsForRenderer(event, { supportedFormats: new Set(["ttf", "woff2"]), component: options.component, fontFamilyOverride: fontFamilyOverride || defaultFont, codepoints }));
++  const fonts = await timings.measure("font-load", () => loadFontsForRenderer(event, { supportedFormats: new Set(["ttf", "woff2"]), component: options.component, fontFamilyOverride: fontFamilyOverride || defaultFont, codepoints, fontDefs: options.fonts }));
+   await event._nitro.hooks.callHook("nuxt-og-image:takumi:nodes", nodes, event);

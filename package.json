@@ -1,6 +1,6 @@
 {
   "name": "zimablue",
-  "version": "0.105.6",
+  "version": "0.105.7",
   "description": "Handmade illustrations",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "dev": "TMPDIR=/tmp nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "patch -p1 -i patches/nuxt-og-image+6.4.3.patch --forward --no-backup-if-mismatch 2>/dev/null || true; nuxt prepare",
+    "postinstall": "patch -p1 -i patches/nuxt-og-image+6.4.3.patch --forward --no-backup-if-mismatch 2>/dev/null || true; patch -p1 -i patches/nuxt-og-image+6.4.3-takumi-fonts.patch --forward --no-backup-if-mismatch 2>/dev/null || true; nuxt prepare",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
