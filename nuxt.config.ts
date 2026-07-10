@@ -37,7 +37,7 @@ export default defineNuxtConfig({
       titleTemplate: "%s — Zima Blue",
       meta: [
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "description", content: "Borderless artistic space — A curated gallery of digital illustrations" },
+        { name: "description", content: "Borderless artistic space ~ A gallery of illustrations" },
       ],
       link: [
         { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
@@ -74,7 +74,7 @@ export default defineNuxtConfig({
   site: {
     name: 'Zima Blue',
     url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-    description: 'Borderless artistic space — A curated gallery of digital illustrations',
+    description: 'Borderless artistic space ~ A gallery of illustrations',
     defaultLocale: 'en',
   },
 

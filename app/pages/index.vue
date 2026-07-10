@@ -128,7 +128,7 @@ if (!imageSlug.value && !collectionSlug.value) {
 
   defineOgImageComponent('Default.takumi', {
     title: 'ZIMA BLUE',
-    description: 'Borderless artistic space — A curated gallery of digital illustrations',
+    description: 'Borderless artistic space ~ A gallery of illustrations',
     thumbnails: () => ogThumbnailUrls.value,
   }, {
     fonts: [
@@ -152,7 +152,7 @@ onMounted(() => {
   width: 100%;
   border-radius: 0.75rem;
   transition: all 500ms;
-  
+
   @media (min-width: 768px) {
     justify-content: center;
   }

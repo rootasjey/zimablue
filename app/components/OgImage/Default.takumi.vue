@@ -30,7 +30,7 @@ const props = withDefaults(defineProps<{
   thumbnails?: string[]
 }>(), {
   title: 'ZIMA BLUE',
-  description: 'Borderless artistic space. A curated gallery of illustrations',
+  description: 'Borderless artistic space ~ A gallery of illustrations',
   thumbnails: () => [],
 })
 
@@ -59,8 +59,8 @@ const innerStyle: CSSProperties = {
 }
 
 const titleStyle: CSSProperties = {
-  fontSize: '56px',
-  fontWeight: '900',
+  fontSize: '36px',
+  fontWeight: '400',
   fontFamily: 'Caprasimo, serif',
   color: '#1B1A2F',
   margin: '0 0 12px 0',
