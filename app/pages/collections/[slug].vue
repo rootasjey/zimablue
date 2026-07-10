@@ -315,7 +315,7 @@ const store = useCollectionDetailStore()
 
 // Dynamic SEO meta based on collection data
 const collectionTitle = computed(() => store.collection?.name || 'Collection')
-const collectionDesc = computed(() => store.collection?.description || 'Explore this curated collection of digital illustrations')
+const collectionDesc = computed(() => store.collection?.description || '')
 const config = useRuntimeConfig()
 const firstImagePath = computed(() => {
   const firstImage = store.images?.[0]
