@@ -177,6 +177,10 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'About Zima Blue',
   description: 'Illustrator & software engineer based in France',
+}, {
+  fonts: {
+    Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
+  },
 })
 
 const formData = reactive({

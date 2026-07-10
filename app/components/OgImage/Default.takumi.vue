@@ -59,10 +59,11 @@ const innerStyle: CSSProperties = {
 }
 
 const titleStyle: CSSProperties = {
-  fontSize: '36px',
+  fontSize: '56px',
   fontWeight: '900',
+  fontFamily: 'Caprasimo, serif',
   color: '#1B1A2F',
-  margin: '0 0 2px 0',
+  margin: '0 0 12px 0',
   textAlign: 'center',
   lineHeight: '1.05',
   letterSpacing: '-0.01em',

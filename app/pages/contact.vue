@@ -147,6 +147,10 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'Get in Touch',
   description: 'Collaborations, enquiries, or just a hello',
+}, {
+  fonts: {
+    Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
+  },
 })
 
 const form = ref({

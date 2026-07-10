@@ -130,6 +130,10 @@ if (!imageSlug.value && !collectionSlug.value) {
     title: 'ZIMABLUE',
     description: 'Borderless artistic space — A curated gallery of digital illustrations',
     thumbnails: () => ogThumbnailUrls.value,
+  }, {
+    fonts: {
+      Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
+    },
   })
 }
 

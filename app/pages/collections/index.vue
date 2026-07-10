@@ -248,6 +248,10 @@ useSeoMeta({
 defineOgImageComponent('Default.takumi', {
   title: 'Collections',
   description: 'Curated series of digital illustrations',
+}, {
+  fonts: {
+    Caprasimo: 'https://fonts.googleapis.com/css2?family=Caprasimo',
+  },
 })
 
 const { toast } = useToast()
