@@ -113,9 +113,29 @@ useSeoMeta({
   twitterDescription: 'Architecture, identity, and visual environment control.',
 })
 
+const { data: settingsThumbsData } = await useAsyncData<Record<string, any>[] | null>(
+  'settings-og-thumbs',
+  async () => {
+    try { return await $fetch<Record<string, any>[]>('/api/images/latest') }
+    catch { return null }
+  },
+  { server: true }
+)
+
+const ogSettingsThumbs = computed(() => {
+  const images = settingsThumbsData.value
+  if (!images || images.length === 0) return []
+  const origin = useRequestURL().origin
+  return images.slice(0, 3).map((img: any) => {
+    const p = img.pathname as string
+    return `${origin}/${p.startsWith('/') ? p.slice(1) : p}`
+  })
+})
+
 defineOgImageComponent('Default.takumi', {
-  title: 'Settings',
-  description: 'Architecture, identity, and visual environment control.',
+  title: 'ZIMA BLUE',
+  description: 'Edit the gallery behaviours in settings',
+  thumbnails: () => ogSettingsThumbs.value,
 }, {
   fonts: [
     { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },

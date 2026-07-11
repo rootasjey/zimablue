@@ -622,9 +622,29 @@ useSeoMeta({
   twitterDescription: 'API keys and reference documentation for building with Zima Blue.',
 })
 
+const { data: devThumbsData } = await useAsyncData<Record<string, any>[] | null>(
+  'dev-og-thumbs',
+  async () => {
+    try { return await $fetch<Record<string, any>[]>('/api/images/latest') }
+    catch { return null }
+  },
+  { server: true }
+)
+
+const ogDevThumbs = computed(() => {
+  const images = devThumbsData.value
+  if (!images || images.length === 0) return []
+  const origin = useRequestURL().origin
+  return images.slice(0, 3).map((img: any) => {
+    const p = img.pathname as string
+    return `${origin}/${p.startsWith('/') ? p.slice(1) : p}`
+  })
+})
+
 defineOgImageComponent('Developers.takumi', {
   title: 'Developers',
   description: 'API keys and reference documentation for building with Zima Blue.',
+  thumbnails: () => ogDevThumbs.value,
 }, {
   fonts: [
     { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },

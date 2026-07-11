@@ -9,6 +9,16 @@
 
       <h1 :style="titleStyle">{{ title }}</h1>
       <p :style="descStyle">{{ description }}</p>
+
+      <div v-if="thumbnails && thumbnails.length" :style="thumbnailsRowStyle">
+        <img
+          v-for="(url, i) in thumbnails.slice(0, 3)"
+          :key="i"
+          :src="url"
+          alt=""
+          :style="thumbStyle"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -19,6 +29,7 @@ import type { CSSProperties } from 'vue'
 withDefaults(defineProps<{
   title?: string
   description?: string
+  thumbnails?: string[]
 }>(), {
   title: 'Developers',
   description: 'API keys and reference documentation for building with Zima Blue',
@@ -90,5 +101,19 @@ const descStyle: CSSProperties = {
   textAlign: 'center',
   lineHeight: '1.4',
   maxWidth: '500px',
+}
+
+const thumbnailsRowStyle: CSSProperties = {
+  display: 'flex',
+  gap: '10px',
+  justifyContent: 'center',
+  marginTop: '32px',
+}
+
+const thumbStyle: CSSProperties = {
+  width: '60px',
+  height: '60px',
+  borderRadius: '10px',
+  objectFit: 'cover',
 }
 </script>

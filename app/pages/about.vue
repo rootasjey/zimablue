@@ -175,7 +175,7 @@ useSeoMeta({
 })
 
 defineOgImageComponent('About.takumi', {
-  title: 'About Zima Blue',
+  title: 'About ZIMA BLUE',
   description: 'Illustrator & software engineer based in France',
 }, {
   fonts: [
