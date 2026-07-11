@@ -245,9 +245,32 @@ useSeoMeta({
   twitterDescription: 'Explore curated series of digital illustrations organized into themed collections',
 })
 
-defineOgImageComponent('Default.takumi', {
+const { data: collectionsThumbs } = await useAsyncData<Record<string, any>[] | null>(
+  'collections-og-thumbs',
+  async () => {
+    try {
+      return await $fetch<Record<string, any>[]>('/api/images/latest')
+    } catch { return null }
+  },
+  { server: true }
+)
+
+const ogCollectionThumbs = computed(() => {
+  const images = collectionsThumbs.value
+  if (!images || images.length === 0) return []
+  const origin = useRequestURL().origin
+  return images.slice(0, 4).map((img: any) => {
+    const p = img.pathname as string
+    const cleanPath = p.startsWith('/') ? p.slice(1) : p
+    return `${origin}/${cleanPath}`
+  })
+})
+
+defineOgImageComponent('Collections.takumi', {
   title: 'Collections',
   description: 'Curated series of digital illustrations',
+  thumbs: () => ogCollectionThumbs.value,
+  count: () => collectionStore.collections.length || 0,
 }, {
   fonts: [
     { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },

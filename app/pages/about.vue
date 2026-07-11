@@ -174,7 +174,7 @@ useSeoMeta({
   twitterDescription: 'Learn about the illustrator and software engineer behind Zima Blue',
 })
 
-defineOgImageComponent('Default.takumi', {
+defineOgImageComponent('About.takumi', {
   title: 'About Zima Blue',
   description: 'Illustrator & software engineer based in France',
 }, {
