@@ -332,25 +332,7 @@ useSeoMeta({
   twitterImage: imageUrl,
 })
 
-const ogIllustrationUrl = computed(() => {
-  if (!image.value) return undefined
-  const origin = useRequestURL().origin
-  const variants = parseVariantsForSeo(image.value.variants)
-  const mdVariant = variants.find(v => v.size === 'md') || variants.find(v => v.size === 'lg') || variants.find(v => v.size === 'original')
-  const pathname = mdVariant?.pathname || image.value.pathname
-  const cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname
-  return `${origin}/images/${cleanPath}`
-})
-
-defineOgImageComponent('Illustration.takumi', {
-  title: () => imageTitle.value,
-  description: () => imageDesc.value,
-  imageUrl: () => ogIllustrationUrl.value || '',
-}, {
-  fonts: [
-    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
-  ],
-})
+// Use raw image as OG preview (matching the fullscreen page experience)
 
 useHead({
   script: [{
