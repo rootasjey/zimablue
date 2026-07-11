@@ -316,7 +316,8 @@ const imageUrl = computed(() => {
   const variants = parseVariantsForSeo(image.value.variants)
   const mdVariant = variants.find(v => v.size === 'md') || variants.find(v => v.size === 'lg') || variants.find(v => v.size === 'original')
   const pathname = mdVariant?.pathname || image.value.pathname
-  return `/images/${pathname.startsWith('/') ? pathname.slice(1) : pathname}`
+  const cleanPath = pathname.replace(/^images\//, '')
+  return `/images/${cleanPath}`
 })
 
 useSeoMeta({

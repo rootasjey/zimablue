@@ -47,7 +47,7 @@ const ogImageUrl = computed(() => {
   const variants = parsePreviewVariants(previewImage.value.variants)
   const variant = variants.find(v => v.size === 'md') || variants.find(v => v.size === 'lg') || variants.find(v => v.size === 'original')
   const pathname = variant?.pathname || previewImage.value.pathname
-  const cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname
+  const cleanPath = pathname.replace(/^images\//, '')
   return `${config.public.siteUrl}/images/${cleanPath}`
 })
 
