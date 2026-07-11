@@ -351,11 +351,22 @@ if (import.meta.server) {
   await store.fetchCollection(slug)
 }
 
+const collectionThumbnailUrls = computed(() => {
+  const images = store.images || []
+  const origin = useRequestURL().origin
+  return images.slice(0, 6).map((img: any) => {
+    const p = img.pathname as string
+    const cleanPath = p.startsWith('/') ? p.slice(1) : p
+    return `${origin}/${cleanPath}`
+  })
+})
+
 defineOgImageComponent('Collection.takumi', {
   title: () => collectionTitle.value,
   description: () => collectionDesc.value,
   coverUrl: () => collectionCoverUrl.value || '',
   imageCount: () => store.images?.length || 0,
+  thumbnails: () => collectionThumbnailUrls.value,
 }, {
   fonts: [
     { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },

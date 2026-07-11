@@ -5,15 +5,29 @@
         v-if="coverUrl"
         :src="coverUrl"
         alt=""
-        :style="coverStyle"
+        :style="bgCoverStyle"
       />
 
-      <h1 :style="titleStyle">{{ title }}</h1>
+      <div :style="overlayStyle" />
 
-      <p v-if="description" :style="descStyle">{{ description }}</p>
+      <div :style="contentStyle">
+        <h1 :style="titleStyle">{{ title }}</h1>
 
-      <div :style="badgeStyle">
-        <span :style="badgeTextStyle">{{ imageCount }} illustration{{ imageCount !== 1 ? 's' : '' }}</span>
+        <p v-if="description" :style="descStyle">{{ description }}</p>
+
+        <div :style="badgeStyle">
+          <span :style="badgeTextStyle">{{ imageCount }} illustration{{ imageCount !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <div v-if="thumbnails && thumbnails.length" :style="thumbnailsRowStyle">
+          <img
+            v-for="(url, i) in thumbnails.slice(0, 6)"
+            :key="i"
+            :src="url"
+            alt=""
+            :style="thumbStyle"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -27,11 +41,13 @@ const props = withDefaults(defineProps<{
   description?: string
   coverUrl?: string
   imageCount?: number
+  thumbnails?: string[]
 }>(), {
   title: 'Collection',
   description: '',
   coverUrl: '',
   imageCount: 0,
+  thumbnails: () => [],
 })
 
 const rootStyle: CSSProperties = {
@@ -54,23 +70,43 @@ const innerStyle: CSSProperties = {
   height: '100%',
   background: '#FEEDF5',
   borderRadius: '16px',
-  padding: '60px',
   position: 'relative',
+  overflow: 'hidden',
 }
 
-const coverStyle: CSSProperties = {
-  width: '120px',
-  height: '120px',
-  borderRadius: '16px',
+const bgCoverStyle: CSSProperties = {
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  width: '100%',
+  height: '100%',
   objectFit: 'cover',
-  marginBottom: '24px',
+  filter: 'brightness(0.35) saturate(1.2)',
+}
+
+const overlayStyle: CSSProperties = {
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  right: '0',
+  bottom: '0',
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%)',
+}
+
+const contentStyle: CSSProperties = {
+  position: 'relative',
+  zIndex: '1',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '60px',
 }
 
 const titleStyle: CSSProperties = {
   fontSize: '36px',
   fontWeight: '400',
   fontFamily: 'Caprasimo, serif',
-  color: '#1B1A2F',
+  color: '#fff',
   margin: '0 0 12px 0',
   textAlign: 'center',
   lineHeight: '1.05',
@@ -79,7 +115,7 @@ const titleStyle: CSSProperties = {
 
 const descStyle: CSSProperties = {
   fontSize: '16px',
-  color: 'rgba(27,26,47,0.45)',
+  color: 'rgba(255,255,255,0.65)',
   margin: '0 0 12px 0',
   textAlign: 'center',
   lineHeight: '1.4',
@@ -89,14 +125,29 @@ const descStyle: CSSProperties = {
 const badgeStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  background: 'rgba(27,26,47,0.08)',
+  background: 'rgba(84, 120, 255, 0.25)',
+  backdropFilter: 'blur(10px)',
   borderRadius: '100px',
   padding: '10px 24px',
+  marginBottom: '32px',
 }
 
 const badgeTextStyle: CSSProperties = {
   fontSize: '16px',
-  color: 'rgba(27,26,47,0.55)',
+  color: 'rgba(255,255,255,0.85)',
   fontWeight: '500',
+}
+
+const thumbnailsRowStyle: CSSProperties = {
+  display: 'flex',
+  gap: '10px',
+  justifyContent: 'center',
+}
+
+const thumbStyle: CSSProperties = {
+  width: '60px',
+  height: '60px',
+  borderRadius: '10px',
+  objectFit: 'cover',
 }
 </script>
