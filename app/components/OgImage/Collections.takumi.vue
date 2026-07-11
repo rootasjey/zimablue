@@ -52,7 +52,6 @@ const rootStyle: CSSProperties = {
 }
 
 const innerStyle: CSSProperties = {
-  display: 'flex',
   width: '100%',
   height: '100%',
   borderRadius: '16px',
@@ -67,7 +66,7 @@ const imagesRowStyle: CSSProperties = {
 }
 
 const imageStyle: CSSProperties = {
-  flex: '1',
+  width: '25%',
   height: '100%',
   objectFit: 'cover',
   display: 'block',
