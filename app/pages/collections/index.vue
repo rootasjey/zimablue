@@ -245,43 +245,12 @@ useSeoMeta({
   twitterDescription: 'Explore curated series of digital illustrations organized into themed collections',
 })
 
-const { data: collectionsThumbs } = await useAsyncData<Record<string, any>[] | null>(
-  'collections-og-thumbs',
-  async () => {
-    try {
-      return await $fetch<Record<string, any>[]>('/api/images/latest')
-    } catch { return null }
-  },
-  { server: true }
-)
-
-const ogCollectionThumbs = computed(() => {
-  const images = collectionsThumbs.value
-  if (!images || images.length === 0) return []
-  const origin = useRequestURL().origin
-  return images.slice(0, 4).map((img: any) => {
-    const p = img.pathname as string
-    const cleanPath = p.startsWith('/') ? p.slice(1) : p
-    return `${origin}/${cleanPath}`
-  })
-})
-
-defineOgImageComponent('Collections.takumi', {
-  title: 'Collections',
-  description: 'Curated series of digital illustrations',
-  thumbs: () => ogCollectionThumbs.value,
-  count: () => collectionStore.collections.length || 0,
-}, {
-  fonts: [
-    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
-  ],
-})
+const collectionStore = useCollectionStore()
 
 const { toast } = useToast()
 const { showErrorToast } = useErrorToast()
 const { loggedIn, user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
-const collectionStore = useCollectionStore()
 const { lightModeColors } = useRandomColors()
 const pageHeader = usePageHeader()
 const imageUpload = useImageUpload()
@@ -371,6 +340,29 @@ if (import.meta.server) {
     isLoading.value = false
   }
 }
+
+const ogCollectionThumbs = computed(() => {
+  const origin = useRequestURL().origin
+  return collectionStore.collections
+    .map((c: any) => c.cover_image?.pathname)
+    .filter(Boolean)
+    .slice(0, 4)
+    .map((p: string) => {
+      const cleanPath = p.startsWith('/') ? p.slice(1) : p
+      return `${origin}/${cleanPath}`
+    })
+})
+
+defineOgImageComponent('Collections.takumi', {
+  title: 'Collections',
+  description: 'Curated series of digital illustrations',
+  thumbs: () => ogCollectionThumbs.value,
+  count: () => collectionStore.collections.length || 0,
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
 
 // Client: refresh on mount. Avoid forcing the skeleton for visitors who already
 // received an SSR snapshot (prevents flicker). When logged-in or there are no
