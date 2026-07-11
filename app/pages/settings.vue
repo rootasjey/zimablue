@@ -103,6 +103,25 @@
 
 <script setup lang="ts">
 import { useAppSettings } from '~/composables/useAppSettings'
+
+useSeoMeta({
+  title: 'Settings',
+  description: 'Architecture, identity, and visual environment control.',
+  ogTitle: 'Settings — Zima Blue',
+  ogDescription: 'Architecture, identity, and visual environment control.',
+  twitterTitle: 'Settings — Zima Blue',
+  twitterDescription: 'Architecture, identity, and visual environment control.',
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'Settings',
+  description: 'Architecture, identity, and visual environment control.',
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
+
 const settings = useAppSettings()
 const { theme } = settings
 const config = useRuntimeConfig()

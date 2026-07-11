@@ -613,6 +613,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
+useSeoMeta({
+  title: 'Developers',
+  description: 'API keys and reference documentation for building with Zima Blue.',
+  ogTitle: 'Developers — Zima Blue',
+  ogDescription: 'API keys and reference documentation for building with Zima Blue.',
+  twitterTitle: 'Developers — Zima Blue',
+  twitterDescription: 'API keys and reference documentation for building with Zima Blue.',
+})
+
+defineOgImageComponent('Developers.takumi', {
+  title: 'Developers',
+  description: 'API keys and reference documentation for building with Zima Blue.',
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
+
 const route = useRoute()
 const activeTab = computed(() => (route.query.tab as string) || 'keys')
 
