@@ -346,7 +346,7 @@ const ogCollectionThumbs = computed(() => {
   return collectionStore.collections
     .map((c: any) => c.cover_image?.pathname)
     .filter(Boolean)
-    .slice(0, 4)
+    .slice(-4)
     .map((p: string) => {
       const cleanPath = p.startsWith('/') ? p.slice(1) : p
       return `${origin}/${cleanPath}`
