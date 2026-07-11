@@ -260,6 +260,15 @@ import type { AdminStats } from '~~/shared/types/admin'
 import type { Message } from '~~/shared/types/message'
 import type { Todo } from '~~/shared/types/todo'
 
+defineOgImageComponent('Default.takumi', {
+  title: 'Dashboard',
+  description: 'Manage your gallery — images, collections, messages, and more.',
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
+
 const { loggedIn, user } = useUserSession()
 const { toast } = useToast()
 const { showErrorToast } = useErrorToast()

@@ -270,9 +270,27 @@ interface NavPath {
   description: string
 }
 
+defineOgImageComponent('Default.takumi', {
+  title: 'Search',
+  description: 'Find illustrations and collections across the gallery.',
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
+
 // Meta
 definePageMeta({
-  title: 'Search - zima blue'
+  title: 'Search',
+})
+
+useSeoMeta({
+  title: 'Search',
+  description: 'Find illustrations and collections across the gallery.',
+  ogTitle: 'Search — Zima Blue',
+  ogDescription: 'Find illustrations and collections across the gallery.',
+  twitterTitle: 'Search — Zima Blue',
+  twitterDescription: 'Find illustrations and collections across the gallery.',
 })
 
 const searchStore = useGlobalSearchStore()

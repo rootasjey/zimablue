@@ -250,6 +250,25 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+
+useSeoMeta({
+  title: 'Login',
+  description: 'Sign in to Zima Blue to manage your gallery.',
+  ogTitle: 'Login — Zima Blue',
+  ogDescription: 'Sign in to Zima Blue to manage your gallery.',
+  twitterTitle: 'Login — Zima Blue',
+  twitterDescription: 'Sign in to Zima Blue to manage your gallery.',
+})
+
+defineOgImageComponent('Default.takumi', {
+  title: 'Login',
+  description: 'Sign in to Zima Blue to manage your gallery.',
+}, {
+  fonts: [
+    { name: 'Caprasimo', path: '/fonts/Caprasimo-Regular.ttf', weight: 400, style: 'normal' },
+  ],
+})
+
 const { loggedIn, fetch: refreshSession } = useUserSession()
 
 // Form fields
