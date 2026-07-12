@@ -27,24 +27,43 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Path too long' })
   }
 
-  const html = await event.$fetch(targetPath, {
+  // Use the request's own host/protocol so the internal page render sees the
+  // correct public URL via useRequestURL().origin. This ensures OG image URLs
+  // (thumbnails, covers) are encoded with the right origin.
+  const host = getRequestHost(event)
+  const protocol = getRequestProtocol(event)
+  const fetchUrl = `${protocol}://${host}${targetPath}`
+
+  const html = await event.$fetch(fetchUrl, {
     headers: { accept: 'text/html' },
     responseType: 'text',
   }).catch((err: Error) => {
     throw createError({
       statusCode: 502,
-      message: `Failed to fetch ${targetPath}: ${err?.message || 'unknown error'}`,
+      message: `Failed to fetch ${fetchUrl}: ${err?.message || 'unknown error'}`,
     })
   })
 
-  const ogImage = extractMeta(String(html), 'og:image')
-  const twitterImage = extractMeta(String(html), 'twitter:image')
+  const rawOgImage = extractMeta(String(html), 'og:image')
+  const twitterImage = extractMeta(String(html), 'twitter:image') || null
+
+  // Normalize the OG image URL to an absolute URL with the correct public
+  // origin. The meta tag may contain a relative path (/_og/d/...) or an
+  // absolute URL with a wrong origin (http://localhost:3000/...) depending
+  // on the rendering context.
+  const origin = `${protocol}://${host}`
+  let ogImage: string | null = null
+  if (rawOgImage) {
+    ogImage = rawOgImage.startsWith('/')
+      ? `${origin}${rawOgImage}`
+      : `${origin}/${rawOgImage.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')}`
+  }
 
   return {
     success: true,
     data: {
-      ogImage: ogImage || null,
-      twitterImage: twitterImage || null,
+      ogImage,
+      twitterImage,
     },
   }
 })
