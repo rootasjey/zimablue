@@ -183,7 +183,7 @@ const navigationItems = computed<any[]>(() => {
     {
       label: 'Workspace',
       value: 'workspace',
-      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools') || isCurrentRoute('/admin/social') || isCurrentRoute('/admin/api-tokens'),
+      active: isCurrentRoute('/admin/users') || isCurrentRoute('/admin/todos') || isCurrentRoute('/admin/analytics') || isCurrentRoute('/admin/tools') || isCurrentRoute('/admin/social') || isCurrentRoute('/admin/api-tokens') || isCurrentRoute('/admin/og-preview'),
       items: [
         {
           label: 'Users',
@@ -214,6 +214,12 @@ const navigationItems = computed<any[]>(() => {
           description: 'Run maintenance and import or export utilities.',
           to: '/admin/tools',
           active: isCurrentRoute('/admin/tools'),
+        },
+        {
+          label: 'OG Preview',
+          description: 'Preview Open Graph images for any page with real data.',
+          to: '/admin/og-preview',
+          active: isCurrentRoute('/admin/og-preview'),
         },
         {
           label: 'API Tokens',

@@ -318,9 +318,13 @@ const collectionTitle = computed(() => store.collection?.name || 'Collection')
 const collectionDesc = computed(() => store.collection?.description || '')
 const config = useRuntimeConfig()
 const firstImagePath = computed(() => {
-  const firstImage = store.images?.[0]
-  if (!firstImage) return undefined
-  const p = firstImage.pathname
+  let image = store.images?.[0]
+  if (store.collection?.cover_image_id) {
+    const coverImage = store.images.find(img => img.id === store.collection?.cover_image_id)
+    if (coverImage) image = coverImage
+  }
+  if (!image) return undefined
+  const p = image.pathname
   return p.startsWith('/') ? p : `/${p}`
 })
 
@@ -337,9 +341,13 @@ useSeoMeta({
 
 const requestOrigin = computed(() => useRequestURL().origin)
 const collectionCoverUrl = computed(() => {
-  const firstImage = store.images?.[0]
-  if (!firstImage) return undefined
-  const p = firstImage.pathname
+  let image = store.images?.[0]
+  if (store.collection?.cover_image_id) {
+    const coverImage = store.images.find(img => img.id === store.collection?.cover_image_id)
+    if (coverImage) image = coverImage
+  }
+  if (!image) return undefined
+  const p = image.pathname
   const cleanPath = p.startsWith('/') ? p.slice(1) : p
   return `${requestOrigin.value}/${cleanPath}`
 })

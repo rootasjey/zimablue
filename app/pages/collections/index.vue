@@ -316,37 +316,31 @@ onUnmounted(() => {
   window.removeEventListener('keydown', collectionsKeyboardHandler, true)
 })
 
-// Server: for anonymous visitors fetch collections during SSR and attach
-// caching headers so CDNs can cache the snapshot. For authenticated users
-// skip SSR fetch so private data doesn't get cached.
+// Fetch public collections during SSR so the initial HTML always contains
+// data, even for authenticated users (needed for OG image generation).
+// Cache headers are only set for anonymous visitors to avoid caching private
+// data that might load client-side later.
 if (import.meta.server) {
-  // loggedIn is a computed ref that works during SSR (session plugin will
-  // populate session state server-side using the incoming request cookies).
-  if (!loggedIn.value) {
-    // Fetch public collections during SSR so the initial HTML contains data.
-    await collectionStore.fetchCollections(false)
+  await collectionStore.fetchCollections(false)
 
-    // Attach cache headers to allow CDN/edge to cache this anonymous snapshot.
-    // s-maxage controls edge caching while stale-while-revalidate lets us serve
-    // slightly stale pages while revalidating in the background.
+  if (!loggedIn.value) {
     const event = useRequestEvent()
     try {
       if (event) setHeader(event, 'cache-control', 'public, s-maxage=60, stale-while-revalidate=30')
     } catch (e) {
       // Best-effort - if header can't be set we still continue.
     }
-
-    // We fetched data on the server so mark loading as finished for SSR output.
-    isLoading.value = false
   }
+
+  isLoading.value = false
 }
 
 const ogCollectionThumbs = computed(() => {
   const origin = useRequestURL().origin
   return collectionStore.collections
-    .map((c: any) => c.cover_image?.pathname)
+    .slice(0, 4)
+    .map((c: any) => c.cover_image?.pathname || c.preview_images?.[0]?.pathname)
     .filter(Boolean)
-    .slice(-4)
     .map((p: string) => {
       const cleanPath = p.startsWith('/') ? p.slice(1) : p
       return `${origin}/${cleanPath}`
@@ -365,10 +359,10 @@ defineOgImageComponent('Collections.takumi', {
 })
 
 // Client: refresh on mount. Avoid forcing the skeleton for visitors who already
-// received an SSR snapshot (prevents flicker). When logged-in or there are no
-// server-populated collections, show loading until the fetch completes.
+// received an SSR snapshot (prevents flicker). Only show loading when there
+// are no server-populated collections at all.
 onMounted(async () => {
-  const needLoading = loggedIn.value || collectionStore.collections.length === 0
+  const needLoading = collectionStore.collections.length === 0
 
   if (needLoading) {
     isLoading.value = true

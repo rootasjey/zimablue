@@ -338,6 +338,20 @@ const commands = computed<Command[]>(() => {
       hint: isCurrentRoute('/admin/tools') ? 'Current page' : 'Page'
     },
     {
+      id: 'nav-og-preview',
+      label: 'OG Preview',
+      description: 'Preview Open Graph images for every page with real data.',
+      group: 'navigation',
+      kind: 'route',
+      to: '/admin/og-preview',
+      icon: 'i-ph-image-square',
+      iconClass: isCurrentRoute('/admin/og-preview')
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+        : 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300',
+      keywords: ['og', 'image', 'preview', 'open graph', 'social', 'meta'],
+      hint: isCurrentRoute('/admin/og-preview') ? 'Current page' : 'Page'
+    },
+    {
       id: 'nav-api-tokens',
       label: 'API Tokens',
       description: 'Manage tokens for mobile and desktop apps.',
