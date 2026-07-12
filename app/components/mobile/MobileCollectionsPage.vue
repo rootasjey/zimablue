@@ -55,7 +55,7 @@
                 <NuxtImg
                   :src="`/${image.pathname}`"
                   provider="hubblob"
-                  :alt="image.name || ''"
+                  :alt="image.name || 'Image'"
                   class="w-full h-full object-cover"
                   loading="lazy"
                 />

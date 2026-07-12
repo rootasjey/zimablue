@@ -153,7 +153,7 @@
 
           <div class="rounded-6 border border-gray-100 dark:border-gray-800 p-10 sm:p-14 bg-white dark:bg-gray-950 mb-8">
             <p class="text-sm text-gray-400 dark:text-gray-500 font-body mb-4">Base URL</p>
-            <code class="text-sm text-gray-900 dark:text-gray-100 font-mono">https://zimablue.com/api</code>
+            <code class="text-sm text-gray-900 dark:text-gray-100 font-mono">https://zimablue.cc/api</code>
           </div>
 
           <div class="mb-6">

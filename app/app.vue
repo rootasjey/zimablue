@@ -17,15 +17,24 @@ import HiddenFileInputs from '~/components/HiddenFileInputs.vue'
 
 useGlobalSearch()
 
+const route = useRoute()
+const config = useRuntimeConfig()
+
 useHead({
   meta: [
     { name: 'view-transition', content: 'same-origin' }
+  ],
+  link: [
+    { rel: 'canonical', href: `${config.public.siteUrl}${route.path}` }
   ]
 })
 
 useSeoMeta({
   ogType: 'website',
   ogSiteName: 'Zima Blue',
+  ogLocale: 'en_US',
   twitterCard: 'summary_large_image',
+  twitterSite: '@rootasjey',
+  twitterCreator: '@rootasjey',
 })
 </script>

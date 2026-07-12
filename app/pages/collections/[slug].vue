@@ -381,6 +381,52 @@ defineOgImageComponent('Collection.takumi', {
   ],
 })
 
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: () => {
+      if (!store.collection) return ''
+      return JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: store.collection.name,
+        description: store.collection.description || undefined,
+        url: `${config.public.siteUrl}/collections/${slug}`,
+        numberOfItems: store.images?.length || 0,
+        about: {
+          '@type': 'ImageObject',
+          name: store.collection.name,
+        },
+      })
+    },
+  }, {
+    type: 'application/ld+json',
+    innerHTML: () => {
+      if (!store.collection) return ''
+      return JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [{
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: `${config.public.siteUrl}/`,
+        }, {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Collections',
+          item: `${config.public.siteUrl}/collections`,
+        }, {
+          '@type': 'ListItem',
+          position: 3,
+          name: store.collection.name,
+          item: `${config.public.siteUrl}/collections/${slug}`,
+        }],
+      })
+    },
+  }],
+})
+
 // Ensure we render a loading state on first render when the store
 // doesn't yet have collection data. This prevents a brief flash of the
 // empty state ("nothing here yet") before fetchCollection runs.

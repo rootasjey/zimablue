@@ -137,6 +137,29 @@ if (!imageSlug.value && !collectionSlug.value) {
   })
 }
 
+const siteUrl = config.public.siteUrl
+
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Zima Blue',
+      url: siteUrl,
+      description: 'Borderless artistic space ~ A gallery of illustrations',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    }),
+  }],
+})
+
 onMounted(() => {
   if (!gridStore.initialized) {
     gridStore.fetchGrid()

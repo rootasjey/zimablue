@@ -72,8 +72,7 @@
               :src="getImageSrc(item, 'mobile-grid').src"
               :provider="getImageSrc(item, 'mobile-grid').provider"
               :modifiers="getImageSrc(item, 'mobile-grid').modifiers"
-              :alt="''"
-              :aria-label="item.name || item.pathname || 'Image'"
+              :alt="item.name || item.pathname || 'Image'"
               class="nuxt-img-mobile"
               :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
             />
@@ -174,8 +173,7 @@
             :src="getImageSrc(item, 'desktop-grid').src"
             :provider="getImageSrc(item, 'desktop-grid').provider"
             :modifiers="getImageSrc(item, 'desktop-grid').modifiers"
-            :alt="''"
-            :aria-label="item.name || item.pathname || 'Image'"
+            :alt="item.name || item.pathname || 'Image'"
             class="nuxt-img"
             :class="{ 'is-loading': !loadedMap[keyFor(item, index)] && !errorMap[keyFor(item, index)] }"
           />

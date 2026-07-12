@@ -245,6 +245,39 @@ useSeoMeta({
   twitterDescription: 'Explore curated series of digital illustrations organized into themed collections',
 })
 
+const route = useRoute()
+const config = useRuntimeConfig()
+
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Collections — Zima Blue',
+      description: 'Explore curated series of digital illustrations organized into themed collections',
+      url: `${config.public.siteUrl}${route.path}`,
+    }),
+  }, {
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [{
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${config.public.siteUrl}/`,
+      }, {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Collections',
+        item: `${config.public.siteUrl}/collections`,
+      }],
+    }),
+  }],
+})
+
 const collectionStore = useCollectionStore()
 
 const { toast } = useToast()

@@ -354,6 +354,26 @@ useHead({
         license: 'https://creativecommons.org/licenses/by-sa/4.0/',
       })
     },
+  }, {
+    type: 'application/ld+json',
+    innerHTML: () => {
+      if (!image.value) return ''
+      return JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [{
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: `${siteConfig.public.siteUrl}/`,
+        }, {
+          '@type': 'ListItem',
+          position: 2,
+          name: image.value.name,
+          item: `${siteConfig.public.siteUrl}/illustrations/${image.value.slug}`,
+        }],
+      })
+    },
   }],
 })
 

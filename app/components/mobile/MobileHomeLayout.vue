@@ -167,7 +167,7 @@
               provider="hubblob"
               :src="image.pathname"
               :modifiers="{ v: image.updated_at, width: 300, height: 400, fit: 'cover' }"
-              :alt="image.name || ''"
+              :alt="image.name || 'Image'"
               class="w-full h-full object-cover"
               loading="lazy"
             />

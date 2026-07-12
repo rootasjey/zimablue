@@ -165,6 +165,27 @@ const randomColors = useRandomColors()
 
 const version = config.public.appVersion
 
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: 'rootasjey',
+      givenName: 'Jérémie',
+      familyName: 'Corpinot',
+      jobTitle: 'Illustrator & Software Engineer',
+      description: 'Self-taught illustrator and software engineer based in France',
+      url: 'https://www.rootasjey.dev',
+      sameAs: [
+        'https://github.com/rootasjey',
+        'https://www.instagram.com/rootasjey',
+        'https://www.linkedin.com/in/jeremiecorpinot/',
+      ],
+    }),
+  }],
+})
+
 useSeoMeta({
   title: 'About',
   description: 'Learn about the illustrator and software engineer behind Zima Blue — a self-taught creator based in France exploring the intersection of technology and art',
