@@ -15,12 +15,11 @@
     @dragleave.prevent="handlePageDragLeave"
     @drop.prevent="handleDropOnEmptySpace"
   >
-    <!-- Sophisticated Header -->
+    <!-- Header -->
     <div class="mb-16 border-b border-gray-100 dark:border-gray-800 pb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
       <div class="space-y-4">
         <h1 class="font-title text-size-10 sm:text-size-12 font-800 tracking-tighter text-gray-900 dark:text-gray-100">
-          The Gallery <span class="text-primary font-300">/</span>
-          <span class="block sm:inline ml-2 text-gray-400 dark:text-gray-600 font-200 uppercase text-size-6 tracking-[0.2em]">Collections</span>
+          Collections
         </h1>
 
         <div class="flex items-center gap-4 text-size-3.5 uppercase tracking-widest text-gray-400 dark:text-gray-500 font-500">

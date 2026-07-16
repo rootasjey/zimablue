@@ -37,11 +37,11 @@ export default {
       },
     }),
     presetWebFonts({
-      provider: 'fontshare',
+      provider: 'google',
       fonts: {
-        title: 'Britney',
+        title: 'Agbalumo',
         classic: 'Montserrat',
-        body: 'Chillax',
+        body: 'Agbalumo',
       },
       processors: [
         createLocalFontProcessor({

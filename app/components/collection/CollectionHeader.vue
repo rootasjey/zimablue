@@ -36,14 +36,14 @@
 
       <!-- Content -->
       <div class="absolute bottom-0 z-10 h-full w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-8 sm:pb-14">
-        <div class="max-w-3xl space-y-0">
+        <div class="w-6xl md:px-2 xl:px-18 space-y-0">
           <!-- Title -->
-          <h1 class="font-body text-3xl sm:text-5xl md:text-6xl font-900 leading-[1.1] tracking-tight text-center text-white">
+          <h1 class="font-body text-3xl sm:text-5xl md:text-6xl font-900 leading-[1.1] tracking-tight text-white">
             {{ collection?.name || 'Untitled' }}
           </h1>
 
           <!-- Description -->
-          <p v-if="collection?.description" class="text-sm sm:text-base text-white/60 max-w-xl text-center leading-relaxed line-clamp-2">
+          <p v-if="collection?.description" class="text-sm sm:text-base text-white/60 max-w-xl leading-relaxed line-clamp-2">
             {{ collection.description }}
           </p>
         </div>
