@@ -27,22 +27,32 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Path too long' })
   }
 
-  // Use the request's own host/protocol so the internal page render sees the
-  // correct public URL via useRequestURL().origin. This ensures OG image URLs
-  // (thumbnails, covers) are encoded with the right origin.
+  // Use Nitro's internal localFetch to avoid self-fetch issues on
+  // Cloudflare Workers (522 timeout when a Worker fetches its own domain).
   const host = getRequestHost(event)
   const protocol = getRequestProtocol(event)
-  const fetchUrl = `${protocol}://${host}${targetPath}`
-
-  const html = await event.$fetch(fetchUrl, {
-    headers: { accept: 'text/html' },
-    responseType: 'text',
+  const nitroApp = useNitroApp()
+  const response = await nitroApp.localFetch(targetPath, {
+    headers: {
+      accept: 'text/html',
+      host,
+      'x-forwarded-proto': protocol,
+    },
   }).catch((err: Error) => {
     throw createError({
       statusCode: 502,
-      message: `Failed to fetch ${fetchUrl}: ${err?.message || 'unknown error'}`,
+      message: `Failed to render ${targetPath}: ${err?.message || 'unknown error'}`,
     })
   })
+
+  if (!response.ok) {
+    throw createError({
+      statusCode: 502,
+      message: `Failed to render ${targetPath}: ${response.status} ${response.statusText}`,
+    })
+  }
+
+  const html = await response.text()
 
   const rawOgImage = extractMeta(String(html), 'og:image')
   const twitterImage = extractMeta(String(html), 'twitter:image') || null

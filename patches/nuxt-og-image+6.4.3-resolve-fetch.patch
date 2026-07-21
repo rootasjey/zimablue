@@ -1,0 +1,31 @@
+diff --git a/node_modules/nuxt-og-image/dist/runtime/server/routes/resolve.js b/node_modules/nuxt-og-image/dist/runtime/server/routes/resolve.js
+index 2c4e8f0..d9b6a7f 100644
+--- a/node_modules/nuxt-og-image/dist/runtime/server/routes/resolve.js
++++ b/node_modules/nuxt-og-image/dist/runtime/server/routes/resolve.js
+@@ -1,3 +1,4 @@
++import { useNitroApp } from "nitropack/runtime";
+ import { getSiteConfig } from "#site-config/server/composables/getSiteConfig";
+ import { createError, defineEventHandler, getQuery, getRequestHost, sendRedirect } from "h3";
+ import { parseURL, withLeadingSlash, withQuery } from "ufo";
+@@ -97,12 +98,18 @@ export default defineEventHandler(async (event) => {
+   }
+   const fetchPath = withQuery(withLeadingSlash(targetPath), forwardQuery);
+-  const html = await event.$fetch(fetchPath, {
+-    headers: { accept: "text/html" },
+-    responseType: "text"
++  const response = await useNitroApp().localFetch(fetchPath, {
++    headers: { accept: "text/html" }
+   }).catch((err) => {
+     throw createError({
+       statusCode: 502,
+       statusMessage: `[Nuxt OG Image] Failed to fetch ${fetchPath}: ${err?.message || "unknown error"}`
+     });
+   });
++  if (!response.ok) {
++    throw createError({
++      statusCode: 502,
++      statusMessage: `[Nuxt OG Image] Failed to fetch ${fetchPath}: ${response.status} ${response.statusText}`
++    });
++  }
++  const html = await response.text();
+   const resolved = extractMeta(String(html), metaKey);

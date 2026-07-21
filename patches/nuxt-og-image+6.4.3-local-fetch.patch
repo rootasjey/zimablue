@@ -1,0 +1,52 @@
+diff --git a/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js b/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js
+index 3a7b9c1..e8f2d4b 100644
+--- a/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js
++++ b/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js
+@@ -1,34 +1,24 @@
+-import { getNitroOrigin } from "#site-config/server/composables";
+-import { $fetch } from "ofetch";
++import { useNitroApp } from "nitropack/runtime";
+ import { tryCloudflareAssetsFetch } from "./cloudflareAssets.js";
+ export async function fetchLocalAsset(event, path, options) {
+-  const { fetchTimeout, headers, includeExternalFallback = false, onStepFailure } = options;
++  const { fetchTimeout, headers, onStepFailure } = options;
+   const deadline = AbortSignal.timeout(fetchTimeout);
+   let result = await tryCloudflareAssetsFetch(event, path, deadline).catch((err) => {
+     onStepFailure?.(path, err);
+     return void 0;
+   });
+   if (result || deadline.aborted)
+     return result;
+-  result = await event.$fetch(path, {
+-    responseType: "arrayBuffer",
+-    signal: deadline,
+-    timeout: fetchTimeout,
+-    headers
+-  }).catch((err) => {
++  return useNitroApp().localFetch(path, {
++    method: "GET",
++    signal: deadline,
++    headers: { ...headers }
++  }).then(async (res) => {
++    if (!res.ok) {
++      onStepFailure?.(path, new Error(`${res.status} ${res.statusText}`));
++      return void 0;
++    }
++    return res.arrayBuffer();
++  }).catch((err) => {
+     onStepFailure?.(path, err);
+     return void 0;
+   });
+-  if (result || deadline.aborted || !includeExternalFallback)
+-    return result;
+-  const absolute = `${getNitroOrigin(event)}${path}`;
+-  return await $fetch(absolute, {
+-    responseType: "arrayBuffer",
+-    signal: deadline,
+-    timeout: fetchTimeout,
+-    headers
+-  }).catch((err) => {
+-    onStepFailure?.(absolute, err);
+-    return void 0;
+-  });
+ }
