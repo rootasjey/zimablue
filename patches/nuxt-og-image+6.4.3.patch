@@ -2,10 +2,10 @@ diff --git a/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js b/node_m
 index 68ea4d0..f5a1b2c 100644
 --- a/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js
 +++ b/node_modules/nuxt-og-image/dist/runtime/server/util/kit.js
-@@ -1,13 +1,24 @@
+@@ -1,13 +1,22 @@
  import { defu } from "defu";
 -import { useRuntimeConfig } from "nitropack/runtime";
-+import { useNitroApp, useRuntimeConfig } from "nitropack/runtime";
++import { useRuntimeConfig } from "nitropack/runtime";
  import { hash } from "ohash";
  import { createRouter as createRadixRouter, toRouteMatcher } from "radix3";
  import { withoutBase, withoutTrailingSlash } from "ufo";
@@ -20,7 +20,7 @@ index 68ea4d0..f5a1b2c 100644
 +  const hashId = hash([component, props, {}, undefined]).replace(/[-_]/g, "");
 +  const query = new URLSearchParams({ props: JSON.stringify(props) }).toString();
 +  const url = `/__nuxt_island/${component}_${hashId}.json?${query}`;
-+  return useNitroApp().localFetch(url, {
++  return e.fetch(url, {
 +    headers: {
 +      accept: "application/json"
 +    }
