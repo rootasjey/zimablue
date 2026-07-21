@@ -4,7 +4,6 @@
     <MobileHomeLayout
       v-if="!isInitialGridLoading && layout.length > 0"
       :layout="layout"
-      @open-image="(image, event) => imageModal.openImageModal(image, event)"
     />
 
     <!-- Desktop gallery -->
@@ -17,14 +16,11 @@
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
 import { useGridStore } from '@/stores/useGridStore'
-import { useImageModal } from '~/composables/image/useImageModal'
 import { useParseVariants } from '~/composables/image/useParseVariants'
 
 const gridStore = useGridStore()
 const layout = computed(() => gridStore.layout)
 const isInitialGridLoading = computed(() => !gridStore.initialized)
-const imageModal = useImageModal()
-
 // Handle ?image=<slug> for social media preview
 const route = useRoute()
 const config = useRuntimeConfig()

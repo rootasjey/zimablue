@@ -3,22 +3,22 @@
   <div class="min-h-screen bg-white dark:bg-gray-900">
     <!-- Mobile Header -->
     <header class="sm:hidden sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
-      <div class="flex items-center gap-3 px-4 py-3 safe-area-pt">
+      <div class="flex items-center gap-2 px-3 py-2 safe-area-pt">
         <!-- Back Button -->
         <button 
           @click="goBack"
-          class="mobile-header-btn"
+          class="mobile-header-btn flex-shrink-0"
           aria-label="Go back"
         >
-          <i class="i-ph-arrow-left text-lg"></i>
+          <i class="i-ph-arrow-left text-xl"></i>
         </button>
 
         <!-- Search Input -->
-        <div class="flex-1 relative">
+        <div class="flex-1">
           <NInput
             ref="searchInputRef"
             v-model="searchQuery"
-            placeholder="Search images and collections..."
+            placeholder="Search..."
             class="w-full"
             :loading="searchStore.isLoading"
             @keydown="handleInputKeydown"
@@ -115,96 +115,124 @@
     </header>
 
       <!-- Search Content -->
-    <main class="px-4 py-4 sm:px-6 sm:max-w-4xl sm:mx-auto">
+    <main class="sm:px-6 sm:max-w-4xl sm:mx-auto sm:py-4">
       <!-- Search Hints (when no query) -->
-      <div v-if="!searchQuery.trim()" class="text-center py-12">
-        <div class="i-ph-magnifying-glass w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4"></div>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
-          Search Images & Collections
-        </h2>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">
-          Start typing to find images and collections
-        </p>
-        <p class="text-gray-500 dark:text-gray-500 text-xs mt-2">
-          Type <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to jump to a page
-        </p>
-        
-        <!-- Search suggestions -->
-        <div class="mt-6 space-y-2">
-          <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Try searching for
-          </h3>
-          <div class="flex flex-wrap gap-2 justify-center">
-            <button 
-              v-for="suggestion in searchSuggestions"
-              :key="suggestion"
-              @click="searchQuery = suggestion"
-              class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              {{ suggestion }}
-            </button>
+      <div v-if="!searchQuery.trim()">
+        <!-- Empty state with visual interest -->
+        <div class="relative px-4 pt-12 pb-8 overflow-hidden">
+          <!-- Subtle background decoration -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-blue-50/60 to-transparent dark:from-blue-950/20 rounded-full blur-3xl pointer-events-none" />
+          
+          <div class="relative text-center">
+            <!-- Icon -->
+            <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center shadow-sm ring-1 ring-blue-200/30 dark:ring-blue-700/30">
+              <span class="i-ph-magnifying-glass w-6 h-6 text-blue-500 dark:text-blue-400"></span>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 mb-2">
+              Search the gallery
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
+              Find illustrations and collections across the gallery
+            </p>
+            
+            <!-- Tags suggestions when available -->
+            <div v-if="searchSuggestions.length > 0" class="mt-10">
+              <div class="flex items-center justify-center gap-3 mb-4">
+                <span class="h-px w-8 bg-gray-200 dark:bg-gray-700"></span>
+                <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">Popular tags</span>
+                <span class="h-px w-8 bg-gray-200 dark:bg-gray-700"></span>
+              </div>
+              <div class="flex flex-wrap gap-2 justify-center max-w-sm mx-auto">
+                <button 
+                  v-for="suggestion in searchSuggestions"
+                  :key="suggestion"
+                  @click="searchQuery = suggestion"
+                  class="px-3.5 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/60 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 active:scale-95 transition-all duration-200 border border-gray-200/50 dark:border-gray-700/50"
+                >
+                  {{ suggestion }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Hint -->
+            <div class="mt-8 flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+              <span>Type</span>
+              <kbd class="px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded-md text-xs font-mono bg-gray-50 dark:bg-gray-800">@</kbd>
+              <span>to jump to a page</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-else-if="searchStore.isLoading" class="text-center py-12">
-        <div class="animate-spin i-ph-spinner w-8 h-8 text-blue-500 mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400">Searching...</p>
+      <div v-else-if="searchStore.isLoading" class="text-center py-16">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 mx-auto mb-4 flex items-center justify-center">
+          <div class="animate-spin i-ph-spinner w-6 h-6 text-blue-500"></div>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Searching...</p>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="searchStore.error" class="text-center py-12">
-        <div class="i-ph-warning-circle w-12 h-12 text-red-500 mx-auto mb-4"></div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+      <div v-else-if="searchStore.error" class="text-center py-16 px-4">
+        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-900/20 mx-auto mb-4 flex items-center justify-center">
+          <span class="i-ph-warning-circle w-6 h-6 text-red-500"></span>
+        </div>
+        <h3 class="text-base font-medium text-gray-900 dark:text-gray-200 mb-2">
           Search Error
         </h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-5 max-w-xs mx-auto">
           {{ searchStore.error }}
         </p>
-        <NButton @click="handleRetry" size="sm">
+        <button @click="handleRetry" class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
           Try Again
-        </NButton>
+        </button>
       </div>
 
       <!-- No Results -->
-      <div v-else-if="searchQuery.trim() && !searchStore.hasResults" class="text-center py-12">
-        <div class="i-ph-magnifying-glass-minus w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4"></div>
+      <div v-else-if="searchQuery.trim() && !searchStore.hasResults" class="text-center py-16 px-4">
+        <div class="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
+          <span class="i-ph-magnifying-glass-minus w-6 h-6 text-gray-400 dark:text-gray-500"></span>
+        </div>
         <template v-if="searchStore.isNavSearch">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+          <h3 class="text-base font-medium text-gray-900 dark:text-gray-200 mb-2">
             No pages found
           </h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
-            Try a different page name or remove <kbd class="px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-xs font-mono">@</kbd> to search content
+          <p class="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto leading-relaxed">
+            Try a different page name or remove <kbd class="px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded-md text-xs font-mono">@</kbd> to search content
           </p>
         </template>
         <template v-else>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+          <h3 class="text-base font-medium text-gray-900 dark:text-gray-200 mb-2">
             No results found
           </h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
+          <p class="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto leading-relaxed">
             Try different keywords or check your spelling
           </p>
         </template>
       </div>
 
       <!-- Search Results -->
-      <div v-else-if="searchStore.hasResults" class="space-y-6">
+      <div v-else-if="searchStore.hasResults" class="space-y-6 pb-8">
         <!-- Results Summary -->
-        <div class="text-center py-4">
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            Found {{ searchStore.totalResults }} results for 
+        <div class="px-4 pt-4 pb-2">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ searchStore.totalResults }} result{{ searchStore.totalResults !== 1 ? 's' : '' }} for 
             <span class="font-medium text-gray-900 dark:text-gray-200">"{{ searchQuery }}"</span>
           </p>
         </div>
 
         <!-- Pages Section (@ navigation) -->
-        <section v-if="searchStore.isNavSearch">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span class="i-ph-compass"></span>
-            Pages ({{ searchStore.filteredNavPaths.length }})
-          </h2>
-          <div class="space-y-2">
+        <section v-if="searchStore.isNavSearch" class="px-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="i-ph-compass w-4 h-4 text-gray-400"></span>
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Pages
+            </h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">({{ searchStore.filteredNavPaths.length }})</span>
+          </div>
+          <div class="space-y-1">
             <SearchResultNavPath
               v-for="(navPath, index) in searchStore.filteredNavPaths"
               :key="navPath.path"
@@ -219,11 +247,14 @@
 
         <!-- Images Section -->
         <section v-if="!searchStore.isNavSearch && searchStore.results.images.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span class="i-ph-image"></span>
-            Images ({{ searchStore.results.images.length }})
-          </h2>
-          <div class="space-y-2">
+          <div class="px-4 flex items-center gap-2 mb-3">
+            <span class="i-ph-image w-4 h-4 text-gray-400"></span>
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Images
+            </h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">({{ searchStore.results.images.length }})</span>
+          </div>
+          <div class="space-y-0">
             <SearchResultImage
               v-for="(image, index) in searchStore.results.images"
               :key="image.id"
@@ -238,11 +269,14 @@
 
         <!-- Collections Section -->
         <section v-if="!searchStore.isNavSearch && searchStore.results.collections.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span class="i-ph-folder"></span>
-            Collections ({{ searchStore.results.collections.length }})
-          </h2>
-          <div class="space-y-2">
+          <div class="px-4 flex items-center gap-2 mb-3">
+            <span class="i-ph-folder w-4 h-4 text-gray-400"></span>
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Collections
+            </h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">({{ searchStore.results.collections.length }})</span>
+          </div>
+          <div class="space-y-0">
             <SearchResultCollection
               v-for="(collection, index) in searchStore.results.collections"
               :key="collection.id"
@@ -313,10 +347,7 @@ const searchInputRef = ref<HTMLInputElement>()
 const searchQuery = ref('')
 const debouncedSearch = useDebounceFn(searchStore.search, 300)
 
-// Search suggestions
-const searchSuggestions = ref([
-  'abstract', 'nature', 'portrait', 'landscape', 'digital art', 'photography'
-])
+const searchSuggestions = ref<string[]>([])
 
 // Theme management
 const toggleTheme = () => {
@@ -333,8 +364,8 @@ const timeIcon = computed(() => {
   return 'i-line-md:moon-rising-twotone-loop'
 })
 
-// Initialize search query from URL
-onMounted(() => {
+// Initialize search query from URL + fetch suggestion tags
+onMounted(async () => {
   const urlQuery = route.query.q as string
   if (urlQuery) {
     searchQuery.value = urlQuery
@@ -345,6 +376,13 @@ onMounted(() => {
   nextTick(() => {
     searchInputRef.value?.focus()
   })
+
+  try {
+    const res: any = await $fetch('/api/tags?limit=12&sort=usage_count')
+    searchSuggestions.value = (res.data || []).map((t: any) => t.name)
+  } catch {
+    searchSuggestions.value = []
+  }
 })
 
 // Watch for query changes and trigger search + URL sync

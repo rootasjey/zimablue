@@ -1,7 +1,7 @@
 <template>
   <div class="fixed p-2 w-full h-screen flex justify-center items-center inset-0 bg-black z-14">
     <!-- Image container that fills the screen -->
-    <div class="relative w-full h-full flex justify-center items-center">
+    <div class="relative w-full h-full flex justify-center items-center" @click="toggleUi">
       <NuxtImg
         v-if="image"
         provider="hubblob"
@@ -13,8 +13,9 @@
       
       <!-- Close button (top) -->
       <button 
-        @click="navigateBackOrHome()"
+        @click.stop="navigateBackOrHome()"
         class="absolute top-4 right-4 z-30 text-gray-200 hover:scale-110 active:scale-90 transition bg-black/40 backdrop-blur-md p-2.5 rounded-full"
+        :class="uiVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
         title="Close"
         aria-label="Close"
         style="margin-top: env(safe-area-inset-top);"
@@ -22,63 +23,94 @@
         <div class="i-ph-x text-xl" />
       </button>
 
-      <!-- Controls overlay (bottom center) -->
-      <div class="absolute bottom-0 left-0 right-0 z-20 pb-6 pt-12 bg-gradient-to-t from-black/60 to-transparent" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
-        <div class="flex flex-row gap-4 justify-center items-center">
-          <ClientOnly>
-            <NDropdownMenu
-              v-if="hasAspectVariants"
-              :items="downloadMenuItems"
-              size="xs"
-              menu-label=""
-              :_dropdown-menu-content="{
-                class: 'w-48',
-                align: 'center',
-                side: 'top',
-              }"
-            >
+      <!-- Bottom overlay: info + controls (hidden on tap) -->
+      <div 
+        @click.stop
+        class="absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300"
+        :class="uiVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+        style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
+      >
+        <!-- Gradient background -->
+        <div class="pb-4 pt-16 bg-gradient-to-t from-black/70 to-transparent">
+          <!-- Info: title + description -->
+          <div class="px-6 mb-5">
+            <h1 class="text-lg font-semibold text-white leading-tight">
+              {{ image?.name || 'Untitled' }}
+            </h1>
+            <p v-if="image?.description" class="mt-1.5 text-sm text-white/70 leading-relaxed line-clamp-3">
+              {{ image.description }}
+            </p>
+            <div v-if="image?.tags && image.tags.length > 0" class="flex flex-wrap gap-1.5 mt-2.5">
+              <span
+                v-for="tag in image.tags.slice(0, 5)"
+                :key="tag.id"
+                class="text-[11px] px-2 py-0.5 rounded-md bg-white/15 text-white/80"
+              >
+                {{ tag.name }}
+              </span>
+              <span v-if="image.tags.length > 5" class="text-[11px] px-2 py-0.5 text-white/50">
+                +{{ image.tags.length - 5 }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex flex-row gap-4 justify-center items-center">
+            <ClientOnly>
+              <NDropdownMenu
+                v-if="hasAspectVariants"
+                :items="downloadMenuItems"
+                size="xs"
+                menu-label=""
+                :_dropdown-menu-content="{
+                  class: 'w-48',
+                  align: 'center',
+                  side: 'top',
+                }"
+              >
+                <button 
+                  class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+                  title="Download image"
+                >
+                  <div class="i-ph-download text-xl" />
+                </button>
+              </NDropdownMenu>
               <button 
+                v-else
+                @click.stop="downloadImage"
                 class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
                 title="Download image"
               >
                 <div class="i-ph-download text-xl" />
               </button>
-            </NDropdownMenu>
+              <template #fallback>
+                <button 
+                  @click.stop="downloadImage"
+                  class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+                  title="Download image"
+                >
+                  <div class="i-ph-download text-xl" />
+                </button>
+              </template>
+            </ClientOnly>
+            
             <button 
-              v-else
-              @click="downloadImage"
+              v-if="loggedIn"
+              @click.stop="showEditDrawer = true"
               class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
-              title="Download image"
+              title="Edit image"
             >
-              <div class="i-ph-download text-xl" />
+              <div class="i-ph-pencil-simple text-xl" />
             </button>
-            <template #fallback>
-              <button 
-                @click="downloadImage"
-                class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
-                title="Download image"
-              >
-                <div class="i-ph-download text-xl" />
-              </button>
-            </template>
-          </ClientOnly>
-          
-          <button 
-            v-if="loggedIn"
-            @click="showEditDrawer = true"
-            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
-            title="Edit image"
-          >
-            <div class="i-ph-pencil-simple text-xl" />
-          </button>
-          
-          <button 
-            @click="navigateBackOrHome()"
-            class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
-            title="Close"
-          >
-            <div class="i-ph-x text-xl" />
-          </button>
+            
+            <button 
+              @click.stop="navigateBackOrHome()"
+              class="text-gray-200 hover:scale-110 active:scale-90 transition bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20"
+              title="Close"
+            >
+              <div class="i-ph-x text-xl" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -284,6 +316,11 @@ const siteConfig = useRuntimeConfig()
 const showEditDrawer = ref(false)
 const showImageDeleteDialog = ref(false)
 const isDeletingImage = ref(false)
+const uiVisible = ref(true)
+
+const toggleUi = () => {
+  uiVisible.value = !uiVisible.value
+}
 
 const image = computed(() => {
   if (gridStore.selectedImage?.slug.toString() === route.params.slug) {

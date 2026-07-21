@@ -5,7 +5,9 @@
     </NuxtLayout>
     
     <NToaster />
-    <GlobalSearchDialog />
+    <div class="hidden sm:block">
+      <GlobalSearchDialog />
+    </div>
     <HiddenFileInputs />
   </div>
 </template>

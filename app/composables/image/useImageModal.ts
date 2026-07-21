@@ -176,14 +176,7 @@ export const useImageModal = () => {
       }
     }
 
-    if (typeof document === 'undefined' || typeof document.startViewTransition !== 'function') {
-      router.push(routePayload)
-      return
-    }
-
-    document.startViewTransition(async () => {
-      await router.push(routePayload)
-    })
+    router.push(routePayload)
   }
 
   const closeModal = () => {

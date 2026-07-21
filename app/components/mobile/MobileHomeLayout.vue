@@ -5,7 +5,7 @@
       <div
         class="relative w-full rounded-3xl overflow-hidden shadow-lg"
         style="aspect-ratio: 4/5;"
-        @click="currentHeroImage ? openHeroImage($event) : undefined"
+        @click="currentHeroImage ? openHeroImage() : undefined"
         @touchstart.passive="handleHeroTouchStart"
         @touchend.passive="handleHeroTouchEnd"
       >
@@ -59,7 +59,7 @@
     <!-- Search Bar -->
     <div class="px-4 mt-6">
       <button
-        @click="openSearch"
+        @click="router.push('/search')"
         class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-[0.98] transition-transform"
       >
         <span class="i-ph-magnifying-glass text-lg" />
@@ -158,9 +158,9 @@
           :key="image.id"
           class="relative rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-900 active:scale-[0.97] transition-transform cursor-pointer"
           :style="{ animationDelay: `${index * 30}ms` }"
-          @click="emit('openImage', image, $event)"
+          @click="imageModal.openImagePage(image)"
         >
-          <div class="relative w-full aspect-[3/4]">
+          <div class="relative w-full aspect-[3/4]" :style="{ viewTransitionName: `shared-image-${image.id}` }">
             <NuxtImg
               provider="hubblob"
               :src="image.pathname"
@@ -182,19 +182,16 @@
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
 import type { Collection } from '~~/shared/types/collection'
+import { useImageModal } from '~/composables/image/useImageModal'
 import { useImageSrc } from '~/composables/image/useImageSrc'
 
 const props = defineProps<{
   layout: Image[]
 }>()
 
-const emit = defineEmits<{
-  openImage: [image: Image, event: MouseEvent]
-}>()
-
 const { getSrc } = useImageSrc()
-const { openSearch } = useGlobalSearch()
 const router = useRouter()
+const imageModal = useImageModal()
 
 // Hero carousel (last 3 images from layout)
 const heroImages = computed(() => props.layout.slice(0, 3))
@@ -293,9 +290,9 @@ onMounted(async () => {
   }
 })
 
-const openHeroImage = (event: MouseEvent) => {
+const openHeroImage = () => {
   if (currentHeroImage.value) {
-    emit('openImage', currentHeroImage.value, event)
+    imageModal.openImagePage(currentHeroImage.value)
   }
 }
 
