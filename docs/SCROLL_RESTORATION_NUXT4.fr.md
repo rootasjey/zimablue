@@ -1,37 +1,33 @@
-# Restauration de scroll dans Nuxt 4 : une histoire qui m'a rendu fou
+# Restauration de scroll dans une SPA Nuxt 4
 
 ## Le problème
 
-Tu connais Zima Blue, ma galerie d'illustrations ? L'accueil, c'est une longue page avec une grille d'images. Tu scrolles, tu trouves une illustration qui te plaît, tu cliques dessus. Hop, direction `/illustrations/[slug]`. Jusque-là, tout va bien.
+Sur Zima Blue (galerie d'illustrations), l'accueil est une page à scroll vertical avec une grille d'images. En cliquant sur une image, l'utilisateur navigue vers `/illustrations/[slug]`. Au retour sur l'accueil, on veut retrouver exactement la même position de scroll — idéalement sans voir le défilement.
 
-Le problème arrive au retour. Tu veux retrouver ta place dans la grille, exactement là où tu étais. Et idéalement, sans voir la page se téléporter du haut vers le bas comme un vieux site des années 2000.
+Le comportement natif du navigateur restaure la position, mais elle est visible : la page se rend en haut, puis saute à la position sauvegardée. Ce micro-décalage est gênant.
 
-Le navigateur fait déjà ce travail tout seul. Mais le rendu est moche : la page s'affiche en haut, puis *scoot* elle défile vers la position sauvegardée. Ce micro-décalage, ce petit saut, m'a rendu dingue pendant des heures.
+## Tentative 1 : `keepalive: true`
 
-## Tentative 1 : `keepalive` (spoiler : ça marche pas)
-
-Nuxt propose `definePageMeta({ keepalive: true })`. En théorie, ça encapsule la page dans un `<KeepAlive>` Vue. Le DOM reste en mémoire, le scroll avec. Magique.
+Nuxt 3+ propose `definePageMeta({ keepalive: true })` qui encapsule la page dans un `<KeepAlive>` Vue. Le DOM reste en mémoire, le scroll est préservé intact.
 
 ```typescript
 definePageMeta({ keepalive: true })
 ```
 
-Sauf que… ça ne marche pas. La page est détruite et reconstruite à chaque navigation, comme si je n'avais rien écrit.
+**Résultat : rien.** La page est toujours détruite/reconstruite. Pourquoi ?
 
-Pourquoi ? Parce que dans Nuxt 4, `<NuxtPage>` est enfermé dans `<NuxtLayout>`. Le `keepalive` est bien lu par `NuxtPage`, mais l'encapsulation `<KeepAlive>` ne traverse pas le `<slot />` du layout. C'est comme si tu emballais un cadeau, mais que quelqu'un le déballait discrètement avant de le donner.
+Dans Nuxt 4, `<NuxtPage>` est enfant de `<NuxtLayout>`. Le `keepalive` de `definePageMeta` est lu par `NuxtPage`, mais l'encapsulation dans `<KeepAlive>` ne traverse pas le `<slot />` du layout. Le composant page est bien dans `NuxtPage`, mais le layout récupère la page via son slot et la rend dans son propre template. Le KeepAlive est appliqué au mauvais endroit dans la chaîne de rendu.
 
-Il y a [une issue Nuxt](https://github.com/nuxt/nuxt/issues/21831) qui traîne là-dessus. Pas résolue.
+C'est un bug connu, discuté [dans les issues Nuxt](https://github.com/nuxt/nuxt/issues/21831), mais pas résolu pour la configuration `NuxtLayout` + `NuxtPage`.
 
-## Tentative 2 : tout faire à la main
+## Tentative 2 : `history.scrollRestoration = 'manual'`
 
-Puisque le framework ne veut pas coopérer, j'ai décidé de prendre les choses en main.
+Idée : désactiver la restauration native du navigateur et tout gérer manuellement.
 
 ```typescript
 // app.vue
 history.scrollRestoration = 'manual'
 ```
-
-Hop, je désactive la restauration native du navigateur. Je vais gérer ça moi-même.
 
 ```typescript
 // index.vue
@@ -40,7 +36,7 @@ onBeforeRouteLeave(() => {
 })
 ```
 
-Je sauvegarde la position avant de quitter la page. Je la restaure via `scrollBehavior` dans le routeur :
+Avec un `scrollBehavior` personnalisé dans `app/router.options.ts` :
 
 ```typescript
 scrollBehavior(to, from, savedPosition) {
@@ -53,11 +49,11 @@ scrollBehavior(to, from, savedPosition) {
 }
 ```
 
-**Résultat :** la position est bonne, mais le scroll est *toujours* visible. Pourquoi ? Parce que `scrollBehavior` s'exécute dans le hook `afterEach` de Vue Router. À ce moment-là, le composant est déjà monté et le navigateur a déjà peint la page en haut. Mon `scrollTo` arrive trop tard, comme une excuse après l'engueulade.
+**Résultat :** la position est correcte, mais le scroll est toujours visible. Le problème est que le `scrollBehavior` de Vue Router s'exécute dans le hook `afterEach`, après que le composant est monté. À ce stade, le navigateur a déjà peint la page en haut. Le scrollTo arrive trop tard.
 
-## Tentative 3 : le piège des deux scripts
+## Tentative 3 : `<script>` + `<script setup>` — piège !
 
-Pour faire persister une variable entre deux vies d'un composant, il faut la déclarer en dehors de `<script setup>` :
+Pour qu'une variable persiste entre les montages/démontages du composant, il faut la déclarer dans un bloc `<script>` (module-level), pas dans `<script setup>`.
 
 ```vue
 <script lang="ts">
@@ -65,22 +61,23 @@ let savedScrollY = 0
 </script>
 
 <script lang="ts" setup>
-// savedScrollY survit maintenant aux montages/démontages
+// savedScrollY est maintenant persistante
 </script>
 ```
 
-Sauf que j'ai oublié le `lang="ts"` sur le premier `<script>`. Et là, c'est le drame :
+**Piège :** `<script>` et `<script setup>` doivent avoir le même `lang`. Si `<script setup lang="ts">`, alors `<script>` doit aussi avoir `lang="ts"`. Sinon, Vite/Vue jette une erreur :
 
 ```
 <script> and <script setup> must have the same language type.
 ```
 
-Vite m'a gentiment rappelé que le typage, c'est pour tout le monde ou pour personne. Une erreur bête qui m'a fait perdre 10 minutes à regarder l'écran en soupirant.
+## La solution acceptée
 
-## La conclusion (un peu amère)
+Après toutes ces tentatives, le comportement natif du navigateur (`history.scrollRestoration = 'auto'`) est celui qui fonctionne le mieux. La position est correcte, le scroll est visible mais rapide. C'est un compromis acceptable pour une SPA.
 
-Après tout ça, j'ai remis `history.scrollRestoration = 'auto'`. J'ai tout revert. Le comportement natif du navigateur est ce qui fonctionne le mieux.
+Ce qui a été retenu :
+- Pas de `keepalive` (incompatible Nuxt 4 + layout)
+- Pas de `scrollRestoration = 'manual'` (trop de complexité pour un gain marginal)
+- Restauration native du navigateur (comportement par défaut)
 
-Est-ce que le scroll est visible ? Oui, un tout petit peu. Est-ce que la position est correcte ? Aussi. Est-ce que c'est parfait ? Non. Est-ce que je passe à autre chose ? Oui.
-
-Parfois, la meilleure solution, c'est d'accepter qu'une perfection à 99% est suffisante. `keepalive` serait la solution idéale, mais l'infrastructure de Nuxt 4 ne le permet pas encore. J'ai appris des trucs en chemin, et c'est bien aussi.
+La leçon : la restauration de scroll invisible dans une SPA avec `NuxtLayout` est un problème non trivial. `keepalive` serait la solution idéale mais bute sur l'infrastructure du framework.
