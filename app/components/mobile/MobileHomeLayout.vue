@@ -18,9 +18,7 @@
             :class="currentHeroIndex === index ? 'opacity-100' : 'opacity-0'"
           >
             <NuxtImg
-              provider="hubblob"
-              :src="image.pathname"
-              :modifiers="{ v: image.updated_at, width: 600 }"
+              v-bind="getSrc(image, 'hero')"
               :alt="image.name || 'Featured illustration'"
               class="w-full h-full object-cover"
             />
@@ -184,6 +182,7 @@
 <script lang="ts" setup>
 import type { Image } from '~~/shared/types/image'
 import type { Collection } from '~~/shared/types/collection'
+import { useImageSrc } from '~/composables/image/useImageSrc'
 
 const props = defineProps<{
   layout: Image[]
@@ -193,6 +192,7 @@ const emit = defineEmits<{
   openImage: [image: Image, event: MouseEvent]
 }>()
 
+const { getSrc } = useImageSrc()
 const { openSearch } = useGlobalSearch()
 const router = useRouter()
 

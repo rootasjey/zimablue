@@ -1,7 +1,7 @@
 import type { Image, VariantType } from '~~/shared/types/image'
 import useParseVariants from './useParseVariants'
 
-export type ImageContext = 'mobile-grid' | 'desktop-grid' | 'drawer' | 'modal' | 'fullscreen'
+export type ImageContext = 'mobile-grid' | 'desktop-grid' | 'drawer' | 'modal' | 'fullscreen' | 'hero'
 
 const CONTEXT_WIDTH: Record<ImageContext, number> = {
   'mobile-grid':  180,
@@ -11,6 +11,7 @@ const CONTEXT_WIDTH: Record<ImageContext, number> = {
   'drawer':       400,
   'modal':        800,
   'fullscreen':   800,
+  'hero':         640,
 }
 
 export const useImageSrc = () => {
