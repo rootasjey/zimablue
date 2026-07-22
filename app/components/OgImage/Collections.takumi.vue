@@ -57,6 +57,7 @@ const innerStyle: CSSProperties = {
   borderRadius: '16px',
   position: 'relative',
   overflow: 'hidden',
+  background: '#FEEDF5',
 }
 
 const imagesRowStyle: CSSProperties = {
