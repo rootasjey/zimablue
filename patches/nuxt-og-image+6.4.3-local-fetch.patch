@@ -2,9 +2,10 @@ diff --git a/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset
 index 3a7b9c1..e8f2d4b 100644
 --- a/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js
 +++ b/node_modules/nuxt-og-image/dist/runtime/server/util/fetchLocalAsset.js
-@@ -1,34 +1,24 @@
+@@ -1,34 +1,54 @@
 -import { getNitroOrigin } from "#site-config/server/composables";
 -import { $fetch } from "ofetch";
++import { getRequestHost } from "h3";
 +import { useNitroApp } from "nitropack/runtime";
  import { tryCloudflareAssetsFetch } from "./cloudflareAssets.js";
  export async function fetchLocalAsset(event, path, options) {
@@ -23,23 +24,9 @@ index 3a7b9c1..e8f2d4b 100644
 -    timeout: fetchTimeout,
 -    headers
 -  }).catch((err) => {
-+  return useNitroApp().localFetch(path, {
-+    method: "GET",
-+    signal: deadline,
-+    headers: { ...headers },
-+    context: {
-+      _platform: event.context?._platform || {}
-+    }
-+  }).then(async (res) => {
-+    if (!res.ok) {
-+      onStepFailure?.(path, new Error(`${res.status} ${res.statusText}`));
-+      return void 0;
-+    }
-+    return res.arrayBuffer();
-+  }).catch((err) => {
-     onStepFailure?.(path, err);
-     return void 0;
-   });
+-    onStepFailure?.(path, err);
+-    return void 0;
+-  });
 -  if (result || deadline.aborted || !includeExternalFallback)
 -    return result;
 -  const absolute = `${getNitroOrigin(event)}${path}`;
@@ -52,4 +39,32 @@ index 3a7b9c1..e8f2d4b 100644
 -    onStepFailure?.(absolute, err);
 -    return void 0;
 -  });
++  // Try localFetch with platform context
++  const localResult = await useNitroApp().localFetch(path, {
++    method: "GET",
++    signal: deadline,
++    headers: { ...headers },
++    context: {
++      _platform: event.context?._platform || {}
++    }
++  }).then(async (res) => {
++    if (!res.ok)
++      return void 0;
++    return res.arrayBuffer();
++  }).catch(() => void 0);
++  if (localResult) return localResult;
++  // Final fallback: try ASSETS binding directly (for static assets like fonts)
++  try {
++    const assets = event.context?.cloudflare?.env?.ASSETS || event.context?.ASSETS;
++    if (assets && typeof assets.fetch === "function") {
++      const origin = typeof event.context?.cloudflare?.request?.url === "string"
++        ? event.context.cloudflare.request.url
++        : `https://${getRequestHost(event) || "localhost"}`;
++      const url = new URL(path, origin).href;
++      const res = await assets.fetch(url, signal ? { signal } : void 0).catch(() => null);
++      if (res?.ok) return res.arrayBuffer();
++    }
++  } catch {}
++  onStepFailure?.(path, new Error(`Failed to fetch asset: ${path}`));
++  return void 0;
  }
