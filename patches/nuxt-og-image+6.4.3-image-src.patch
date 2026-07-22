@@ -1,0 +1,26 @@
+diff --git a/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js b/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js
+index 3a7b9c1..e8f2d4b 100644
+--- a/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js
++++ b/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js
+@@ -160,8 +160,18 @@ export default defineTransformer([
+         return;
+       if (src.endsWith(".webp")) {
+         logger.warn("Using WebP images with Satori is not supported. Please consider switching image format or use the chromium renderer.", src);
+       }
+-      const isRelative = src.startsWith("/");
+-      if (!isRelative)
+-        src = node.props.src = decodeHtml(src);
++      let isRelative = src.startsWith("/");
++      if (!isRelative) {
++        src = node.props.src = decodeHtml(src);
++        // Convert absolute same-origin URLs to relative to avoid self-fetch
++        try {
++          const parsed = new URL(src);
++          const nitroOrigin = getNitroOrigin(ctx.e);
++          if (nitroOrigin && parsed.host === new URL(nitroOrigin).host) {
++            src = parsed.pathname + parsed.search;
++            isRelative = true;
++          }
++        } catch {}
++      }
+       const result = await resolveSrcToBuffer(src, "image", ctx);
