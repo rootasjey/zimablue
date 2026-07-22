@@ -114,11 +114,9 @@ if (!imageSlug.value && !collectionSlug.value) {
   const ogThumbnailUrls = computed(() => {
     const images = latestImages.value
     if (!images || images.length === 0) return []
-    const origin = useRequestURL().origin
     return images.slice(0, 6).map((img: any) => {
       const p = img.pathname as string
-      const cleanPath = p.startsWith('/') ? p.slice(1) : p
-      return `${origin}/${cleanPath}`
+      return p.startsWith('/') ? p : `/${p}`
     })
   })
 
