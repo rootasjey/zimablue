@@ -1,0 +1,31 @@
+diff --git a/node_modules/nuxt-og-image/dist/runtime/server/og-image/bindings/font-assets/node.js b/node_modules/nuxt-og-image/dist/runtime/server/og-image/bindings/font-assets/node.js
+index 3a7b9c1..e8f2d4b 100644
+--- a/node_modules/nuxt-og-image/dist/runtime/server/og-image/bindings/font-assets/node.js
++++ b/node_modules/nuxt-og-image/dist/runtime/server/og-image/bindings/font-assets/node.js
+@@ -1,18 +1,12 @@
+-import { getNitroOrigin } from "#site-config/server/composables";
+ import { useRuntimeConfig } from "nitropack/runtime";
+ import { withBase } from "ufo";
++import { fetchLocalAsset } from "../../../util/fetchLocalAsset.js";
+ import { getFetchTimeout } from "../../../util/fetchTimeout.js";
+ import { useOgImageRuntimeConfig } from "../../../utils.js";
+ export async function resolve(event, font) {
+   const path = font.src || font.localPath;
+   const { app } = useRuntimeConfig();
+   const fullPath = withBase(path, app.baseURL);
+-  const origin = getNitroOrigin(event);
+   const timeout = getFetchTimeout(useOgImageRuntimeConfig());
+-  const res = await fetch(new URL(fullPath, origin).href, { signal: AbortSignal.timeout(timeout) }).catch(() => null);
+-  if (res?.ok) {
+-    return Buffer.from(await res.arrayBuffer());
+-  }
+-  const arrayBuffer = await event.$fetch(fullPath, {
+-    responseType: "arrayBuffer",
+-    timeout
+-  });
+-  return Buffer.from(arrayBuffer);
++  const ab = await fetchLocalAsset(event, fullPath, { fetchTimeout: timeout });
++  if (ab)
++    return Buffer.from(ab);
++  throw new Error(`[Nuxt OG Image] Cannot resolve font "${font.family}" (path: ${fullPath})`);
+ }
