@@ -27,7 +27,9 @@ index 3a7b9c1..e8f2d4b 100644
 +    method: "GET",
 +    signal: deadline,
 +    headers: { ...headers },
-+    ...event.context?._platform
++    context: {
++      _platform: event.context?._platform || {}
++    }
 +  }).then(async (res) => {
 +    if (!res.ok) {
 +      onStepFailure?.(path, new Error(`${res.status} ${res.statusText}`));
