@@ -57,10 +57,19 @@ const innerStyle: CSSProperties = {
   borderRadius: '16px',
   position: 'relative',
   overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
   background: '#FEEDF5',
 }
 
 const imagesRowStyle: CSSProperties = {
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  right: '0',
+  bottom: '0',
   display: 'flex',
   width: '100%',
   height: '100%',
@@ -83,10 +92,7 @@ const overlayStyle: CSSProperties = {
 }
 
 const contentStyle: CSSProperties = {
-  position: 'absolute',
-  bottom: '0',
-  left: '0',
-  right: '0',
+  position: 'relative',
   zIndex: '1',
   display: 'flex',
   flexDirection: 'column',
