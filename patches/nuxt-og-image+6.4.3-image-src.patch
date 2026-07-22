@@ -2,8 +2,38 @@ diff --git a/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugin
 index 3a7b9c1..e8f2d4b 100644
 --- a/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js
 +++ b/node_modules/nuxt-og-image/dist/runtime/server/og-image/core/plugins/imageSrc.js
-@@ -160,8 +160,18 @@ export default defineTransformer([
-         return;
+@@ -99,7 +99,7 @@ async function doResolveSrcToBuffer(src, kind, { e, publicStoragePath, runtimeCo
+     if (!buffer2 && !import.meta.prerender) {
+       const ab = await timings.measure("image-fetch", () => fetchLocalAsset(e, src, {
+         fetchTimeout,
+-        includeExternalFallback: true,
++        headers: SUBREQUEST_HEADERS,
+         onStepFailure: logFailure
+       }));
+       if (ab)
+@@ -108,10 +108,19 @@ async function doResolveSrcToBuffer(src, kind, { e, publicStoragePath, runtimeCo
+     return buffer2 ? { buffer: buffer2 } : {};
+   }
+   const decodedSrc = decodeHtml(src);
+   if (!import.meta.dev && isBlockedUrl(decodedSrc)) {
+     logger.warn(`Blocked internal ${kind} fetch: ${decodedSrc}`);
+     return { blocked: true };
+   }
++  // Try localFetch for same-origin URLs first, fall back to $fetch for external
++  try {
++    const parsed = new URL(decodedSrc);
++    const ab = await timings.measure("image-fetch", () => fetchLocalAsset(e, parsed.pathname, {
++      fetchTimeout,
++      headers: SUBREQUEST_HEADERS,
++      onStepFailure: logFailure
++    }));
++    if (ab)
++      return { buffer: new Uint8Array(ab) };
++  } catch {}
+   const end = timings.start("image-fetch");
+   const buffer = await $fetch(decodedSrc, {
+     responseType: "arrayBuffer",
+@@ -154,14 +163,16 @@ export default defineTransformer([
        if (src.endsWith(".webp")) {
          logger.warn("Using WebP images with Satori is not supported. Please consider switching image format or use the chromium renderer.", src);
        }
@@ -13,7 +43,6 @@ index 3a7b9c1..e8f2d4b 100644
 +      let isRelative = src.startsWith("/");
 +      if (!isRelative) {
 +        src = node.props.src = decodeHtml(src);
-+        // Convert absolute same-origin URLs to relative to avoid self-fetch
 +        try {
 +          const parsed = new URL(src);
 +          const nitroOrigin = getNitroOrigin(ctx.e);
