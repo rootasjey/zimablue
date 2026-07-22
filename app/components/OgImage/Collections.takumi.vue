@@ -1,15 +1,12 @@
 <template>
   <div :style="rootStyle">
     <div :style="innerStyle">
-      <div :style="imagesRowStyle">
-        <img
-          v-for="(url, i) in thumbs"
-          :key="i"
-          :src="url"
-          alt=""
-          :style="imageStyle"
-        />
-      </div>
+      <img
+        v-if="coverUrl"
+        :src="coverUrl"
+        alt=""
+        :style="bgCoverStyle"
+      />
 
       <div :style="overlayStyle" />
 
@@ -28,7 +25,7 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   title?: string
   description?: string
   thumbs?: string[]
@@ -39,6 +36,8 @@ withDefaults(defineProps<{
   thumbs: () => [],
   count: 0,
 })
+
+const coverUrl = props.thumbs?.[0] || ''
 
 const rootStyle: CSSProperties = {
   display: 'flex',
@@ -52,34 +51,25 @@ const rootStyle: CSSProperties = {
 }
 
 const innerStyle: CSSProperties = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '16px',
-  position: 'relative',
-  overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
+  width: '100%',
+  height: '100%',
   background: '#FEEDF5',
+  borderRadius: '16px',
+  position: 'relative',
+  overflow: 'hidden',
 }
 
-const imagesRowStyle: CSSProperties = {
+const bgCoverStyle: CSSProperties = {
   position: 'absolute',
   top: '0',
   left: '0',
-  right: '0',
-  bottom: '0',
-  display: 'flex',
   width: '100%',
   height: '100%',
-}
-
-const imageStyle: CSSProperties = {
-  width: '25%',
-  height: '100%',
   objectFit: 'cover',
-  display: 'block',
 }
 
 const overlayStyle: CSSProperties = {
