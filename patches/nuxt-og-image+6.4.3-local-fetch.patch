@@ -26,7 +26,8 @@ index 3a7b9c1..e8f2d4b 100644
 +  return useNitroApp().localFetch(path, {
 +    method: "GET",
 +    signal: deadline,
-+    headers: { ...headers }
++    headers: { ...headers },
++    ...event.context?._platform
 +  }).then(async (res) => {
 +    if (!res.ok) {
 +      onStepFailure?.(path, new Error(`${res.status} ${res.statusText}`));
