@@ -368,14 +368,12 @@ if (import.meta.server) {
 }
 
 const ogCollectionThumbs = computed(() => {
-  const origin = useRequestURL().origin
   return collectionStore.collections
     .slice(0, 4)
     .map((c: any) => c.cover_image?.pathname || c.preview_images?.[0]?.pathname)
     .filter(Boolean)
     .map((p: string) => {
-      const cleanPath = p.startsWith('/') ? p.slice(1) : p
-      return `${origin}/${cleanPath}`
+      return p.startsWith('/') ? p : `/${p}`
     })
 })
 

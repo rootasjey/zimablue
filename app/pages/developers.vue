@@ -634,10 +634,9 @@ const { data: devThumbsData } = await useAsyncData<Record<string, any>[] | null>
 const ogDevThumbs = computed(() => {
   const images = devThumbsData.value
   if (!images || images.length === 0) return []
-  const origin = useRequestURL().origin
   return images.slice(0, 3).map((img: any) => {
     const p = img.pathname as string
-    return `${origin}/${p.startsWith('/') ? p.slice(1) : p}`
+    return p.startsWith('/') ? p : `/${p}`
   })
 })
 

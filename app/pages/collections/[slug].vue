@@ -339,7 +339,7 @@ useSeoMeta({
   twitterImage: () => firstImagePath.value ? `${config.public.siteUrl}/images${firstImagePath.value}` : undefined,
 })
 
-const requestOrigin = computed(() => useRequestURL().origin)
+
 const collectionCoverUrl = computed(() => {
   let image = store.images?.[0]
   if (store.collection?.cover_image_id) {
@@ -348,8 +348,7 @@ const collectionCoverUrl = computed(() => {
   }
   if (!image) return undefined
   const p = image.pathname
-  const cleanPath = p.startsWith('/') ? p.slice(1) : p
-  return `${requestOrigin.value}/${cleanPath}`
+  return p.startsWith('/') ? p : `/${p}`
 })
 
 const slug = route.params.slug as string
@@ -361,11 +360,9 @@ if (import.meta.server) {
 
 const collectionThumbnailUrls = computed(() => {
   const images = store.images || []
-  const origin = useRequestURL().origin
   return images.slice(0, 6).map((img: any) => {
     const p = img.pathname as string
-    const cleanPath = p.startsWith('/') ? p.slice(1) : p
-    return `${origin}/${cleanPath}`
+    return p.startsWith('/') ? p : `/${p}`
   })
 })
 
