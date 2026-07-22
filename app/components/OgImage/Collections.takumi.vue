@@ -8,7 +8,7 @@
         :style="bgCoverStyle"
       />
 
-      <div :style="overlayStyle" />
+      <div :style="overlayStyle">&zwnj;</div>
 
       <div :style="contentStyle">
         <h1 :style="titleStyle">{{ title }}</h1>
@@ -70,6 +70,7 @@ const bgCoverStyle: CSSProperties = {
   width: '100%',
   height: '100%',
   objectFit: 'cover',
+  filter: 'brightness(0.35) saturate(1.2)',
 }
 
 const overlayStyle: CSSProperties = {
