@@ -57,7 +57,7 @@ const innerStyle: CSSProperties = {
   alignItems: 'center',
   width: '100%',
   height: '100%',
-  background: '#FEEDF5',
+  background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)',
   borderRadius: '16px',
   position: 'relative',
   overflow: 'hidden',
@@ -74,12 +74,7 @@ const bgCoverStyle: CSSProperties = {
 }
 
 const overlayStyle: CSSProperties = {
-  position: 'absolute',
-  top: '0',
-  left: '0',
-  right: '0',
-  bottom: '0',
-  background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)',
+  display: 'none',
 }
 
 const contentStyle: CSSProperties = {
