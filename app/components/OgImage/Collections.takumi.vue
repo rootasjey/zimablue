@@ -53,14 +53,13 @@ const rootStyle: CSSProperties = {
 const innerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center',
+  justifyContent: 'flex-end',
   alignItems: 'center',
   width: '100%',
   height: '100%',
   background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)',
   borderRadius: '16px',
-  position: 'relative',
-  overflow: 'hidden',
+  padding: '40px',
 }
 
 const bgCoverStyle: CSSProperties = {
@@ -70,7 +69,7 @@ const bgCoverStyle: CSSProperties = {
   width: '100%',
   height: '100%',
   objectFit: 'cover',
-  filter: 'brightness(0.35) saturate(1.2)',
+  zIndex: '0',
 }
 
 const overlayStyle: CSSProperties = {
@@ -78,12 +77,14 @@ const overlayStyle: CSSProperties = {
 }
 
 const contentStyle: CSSProperties = {
-  position: 'relative',
-  zIndex: '1',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: '60px',
+  zIndex: '1',
+  background: 'red',
+  color: '#fff',
+  padding: '24px',
+  borderRadius: '12px',
 }
 
 const titleStyle: CSSProperties = {
