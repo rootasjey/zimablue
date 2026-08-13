@@ -1,140 +1,85 @@
 <template>
-  <div class="w-[600px] rounded-xl p-8 pb-[38vh] flex flex-col transition-all duration-500 overflow-y-auto">
-    <!-- Header -->
-    <header class="mt-12 mb-8">
-      <div class="flex gap-2">
-        <NLink to="/" class="hover:scale-102 active:scale-99 transition">
-          <span class="i-ph-house-simple-duotone"></span>
-        </NLink>
-        <span>•</span>
-        <h1 class="font-body text-xl font-600 text-gray-800 dark:text-gray-200">
-          Contact
-        </h1>
-      </div>
-      <div class="w-40 flex text-center justify-center my-2">
-        <div class="w-full h-2">
-          <svg viewBox="0 0 300 10" preserveAspectRatio="none">
-            <path d="M 0 5 Q 15 0, 30 5 T 60 5 T 90 5 T 120 5 T 150 5 T 180 5 T 210 5 T 240 5 T 270 5 T 300 5"
-              stroke="currentColor" fill="none" class="text-gray-300 dark:text-gray-700" stroke-width="1" />
-          </svg>
+  <main class="contact-page mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-20 lg:px-12 lg:py-28">
+    <header class="relative overflow-hidden border-b border-gray-100 pb-12 dark:border-gray-800 sm:pb-16">
+      <div class="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl dark:bg-cyan-400/8"></div>
+      <div class="relative max-w-4xl">
+        <div class="mb-8 flex items-center gap-3 text-[10px] font-800 uppercase tracking-[0.24em] text-gray-400 dark:text-gray-500">
+          <span class="h-px w-10 bg-cyan-400"></span>
+          Open channel
+          <span class="text-gray-300 dark:text-gray-700">/</span>
+          01
         </div>
+        <h1 class="max-w-4xl text-5xl font-900 tracking-[-0.06em] text-gray-900 dark:text-gray-100 sm:text-7xl lg:text-8xl">
+          Let's make room
+          <span class="block font-body font-400 italic text-cyan-600 dark:text-cyan-300">for a good idea.</span>
+        </h1>
+        <p class="mt-8 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400 sm:text-xl">
+          Collaborations, questions, commissions, or just a hello from somewhere out there.
+          The signal is open.
+        </p>
       </div>
     </header>
 
-    <!-- About Section -->
-    <section class="mb-16">
-      <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
-        About Me
-      </h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-4">
-        I'm a creative developer based in France, exploring the intersection of code and creativity.
-        My work spans from web applications to interactive experiments, always with a focus on user experience
-        and clean, maintainable code.
-      </p>
-      <p class="text-gray-700 dark:text-gray-300 mb-4">
-        Whether you're interested in collaborating on a project, have questions about my work,
-        or just want to say hello, I'd love to hear from you.
-      </p>
-      <p class="text-gray-700 dark:text-gray-300">
-        You can learn more <NLink to="/about" class="arrow"><span>about me</span></NLink> and 
-        <NLink to="/resume" class="arrow"><span>my work experiences.</span></NLink>
-      </p>
-    </section>
+    <section class="grid gap-12 py-12 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24 lg:py-20">
+      <div class="flex flex-col justify-between gap-12">
+        <div>
+          <p class="mb-5 text-xs font-800 uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">Prefer a direct line?</p>
+          <a
+            href="mailto:support@zimablue.cc"
+            class="group inline-flex max-w-full items-center gap-3 text-lg font-700 text-gray-900 transition-colors hover:text-cyan-600 dark:text-gray-100 dark:hover:text-cyan-300 sm:text-xl"
+          >
+            <span class="i-ph-envelope-simple-open text-cyan-500 transition-transform group-hover:-rotate-6"></span>
+            <span class="truncate">support@zimablue.cc</span>
+            <span class="i-ph-arrow-up-right text-sm text-gray-300 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 dark:text-gray-600"></span>
+          </a>
+          <p class="mt-4 max-w-xs text-sm leading-relaxed text-gray-400 dark:text-gray-500">
+            I read everything that comes through here and will get back to you as soon as I can.
+          </p>
+        </div>
 
-    <!-- Social Links -->
-    <section class="mb-16">
-      <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
-        Connect
-      </h2>
-      <div class="flex flex-wrap gap-4">
-        <NLink to="https://github.com/rootasjey" target="_blank" rel="noopener noreferrer" 
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-github-logo"></div>
-          <span class="font-600 text-size-3">GitHub</span>
-        </NLink>
-        <NLink to="https://www.instagram.com/rootasjey" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-instagram-logo"></div>
-          <span class="font-600 text-size-3">Instagram</span>
-        </NLink>
-        <NLink to="https://www.linkedin.com/in/jeremiecorpinot/" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <div class="i-ph-linkedin-logo"></div>
-          <span class="font-600 text-size-3">LinkedIn</span>
-        </NLink>
+        <div class="grid grid-cols-2 gap-5 border-t border-dashed border-gray-200 pt-6 text-sm dark:border-gray-800">
+          <div>
+            <p class="mb-2 text-[10px] font-800 uppercase tracking-[0.18em] text-gray-400 dark:text-gray-600">Based in</p>
+            <p class="text-gray-700 dark:text-gray-300">France, CET</p>
+          </div>
+          <div>
+            <p class="mb-2 text-[10px] font-800 uppercase tracking-[0.18em] text-gray-400 dark:text-gray-600">Topics</p>
+            <p class="text-gray-700 dark:text-gray-300">Art · Code · Ideas</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative rounded-[2rem] border border-gray-100 bg-white p-6 shadow-[0_24px_80px_-40px_rgba(8,145,178,0.35)] dark:border-gray-800 dark:bg-gray-900 sm:p-10">
+        <div class="absolute right-8 top-8 text-[10px] font-800 uppercase tracking-[0.2em] text-gray-300 dark:text-gray-700">Transmit</div>
+        <div class="mb-8 max-w-md">
+          <h2 class="text-3xl font-900 tracking-tight text-gray-900 dark:text-gray-100">Send a message</h2>
+          <p class="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">A few lines are enough. Include links if they help tell the story.</p>
+        </div>
+
+        <AboutContactForm
+          :email="form.email"
+          :subject="form.subject"
+          :message="form.message"
+          :loading="submitting"
+          @update:email="form.email = $event"
+          @update:subject="form.subject = $event"
+          @update:message="form.message = $event"
+          @submit="handleSubmit"
+        />
+
+        <div v-if="submitted" class="mt-6 flex items-start gap-3 rounded-2xl bg-cyan-50 p-4 text-sm text-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-100">
+          <span class="i-ph-check-circle-fill mt-0.5 text-cyan-500"></span>
+          <p>Message received. Thanks for reaching out, I'll get back to you soon.</p>
+        </div>
+        <p v-if="formStatus?.type === 'error'" class="mt-5 text-sm text-red-500">{{ formStatus.message }}</p>
       </div>
     </section>
-
-    <!-- Contact Form -->
-    <section>
-      <h2 class="text-lg font-500 text-gray-800 dark:text-gray-200 mb-4">
-        Send a bottle
-      </h2>
-      <span class="i-ph-bottle"></span>
-      <form 
-        @submit.prevent="handleSubmit" 
-        v-if="!submitted"
-        class="flex flex-col gap-4 p-4 py-6 rounded-lg border border-primary b-dashed dark:border dark:border-gray-700 dark:b-dashed">
-        <div>
-          <label for="email" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="form.email" 
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent focus:border-transparent"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="subject" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Subject</label>
-          <input 
-            type="text" 
-            id="subject" 
-            v-model="form.subject" 
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent focus:border-transparent"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="message" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
-          <textarea 
-            id="message" 
-            v-model="form.message" 
-            rows="5" 
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent focus:border-transparent"
-            required
-          ></textarea>
-        </div>
-        
-        <NButton 
-          btn="soft"
-          type="submit" 
-          class="px-6 py-2 dark:bg-teal dark:text-gray-900 dark:hover:bg-teal-5 transition-colors"
-          :disabled="submitting"
-        >
-          {{ submitting ? 'Sending...' : 'Send Message' }}
-        </NButton>
-        
-        <p v-if="formStatus && submitted" class="text-center" :class="formStatus.type === 'success' ? 'text-green-500' : 'text-red-500'">
-          {{ formStatus.message }}
-        </p>
-      </form>
-
-      <div v-if="submitted" class="p-4 rounded-2 bg-gray-100 dark:bg-gray-800">
-        <p class="text-center">
-          <span class="i-ph-check-circle text-size-4 mb-1 mr-1"></span>
-          <span class="color-gray-600">Thanks for your message! I'll get back to you soon.</span>
-          <NButton btn="link" @click="submitted = false">send another message</NButton>
-        </p>
-      </div>
-    </section>
-
-  </div>
+  </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import AboutContactForm from '~/components/about/AboutContactForm.vue'
+
 useSeoMeta({
   title: 'Contact',
   description: 'Get in touch — collaborations, enquiries, or just a hello',
@@ -153,50 +98,31 @@ defineOgImageComponent('Default.takumi', {
   ],
 })
 
-const form = ref({
-  subject: '',
-  email: '',
-  message: ''
-})
-
+const form = reactive({ email: '', subject: '', message: '' })
 const submitting = ref(false)
-const formStatus = ref(null)
 const submitted = ref(false)
+const formStatus = ref<{ type: 'error'; message: string } | null>(null)
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   submitting.value = true
+  submitted.value = false
   formStatus.value = null
-  
+
   try {
-    // Send the form data to the API endpoint
     const response = await $fetch('/api/contact/submit', {
       method: 'POST',
-      body: form.value
+      body: form,
     })
 
-    if (!response.success) {
-      throw new Error(response.message)
-    }
-    
-    formStatus.value = {
-      type: 'success',
-      message: response.message || 'Message sent successfully! I\'ll get back to you soon.'
-    }
-    
-    // Reset form
-    form.value = {
-      email: '',
-      subject: '',
-      message: ''
-    }
+    if (!response.success) throw new Error(response.message || 'Failed to send message')
 
+    form.email = ''
+    form.subject = ''
+    form.message = ''
     submitted.value = true
   } catch (error) {
-    console.error('Error submitting form:', error)
-    formStatus.value = {
-      type: 'error',
-      message: 'Failed to send message. Please try again later.'
-    }
+    console.error('Error submitting contact form:', error)
+    formStatus.value = { type: 'error', message: 'Failed to send your message. Please try again later.' }
   } finally {
     submitting.value = false
   }

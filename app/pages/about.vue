@@ -91,6 +91,10 @@
                   Detailed Contact
                 </NButton>
               </NLink>
+              <a href="mailto:support@zimablue.cc" class="flex items-center justify-center gap-2 pt-2 text-xs font-700 text-gray-400 transition-colors hover:text-blue-500 dark:text-gray-500 dark:hover:text-cyan-300">
+                <span class="i-ph-envelope-simple"></span>
+                support@zimablue.cc
+              </a>
             </div>
 
             <div class="pt-8 border-t border-gray-50 dark:border-gray-800 flex flex-wrap gap-6 justify-center">
