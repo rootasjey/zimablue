@@ -150,6 +150,9 @@
                       class="w-full pl-10 pr-4 py-5.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all"
                     />
                     <p v-if="!isLogin" class="mt-1 text-xs text-gray-500">At least 8 characters</p>
+                    <NuxtLink v-if="isLogin" to="/forgot-password" class="mt-2 inline-block text-xs text-sky-600 hover:underline">
+                      Forgot your password?
+                    </NuxtLink>
                   </div>
 
                   <!-- Optional fields toggle -->

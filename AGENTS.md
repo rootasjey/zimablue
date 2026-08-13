@@ -155,9 +155,15 @@ bun run typecheck
 # Re-generate .nuxt type stubs after config changes
 bun run postinstall   # alias: nuxt prepare
 
-# Deploy to Cloudflare Workers via Wrangler / NuxtHub
-bun run deploy        # (if configured in nuxt.config hub block)
+# Local deployment tools (not the normal production path)
+bunx wrangler deploy --config wrangler.jsonc
 ```
+
+### Production deployment
+
+Production deployments are triggered by the **Cloudflare Dashboard GitHub integration** (Workers Builds), not by a deployment workflow committed in this repository. The resulting jobs and deployment checks are visible in the remote GitHub repository, while `.github/workflows/ci.yml` only runs tests.
+
+Do not add a second GitHub deploy workflow or use `nuxthub deploy` locally unless the user explicitly requests it. Push changes to the branch configured in Cloudflare and monitor the Cloudflare job from GitHub/Cloudflare Dashboard.
 
 **Version management scripts:**
 ```bash

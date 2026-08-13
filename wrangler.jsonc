@@ -16,6 +16,11 @@
       "bucket_name": "zimablue"
     }
   ],
+  "send_email": [
+    {
+      "name": "EMAIL"
+    }
+  ],
   "kv_namespaces": [
     {
       "binding": "CACHE",
@@ -36,7 +41,10 @@
   ],
   "vars": {
     "NUXT_AUTH_ORIGIN": "https://zimablue.cc",
-    "NUXT_PUBLIC_SITE_URL": "https://zimablue.cc"
+    "NUXT_PUBLIC_SITE_URL": "https://zimablue.cc",
+    "NUXT_EMAIL_FROM": "no-reply@zimablue.cc",
+    "NUXT_EMAIL_FROM_NAME": "Zima Blue",
+    "NUXT_CONTACT_EMAIL": "support@zimablue.cc"
   },
   "triggers": {
     "crons": ["0 7 * * *"]

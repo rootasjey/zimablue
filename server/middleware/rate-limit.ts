@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     config = ADMIN_LIMIT
   } else if (path.startsWith('/api/images/') && path.includes('/upload')) {
     config = UPLOAD_LIMIT
-  } else if (path === '/api/login' || path === '/api/register') {
+  } else if (path === '/api/login' || path === '/api/register' || path.startsWith('/api/password-reset/')) {
     config = AUTH_LIMIT
   } else {
     config = PUBLIC_LIMIT

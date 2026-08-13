@@ -201,6 +201,19 @@ export const apiTokens = sqliteTable('api_tokens', {
   userIdIdx: index('idx_api_tokens_user_id').on(table.userId),
 }))
 
+export const passwordResetTokens = sqliteTable('password_reset_tokens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+  usedAt: integer('used_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  tokenHashIdx: uniqueIndex('idx_password_reset_tokens_hash').on(table.tokenHash),
+  userIdIdx: index('idx_password_reset_tokens_user_id').on(table.userId),
+  expiresAtIdx: index('idx_password_reset_tokens_expires_at').on(table.expiresAt),
+}))
+
 // Export schema for Drizzle
 export const schema = {
   users,
@@ -214,4 +227,5 @@ export const schema = {
   messages,
   todos,
   apiTokens,
+  passwordResetTokens,
 }

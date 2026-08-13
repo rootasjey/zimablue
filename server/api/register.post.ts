@@ -5,6 +5,7 @@ import { users, apiTokens } from '../db/schema'
 import type { DbUser } from '#shared/types/database'
 import { generateToken, hashToken } from '../utils/api-auth'
 import { apiSuccess } from '../utils/api-response'
+import { sendEmail, emailHtml } from '../utils/email'
 
 const bodySchema = z.object({
   name: z.string().min(2).max(50),
@@ -87,6 +88,17 @@ export default defineEventHandler(async (event) => {
         updatedAt: toISOString(newUser.updatedAt || newUser.createdAt),
       }
     })
+
+    try {
+      await sendEmail(event, {
+        to: newUser.email,
+        subject: 'Welcome to Zima Blue',
+        text: `Hi ${newUser.name},\n\nWelcome to Zima Blue. Your account is ready to use.`,
+        html: emailHtml(`Hi ${newUser.name},\n\nWelcome to Zima Blue. Your account is ready to use.`),
+      })
+    } catch (error) {
+      console.error('Welcome email error:', error)
+    }
 
     const returnToken = getQuery(event).returnToken === 'true'
 

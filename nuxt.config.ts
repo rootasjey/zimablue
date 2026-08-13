@@ -113,6 +113,11 @@ export default defineNuxtConfig({
       appId: process.env.NUXT_THREADS_APP_ID || '',
       appSecret: process.env.NUXT_THREADS_APP_SECRET || '',
     },
+    email: {
+      from: process.env.NUXT_EMAIL_FROM || 'no-reply@zimablue.cc',
+      fromName: process.env.NUXT_EMAIL_FROM_NAME || 'Zima Blue',
+      contactRecipient: process.env.NUXT_CONTACT_EMAIL || '',
+    },
     socialAutopost: {
       enabledPlatforms: [],
       timezone: process.env.NUXT_SOCIAL_DAILY_TIMEZONE || 'Europe/Paris',
