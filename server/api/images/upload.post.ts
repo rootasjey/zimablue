@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
 import { isAllowedImageType, getFileExtension, getBaseName } from '../../utils/contact'
-import { IMAGE_SIZES } from '../../utils/images'
+import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../utils/images'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -77,7 +77,9 @@ export default eventHandler(async (event) => {
   // Generate and upload resized versions
   for (const size of sizes) {
     const resized = originalImage.clone().resize({ w: size.width })
-    const buffer = await resized.getBuffer(type)
+    const buffer = type === 'image/jpeg'
+      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
+      : await resized.getBuffer(type)
     const blobData = new Blob([buffer as any], { type })
     const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
       addRandomSuffix: false,

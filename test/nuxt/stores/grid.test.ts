@@ -35,7 +35,7 @@ describe('useGridStore', () => {
       ] as any)
 
       expect(store.layout).toHaveLength(1)
-      expect(store.layout[0].id).toBe(2)
+      expect(store.layout[0]!.id).toBe(2)
     })
 
     it('keeps all images when no pending deletes', () => {
@@ -72,7 +72,7 @@ describe('useGridStore', () => {
       ] as any)
 
       expect(store.layout).toHaveLength(1)
-      expect(store.layout[0].id).toBe(4)
+      expect(store.layout[0]!.id).toBe(4)
 
       store.removePendingDeletes([1, 2])
       store.applyIncomingLayout([
@@ -98,7 +98,7 @@ describe('useGridStore', () => {
       await store.fetchGrid()
 
       expect(store.layout).toHaveLength(2)
-      expect(store.layout[0].id).toBe(1)
+      expect(store.layout[0]!.id).toBe(1)
       expect(store.initialized).toBe(true)
       expect(store.isLoading).toBe(false)
     })

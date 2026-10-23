@@ -53,7 +53,7 @@ describe('useTagSearch', () => {
 
       expect(composable.isLoading.value).toBe(false)
       expect(composable.tags.value).toHaveLength(2)
-      expect(composable.tags.value[0].name).toBe('vue')
+      expect(composable.tags.value[0]!.name).toBe('vue')
     })
 
     it('handles fetch errors gracefully', async () => {
@@ -120,7 +120,7 @@ describe('useTagSearch', () => {
       expect(result!.color).toBe('#FF5733')
       expect(requestBody).toEqual({ name: 'new-tag', description: 'A new tag' })
 
-      expect(composable.tags.value[0].name).toBe('new-tag')
+      expect(composable.tags.value[0]!.name).toBe('new-tag')
     })
 
     it('transforms camelCase DB response to snake_case Tag', async () => {
@@ -183,7 +183,7 @@ describe('useTagSearch', () => {
       await delay(400)
 
       expect(composable.tags.value).toHaveLength(1)
-      expect(composable.tags.value[0].name).toBe('art')
+      expect(composable.tags.value[0]!.name).toBe('art')
     })
   })
 })

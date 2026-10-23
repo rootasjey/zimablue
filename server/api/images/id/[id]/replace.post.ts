@@ -6,6 +6,7 @@ import { Jimp } from 'jimp'
 import { generateUniquePathname } from '../../utils/generateUniquePathname'
 import { blob } from 'hub:blob'
 import { images } from '../../../../db/schema'
+import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../../../utils/images'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -80,14 +81,7 @@ export default eventHandler(async (event) => {
   // Process the original image with Jimp
   const originalImage = await Jimp.fromBuffer(file)
 
-  const sizes = [
-    { width: 160, suffix: 'xxs' },
-    { width: 320, suffix: 'xs' },
-    { width: 640, suffix: 'sm' },
-    { width: 1024, suffix: 'md' },
-    { width: 1920, suffix: 'lg' },
-    // Original size will be stored as 'original'
-  ]
+  const sizes = IMAGE_SIZES
   
   // Store all generated pathnames
   const generatedVariants: Array<VariantType> = []
@@ -110,7 +104,9 @@ export default eventHandler(async (event) => {
   // Generate and upload resized versions
   for (const size of sizes) {
     const resized = originalImage.clone().resize({ w: size.width })
-    const buffer = await resized.getBuffer(type)
+    const buffer = type === 'image/jpeg'
+      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
+      : await resized.getBuffer(type)
     const blobData = new Blob([new Uint8Array(buffer)], { type })
     const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
       addRandomSuffix: false,

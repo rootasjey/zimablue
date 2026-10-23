@@ -19,10 +19,27 @@ import { useGridStore } from '@/stores/useGridStore'
 import { useParseVariants } from '~/composables/image/useParseVariants'
 
 const gridStore = useGridStore()
+const route = useRoute()
+
+// Render the mobile hero with gallery data in the initial HTML instead of
+// waiting for the client-only grid request to finish after hydration.
+const { data: initialGrid } = await useAsyncData<Image[]>(
+  'home-grid',
+  async () => {
+    const response = await $fetch<{ success: true; data: Image[] }>('/api/grid')
+    return Array.isArray(response.data) ? response.data : []
+  },
+  { default: () => [] },
+)
+
+if (!gridStore.initialized) {
+  gridStore.layout = initialGrid.value
+  gridStore.initialized = true
+}
+
 const layout = computed(() => gridStore.layout)
 const isInitialGridLoading = computed(() => !gridStore.initialized)
 // Handle ?image=<slug> for social media preview
-const route = useRoute()
 const config = useRuntimeConfig()
 const imageSlug = computed(() => route.query.image as string | undefined)
 

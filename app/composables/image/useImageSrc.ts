@@ -22,11 +22,12 @@ export const useImageSrc = () => {
     const variants = parse(image.variants)
 
     if (variants.length === 0) {
-      // Pas de variants → fallback pathname brut via hubblob
+      // Legacy metadata can omit variants even when the server knows them.
+      // Ask the image route for the smallest stored variant for this context.
       return {
         src: image.pathname,
         provider: 'hubblob' as const,
-        modifiers: { v: image.updated_at } as Record<string, string | number>,
+        modifiers: { width: targetWidth, v: image.updated_at } as Record<string, string | number>,
       }
     }
 

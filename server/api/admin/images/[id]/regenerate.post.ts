@@ -5,16 +5,9 @@ import type { VariantType } from '~~/shared/types/image'
 import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../../../db/schema'
+import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../../../utils/images'
 
-const sizes = [
-  { width: 160, suffix: 'xxs' },
-  { width: 320, suffix: 'xs' },
-  { width: 640, suffix: 'sm' },
-  { width: 1024, suffix: 'md' },
-  { width: 1920, suffix: 'lg' },
-]
-
-const extToMime = (ext: string) => {
+const extToMime = (ext: string): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/bmp' | 'image/tiff' | 'image/x-ms-bmp' => {
   switch (ext.toLowerCase()) {
     case 'jpg':
     case 'jpeg':
@@ -91,9 +84,11 @@ export default eventHandler(async (event) => {
   const pathForPrefix = (original?.pathname || sourcePath)
   const prefix = pathForPrefix.substring(0, pathForPrefix.lastIndexOf('/'))
 
-  for (const s of sizes) {
+  for (const s of IMAGE_SIZES) {
     const resized = image.clone().resize({ w: s.width })
-    const resizedBuffer = await resized.getBuffer(mime)
+    const resizedBuffer = mime === 'image/jpeg'
+      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
+      : await resized.getBuffer(mime)
     // find an existing variant path for this suffix, else create under prefix
     const existing = variants.find(v => v.size === s.suffix)
     const targetPath = existing?.pathname || `${prefix}/${s.suffix}.${ext}`

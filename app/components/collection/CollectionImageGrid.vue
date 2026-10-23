@@ -89,7 +89,6 @@
               :_dropdown-menu-content="{ class: 'w-48 rounded-2xl p-2 shadow-xl', align: 'end', side: 'bottom' }"
               :_dropdown-menu-trigger="{
                 icon: true,
-                square: true,
                 label: 'i-ph-dots-three-bold',
                 class: 'dp-menu-trigger',
               }"

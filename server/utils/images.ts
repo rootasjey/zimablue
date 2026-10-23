@@ -30,3 +30,8 @@ export const IMAGE_SIZES = [
   { width: 1024, suffix: 'md' },
   { width: 1920, suffix: 'lg' },
 ] as const
+
+// Jimp's JPEG encoder defaults to quality 100, which makes even small
+// gallery variants unnecessarily large. Keep originals untouched and encode
+// only generated variants at a practical quality level.
+export const JPEG_VARIANT_QUALITY = 82

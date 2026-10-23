@@ -157,7 +157,6 @@
                 :_dropdown-menu-content="{ class: 'w-48', align: 'end', side: 'bottom' }"
                 :_dropdown-menu-trigger="{
                   icon: true,
-                  square: true,
                   label: 'i-lucide-more-horizontal',
                   class: 'bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-full w-8 h-8 shadow-sm hover:scale-110 active:scale-95 transition-all text-gray-800 dark:text-white'
                 }"

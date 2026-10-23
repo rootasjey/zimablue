@@ -183,7 +183,7 @@ describe('useCollectionDetailStore', () => {
       expect(result.success).toBe(true)
       expect(requestBody).toEqual({ images: { remove: [1, 3] } })
       expect(store.images).toHaveLength(1)
-      expect(store.images[0].id).toBe(2)
+      expect(store.images[0]!.id).toBe(2)
       expect(store.collection?.image_count).toBe(1)
     })
 

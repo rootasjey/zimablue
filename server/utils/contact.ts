@@ -17,7 +17,9 @@ export function validateContactInput(body: unknown): ValidationResult {
   return { valid: true }
 }
 
-export function isAllowedImageType(mimeType: string): boolean {
+export function isAllowedImageType(
+  mimeType: string,
+): mimeType is 'image/jpeg' | 'image/png' | 'image/bmp' | 'image/tiff' | 'image/x-ms-bmp' | 'image/gif' {
   return ['image/jpeg', 'image/png', 'image/bmp', 'image/tiff', 'image/x-ms-bmp', 'image/gif'].includes(mimeType)
 }
 
