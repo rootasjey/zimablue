@@ -162,9 +162,7 @@
         >
           <div class="relative w-full aspect-[3/4]" :style="{ viewTransitionName: `shared-image-${image.id}` }">
             <NuxtImg
-              provider="hubblob"
-              :src="image.pathname"
-              :modifiers="{ v: image.updated_at, width: 300, height: 400, fit: 'cover' }"
+              v-bind="getSrc(image, 'mobile-grid')"
               :alt="image.name || 'Image'"
               class="w-full h-full object-cover"
               loading="lazy"
