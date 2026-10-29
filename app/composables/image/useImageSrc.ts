@@ -38,6 +38,7 @@ export const useImageSrc = () => {
 
     // Sinon le plus grand dispo
     const best = suitable[0] ?? [...variants].sort((a: VariantType, b: VariantType) => b.width - a.width)[0]!
+    const avifVariant = variants.find(v => v.format === 'avif' && v.width === best.width)
 
     // pathname est la clé R2 complète (ex: "images/42/sm.webp")
     // On passe toujours par hubblob pour que le provider sache construire l'URL
@@ -45,7 +46,10 @@ export const useImageSrc = () => {
     return {
       src: best.pathname,
       provider: 'hubblob' as const,
-      modifiers: { v: image.updated_at } as Record<string, string | number>,
+      modifiers: {
+        v: image.updated_at,
+        ...(avifVariant ? { avif: 1 } : {}),
+      } as Record<string, string | number>,
     }
   }
 

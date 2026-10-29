@@ -6,7 +6,7 @@ import { Jimp } from 'jimp'
 import { generateUniquePathname } from '../../utils/generateUniquePathname'
 import { blob } from 'hub:blob'
 import { images } from '../../../../db/schema'
-import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../../../utils/images'
+import { generateImageVariants } from '../../../../utils/generateImageVariants'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -59,9 +59,10 @@ export default eventHandler(async (event) => {
     })
   }
 
+  let oldVariants: VariantType[] = []
   try { // Delete old blob files
-    const variants = typeof existingImage.variants === 'string' ? JSON.parse(existingImage.variants) : existingImage.variants
-    for (const variant of variants) {
+    oldVariants = typeof existingImage.variants === 'string' ? JSON.parse(existingImage.variants) : existingImage.variants
+    for (const variant of oldVariants) {
       if (variant.pathname) {
         await blob.del(variant.pathname)
       }
@@ -81,11 +82,6 @@ export default eventHandler(async (event) => {
   // Process the original image with Jimp
   const originalImage = await Jimp.fromBuffer(file)
 
-  const sizes = IMAGE_SIZES
-  
-  // Store all generated pathnames
-  const generatedVariants: Array<VariantType> = []
-  
   // Upload original image
   const originalBuffer = await originalImage.getBuffer(type)
   const originalBlob = new Blob([new Uint8Array(originalBuffer)], { type })
@@ -94,31 +90,13 @@ export default eventHandler(async (event) => {
     addRandomSuffix: false,
   })
 
-  generatedVariants.push({
-    size: 'original',
-    width: originalImage.width,
-    height: originalImage.height,
-    pathname: originalResponse.pathname
+  const generatedVariants = await generateImageVariants({
+    image: originalImage,
+    imagePrefix,
+    originalPath: originalResponse.pathname,
+    extension,
+    mimeType: type,
   })
-  
-  // Generate and upload resized versions
-  for (const size of sizes) {
-    const resized = originalImage.clone().resize({ w: size.width })
-    const buffer = type === 'image/jpeg'
-      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
-      : await resized.getBuffer(type)
-    const blobData = new Blob([new Uint8Array(buffer)], { type })
-    const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
-      addRandomSuffix: false,
-    })
-
-    generatedVariants.push({
-      size: size.suffix,
-      width: resized.width,
-      height: resized.height,
-      pathname: response.pathname
-    })
-  }
 
   // Update database entry with new variants
   const updateResponse = await db.update(images)

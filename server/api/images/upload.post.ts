@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
 import { isAllowedImageType, getFileExtension, getBaseName } from '../../utils/contact'
-import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../utils/images'
+import { generateImageVariants } from '../../utils/generateImageVariants'
 
 export default eventHandler(async (event) => {
   const session = await requireUserSession(event)
@@ -54,11 +54,6 @@ export default eventHandler(async (event) => {
   // Process the original image with Jimp
   const originalImage = await Jimp.fromBuffer(file)
 
-  const sizes = IMAGE_SIZES
-  
-  // Store all generated pathnames
-  const generatedVariants = []
-  
   // Upload original image
   const originalBuffer = await originalImage.getBuffer(type)
   const originalBlob = new Blob([originalBuffer as any], { type })
@@ -67,31 +62,13 @@ export default eventHandler(async (event) => {
     addRandomSuffix: false,
   })
 
-  generatedVariants.push({
-    size: 'original',
-    width: originalImage.width,
-    height: originalImage.height,
-    pathname: originalResponse.pathname
+  const generatedVariants = await generateImageVariants({
+    image: originalImage,
+    imagePrefix,
+    originalPath: originalResponse.pathname,
+    extension,
+    mimeType: type,
   })
-  
-  // Generate and upload resized versions
-  for (const size of sizes) {
-    const resized = originalImage.clone().resize({ w: size.width })
-    const buffer = type === 'image/jpeg'
-      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
-      : await resized.getBuffer(type)
-    const blobData = new Blob([buffer as any], { type })
-    const response = await blob.put(`${imagePrefix}/${size.suffix}.${extension}`, blobData, {
-      addRandomSuffix: false,
-    })
-
-    generatedVariants.push({
-      size: size.suffix,
-      width: resized.width,
-      height: resized.height,
-      pathname: response.pathname
-    })
-  }
 
   const slug = await generateUniqueSlug(fileName)
 

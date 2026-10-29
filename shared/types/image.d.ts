@@ -38,6 +38,7 @@ export type VariantType = {
   width: number
   height: number
   pathname: string
+  format?: 'avif'
 }
 
 // API response types

@@ -5,6 +5,40 @@ import type { VariantType } from '~~/shared/types/image'
 import { blob } from 'hub:blob'
 import { images } from '../../db/schema'
 
+const IMAGE_CACHE = 'public, max-age=3600, stale-while-revalidate=86400'
+
+function acceptsAvif(accept: string): boolean {
+  return accept.split(',').some((entry) => {
+    const [type, ...parameters] = entry.trim().toLowerCase().split(';')
+    if (type !== 'image/avif') return false
+    const quality = parameters.find(parameter => parameter.trim().startsWith('q='))
+    return !quality || Number(quality.trim().slice(2)) > 0
+  })
+}
+
+async function serveBlob(event: Parameters<typeof setHeader>[0], path: string, negotiateAvif: boolean) {
+  if (negotiateAvif) {
+    setHeader(event, 'Vary', 'Accept')
+    if (acceptsAvif(getHeader(event, 'accept') ?? '')) {
+      const avifPath = path.replace(/\.(?:jpe?g|png|bmp|tiff?)$/i, '.avif')
+      if (avifPath !== path) {
+        const avifBlob = await blob.get(avifPath)
+        if (avifBlob) {
+          setHeader(event, 'Content-Type', 'image/avif')
+          setHeader(event, 'Cache-Control', IMAGE_CACHE)
+          return Buffer.from(await avifBlob.arrayBuffer())
+        }
+      }
+    }
+  }
+
+  const imageBlob = await blob.get(path)
+  if (!imageBlob) return null
+  setHeader(event, 'Content-Type', imageBlob.type)
+  setHeader(event, 'Cache-Control', IMAGE_CACHE)
+  return Buffer.from(await imageBlob.arrayBuffer())
+}
+
 /**
  * Handles the GET request for the `/images/{pathname}` route. 
  * This function retrieves an image from blob storage, 
@@ -19,6 +53,7 @@ export default eventHandler(async (event) => {
 
   const query = getQuery(event)
   const requestedWidth = query.width ? parseInt(query.width as string) : undefined
+  const negotiateAvif = query.avif === '1'
   // const requestedHeight = query.height ? parseInt(query.height as string) : undefined
 
   // Check if this is a request for a pre-generated variant
@@ -30,14 +65,8 @@ export default eventHandler(async (event) => {
   // If a specific variant is requested, try to serve it directly
   if (variantRequested) {
     const fullPath = `images/${pathname}`
-    const blobData = await blob.get(fullPath)
-    
-    if (blobData) {
-      const buffer = Buffer.from(await blobData.arrayBuffer())
-      setHeader(event, 'Content-Type', blobData.type)
-      setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
-      return buffer
-    }
+    const response = await serveBlob(event, fullPath, negotiateAvif)
+    if (response) return response
   }
   
   // Check if we have pre-generated variants for this image
@@ -60,32 +89,21 @@ export default eventHandler(async (event) => {
   if (requestedWidth) {
     // Find the smallest variant that is larger than or equal to the requested width
     const suitableVariants = variants
-      .filter((v) => v.width >= requestedWidth)
+      .filter(v => v.format !== 'avif' && v.width >= requestedWidth)
       .sort((a, b) => a.width - b.width)
     
     if (suitableVariants.length > 0) {
       const bestVariant = suitableVariants[0]
       if (bestVariant) {
-        const blobData = await blob.get(bestVariant.pathname)
-        
-        if (blobData) {
-          const buffer = Buffer.from(await blobData.arrayBuffer())
-          setHeader(event, 'Content-Type', blobData.type)
-          setHeader(event, 'Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
-          return buffer
-        }
+        const response = await serveBlob(event, bestVariant.pathname, negotiateAvif)
+        if (response) return response
       }
     }
   }
 
   const largeVariant = variants.find(v => v.size === 'lg')
   if (largeVariant) {
-    const blobData = await blob.get(largeVariant.pathname)
-    if (blobData) {
-      const buffer = Buffer.from(await blobData.arrayBuffer())
-      setHeader(event, 'Content-Type', blobData.type)
-      setHeader(event, 'Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
-      return buffer
-    }
+    const response = await serveBlob(event, largeVariant.pathname, negotiateAvif)
+    if (response) return response
   }
 })

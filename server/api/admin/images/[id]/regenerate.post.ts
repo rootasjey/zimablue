@@ -5,7 +5,7 @@ import type { VariantType } from '~~/shared/types/image'
 import { eq } from 'drizzle-orm'
 import { blob } from 'hub:blob'
 import { images } from '../../../../db/schema'
-import { IMAGE_SIZES, JPEG_VARIANT_QUALITY } from '../../../../utils/images'
+import { generateImageVariants } from '../../../../utils/generateImageVariants'
 
 const extToMime = (ext: string): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/bmp' | 'image/tiff' | 'image/x-ms-bmp' => {
   switch (ext.toLowerCase()) {
@@ -77,25 +77,18 @@ export default eventHandler(async (event) => {
   const originalArray = new Uint8Array(originalBuffer)
   await blob.put((original?.pathname) || sourcePath, new Blob([originalArray], { type: mime }), { addRandomSuffix: false })
 
-  const newVariants: VariantType[] = []
-  newVariants.push({ size: 'original', width: image.width, height: image.height, pathname: (original?.pathname) || sourcePath })
-
-  // Regenerate sizes and overwrite existing variant files if present; otherwise keep same naming scheme alongside existing prefix
-  const pathForPrefix = (original?.pathname || sourcePath)
+  // Regenerate every derivative, preserving stored paths when available.
+  const originalPath = original?.pathname || sourcePath
+  const pathForPrefix = originalPath
   const prefix = pathForPrefix.substring(0, pathForPrefix.lastIndexOf('/'))
-
-  for (const s of IMAGE_SIZES) {
-    const resized = image.clone().resize({ w: s.width })
-    const resizedBuffer = mime === 'image/jpeg'
-      ? await resized.getBuffer('image/jpeg', { quality: JPEG_VARIANT_QUALITY })
-      : await resized.getBuffer(mime)
-    // find an existing variant path for this suffix, else create under prefix
-    const existing = variants.find(v => v.size === s.suffix)
-    const targetPath = existing?.pathname || `${prefix}/${s.suffix}.${ext}`
-    const resizedArray = new Uint8Array(resizedBuffer)
-    await blob.put(targetPath, new Blob([resizedArray], { type: mime }), { addRandomSuffix: false })
-    newVariants.push({ size: s.suffix, width: resized.width, height: resized.height, pathname: targetPath })
-  }
+  const newVariants: VariantType[] = await generateImageVariants({
+    image,
+    imagePrefix: prefix,
+    originalPath,
+    extension: ext,
+    mimeType: mime,
+    existingVariants: variants,
+  })
 
   // Update DB
   const updated = await db.update(images)
