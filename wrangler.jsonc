@@ -47,7 +47,10 @@
     "NUXT_CONTACT_EMAIL": "support@zimablue.cc"
   },
   "triggers": {
-    "crons": ["0 7 * * *"]
+    "crons": [
+      "0 7 * * *",
+      "0 8 * * *"
+    ]
   },
   "routes": [
     {

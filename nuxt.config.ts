@@ -98,7 +98,10 @@ export default defineNuxtConfig({
       wasm: true,
     },
     scheduledTasks: {
+      // Europe/Paris is UTC+2 during daylight saving time.
       '0 7 * * *': ['social:autopost'],
+      // Europe/Paris is UTC+1 during standard time. The task's local-time guard skips the other trigger.
+      '0 8 * * *': ['social:autopost'],
     },
   },
 
